@@ -19,7 +19,7 @@ export const darkThemes: ThemeProps = {
   // '--secondary-border': '1px solid #303030',
   '--primary-opacity': '0.5', // used for dark theme
   '--primary-disabled-opacity': '0.7', // used for dark theme
-  '--primary-accent-color': '#0c3c63', // used for radio and checkbox's background color
+  '--primary-accent-color': '#1a588a', // used for radio and checkbox's background color
 
   // including menus, tabs
   '--activatable-color-normal': 'var(--primary-color)',

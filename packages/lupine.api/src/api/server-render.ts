@@ -10,6 +10,7 @@ import { JsonObject } from '../models/json-object';
 import { getTemplateCache } from './api-cache';
 import { apiStorage } from './api-shared-storage';
 import { SimpleStorageDataProps } from '../models';
+import { RuntimeRequire } from '../lib/runtime-require';
 
 const logger = new Logger('StaticServer');
 
@@ -104,6 +105,7 @@ type CachedHtmlProps = {
   metaIndexStart: number;
   metaIndexEnd: number;
   containerIndex: number;
+  _lupineJs: _LupineJs;
 };
 export const serverSideRenderPage = async (
   appName: string,
@@ -121,24 +123,18 @@ export const serverSideRenderPage = async (
   // in order to support virtual path and also sub folders, here needs to find nearest sub folder which contains index.js
   const nearRoot = await findNearestRoot(cachedHtml, webRoot, urlWithoutQuery);
 
-  // the FE code needs to export _lupineJs
-  // const lupinJs = await import(webRoot + '/index.js');
-  const lupinJs = require(path.join(nearRoot, 'index.js'));
-  if (!lupinJs || !lupinJs._lupineJs) {
-    throw new Error('_lupineJs is not defined');
-  }
-
-  console.log(`=========load lupine: `, lupinJs);
-  const _lupineJs = lupinJs._lupineJs() as _LupineJs;
-  const props = {
-    url: urlWithoutQuery,
-    // urlSections: urlWithoutQuery.split('/').filter((i) => !!i),
-    query: Object.fromEntries(new URLSearchParams(urlQuery || '')), //new URLSearchParams(urlQuery || ''),
-    urlParameters: {},
-    renderPageFunctions: renderPageFunctions,
-  };
-
   if (!cachedHtml[nearRoot]) {
+    // the FE code needs to export _lupineJs
+    // const lupinJs = await import(webRoot + '/index.js');
+    const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { _lupineJs: null });
+    // const lupinJs = require(path.join(nearRoot, 'index.js'));
+    if (!gThis || !gThis._lupineJs) {
+      throw new Error('_lupineJs is not defined');
+    }
+
+    console.log(`=========load lupine: `, gThis);
+    const _lupineJs = gThis._lupineJs() as _LupineJs;
+
     const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
     const contentWithEnv = content.toString();
     cachedHtml[nearRoot] = {
@@ -148,9 +144,19 @@ export const serverSideRenderPage = async (
       metaIndexStart: contentWithEnv.indexOf(metaTextStart),
       metaIndexEnd: contentWithEnv.indexOf(metaTextEnd),
       containerIndex: contentWithEnv.indexOf(containerText),
+      _lupineJs: _lupineJs,
     } as CachedHtmlProps;
   }
 
+  const props = {
+    url: urlWithoutQuery,
+    // urlSections: urlWithoutQuery.split('/').filter((i) => !!i),
+    query: Object.fromEntries(new URLSearchParams(urlQuery || '')), //new URLSearchParams(urlQuery || ''),
+    urlParameters: {},
+    renderPageFunctions: renderPageFunctions,
+  };
+
+  const _lupineJs = cachedHtml[nearRoot]._lupineJs;
   const currentCache = cachedHtml[nearRoot] as CachedHtmlProps;
   const webSetting = await apiStorage.getWebAll();
   const webSettingShortKey: SimpleStorageDataProps = {};
@@ -163,7 +169,7 @@ export const serverSideRenderPage = async (
   const page = await _lupineJs.generatePage(props, clientDelivery);
   // console.log(`=========load lupin: `, content);
 
-  const allowOrigin = (req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : '*';
+  const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';
   res.setHeader('Access-Control-Allow-Origin', allowOrigin);
   res.writeHead(200, { 'Content-Type': 'text/html' });
   // res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' });
