@@ -2,18 +2,21 @@ import { ThemeProps } from "lupine.web";
 
 export const sharedThemes: ThemeProps = {
   // z-index
-  '--layer-cover': '10',
-  '--layer-sidebar': '100',
-  '--layer-sidebar-sub': '110',
-  '--layer-float-window': '200',
-  '--layer-slider': '210',
-  '--layer-modal': '300',
-  '--layer-modal-over': '310',
-  '--layer-menu': '400', // popup menu
-  '--layer-menu-sub': '410',
-  '--layer-notice': '500',
-  '--layer-tooltip': '510',
-  '--layer-dragged-item': '600',
+  '--layer-inside': '100', // for inside orders
+  '--layer-cover': '200',
+  '--layer-header-footer': '300',
+  '--layer-sidebar': '400',
+  '--layer-sidebar-sub': '410',
+  '--layer-float-window': '500',
+  '--layer-slider': '600', // screen slider
+  '--layer-modal': '700',
+  '--layer-modal-over': '710',
+  '--layer-menu': '800', // popup menu
+  '--layer-menu-sub': '810',
+  '--layer-notice': '900', // notice, loading, toast
+  '--layer-tooltip': '2000',
+  '--layer-dragged-item': '2100',
+  '--layer-guide': '2500', // learning guide
 
   '--font-size-base': '16px',
   '--font-weight-base': '', //'400',
