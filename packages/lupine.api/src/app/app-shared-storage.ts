@@ -59,7 +59,7 @@ export class AppSharedStorage implements IAppSharedStorage {
     if (msgObject.action === 'get') {
       const storage = this.getStorage(msgObject.appName);
       const value = storage.get(msgObject.key, '');
-      console.log(`AppStorage get value from ${msgObject.pid} in ${process.pid}, for key: ${msgObject.key}`);
+      // console.log(`AppStorage get value from ${msgObject.pid} in ${process.pid}, for key: ${msgObject.key}`);
       // send message back to the worker from the worker id
       const worker = this.getWorker(msgObject.workerId);
       if (!worker) {
@@ -73,7 +73,7 @@ export class AppSharedStorage implements IAppSharedStorage {
     } else if (msgObject.action === 'getWithPrefix') {
       const storage = this.getStorage(msgObject.appName);
       const value = storage.getWithPrefix(msgObject.key);
-      console.log(`AppStorage getWithPrefix from ${msgObject.pid} in ${process.pid}, for key: ${msgObject.key}`);
+      // console.log(`AppStorage getWithPrefix from ${msgObject.pid} in ${process.pid}, for key: ${msgObject.key}`);
       // send message back to the worker from the worker id
       const worker = this.getWorker(msgObject.workerId);
       if (!worker) {
@@ -218,7 +218,7 @@ class AppSharedStorageWorker {
     }
 
     if (msgObject.action === 'get') {
-      console.log(`AppStorage get value end in ${process.pid}, for key: ${msgObject.key}`);
+      console.log(`AppStorage get value end in process: ${process.pid}, for key: ${msgObject.key}`);
 
       const value = msgObject.value;
       // how to pass the value to the caller
@@ -230,7 +230,7 @@ class AppSharedStorageWorker {
         throw new Error(`Unknown uniqueKey: ${msgObject.uniqueKey}`);
       }
     } else if (msgObject.action === 'getWithPrefix') {
-      console.log(`AppStorage get value end in ${process.pid}, for key: ${msgObject.key}`);
+      console.log(`AppStorage get value end in process: ${process.pid}, for key: ${msgObject.key}`);
       const value = JSON.parse(msgObject.value);
       // how to pass the value to the caller
       const map = this.handleMap[msgObject.uniqueKey];

@@ -6,6 +6,7 @@ export const sharedThemes: ThemeProps = {
   '--layer-sidebar': '100',
   '--layer-sidebar-sub': '110',
   '--layer-float-window': '200',
+  '--layer-slider': '210',
   '--layer-modal': '300',
   '--layer-modal-over': '310',
   '--layer-menu': '400', // popup menu

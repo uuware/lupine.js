@@ -25,10 +25,10 @@ export class ApiModule implements IApiModule {
   // appCache is from app-loader (parent scope), not the same in current scope
   public async initApi(appConfig: HostToPathProps, appCacheFromApp: IAppCache, appStorageFromApp: IAppSharedStorage) {
 
-    const evnFile = appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.APP_ENV_FILE);
-    if (evnFile) {
-      await loadEnv(evnFile);
-    }
+    // const evnFile = appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.APP_ENV_FILE);
+    // if (evnFile) {
+    //   await loadEnv(evnFile);
+    // }
 
     // set app's instances to api
     setAppCache(appCacheFromApp);

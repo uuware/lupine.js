@@ -334,10 +334,10 @@ const TestButtons = () => {
     <div>
       <div class='row-box mb-s h3 bold'>Basic HTML Buttons</div>
       <div class='row-box mb-s'>
-        <button class='button-base button-ss mr-m' onClick={onBasicButtonClick} ref={basicButton1}>
+        <button class='button-base button-ss mr-m' disabled={true} onClick={onBasicButtonClick} ref={basicButton1}>
           Button
         </button>
-        <button class='button-base button-s mr-m' onClick={onBasicButtonClick} ref={basicButton2}>
+        <button class='button-base button-s mr-m' disabled={true} onClick={onBasicButtonClick} ref={basicButton2}>
           Button
         </button>
         <button class='button-base button-m mr-m' onClick={onBasicButtonClick}>
@@ -353,8 +353,8 @@ const TestButtons = () => {
 
       <div class='row-box mb-s h3 bold'>Lupine Buttons</div>
       <div class='row-box mb-s'>
-        <Button text='Test 1' size={ButtonSize.SmallLarge} class='mr-m' onClick={onButtonClick} hook={buttonHook1} />
-        <Button text='Test 2' size={ButtonSize.Small} class='mr-m' hook={buttonHook2} onClick={onButtonClick} />
+        <Button text='Test 1' size={ButtonSize.SmallLarge} disabled={true} class='mr-m' onClick={onButtonClick} hook={buttonHook1} />
+        <Button text='Test 2' size={ButtonSize.Small} disabled={true} class='mr-m' hook={buttonHook2} onClick={onButtonClick} />
         <Button text='Click Me' size={ButtonSize.Medium} class='mr-m' css={{ color: 'red' }} onClick={onButtonClick} />
         <Button text='Button' size={ButtonSize.Large} class='mr-m' onClick={onButtonClick} />
         <Button text='Button' size={ButtonSize.LargeLarge} class='mr-m' onClick={onButtonClick} />
