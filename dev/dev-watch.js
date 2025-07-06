@@ -1,7 +1,7 @@
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs/promises');
-const { runCmd, copyFolder, sendRequest, loadEnv, readJson, pathExists, cpIndexHtml } = require('lupine.api/dev');
+const { runCmd, copyFolder, sendRequest, loadEnv, readJson, pathExists, cpIndexHtml, pluginIfelse } = require('lupine.api/dev');
 
 const triggerHandle = {
   restart: null,
@@ -73,7 +73,7 @@ const clientProcessOnEnd = async (saved) => {
       saved.appName,
       saved.isMobile,
       saved.defaultThemeName,
-      saved.outdirData,
+      saved.outdirData
     );
 
   const assets = saved['copyFiles'];
@@ -101,6 +101,10 @@ const watchClientPlugin = (saved) => {
   };
 };
 
+const ifPluginVars = {
+  MOBILE: '',
+  DEV: '',
+};
 const watchClient = async (saved, isDev, entryPoints, outbase) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
@@ -119,9 +123,10 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     loader: { '.svg': 'text' },
     loader: { '.png': 'file' },
     loader: { '.glsl': 'text' },
-    jsxImportSource: 'lupine.js',
+    jsxImportSource: 'lupine.web',
     jsx: 'automatic',
-    plugins: [watchClientPlugin(saved)],
+    target: ['chrome87'],
+    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars)],
   });
 
   isDev && (await ctx.watch());
@@ -202,6 +207,8 @@ const start = async () => {
   const npmCmd = process.argv.find((i) => i.startsWith('--cmd='))?.substring(6);
   const isDev = process.argv.find((i) => i === '--dev=1');
   const isMobile = process.argv.find((i) => i === '--mobile=1'); // when this changed, need to rebuild index.html
+  ifPluginVars.DEV = isDev ? '1' : '0';
+  ifPluginVars.MOBILE = isMobile ? '1' : '0';
 
   // All apps should be defined in .env file like this:
   // APPS=domain1.com,domain2.com
@@ -263,6 +270,17 @@ const start = async () => {
     }
     if (additionalFiles.length > 0) {
       watchAdditionalFiles(saved, additionalFiles);
+    }
+
+    if (isMobile && await pathExists(`${serverRootPath}/${appName}_data/cfg-files`)) {
+      // copy web setting image files to data folder
+      const tmpCache = new Map();
+      await copyFolder(
+        tmpCache,
+        `${serverRootPath}/${appName}_data/cfg-files`,
+        `${serverRootPath}/${appName}_web/api/image/`,
+        isDev
+      );
     }
   }
 

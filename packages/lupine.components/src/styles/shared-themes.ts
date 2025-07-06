@@ -7,10 +7,10 @@ export const sharedThemes: ThemeProps = {
   '--layer-header-footer': '300',
   '--layer-sidebar': '400',
   '--layer-sidebar-sub': '410',
-  '--layer-float-window': '500',
-  '--layer-slider': '600', // screen slider
-  '--layer-modal': '700',
-  '--layer-modal-over': '710',
+  '--layer-slider': '500', // screen slider
+  '--layer-modal': '600',
+  '--layer-modal-over': '610',
+  '--layer-float-window': '700',
   '--layer-menu': '800', // popup menu
   '--layer-menu-sub': '810',
   '--layer-notice': '900', // notice, loading, toast
