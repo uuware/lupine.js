@@ -105,7 +105,7 @@ export class FloatWindow {
         maxWidth: '90%',
         boxShadow: 'var(--cover-box-shadow)', //'#0000004c 0px 19px 38px, #00000038 0px 15px 12px',
         opacity: 0,
-        zIndex: 'var(--layer-float-window)',
+        // zIndex: 'var(--layer-float-window)',
         '&.transition': {
           transition: 'all 0.3s',
         },
@@ -177,6 +177,7 @@ export class FloatWindow {
       </div>
     );
     base.style.position = 'fixed';
+    base.style.zIndex = 'var(--layer-float-window)';
     document.body.appendChild(base);
     await mountComponents(base, component);
     return handleClose;
