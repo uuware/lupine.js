@@ -118,8 +118,22 @@ export class WebListener {
       return req.locals._cookies;
     };
     const setCookieFn = (name: string, value: string, options: SetCookieProps): void => {
+      const cookies: string[] = [];
+      const cookiesOld = res.getHeader('Set-Cookie');
+      if (cookiesOld) {
+        if (!Array.isArray(cookiesOld)) {
+          cookies.push(cookiesOld as any);
+        } else {
+          cookies.push(...cookiesOld);
+        }
+      }
+
       const cookiePair = serializeCookie(name, value, options);
-      res.setHeader('Set-Cookie', cookiePair);
+      cookies.push(cookiePair);
+      res.setHeader('Set-Cookie', cookies);
+
+      const localCookies = req.locals.cookies();
+      localCookies.set(name, value);
     };
 
     req.locals = {
@@ -176,7 +190,7 @@ export class WebListener {
 
         res.setHeader('Server', SERVER_NAME);
         if (accessControlAllowHosts.includes(host)) {
-          const allowOrigin = (req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : '*';
+          const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';
           res.setHeader('Access-Control-Allow-Origin', allowOrigin);
           res.setHeader('Access-Control-Allow-Credentials', 'true');
         }

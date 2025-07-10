@@ -14,6 +14,7 @@ export type FloatWindowShowProps = {
   closeEvent?: () => void;
   handleClicked: (index: number, close: FloatWindowCloseProps) => void;
   closeWhenClickOutside?: boolean; // default false
+  zIndex?: string;
 };
 
 // because it's over a mask, so it can use primary colors
@@ -43,6 +44,7 @@ export class FloatWindow {
     closeEvent,
     handleClicked,
     closeWhenClickOutside = false,
+    zIndex,
   }: FloatWindowShowProps): Promise<FloatWindowCloseProps> {
     const onClickContainer = (event: any) => {
       if (closeWhenClickOutside !== false && event.target.className === 'fwin-box') {
@@ -177,7 +179,7 @@ export class FloatWindow {
       </div>
     );
     base.style.position = 'fixed';
-    base.style.zIndex = 'var(--layer-float-window)';
+    base.style.zIndex = zIndex || 'var(--layer-float-window)';
     document.body.appendChild(base);
     await mountComponents(base, component);
     return handleClose;
