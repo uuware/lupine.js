@@ -285,7 +285,7 @@ export class AdminRelease implements IApiBase {
     } else if (chkOption.startsWith('.env')) {
       sendFile = path.join(appData.apiPath, '../../..', chkOption);
     }
-    if (!await FsUtils.fileInfo(sendFile)) {
+    if (!(await FsUtils.fileInfo(sendFile))) {
       return { status: 'error', message: 'Client file not found: ' + sendFile };
     }
     const fileContent = (await FsUtils.readFile(sendFile))!;
@@ -346,7 +346,11 @@ export class AdminRelease implements IApiBase {
       if (
         !chkOption ||
         !toList ||
-        (chkOption !== 'server' && chkOption !== 'api' && chkOption !== 'web' && !chkOption.startsWith('.env'))
+        (chkOption !== 'server' &&
+          chkOption !== 'api' &&
+          chkOption !== 'web' &&
+          chkOption !== 'web-sub' &&
+          !chkOption.startsWith('.env'))
       ) {
         const response = {
           status: 'error',
@@ -369,7 +373,7 @@ export class AdminRelease implements IApiBase {
       } else if ((chkOption as string).startsWith('.env')) {
         saveFile = path.join(appData.apiPath, '../../..', chkOption);
       }
-      if (!await FsUtils.fileInfo(saveFile)) {
+      if (!(await FsUtils.fileInfo(saveFile))) {
         const response = {
           status: 'error',
           message: 'Server file not found: ' + saveFile,
