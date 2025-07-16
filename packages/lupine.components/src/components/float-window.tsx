@@ -80,7 +80,10 @@ export class FloatWindow {
 
     const ref: RefProps = {
       onLoad: async () => {
-        ref.current.classList.add('transition', 'animation');
+        ref.current.classList.add('transition');
+        setTimeout(() => {
+          ref.current.classList.add('animation');
+        }, 1);
         setTimeout(() => {
           // don't need transition for moving
           ref.current.classList.remove('transition');
