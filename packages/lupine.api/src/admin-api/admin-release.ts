@@ -234,6 +234,13 @@ export class AdminRelease implements IApiBase {
         ApiHelper.sendJson(req, res, result);
         return true;
       }
+      if (data.webSub) {
+        const result2 = await this.updateSendFile(data, 'web-sub');
+        if (!result2 || result2.status !== 'ok') {
+          ApiHelper.sendJson(req, res, result2);
+          return true;
+        }
+      }
     }
     if (data.chkApi) {
       const result = await this.updateSendFile(data, 'api');
@@ -273,8 +280,13 @@ export class AdminRelease implements IApiBase {
       sendFile = path.join(appData.apiPath, '..', fromList + '_api', 'index.js');
     } else if (chkOption === 'web') {
       sendFile = path.join(appData.apiPath, '..', fromList + '_web', 'index.js');
+    } else if (chkOption === 'web-sub' && data.webSub) {
+      sendFile = path.join(appData.apiPath, '..', fromList + '_web', data.webSub, 'index.js');
     } else if (chkOption.startsWith('.env')) {
       sendFile = path.join(appData.apiPath, '../../..', chkOption);
+    }
+    if (!await FsUtils.fileInfo(sendFile)) {
+      return { status: 'error', message: 'Client file not found: ' + sendFile };
     }
     const fileContent = (await FsUtils.readFile(sendFile))!;
     // const compressedContent = await new Promise<Buffer>((resolve, reject) => {
@@ -352,8 +364,18 @@ export class AdminRelease implements IApiBase {
         saveFile = path.join(appData.apiPath, '..', toList + '_api', 'index.js');
       } else if (chkOption === 'web') {
         saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
+      } else if (chkOption === 'web-sub' && data.webSub) {
+        saveFile = path.join(appData.apiPath, '..', toList + '_web', data.webSub, 'index.js');
       } else if ((chkOption as string).startsWith('.env')) {
         saveFile = path.join(appData.apiPath, '../../..', chkOption);
+      }
+      if (!await FsUtils.fileInfo(saveFile)) {
+        const response = {
+          status: 'error',
+          message: 'Server file not found: ' + saveFile,
+        };
+        ApiHelper.sendJson(req, res, response);
+        return true;
       }
       if (data.chkBackup && data.index === 0) {
         const bakContent = await FsUtils.readFile(saveFile);
