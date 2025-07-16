@@ -61,6 +61,7 @@ const ReleaseList = (props: { result: any; onUpdate: () => void }) => {
         <div class='mr-l'>
           <input type='checkbox' class='base-css chk-web' id='chk-web' />
         </div>
+
         <label class='label mr-m' for='chk-env'>
           Env:
         </label>
@@ -72,6 +73,12 @@ const ReleaseList = (props: { result: any; onUpdate: () => void }) => {
         </label>
         <div class=''>
           <input type='checkbox' class='base-css chk-backup' id='chk-backup' /> )
+        </div>
+      </div>
+      <div class='row-box mt-m'>
+        <label class='label mr-m release-label'>Web Sub-folder:</label>
+        <div class='w-50p mr-l'>
+          <input type='text' class='input-base w-100p input-web-sub' placeholder='The Sub-folder you want to update' />
         </div>
       </div>
       <div class='row-box mt-m'>
@@ -119,6 +126,7 @@ export const AdminReleasePage = () => {
     const chkServer = DomUtils.getChecked('.chk-server');
     const chkApi = DomUtils.getChecked('.chk-api');
     const chkWeb = DomUtils.getChecked('.chk-web');
+    const webSub = DomUtils.getValue('.input-web-sub');
     const chkEnv = DomUtils.getChecked('.chk-env');
     const chkBackup = DomUtils.getChecked('.chk-backup');
     if (!chkServer && !chkApi && !chkWeb && !chkEnv) {
@@ -139,6 +147,7 @@ export const AdminReleasePage = () => {
       chkServer,
       chkApi,
       chkWeb,
+      webSub,
       chkEnv,
       chkBackup,
     });
