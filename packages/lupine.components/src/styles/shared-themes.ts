@@ -11,6 +11,7 @@ export const sharedThemes: ThemeProps = {
   '--layer-modal': '600',
   '--layer-modal-over': '610',
   '--layer-float-window': '700',
+  '--layer-actionsheet-window': '710',
   '--layer-menu': '800', // popup menu
   '--layer-menu-sub': '810',
   '--layer-notice': '900', // notice, loading, toast

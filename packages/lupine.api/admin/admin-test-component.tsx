@@ -16,6 +16,8 @@ import {
   Button,
   ButtonSize,
   ButtonHookProps,
+  ActionSheetMessage,
+  ActionSheetSelect,
 } from 'lupine.components';
 
 const TestWindows = () => {
@@ -169,6 +171,34 @@ const TestWindows = () => {
           }}
         >
           Input a value
+        </button>
+
+        <button
+          class='button-base mr-m mb-s'
+          onClick={() => {
+            ActionSheetSelect.show({
+              title: 'Title',
+              options: ['Option 1', 'Option 2', 'Option 3'],
+              handleClicked: (index: number, close) => {
+                NotificationMessage.sendMessage('You selected: ' + index, NotificationColor.Success);
+                close();
+              },
+            });
+          }}
+        >
+          ActionSheet Option
+        </button>
+
+        <button
+          class='button-base mr-m mb-s'
+          onClick={() => {
+            ActionSheetMessage.show({
+              title: 'Title',
+              message: 'This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message.',
+            });
+          }}
+        >
+          ActionSheet Message
         </button>
       </div>
 
