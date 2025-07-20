@@ -10,7 +10,7 @@ export const callPageLoadedEvent = () => {
   });
 };
 
-// The fn is called when the page is re-rendered
+// The fn is called when the page is first time loaded
 export const bindPageLoadedEvent = (fn: Function) => {
   _pageLoadedEvents.push(fn);
 };
