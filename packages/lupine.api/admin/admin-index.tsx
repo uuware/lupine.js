@@ -48,20 +48,7 @@ export const checkAuth = async (props: PageProps) => {
 // };
 
 export const AdminIndexPage = async (props: PageProps) => {
-  const onClick = () => {
-    DomUtils.clearCookie('_token_dev', '/');
-    window.location.href = '/admin_dev';
-  };
-  return (
-    <AdminFrame title='Welcome...'>
-      <div class='admin-sub-title'>Admin Console</div>
-      <div class='row-box'>
-        <button onClick={onClick} class='button-base'>
-          Logout
-        </button>
-      </div>
-    </AdminFrame>
-  );
+  return <AdminFrame title='Welcome...' />;
 };
 
 export const BlankPage = async (props: PageProps) => {

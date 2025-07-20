@@ -24,7 +24,6 @@ import { AdminTokensPage } from './admin-tokens';
 import { TestComponentPage } from './admin-test-component';
 
 export type AdminFrameProps = {
-  children: ComponentChildren;
   title?: string;
   css?: CssProps;
 };
