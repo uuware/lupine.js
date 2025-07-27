@@ -1,4 +1,4 @@
-import { JsonObject, webEnv } from 'lupine.components';
+import { getCookie, JsonObject, webEnv } from 'lupine.components';
 
 export const fetchData = async (
   urlWithoutHost: string,
@@ -10,18 +10,26 @@ export const fetchData = async (
 
   const option = {
     method: postData ? 'POST' : 'GET',
+    credentials: 'include' as RequestCredentials,
+    headers: new Headers({
+      _token: getCookie('_token') || '',
+    }),
     body: postData ? (typeof postData === 'string' ? postData : JSON.stringify(postData)) : undefined,
   };
-  const response = await fetch(url, option);
-  if (returnRawResponse) {
-    return response;
-  }
-  // const json = await data.json();
-  const text = await response.text();
   try {
-    const json = JSON.parse(text);
-    return { json };
+    const response = await fetch(url, option);
+    if (returnRawResponse) {
+      return response;
+    }
+    // const json = await data.json();
+    const text = await response.text();
+    try {
+      const json = JSON.parse(text);
+      return { json };
+    } catch (e) {
+      return { text };
+    }
   } catch (e) {
-    return { text };
+    return { json: { status: 'error', error: e } };
   }
 };

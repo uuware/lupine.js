@@ -1,4 +1,4 @@
-import { RefProps } from '../jsx';
+import { RefProps } from 'lupine.web';
 import { HtmlVar } from './html-var';
 
 export type ProgressHookProps = {
