@@ -9,17 +9,19 @@ export const darkThemes: ThemeProps = {
   '--scrollbar-thumb-bg': '#373636',
   '--scrollbar-active-thumb-bg': '#5b5b5b',
 
-  '--primary-color': '#aeaeae',
+  '--primary-color': '#e5e5e5',
   '--primary-color-disabled': '#7d7d7d',
   '--primary-bg-color': '#000000',
   '--primary-border-color': '#aeaeae',
   '--primary-border': '1px solid var(--primary-border-color)',
-  // '--secondary-color': '#b3b3b3',
-  // '--secondary-bg-color': '#151515',
-  // '--secondary-border': '1px solid #303030',
   '--primary-opacity': '0.5', // used for dark theme
   '--primary-disabled-opacity': '0.7', // used for dark theme
   '--primary-accent-color': '#1a588a', // used for radio and checkbox's background color
+
+  '--secondary-color': '#747474',
+  '--secondary-bg-color': '#1c1c1c',
+  '--secondary-border-color': '#494949',
+  '--secondary-border': '1px solid var(--secondary-border-color)',
 
   // including menus, tabs
   '--activatable-color-normal': 'var(--primary-color)',

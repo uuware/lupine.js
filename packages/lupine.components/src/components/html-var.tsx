@@ -1,6 +1,7 @@
 import { RefProps, VNode, mountComponents } from 'lupine.web';
 
-export const HtmlVar = (initial?: string | VNode<any>) => {
+export type HtmlVarResult = { value: string | VNode<any>; ref: RefProps; node: VNode<any> };
+export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
   let _value: string | VNode<any> = initial || '';
   let _dirty = false;
   const waitUpdate = async (value: string | VNode<any>) => {
@@ -11,10 +12,12 @@ export const HtmlVar = (initial?: string | VNode<any>) => {
       ref.current.innerHTML = value;
     }
     _dirty = false;
-  }
-  const ref: RefProps = { onLoad: async (el: Element) => {
-    _dirty && waitUpdate(_value);
-  } };
+  };
+  const ref: RefProps = {
+    onLoad: async (el: Element) => {
+      _dirty && waitUpdate(_value);
+    },
+  };
   const FragmentRef = (props: any) => {
     return <>{props.children}</>;
   };

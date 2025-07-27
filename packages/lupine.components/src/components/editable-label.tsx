@@ -1,4 +1,4 @@
-import { CssProps, RefProps } from '../jsx';
+import { CssProps, RefProps } from 'lupine.web';
 
 export type EditableLabelHookProps = {
   updateValue?: (value: string) => void;

@@ -1,4 +1,4 @@
-import { CssProps } from '../jsx';
+import { CssProps } from 'lupine.web';
 
 export type PanelProps = {
   children: any;

@@ -15,12 +15,14 @@ export const lightThemes: ThemeProps = {
   '--primary-bg-color': '#ffffff',
   '--primary-border-color': '#858585',
   '--primary-border': '1px solid var(--primary-border-color)',
-  // '--secondary-color': '#505050',
-  // '--secondary-bg-color': '#ffffff',
-  // '--secondary-border': '1px solid #858585',
   '--primary-opacity': 'unset', // used for dark theme
   '--primary-disabled-opacity': '0.5', // used for dark theme
   '--primary-accent-color': '#0a74c9', // used for radio and checkbox's background color
+
+  '--secondary-color': '#818181',
+  '--secondary-bg-color': '#eeeeee',
+  '--secondary-border-color': '#a0a0a0',
+  '--secondary-border': '1px solid var(--secondary-border-color)',
 
   // including menus, tabs, sidebars
   '--activatable-color-normal': 'var(--primary-color)',
