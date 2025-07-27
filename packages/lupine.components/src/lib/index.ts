@@ -2,6 +2,7 @@ export * from './dom';
 export * from './date-utils';
 export * from './deep-merge';
 export * from './document-ready';
+export * from './drag-util';
 export * from './dynamical-load';
 export * from './format-bytes';
 export * from './lite-dom';
