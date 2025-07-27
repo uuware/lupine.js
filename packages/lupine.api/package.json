@@ -42,7 +42,6 @@
     "lupine.components": "^1.0.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/node": "^22.10.5"
+    "@types/better-sqlite3": "^7.6.12"
   }
 }

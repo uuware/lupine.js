@@ -1,4 +1,4 @@
-import { CssProps, RefProps } from '../jsx';
+import { CssProps, RefProps } from 'lupine.web';
 import { Spinner02, SpinnerSize } from './spinner';
 
 export type DragRefreshCloseProps = () => void;

@@ -1,4 +1,4 @@
-import { RefProps } from '../jsx';
+import { RefProps } from 'lupine.web';
 
 export type RedirectProps = {
   title?: string;
