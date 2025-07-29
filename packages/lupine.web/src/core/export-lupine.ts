@@ -4,6 +4,8 @@ import { IToClientDelivery, JsonObject } from '../models';
 
 export type RenderPageFunctionsType = {
   fetchData: (url: string, postBody?: string | JsonObject, returnRawResponse?: boolean) => Promise<any>;
+  // add host for mobile app, which needs the host
+  baseUrl: (urlWithoutHost?: string) => string;
   [key: string]: Function;
 };
 export interface PageProps {

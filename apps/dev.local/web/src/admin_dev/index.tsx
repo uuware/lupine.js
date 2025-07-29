@@ -16,7 +16,7 @@ import {
 import { themes } from '../styles/theme';
 import { baseCss } from '../styles/base-css';
 import { ClientEnvKeys } from '../../../../shared-web-src';
-import { fetchData } from '../services/fetch-data';
+import { baseUrl, fetchData } from '../services/fetch-data';
 
 if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
@@ -29,7 +29,7 @@ bindGlobalStyles('comm-css', ':root', baseCss);
 setDefaultPageTitle('Sample - Page Title');
 setDefaultMetaDescription('Sample - Page Description');
 
-bindRenderPageFunctions({ fetchData });
+bindRenderPageFunctions({ fetchData, baseUrl });
 
 const pageRouter = new PageRouter();
 pageRouter.use('/admin_dev', devAdminPageRouter);
