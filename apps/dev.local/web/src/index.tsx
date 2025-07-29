@@ -16,7 +16,7 @@ import {
   isFrontEnd,
   Redirect,
 } from 'lupine.components';
-import { fetchData } from './services/fetch-data';
+import { baseUrl, fetchData } from './services/fetch-data';
 import { themes } from './styles/theme';
 import { NotFoundPage } from './components/not-found-page';
 import { LoginPage } from './components/login';
@@ -56,7 +56,7 @@ bindGlobalStyles('comm-css', ':root', baseCss);
 setDefaultPageTitle('Development Project for LupineJS');
 setDefaultMetaDescription('Development Project for LupineJS');
 
-bindRenderPageFunctions({ fetchData });
+bindRenderPageFunctions({ fetchData, baseUrl });
 
 const fetchAuth = async (props: PageProps) => {
   const data = await props.renderPageFunctions.fetchData('/api/user-info');
