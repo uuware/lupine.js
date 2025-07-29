@@ -1,11 +1,19 @@
 import { getCookie, JsonObject, webEnv } from 'lupine.components';
 
+export const baseUrl = (urlWithoutHost?: string) => {
+  let baseUrl = webEnv('API_BASE_URL', '');
+  if (baseUrl.endsWith('/')) {
+    baseUrl = baseUrl.slice(0, -1);
+  }
+  return baseUrl + (urlWithoutHost || '');
+};
+
 export const fetchData = async (
   urlWithoutHost: string,
   postData?: string | JsonObject,
   returnRawResponse?: boolean
 ) => {
-  const url = webEnv('API_BASE_URL', '') + urlWithoutHost;
+  const url = baseUrl(urlWithoutHost);
   console.log('========fetchData', url);
 
   const option = {

@@ -155,6 +155,7 @@ export class WebListener {
     };
 
     let bigRequest = false;
+    let totalLength = 0;
     const bodyData: any[] = [];
     req.on('error', (err: any) => {
       REQUEST_COUNT--;
@@ -163,15 +164,17 @@ export class WebListener {
     });
 
     req.on('data', (chunk: any) => {
-      logger.debug(`${requestInfo}, Request data length: ${chunk.length}`);
+      totalLength += chunk.length;
+      logger.debug(`${requestInfo}, Request data length: ${chunk.length}, total: ${totalLength}`);
       // Limit Request Size
-      if (!bigRequest && bodyData.length + chunk.length < MAX_REQUEST_SIZE) {
+      if (!bigRequest && totalLength < MAX_REQUEST_SIZE) {
         bodyData.push(chunk);
       } else {
         if (!bigRequest) {
           bigRequest = true;
-          logger.warn(`Warn, request data is too big: ${bodyData.length + chunk.length} > ${MAX_REQUEST_SIZE}`);
+          logger.warn(`Warn, request data is too big: ${totalLength} > ${MAX_REQUEST_SIZE}`);
         }
+        req.socket.destroy();
       }
     });
 
