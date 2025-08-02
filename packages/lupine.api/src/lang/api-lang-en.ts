@@ -3,6 +3,9 @@ import { OneLangProps } from './lang-props';
 export const apiLangEn: OneLangProps = {
   langName: 'en',
   langs: {
+    'shared:operation_success': 'Operation success',
+    'shared:operation_error': 'Operation error',
+
     'shared:wrong_data': 'Wrong data.',
     'shared:permission_denied': 'Permission denied.',
     'shared:name_not_existed': '{name} not existed.',
@@ -15,6 +18,8 @@ export const apiLangEn: OneLangProps = {
 
     'shared:user_not_found': 'User not found.',
     'shared:user_locked': 'User locked.',
+
+    'shared:not_found_file': 'File {fileName} is not found.',
 
     'shared:wrong_hash': 'Wrong hash.',
     'shared:crypto_key_not_set': 'Crypto key [{cryptoKey}] not set',

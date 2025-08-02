@@ -22,6 +22,7 @@ import { AdminTestEditPage } from './admin-test-edit';
 import { AdminResourcesPage } from './admin-resources';
 import { AdminTokensPage } from './admin-tokens';
 import { TestComponentPage } from './admin-test-component';
+import { AdminConfigPage } from './admin-config';
 
 export type AdminFrameProps = {
   title?: string;
@@ -146,6 +147,11 @@ export const AdminFrame = (props: AdminFrameProps) => {
           text: 'Resources',
           url: '',
           js: () => addPanel('Resources', AdminResourcesPage()),
+        },
+        {
+          text: 'Config',
+          url: '',
+          js: () => addPanel('Config', AdminConfigPage()),
         },
       ],
     },

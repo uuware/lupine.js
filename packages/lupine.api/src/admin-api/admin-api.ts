@@ -8,6 +8,7 @@ import { AdminPerformance } from './admin-performance';
 import { AdminRelease } from './admin-release';
 import { AdminResources } from './admin-resources';
 import { AdminTokens } from './admin-tokens';
+import { AdminConfig } from './admin-config';
 
 const logger = new Logger('admin-api');
 
@@ -42,6 +43,9 @@ export class AdminApi implements IApiBase {
 
     const adminResources = new AdminResources();
     this.router.use('/resources', needDevAdminSession, adminResources.getRouter());
+
+    const adminConfig = new AdminConfig();
+    this.router.use('/config', needDevAdminSession, adminConfig.getRouter());
 
     const adminTokens = new AdminTokens();
     this.router.use('/tokens', needDevAdminSession, adminTokens.getRouter());

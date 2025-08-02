@@ -35,7 +35,7 @@ export class AdminPerformance implements IApiBase {
 
   protected mountDashboard() {
     // called by FE
-    this.router.use('/data', needDevAdminSession, this.performanceData.bind(this));
+    this.router.use('/data', this.performanceData.bind(this));
   }
 
   async performanceData(req: ServerRequest, res: ServerResponse) {
