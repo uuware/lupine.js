@@ -11,7 +11,8 @@ export const baseUrl = (urlWithoutHost?: string) => {
 export const fetchData = async (
   urlWithoutHost: string,
   postData?: string | JsonObject,
-  returnRawResponse?: boolean
+  returnRawResponse?: boolean,
+  returnHeaders?: boolean
 ) => {
   const url = baseUrl(urlWithoutHost);
   console.log('========fetchData', url);
@@ -31,11 +32,17 @@ export const fetchData = async (
     }
     // const json = await data.json();
     const text = await response.text();
+    const headers: { [key: string]: string } = {};
+    if (returnHeaders) {
+      response.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+    }
     try {
       const json = JSON.parse(text);
-      return { json };
+      return returnHeaders ? { json, headers } : { json };
     } catch (e) {
-      return { text };
+      return returnHeaders ? { text, headers } : { text };
     }
   } catch (e) {
     return { json: { status: 'error', error: e } };

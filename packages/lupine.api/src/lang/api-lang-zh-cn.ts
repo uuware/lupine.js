@@ -3,6 +3,9 @@ import { OneLangProps } from './lang-props';
 export const apiLangZhCn: OneLangProps = {
   langName: 'zh-cn',
   langs: {
+    'shared:operation_success': '操作成功',
+    'shared:operation_error': '操作失败',
+
     'shared:wrong_data': '数据错误',
     'shared:permission_denied': '权限拒绝',
 
@@ -16,6 +19,8 @@ export const apiLangZhCn: OneLangProps = {
 
     'shared:user_not_found': '用户未找到',
     'shared:user_locked': '用户已封锁',
+
+    'shared:not_found_file': '文件 {fileName} 未找到',
 
     'shared:wrong_hash': '错误的hash',
     'shared:crypto_key_not_set': 'Crypto key [{cryptoKey}] 未设置',
