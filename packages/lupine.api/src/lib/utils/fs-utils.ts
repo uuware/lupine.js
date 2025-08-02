@@ -109,4 +109,16 @@ export class FsUtils {
       return [];
     }
   };
+
+  static async readPartOfFile(path: string, start: number, length: number) {
+    try {
+      const fileHandle = await fs.open(path, 'r');
+      const buffer = Buffer.alloc(length);
+      const { bytesRead } = await fileHandle.read(buffer, 0, length, start);
+      await fileHandle.close();
+      return buffer.slice(0, bytesRead);
+    } catch {
+      return null;
+    }
+  }
 }

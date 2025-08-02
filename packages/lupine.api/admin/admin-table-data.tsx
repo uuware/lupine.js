@@ -124,6 +124,9 @@ export const AdminTableData = (props: { tableName: string; update?: TableDataUpd
   const dom = HtmlVar('');
   return (
     <div className='admin-table-data' ref={ref}>
+      <button class='button-base button-s' onClick={refresh}>
+        Refresh
+      </button>
       {dom.node}
     </div>
   );

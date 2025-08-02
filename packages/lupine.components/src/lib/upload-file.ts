@@ -1,22 +1,19 @@
-import { getRenderPageProps } from "lupine.web";
-import { NotificationColor, NotificationMessage } from "../components";
+import { getRenderPageProps } from 'lupine.web';
+import { NotificationColor, NotificationMessage } from '../components';
 
 const _saveChunkSize = {
   size: 1024 * 200,
 };
-export const setChunkSize = (chunkSize: number) => {
+export const setUploadChunkSize = (chunkSize: number) => {
   _saveChunkSize.size = chunkSize;
 };
-export const getChunkSize = () => {
+export const getUploadChunkSize = () => {
   return _saveChunkSize.size;
 };
 export const checkUploadedFileSize = async (uploadUrl: string) => {
-  // const response = await fetch(uploadUrl + '?check-size=1', {
-  //   method: 'POST',
-  // });
-  // const json = await response.json();
-  const json = await getRenderPageProps().renderPageFunctions.fetchData(uploadUrl + '?check-size=1');
-  return json && json.size ? json.size : 0;
+  let url = uploadUrl + (uploadUrl.indexOf('?') === -1 ? '?' : '') + '&check-size=1';
+  const json = await getRenderPageProps().renderPageFunctions.fetchData(url);
+  return json && json.json.size ? json.json.size : 0;
 };
 
 // should return { chunkNumber: number }
@@ -27,7 +24,7 @@ export const uploadFileChunk = async (
   uploadUrl: string,
   key: string,
   retryCount = 3,
-  retryMessage = '', // can have ${tryCount}
+  retryMessage = '' // can have ${tryCount}
 ) => {
   let url = uploadUrl + (uploadUrl.indexOf('?') === -1 ? '?' : '');
   url += `&chunkNumber=${chunkNumber.toString()}`;
@@ -43,7 +40,8 @@ export const uploadFileChunk = async (
       if (json && json.json) {
         json = json.json;
       }
-      if (json && json.status) { // ok or error
+      if (json && json.status) {
+        // ok or error
         break;
       }
     } catch (error) {
@@ -51,7 +49,10 @@ export const uploadFileChunk = async (
     }
     tryCount++;
     if (retryMessage) {
-      NotificationMessage.sendMessage(retryMessage.replace('${tryCount}', tryCount.toString()), NotificationColor.Warning);
+      NotificationMessage.sendMessage(
+        retryMessage.replace('${tryCount}', tryCount.toString()),
+        NotificationColor.Warning
+      );
     }
   }
   return json;
@@ -61,13 +62,18 @@ export const uploadFile = async (
   file: File | string,
   uploadUrl: string,
   progressFn?: (percentage: number, chunkNumber: number, totalChunks: number) => void,
-  chunkSize = _saveChunkSize.size
+  chunkSize = 0,
+  retryCount = 3,
+  retryMessage = '' // can have ${tryCount}
 ) => {
   // const uploadedSize = await checkUploadedFileSize(uploadUrl);
   let key = '';
   const len = file instanceof File ? file.size : file.length;
+  if (!chunkSize) {
+    chunkSize = _saveChunkSize.size;
+  }
   if (len <= chunkSize) {
-    const uploaded = await uploadFileChunk(file, 0, 1, uploadUrl, key);
+    const uploaded = await uploadFileChunk(file, 0, 1, uploadUrl, key, retryCount, retryMessage);
     if (!uploaded || uploaded.status !== 'ok') {
       return false;
     }
@@ -79,7 +85,7 @@ export const uploadFile = async (
     const start = i * chunkSize;
     const end = Math.min((i + 1) * chunkSize, len);
     const chunk = file.slice(start, end);
-    const uploaded = await uploadFileChunk(chunk, i, totalChunks, uploadUrl, key);
+    const uploaded = await uploadFileChunk(chunk, i, totalChunks, uploadUrl, key, retryCount, retryMessage);
     if (!uploaded || uploaded.status !== 'ok') {
       return false;
     }

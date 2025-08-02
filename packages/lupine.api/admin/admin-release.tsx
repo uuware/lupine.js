@@ -82,7 +82,7 @@ const ReleaseList = (props: { result: any; onUpdate: () => void }) => {
         </div>
       </div>
       <div class='row-box mt-m'>
-        <button onClick={props.onUpdate} class='button-base'>
+        <button onClick={props.onUpdate} class='button-base release-update-btn'>
           Update
         </button>
       </div>
@@ -140,6 +140,8 @@ export const AdminReleasePage = () => {
     if (!confirm('Are you sure you want to update the release? (Assets are not copied, so it may cause issues)')) {
       return;
     }
+    const releaseUpdateBtn = document.querySelector('.release-update-btn') as HTMLButtonElement;
+    releaseUpdateBtn.disabled = true;
     const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/update', {
       ...data,
       fromList,
@@ -153,6 +155,7 @@ export const AdminReleasePage = () => {
     });
     const dataResponse = await response.json;
     console.log('AdminRelease', dataResponse);
+    releaseUpdateBtn.disabled = false;
     if (!dataResponse || dataResponse.status !== 'ok') {
       NotificationMessage.sendMessage(dataResponse.message || 'Failed to update release', NotificationColor.Error);
       return;

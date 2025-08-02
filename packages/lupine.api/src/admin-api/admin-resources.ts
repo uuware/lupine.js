@@ -28,11 +28,11 @@ export class AdminResources implements IApiBase {
 
   protected mountDashboard() {
     // called by FE
-    this.router.use('/data', needDevAdminSession, this.data.bind(this));
-    this.router.use('/download', needDevAdminSession, this.download.bind(this));
-    this.router.use('/upload', needDevAdminSession, this.upload.bind(this));
-    this.router.use('/rename', needDevAdminSession, this.rename.bind(this));
-    this.router.use('/remove', needDevAdminSession, this.remove.bind(this));
+    this.router.use('/data', this.data.bind(this));
+    this.router.use('/download', this.download.bind(this));
+    this.router.use('/upload', this.upload.bind(this));
+    this.router.use('/rename', this.rename.bind(this));
+    this.router.use('/remove', this.remove.bind(this));
   }
 
   async upload(req: ServerRequest, res: ServerResponse) {
