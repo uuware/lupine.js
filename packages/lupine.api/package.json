@@ -1,9 +1,14 @@
 {
   "name": "lupine.api",
-  "version": "1.1.31",
+  "version": "1.1.32",
   "license": "MIT",
   "author": "uuware.com",
-  "homepage": "https://uuware.com/",
+  "homepage": "https://github.com/uuware/lupine.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uuware/lupine.js.git",
+    "directory": "packages/lupine.api"
+  },
   "description": "lupine.api is a fast, lightweight, and flexible node.js based server, working with lupine.web to provide SSR and modern JavaScript features for web applications and APIs.",
   "main": "src/index.ts",
   "source": "src/index.ts",
