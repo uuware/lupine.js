@@ -1,9 +1,14 @@
 {
   "name": "lupine.web",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "license": "MIT",
   "author": "uuware.com",
-  "homepage": "https://uuware.com/",
+  "homepage": "https://github.com/uuware/lupine.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uuware/lupine.js.git",
+    "directory": "packages/lupine.web"
+  },
   "description": "lupine.web is a extremely fast, small size and lightweight frontend framework, using React TSX syntax.",
   "main": "src/index.ts",
   "source": "src/index.ts",

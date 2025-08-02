@@ -1,9 +1,14 @@
 {
   "name": "lupine.components",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "license": "MIT",
   "author": "uuware.com",
-  "homepage": "https://uuware.com/",
+  "homepage": "https://github.com/uuware/lupine.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uuware/lupine.js.git",
+    "directory": "packages/lupine.components"
+  },
   "description": "lupine.components is a components collection for lupine.web.",
   "main": "src/index.ts",
   "source": "src/index.ts",
