@@ -1,11 +1,46 @@
-import { RefProps } from 'lupine.web';
+import { CssProps, RefProps, VNode } from 'lupine.web';
 import { stopPropagation } from '../lib';
 
 export type PopupMenuOpenMenuProps = { handle?: Function };
 
+// defaultValue=<i class='ifc-icon co-cil-hamburger-menu'></i>
+export const PopupMenuWithIcon = (props: PopupMenuProps) => {
+  const handle: PopupMenuOpenMenuProps = {};
+  const css: CssProps = {
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    fontSize: '24px',
+  };
+  return (
+    <div
+      onClick={() => {
+        handle.handle && handle.handle();
+      }}
+      css={css}
+    >
+      <PopupMenu
+        list={props.list}
+        defaultValue={props.defaultValue}
+        tips={props.tips}
+        minWidth={props.minWidth}
+        maxWidth={props.maxWidth}
+        maxHeight={props.maxHeight}
+        handleSelected={props.handleSelected}
+        handleOpened={props.handleOpened}
+        handleClosed={props.handleClosed}
+        noUpdateValue={props.noUpdateValue}
+        refOpenMenu={handle}
+        noTriangleIcon={props.noTriangleIcon}
+      ></PopupMenu>
+    </div>
+  );
+};
+
 export type PopupMenuProps = {
   list: string[];
-  defaultValue: string;
+  defaultValue: string | VNode<any>;
   tips?: string;
   minWidth?: string;
   maxWidth?: string;
@@ -15,6 +50,8 @@ export type PopupMenuProps = {
   handleClosed?: Function;
   noUpdateValue?: boolean;
   refOpenMenu?: PopupMenuOpenMenuProps;
+  noTriangleIcon?: boolean;
+  align?: 'left' | 'right';
 };
 
 export type PopupMenuWithButtonProps = { label: string } & PopupMenuProps;
@@ -42,6 +79,8 @@ export const PopupMenuWithButton = (props: PopupMenuWithButtonProps) => {
         handleClosed={props.handleClosed}
         noUpdateValue={props.noUpdateValue}
         refOpenMenu={handle}
+        noTriangleIcon={props.noTriangleIcon}
+        align={props.align}
       ></PopupMenu>
     </button>
   );
@@ -71,6 +110,8 @@ export const PopupMenuWithLabel = (props: PopupMenuWithLabelProps) => {
         handleClosed={props.handleClosed}
         noUpdateValue={props.noUpdateValue}
         refOpenMenu={handle}
+        noTriangleIcon={props.noTriangleIcon}
+        align={props.align}
       ></PopupMenu>
     </div>
   );
@@ -88,20 +129,22 @@ export const PopupMenu = ({
   handleClosed,
   noUpdateValue,
   refOpenMenu,
+  align = 'right',
+  noTriangleIcon,
 }: PopupMenuProps) => {
   const css: any = {
     '.popup-menu-item': {
       padding: '0 0 1px 0',
       display: 'inline-block',
       position: 'relative',
-      '.popup-menu-text': {
+      '.triangle-icon': {
         display: 'inline-block',
         cursor: 'pointer',
         whiteSpace: 'nowrap',
         marginRight: '15px',
       },
       // cover-box-shadow
-      '.popup-menu-text::after': {
+      '.triangle-icon::after': {
         content: '""',
         position: 'absolute',
         top: '50%',
@@ -125,7 +168,7 @@ export const PopupMenu = ({
         position: 'absolute',
         fontSize: 'var(--menu-font-size)',
         top: 0,
-        left: '2px',
+        width: '100px',
         color: 'var(--activatable-color-normal)',
         backgroundColor: 'var(--activatable-bg-color-normal)',
         zIndex: 'var(--layer-menu)',
@@ -152,6 +195,15 @@ export const PopupMenu = ({
           cursor: 'pointer',
         },
       },
+      '.popup-menu-list.left-align': {
+        left: '2px',
+      },
+      '.popup-menu-list.right-align': {
+        right: '2px',
+      },
+      '.popup-menu-list.open': {
+        display: 'inline-block',
+      },
     },
   };
 
@@ -163,7 +215,13 @@ export const PopupMenu = ({
     handleOpened && handleOpened();
     // console.log('=======22', event);
     isShowing = !isShowing;
-    ref.$('.popup-menu-list').style.display = isShowing ? 'inline-block' : 'none';
+    const listDom = ref.$('.popup-menu-list');
+    if (align === 'left') {
+      listDom.classList.add('left-align');
+    } else {
+      listDom.classList.add('right-align');
+    }
+    listDom.classList.toggle('open', isShowing);
     ref.$('.popup-menu-list .menu-focus').focus();
   };
   if (refOpenMenu) {
@@ -174,7 +232,7 @@ export const PopupMenu = ({
 
     // console.log('=======', event);
     isShowing = false;
-    ref.$('.popup-menu-list').style.display = 'none';
+    ref.$('.popup-menu-list').classList.remove('open');
     if (event.target) {
       if (noUpdateValue !== true) {
         ref.$('.popup-menu-item .popup-menu-text').innerText = event.target.innerText;
@@ -187,7 +245,7 @@ export const PopupMenu = ({
   };
   const onBlur = (event: any) => {
     setTimeout(() => {
-      ref.$('.popup-menu-list').style.display = 'none';
+      ref.$('.popup-menu-list').classList.remove('open');
       isShowing && handleClosed && handleClosed();
       isShowing = false;
     }, 300);
@@ -196,7 +254,9 @@ export const PopupMenu = ({
   return (
     <div ref={ref} css={css} onClick={handleClick} title={tips}>
       <div class='popup-menu-item'>
-        <span class='popup-menu-text'>{defaultValue || '&nbsp;'}</span>
+        <span class={'popup-menu-text' + (noTriangleIcon !== true ? ' triangle-icon' : '')}>
+          {defaultValue || '&nbsp;'}
+        </span>
       </div>
       <div class='popup-menu-bottom'>
         <div class='popup-menu-list'>
