@@ -34,3 +34,5 @@ export * from './text-wave';
 export * from './theme-selector';
 export * from './toggle-base';
 export * from './toggle-switch';
+
+export * from './mobile-components';

@@ -9,7 +9,7 @@ export const darkThemes: ThemeProps = {
   '--scrollbar-thumb-bg': '#373636',
   '--scrollbar-active-thumb-bg': '#5b5b5b',
 
-  '--primary-color': '#e5e5e5',
+  '--primary-color': '#d8d8d8',
   '--primary-color-disabled': '#7d7d7d',
   '--primary-bg-color': '#000000',
   '--primary-border-color': '#aeaeae',
@@ -62,7 +62,10 @@ export const darkThemes: ThemeProps = {
 
   '--cover-mask-bg-color': '#878a9460',
   '--cover-bg-color': '#202020',
+  // for dropdown-menu
   '--cover-box-shadow': '1px 1px 4px #c6c6c6',
+  // for big block, deeper shadow arround, good for dark theme
+  '--cover-box-shadow-around': '#ffffff 0 0 6px 1px',
 
   '--input-color': '#bdbdbd',
   '--input-bg-color': '#000000',
@@ -78,6 +81,14 @@ export const darkThemes: ThemeProps = {
 
   '--header-color': '#000080',
   '--header-bg-color': '#000000',
+
+  // for setting-section
+  '--ss-group-color': 'var(--primary-color)',
+  '--ss-group-bg-color': '#232323',
+  '--ss-row-btn-color': '#eee',
+  '--ss-row-btn-bg-color': '#262626',
+  '--ss-row-btn-warn-color': 'red',
+  '--mobile-header-shadow': '0px -1px 4px 1px #848484',
 
   // '--background-primary': '#353536', //	Primary background
   // '--color-primary': '#e0e0e0', //	Primary text color
