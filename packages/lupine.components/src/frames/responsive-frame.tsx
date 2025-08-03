@@ -1,12 +1,12 @@
 import { VNode, CssProps, MediaQueryRange } from 'lupine.components';
 import { MobileFooterMenu, MobileFooterMenuItemProps } from '../components/mobile-components/mobile-footer-menu';
-import { Footer } from '../components/footer';
-import { DesktopTopMenu } from '../components/desktop-top-menu';
 import { MobileHeaderComponent } from '../components/mobile-components/mobile-header-component';
-import { webConfig } from '../services/web-config';
 
 export const ResponsiveFrame = async (
   placeholderClassname: string,
+  title: string,
+  footerTitle: string,
+  logoUrl: string,
   vnode: VNode<any>,
   bottomMenu: MobileFooterMenuItemProps[]
 ) => {
@@ -68,13 +68,15 @@ export const ResponsiveFrame = async (
   return (
     <div css={cssContainer} class='responsive-frame'>
       <div class='frame-top-menu'>
-        <DesktopTopMenu title={webConfig.getSiteTitle()}></DesktopTopMenu>
+        {/* <DesktopTopMenu title={title}></DesktopTopMenu> */}
         <MobileHeaderComponent></MobileHeaderComponent>
       </div>
       <div class='frame-content'>
         <div class={'content-block ' + placeholderClassname}>{vnode}</div>
         <div class='frame-footer'>
-          <Footer title={webConfig.getSiteFooter()}></Footer>
+          <div class='footer-box'>
+            <div class='footer-cp'>{footerTitle}</div>
+          </div>
           <MobileFooterMenu items={bottomMenu}></MobileFooterMenu>
         </div>
       </div>
