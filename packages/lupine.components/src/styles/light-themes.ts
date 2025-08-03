@@ -61,7 +61,10 @@ export const lightThemes: ThemeProps = {
 
   '--cover-mask-bg-color': '#00000060',
   '--cover-bg-color': '#f5f5f5',
+  // for dropdown-menu
   '--cover-box-shadow': '3px 3px 8px #767676',
+  // for big block, deeper shadow arround, good for dark theme
+  '--cover-box-shadow-around': '#000000 2px 4px 20px 1px',
 
   // for input, checkbox, radio box, select
   '--input-color': '#4e4e4e',
@@ -78,6 +81,14 @@ export const lightThemes: ThemeProps = {
 
   '--header-color': '#000080',
   '--header-bg-color': '#ffffff',
+
+  // for setting-section
+  '--ss-group-color': 'var(--primary-color)',
+  '--ss-group-bg-color': 'var(--activatable-bg-color-selected)',
+  '--ss-row-btn-color': '#eee',
+  '--ss-row-btn-bg-color': '#333',
+  '--ss-row-btn-warn-color': 'red',
+  '--mobile-header-shadow': '0 4px 4px var(--primary-border-color)',
 
   // '--po-background': '#e5e5e5', //	Background for surfaces on top of primary background
   // // backgroundSecondary: '#f5f5f5', //	Secondary background
