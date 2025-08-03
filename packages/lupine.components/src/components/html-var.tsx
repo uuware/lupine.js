@@ -1,4 +1,4 @@
-import { RefProps, VNode, mountComponents } from 'lupine.web';
+import { RefProps, VNode, mountComponents, replaceInnerhtml } from 'lupine.web';
 
 export type HtmlVarResult = { value: string | VNode<any>; ref: RefProps; node: VNode<any> };
 export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
@@ -9,7 +9,8 @@ export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
     if (typeof value === 'object' && value.type && value.props) {
       await mountComponents(ref.current, value);
     } else {
-      ref.current.innerHTML = value;
+      await replaceInnerhtml(ref.current, value as string);
+      // ref.current.innerHTML = value;
     }
     _dirty = false;
   };
