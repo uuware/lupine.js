@@ -1,6 +1,5 @@
 import { devAdminPageRouter } from 'lupine.api/admin';
 import {
-  addWebVersion,
   bindGlobalStyles,
   bindLang,
   bindRenderPageFunctions,
@@ -17,12 +16,12 @@ import { themes } from '../styles/theme';
 import { baseCss } from '../styles/base-css';
 import { ClientEnvKeys } from '../../../../shared-web-src';
 import { baseUrl, fetchData } from '../services/fetch-data';
+import { fixAdminAboutPage } from './admin';
 
 if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
 }
 
-addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyles('comm-css', ':root', baseCss);
@@ -31,6 +30,7 @@ setDefaultMetaDescription('Sample - Page Description');
 
 bindRenderPageFunctions({ fetchData, baseUrl });
 
+fixAdminAboutPage();
 const pageRouter = new PageRouter();
 pageRouter.use('/admin_dev', devAdminPageRouter);
 bindRouter(pageRouter);
