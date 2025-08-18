@@ -31,7 +31,7 @@ export const MenuSidebar = ({
   maxWidthMobileMenu = MediaQueryMaxWidth.TabletMax,
 }: MenuSidebarProps) => {
   const css: CssProps = {
-    backgroundColor,
+    // backgroundColor,
     '.menu-sidebar-top': {
       width: '100%',
       backgroundColor: 'var(--sidebar-bg-color)',
@@ -45,9 +45,9 @@ export const MenuSidebar = ({
       justifyContent: 'center',
       flexDirection: 'column',
     },
-    '&.mobile .menu-sidebar-top': {
-      position: 'absolute',
-    },
+    // '&.mobile .menu-sidebar-top': {
+    //   position: 'absolute',
+    // },
     '.menu-sidebar-item': {
       display: 'inline-block',
       color,
@@ -112,7 +112,7 @@ export const MenuSidebar = ({
     '.menu-sidebar-mobile': {
       display: 'none',
       position: 'relative',
-      backgroundColor: 'var(--primary-bg-color)',
+      // backgroundColor: 'var(--primary-bg-color)',
       padding: '5px 4px 6px',
       '.menu-sidebar-toggle': {
         cursor: 'pointer',
@@ -165,13 +165,30 @@ export const MenuSidebar = ({
       '&.mobile': {
         display: 'block',
       },
+      '&.mobile.open': {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 0,
+        left: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#ccccccc2',
+        zIndex: 'var(--layer-sidebar)',
+      },
       '.menu-sidebar-top': {
         display: 'none',
       },
       '.menu-sidebar-top.open': {
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 'var(--layer-sidebar)',
+        // left: 0,
+        // top: 0,
+        flex: 1,
+        overflowY: 'auto',
+        paddingTop: '200px',
+        width: '200px',
+        marginLeft: 'unset',
       },
       '.menu-sidebar-top.open .menu-sidebar-sub-box > .menu-sidebar-sub': {
         display: 'flex',
@@ -201,6 +218,9 @@ export const MenuSidebar = ({
     return (
       <div class={className}>
         {items.map((item) => {
+          if (item.hide === true) {
+            return null;
+          }
           let ref: RefProps = {};
           return item.items ? (
             <div ref={ref} class='menu-sidebar-sub-box' onClick={() => onItemToggleClick(ref)}>
@@ -215,14 +235,14 @@ export const MenuSidebar = ({
               onClick={(event) => {
                 stopPropagation(event);
                 // hide menu
-                onToggleClick();
+                onToggleClick(event);
                 item.js && item.js();
               }}
             >
               {item.text}
             </a>
           ) : (
-            <a class='menu-sidebar-item' href={item.url} alt={item.alt || item.text}>
+            <a class='menu-sidebar-item' href={item.url} alt={item.alt || item.text} target='_blank'>
               {item.text}
             </a>
           );
@@ -232,25 +252,27 @@ export const MenuSidebar = ({
   };
 
   const ref: RefProps = {
-    onLoad: async () => {
-      if (menuId) {
-        const menu = await fetchMenu(menuId);
-        if (menu.result.items.length > 0) {
-          const items = menu.result.items.map((i: any) => {
-            const l = i.split('\t');
-            return { text: l[5], url: l[4] };
-          });
-          const newDom = renderItems(items, 'menu-sidebar-top');
-          //mountComponents('.menu-sidebar-top', newDom);
-        }
-      }
-    },
+    // onLoad: async () => {
+    //   if (menuId) {
+    //     const menu = await fetchMenu(menuId);
+    //     if (menu.result.items.length > 0) {
+    //       const items = menu.result.items.map((i: any) => {
+    //         const l = i.split('\t');
+    //         return { text: l[5], url: l[4] };
+    //       });
+    //       const newDom = renderItems(items, 'menu-sidebar-top');
+    //       //mountComponents('.menu-sidebar-top', newDom);
+    //     }
+    //   }
+    // },
   };
-  const onToggleClick = () => {
+  const onToggleClick = (event: Event) => {
+    event.stopPropagation();
     const menu = ref.$('.menu-sidebar-mobile .menu-sidebar-toggle');
     menu.classList.toggle('active');
     const topMenu = ref.$('.menu-sidebar-top');
     topMenu.classList.toggle('open');
+    ref.current.classList.toggle('open');
   };
   const onItemToggleClick = (ref: RefProps) => {
     // if (event.target != ref.current && (event.target as any).parentNode != ref.current) {
@@ -266,16 +288,21 @@ export const MenuSidebar = ({
   const newCss: CssProps =
     (!desktopMenu && !mobileMenu) || (desktopMenu && mobileMenu)
       ? {
-          ['@media only screen and (max-width: ' + maxWidthMobileMenu + ')']: {
+        ['@media only screen and (max-width: ' + maxWidthMobileMenu + ')']: {
+          display: 'block',
+          '.menu-sidebar-top': {
             display: 'block',
-            '.menu-sidebar-top': {
-              display: 'block',
-            },
           },
-        }
+        },
+      }
       : {};
+  const onMaskClick = (event: MouseEvent) => {
+    if (ref.current.classList.contains('open')) {
+      onToggleClick(event);
+    }
+  };
   return (
-    <div css={newCss} ref={ref} class={['menu-sidebar-box', className, mobileMenu ? 'mobile' : ''].join(' ')}>
+    <div css={newCss} ref={ref} class={['menu-sidebar-box', className, mobileMenu ? 'mobile' : ''].join(' ')} onClick={onMaskClick}>
       <div class='menu-sidebar-mobile'>
         <div class='menu-sidebar-toggle' onClick={onToggleClick}>
           <span></span>

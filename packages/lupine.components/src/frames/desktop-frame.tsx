@@ -1,8 +1,9 @@
-import { VNode, CssProps, getWebVersion } from 'lupine.web';
+import { VNode, CssProps } from 'lupine.web';
 import { MediaQueryMaxWidth } from '../styles';
 import { MenuBar } from '../components';
 
 export interface MenuBarMenuProps {
+  id: string;
   text: string;
   url: string;
 }
@@ -65,7 +66,7 @@ export const DesktopFrame = async (
         </div>
         <div class='header-title'>
           {title}
-          <div class='header-subtitle pt-s'>{'ver: ' + getWebVersion()}</div>
+          {/* <div class='header-subtitle pt-s'>{'ver: ' + getWebVersion()}</div> */}
         </div>
       </div>
       <MenuBar items={menu} maxWidthMobileMenu={'800px'} maxWidth={MediaQueryMaxWidth.DesktopMax}></MenuBar>
