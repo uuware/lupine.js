@@ -1,9 +1,9 @@
-import { TabsUpdateProps } from 'lupine.components';
+import { TabsHookProps } from 'lupine.components';
 
 const adminFrameProps = {
   maxWidthMobileMenu: '800px',
   maxTabsCount: 20,
-  refUpdate: {} as TabsUpdateProps,
+  tabsHook: {} as TabsHookProps,
 };
 
 export { adminFrameProps };

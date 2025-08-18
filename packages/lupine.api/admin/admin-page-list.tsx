@@ -10,7 +10,7 @@ const fetchTableDelete = async (tableName: string, id: string) => {
 };
 
 export const AdminPagePage = () => {
-  const refUpdate = adminFrameProps.refUpdate;
+  const refUpdate = adminFrameProps.tabsHook;
   const onDelete = async (rowData: any) => {
     if (!confirm(`Are you really Deleting ${rowData['menuid']}?`)) {
       return;
