@@ -1,7 +1,10 @@
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs/promises');
-const { runCmd, copyFolder, sendRequest, loadEnv, readJson, pathExists, cpIndexHtml, pluginIfelse } = require('lupine.api/dev');
+const { runCmd, copyFolder, sendRequest, loadEnv, readJson, pathExists, cpIndexHtml, pluginIfelse, genVersions } = require('lupine.api/dev');
+// import pkg from "../package.json" assert { type: "json" };
+const pkg = require("../package.json");
+const outputVersionsFile = 'apps/shared-web-src/common/versions.ts';
 
 const triggerHandle = {
   restart: null,
@@ -126,7 +129,7 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     jsxImportSource: 'lupine.web',
     jsx: 'automatic',
     target: ['chrome87'],
-    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars)],
+    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars), genVersions(pkg.dependencies, outputVersionsFile)],
   });
 
   isDev && (await ctx.watch());
@@ -272,16 +275,16 @@ const start = async () => {
       watchAdditionalFiles(saved, additionalFiles);
     }
 
-    if (isMobile && await pathExists(`${serverRootPath}/${appName}_data/cfg-files`)) {
-      // copy web setting image files to data folder
-      const tmpCache = new Map();
-      await copyFolder(
-        tmpCache,
-        `${serverRootPath}/${appName}_data/cfg-files`,
-        `${serverRootPath}/${appName}_web/api/image/`,
-        isDev
-      );
-    }
+    // if (isMobile && await pathExists(`${serverRootPath}/${appName}_data/cfg-files`)) {
+    //   // copy web setting image files to data folder
+    //   const tmpCache = new Map();
+    //   await copyFolder(
+    //     tmpCache,
+    //     `${serverRootPath}/${appName}_data/cfg-files`,
+    //     `${serverRootPath}/${appName}_web/api/image/`,
+    //     isDev
+    //   );
+    // }
   }
 
   watchServer(isDev, npmCmd, httpPort, serverRootPath);
