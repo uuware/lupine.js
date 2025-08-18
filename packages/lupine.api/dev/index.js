@@ -15,4 +15,5 @@ module.exports = {
   loadEnv: webEnv.loadEnv,
   getWebConfig: webEnv.getWebConfig,
   pluginIfelse: require('./plugin-ifelse.js'),
+  genVersions: require('./plugin-gen-versions.js'),
 };
