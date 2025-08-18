@@ -9,7 +9,6 @@ import {
   formatBytes,
   DateUtils,
   getRequestCount,
-  getApiVersion,
   ApiRouter,
   IApiBase,
   Logger,
@@ -48,7 +47,7 @@ export class AdminPerformance implements IApiBase {
       results: {
         appInfo: {
           debug: getAppCache().get(AppCacheGlobal, AppCacheKeys.APP_DEBUG),
-          apiVersion: getApiVersion(),
+          // apiVersion: getApiVersion(),
           appStartTime: getAppCache().get(AppCacheGlobal, AppCacheKeys.START_TIME),
           runningTime: DateUtils.diffString(new Date(), getAppCache().get(AppCacheGlobal, AppCacheKeys.START_TIME)),
           // request info
