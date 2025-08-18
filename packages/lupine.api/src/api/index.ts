@@ -3,7 +3,6 @@ export * from './api-helper';
 export * from './api-module';
 export * from './api-router';
 export * from './api-shared-storage';
-export * from './api-version';
 export * from './async-storage';
 export * from './debug-service';
 export * from './encode-html';
