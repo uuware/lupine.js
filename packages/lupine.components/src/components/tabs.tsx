@@ -1,11 +1,12 @@
 import { RefProps, VNode, mountComponents } from 'lupine.web';
 import { stopPropagation } from '../lib';
 
-export type TabsUpdateProps = {
+export type TabsHookProps = {
   updateTitle?: (index: number, title: string) => void;
   updateIndex?: (index: number) => void;
   newPage?: (title: string, page: VNode<any>, index?: number) => Promise<void>;
   removePage?: (index: number) => void;
+  // set from outside and called when the active tab index changes
   indexChanged?: (index: number) => void;
   getIndex?: () => number;
   getCount?: () => number;
@@ -19,10 +20,10 @@ export type TabsProps = {
   defaultIndex?: number;
   topClassName?: string;
   pagePadding?: string;
-  refUpdate?: TabsUpdateProps;
+  hook?: TabsHookProps;
 };
 // For CSS or query selectors, please pay attention to that Tabs can be nested
-export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, refUpdate }: TabsProps) => {
+export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: refUpdate }: TabsProps) => {
   const ref: RefProps = {};
   let newIndex = typeof defaultIndex === 'number' ? defaultIndex : 0;
   const clearIndex = () => {

@@ -14,7 +14,7 @@ export const AdminMenuSinglePage = async (props: PageProps) => {
 };
 
 export const AdminMenuPage = () => {
-  const refUpdate = adminFrameProps.refUpdate;
+  const refUpdate = adminFrameProps.tabsHook;
   const onDelete = async (rowData: any) => {
     if (!confirm(`Are you really Deleting ${rowData['menuid']}?`)) {
       return;

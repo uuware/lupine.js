@@ -1,12 +1,12 @@
-import { MenuBar, MediaQueryMaxWidth, webSetting, VNode, CssProps, getWebVersion } from 'lupine.components';
+import { MenuBar, MediaQueryMaxWidth, webSetting, VNode, CssProps } from 'lupine.components';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 
 const defaultTopMenu = [
-  { text: 'Home', url: '/' },
-  { text: 'Manage List', url: '/admin/music-list' },
-  { text: 'Manage Users', url: '/admin/user' },
-  { text: 'Manage Website', url: '/admin/cfg' },
+  { id: 'home', text: 'Home', url: '/' },
+  { id: 'manage-list', text: 'Manage List', url: '/admin/music-list' },
+  { id: 'manage-users', text: 'Manage Users', url: '/admin/user' },
+  { id: 'manage-website', text: 'Manage Website', url: '/admin/cfg' },
 ];
 
 export const AdminPageFrame = async (placeholderClassname: string, vnode: VNode<any>) => {
@@ -30,7 +30,7 @@ export const AdminPageFrame = async (placeholderClassname: string, vnode: VNode<
 
   return (
     <div css={cssContainer}>
-      <Header title='Admin Page (Lupine.Dev)' subtitle={'ver: ' + getWebVersion()}></Header>
+      <Header title='Admin Page (Lupine.Dev)'></Header>
       <MenuBar items={defaultTopMenu} maxWidthMobileMenu={'800px'} maxWidth={MediaQueryMaxWidth.DesktopMax}></MenuBar>
       <div class={'content-block ' + placeholderClassname}>{vnode}</div>
       <div class='top-footer'>

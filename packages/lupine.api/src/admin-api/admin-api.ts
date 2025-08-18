@@ -1,5 +1,4 @@
 import { ServerResponse } from 'http';
-import { IApiBase, Logger, ServerRequest, ApiRouter } from 'lupine.api';
 // import { AdminUser } from './admin-user';
 import { AdminDb } from './admin-db';
 import { AdminMenu } from './admin-menu';
@@ -9,6 +8,9 @@ import { AdminRelease } from './admin-release';
 import { AdminResources } from './admin-resources';
 import { AdminTokens } from './admin-tokens';
 import { AdminConfig } from './admin-config';
+import { Logger } from '../lib';
+import { IApiBase, ServerRequest } from '../models';
+import {ApiRouter } from '../api';
 
 const logger = new Logger('admin-api');
 

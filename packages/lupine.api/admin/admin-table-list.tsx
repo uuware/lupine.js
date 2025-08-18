@@ -28,7 +28,7 @@ const fetchTableTruncateAll = async () => {
 };
 
 export const TableListPage = () => {
-  const refUpdate = adminFrameProps.refUpdate;
+  const refUpdate = adminFrameProps.tabsHook;
 
   const openTablePanel = async (tableName: string) => {
     if (refUpdate?.getCount && refUpdate.getCount() > adminFrameProps.maxTabsCount) {
