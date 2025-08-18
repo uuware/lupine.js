@@ -12,7 +12,6 @@ import {
   _lupineJs,
   bindLang,
   PageProps,
-  addWebVersion,
   isFrontEnd,
   Redirect,
 } from 'lupine.components';
@@ -49,7 +48,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
 }
 
-addWebVersion('20250409');
+// addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyles('comm-css', ':root', baseCss);
