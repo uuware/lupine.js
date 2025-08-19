@@ -61,10 +61,18 @@ const translateMenuToChinese = (text: string) => {
 };
 
 export class AdminFrameHelper {
+  consoleTitle = 'Welcome to Admin Panel';
+  getConsoleTitle() {
+    return this.consoleTitle;
+  }
+  setConsoleTitle(title: string) {
+    this.consoleTitle = title;
+  }
+
   adminTopMenu: NestMenuItemProps[] = [
     // { text: 'Top', url: '/admin' },
     {
-      id: 'admin-menu',
+      id: 'contents',
       text: 'Contents',
       url: '',
       // hide: true,
@@ -244,15 +252,15 @@ export class AdminFrameHelper {
     return this.mobileMenuMaxWidth;
   }
 
-  insertMenuItem(item: NestMenuItemProps, beforeMenuId?: string) {
+  insertMenuItem(item: NestMenuItemProps[], beforeMenuId?: string) {
     let index = -1;
     if (beforeMenuId) {
       index = this.adminTopMenu.findIndex(m => m.id === beforeMenuId);
     }
     if (index !== -1) {
-      this.adminTopMenu.splice(index, 0, item);
+      this.adminTopMenu.splice(index, 0, ...item);
     } else {
-      this.adminTopMenu.push(item);
+      this.adminTopMenu.push(...item);
     }
   }
   insertSubMenuItem(item: MenuItemProps[], beforeMenuId: string, beforeSubMenuId?: string) {
@@ -267,6 +275,13 @@ export class AdminFrameHelper {
       }
       // this.adminTopMenu[index].items = subMenu;
     }
+  }
+  getMenuItem(menuId: string): NestMenuItemProps | null {
+    const index = this.adminTopMenu.findIndex(m => m.id === menuId);
+    if (index !== -1) {
+      return this.adminTopMenu[index];
+    }
+    return null;
   }
   getSubMenuItem(menuId: string, subMenuId: string): MenuItemProps | null {
     const index = this.adminTopMenu.findIndex(m => m.id === menuId);

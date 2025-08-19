@@ -3,10 +3,10 @@ import { stopPropagation } from '../lib';
 import { MediaQueryMaxWidth } from '../styles';
 import { NestMenuItemProps } from './menu-item-props';
 
-const fetchMenu = async (menuId: string) => {
-  const data = await getRenderPageProps().renderPageFunctions.fetchData(`/api/menu/get/${menuId}`);
-  return data.json;
-};
+// const fetchMenu = async (menuId: string) => {
+//   const data = await getRenderPageProps().renderPageFunctions.fetchData(`/api/menu/get/${menuId}`);
+//   return data.json;
+// };
 
 export type MenuSidebarProps = {
   mobileMenu?: boolean;
@@ -186,9 +186,10 @@ export const MenuSidebar = ({
         // top: 0,
         flex: 1,
         overflowY: 'auto',
-        paddingTop: '200px',
+        // paddingTop: '200px',
         width: '200px',
         marginLeft: 'unset',
+        justifyContent: 'start',
       },
       '.menu-sidebar-top.open .menu-sidebar-sub-box > .menu-sidebar-sub': {
         display: 'flex',
