@@ -226,6 +226,12 @@ export const mountComponents = async (selector: string | null | Element, jsxNode
 
     // call unload before releace innerHTML
     // el.innerHTML = jsxNodes.props._html.join('');
+    // remove <Fragment> and </Fragment>
+    const _html = jsxNodes.props._html;
+    if (_html[0] === '<Fragment>' && _html[_html.length - 1] === '</Fragment>') {
+      _html.shift();
+      _html.pop();
+    }
     await replaceInnerhtml(el, jsxNodes.props._html.join(''));
 
     // if (firstDom && firstDom.tagName === 'STYLE') {
