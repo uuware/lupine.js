@@ -14,6 +14,7 @@ import {
   SpinnerSize,
   TextGlow,
   TextWave,
+  CssProps,
 } from 'lupine.components';
 
 const TestButton = () => {
@@ -108,6 +109,65 @@ const TestCommunication = (props: CommunicationProps) => {
         <label class='pr-m'>Received Message: </label>
         <div class='pl-m'>{dom.node}</div>
       </div>
+    </div>
+  );
+};
+
+const TestHtmlVar = () => {
+  let count = 0;
+  const onClick = () => {
+    count++;
+    dom.value = defaultContent();
+  };
+  const defaultContent = () => {
+    // <></> is not needed, and here is used to test that <fragment> tag is not added
+    return (
+      <>
+        <div class='row-box pt-m'>
+          <label class='pr-m'>Count: {count}</label>
+          <button class='button-base' onClick={onClick}>Click me</button>
+        </div>
+      </>
+    );
+  };
+  const dom = HtmlVar(defaultContent());
+  const css: CssProps = {
+    backgroundColor: '#a1ffe8',
+    padding: '10px',
+  };
+  const ref: RefProps = {};
+  return (
+    <div ref={ref} css={css}>
+      {dom.node}
+    </div>
+  );
+};
+
+const TestLoadContent = () => {
+  let count = 0;
+  const css: CssProps = {
+    backgroundColor: '#a1ffa7',
+    padding: '10px',
+  };
+  const ref: RefProps = {};
+  const onClick = () => {
+    count++;
+    ref.loadContent!(defaultContent());
+  };
+  const defaultContent = () => {
+    // <></> is not needed, and here is used to test that <fragment> tag is not added
+    return (
+      <>
+        <div class='row-box pt-m'>
+          <label class='pr-m'>Count: {count}</label>
+          <button class='button-base' onClick={onClick}>Click me</button>
+        </div>
+      </>
+    );
+  };
+  return (
+    <div ref={ref} css={css}>
+      {defaultContent()}
     </div>
   );
 };
@@ -228,6 +288,23 @@ export const AdminTestAnimationsPage = () => {
         <TestCommunication update={msg1.update} />
         <TestCommunication update={msg2.update} />
       </div>
+
+      <div class='pt-m'>
+        <br />
+        <hr />
+        <br />
+        <div>Test HtmlVar</div>
+        <TestHtmlVar />
+      </div>
+
+      <div class='pt-m'>
+        <br />
+        <hr />
+        <br />
+        <div>Test LoadContent</div>
+        <TestLoadContent />
+      </div>
+
       <div class='pt-m'>
         <br />
         <hr />
