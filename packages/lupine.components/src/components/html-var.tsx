@@ -1,4 +1,4 @@
-import { RefProps, VNode, mountComponents, replaceInnerhtml } from 'lupine.web';
+import { RefProps, VNode } from 'lupine.web';
 
 export type HtmlVarResult = { value: string | VNode<any>; ref: RefProps; node: VNode<any> };
 export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
@@ -6,12 +6,7 @@ export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
   let _dirty = false;
   const waitUpdate = async (value: string | VNode<any>) => {
     if (!ref.current) return;
-    if (typeof value === 'object' && value.type && value.props) {
-      await mountComponents(ref.current, value);
-    } else {
-      await replaceInnerhtml(ref.current, value as string);
-      // ref.current.innerHTML = value;
-    }
+    await ref.loadContent!(value);
     _dirty = false;
   };
   const ref: RefProps = {
@@ -19,10 +14,6 @@ export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
       _dirty && waitUpdate(_value);
     },
   };
-  const FragmentRef = (props: any) => {
-    return <>{props.children}</>;
-  };
-
   return {
     set value(value: string | VNode<any>) {
       _value = value;
@@ -35,10 +26,10 @@ export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
     get ref() {
       return ref;
     },
-    // _fragment_ref is a special id to add ref to a fragment and it is processed in mount-components
     get node() {
       _dirty = false;
-      return <FragmentRef _fragment_ref={ref}>{_value}</FragmentRef>;
+      // the Fragment Tag will be present in the html if ref is assigned
+      return { type: 'Fragment', props: { ref, children: _value }, html: [] };
     },
   };
 };

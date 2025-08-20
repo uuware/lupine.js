@@ -25,6 +25,7 @@ export type RefProps = {
   onUnload?: (el: Element) => Promise<void>;
   $?: any; // (selector: string) => undefined | Element,
   $all?: any; // (selector: string) => undefined | Element,
+  loadContent?: (content: string | VNode<any>) => Promise<void>;
 };
 
 export interface ClassAttributes<T> extends Attributes {

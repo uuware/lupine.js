@@ -35,7 +35,7 @@ export const Spinner02 = ({
   color?: string;
 }) => {
   const base = parseInt(size.replace('px', ''));
-  const ballSize = Array.from({ length: 7 }, (_, i) => `${i * base / 15 / 7}px`);
+  const ballSize = Array.from({ length: 7 }, (_, i) => `${(i * base / 15 / 7).toFixed(2)}px`);
   const css: any = {
     width: size,
     height: size,
