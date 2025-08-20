@@ -1,5 +1,11 @@
 // import { mountSelfComponents, renderComponent } from "./mount-components";
 
+import { VNode } from "../jsx";
+import { bindAttributes } from "./bind-attributes";
+import { bindLinks } from "./bind-links";
+import { renderComponents } from "./render-components";
+import { replaceInnerhtml } from "./replace-innerhtml";
+
 export const bindRef = (type: any, newProps: any, el: Element) => {
   // console.log('========', newProps, el);
   const id = newProps._id;
@@ -7,6 +13,7 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
   newProps['ref'].current = el;
   if (newProps['ref'].onLoad) {
     // setTimeout(() => newProps['ref'].onLoad(el), 0);
+    // Promise.resolve().then(fn) will be called in the end of current event loop (quicker than setTimeout)
     const defer = Promise.prototype.then.bind(Promise.resolve());
     defer(() => newProps['ref'].onLoad(el));
   }
@@ -29,5 +36,17 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
   };
   newProps['ref'].$all = (selector: string) => {
     return el.querySelectorAll(`[${id}] ` + selector);
+  };
+
+  newProps['ref'].loadContent = async (content: string | VNode<any>) => {
+    if (typeof content === 'object' && content.type && content.props) {
+      // await mountComponents(el, content);
+      renderComponents(content.type, content.props);
+      await replaceInnerhtml(el, content.props._html.join(''));
+      bindAttributes(el, content.type, content.props);
+      bindLinks(el);
+    } else {
+      await replaceInnerhtml(el, content as string);
+    }
   };
 };
