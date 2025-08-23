@@ -56,7 +56,7 @@ export class StaticServer {
 
     const hostPath = apiCache.getAsyncStore().hostPath;
     const urlSplit = (rootUrl || req.locals.urlWithoutQuery).split('?');
-    const fullPath = path.join(hostPath.realPath, urlSplit[0]);
+    const fullPath = path.join(hostPath.webPath, urlSplit[0]);
 
     const jumpToServerSideRender = () => {
       const error = new Error();
@@ -73,7 +73,7 @@ export class StaticServer {
       const realPath = await fs.promises.realpath(fullPath);
       console.log(`request: ${realPath}`);
       // for security reason, the requested file should be inside of wwwRoot
-      if (realPath.substring(0, hostPath.realPath.length) !== hostPath.realPath) {
+      if (realPath.substring(0, hostPath.webPath.length) !== hostPath.webPath) {
         this.logger.warn(`ACCESS DENIED: ${urlSplit[0]}`);
         handler200(res, `ACCESS DENIED: ${urlSplit[0]}`);
         return true;
@@ -110,7 +110,7 @@ export class StaticServer {
       // file doesn't exist
       if (err.code === 'ENOENT') {
         if (isServerSideRenderUrl(urlSplit[0])) {
-          serverSideRenderPage(hostPath.appName, hostPath.realPath, urlSplit[0], urlSplit[1], req, res);
+          serverSideRenderPage(hostPath.appName, hostPath.webPath, urlSplit[0], urlSplit[1], req, res);
         } else {
           this.logger.error(`File not found: ${urlSplit[0]}`);
           handler404(res, `File not found: ${urlSplit[0]}`);

@@ -44,7 +44,7 @@ export const AdminCfgPage = async (props: PageProps) => {
       return;
     }
     const result = await uploadFile(file[0], '/api/add-cfg-file?fn=' + fname + '.' + ext);
-    if (!result) {
+    if (result !== true) {
       NotificationMessage.sendMessage('Failed to upload file', NotificationColor.Error);
       return;
     }

@@ -267,7 +267,7 @@ export const AdminResourcesPage = () => {
       progressUpdate.onShow?.(false);
     }, 1000);
 
-    if (!uploadResult) {
+    if (uploadResult !== true) {
       NotificationMessage.sendMessage('Failed to upload resource', NotificationColor.Error);
       return;
     }

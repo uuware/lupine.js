@@ -79,7 +79,7 @@ type SampleDataUpdateProps = {
 // show dialog to edit one item, and call update when save the result
 const showBookEditItem = async (item: SampleDataProps, update: (item: SampleDataProps) => void) => {
   const handleClicked = async (index: number) => {
-    if (index === 0) {
+    if (index === 1) {
       updateFn.cancel?.();
       modalClose();
     }

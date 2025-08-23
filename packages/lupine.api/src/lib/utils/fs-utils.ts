@@ -71,9 +71,27 @@ export class FsUtils {
     }
   };
 
-  static unlinkPath = async (filePath: string) => {
+  static unlinkFile = async (filePath: string) => {
     try {
       await fs.unlink(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  static unlinkFolderEmpty = async (filePath: string) => {
+    try {
+      await fs.rmdir(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  static unlinkFolderForce = async (filePath: string, recursive: boolean, force: boolean) => {
+    try {
+      await fs.rm(filePath, { recursive: recursive, force: force });
       return true;
     } catch {
       return false;
@@ -98,6 +116,7 @@ export class FsUtils {
     }
   };
 
+  // return with fullpath list
   static getListDirent = async (dirPath: string) => {
     try {
       const files = await fs.readdir(dirPath, {

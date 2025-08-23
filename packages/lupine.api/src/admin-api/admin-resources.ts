@@ -49,7 +49,7 @@ export class AdminResources implements IApiBase {
     }
 
     const appData = apiCache.getAppData();
-    const locPath = this.pathJoin(fPath, appData.realPath);
+    const locPath = this.pathJoin(fPath, appData.webPath);
     if (!(await FsUtils.pathExist(locPath))) {
       const response = {
         status: 'error',
@@ -176,7 +176,7 @@ export class AdminResources implements IApiBase {
     let results: any[] = [];
     if (typeof data.folder === 'string') {
       const appData = apiCache.getAppData();
-      const locPath = this.pathJoin(data.folder, appData.realPath);
+      const locPath = this.pathJoin(data.folder, appData.webPath);
       results = await this.getFolders(locPath);
     }
     const response = {
@@ -250,7 +250,7 @@ export class AdminResources implements IApiBase {
     if (typeof data.resource === 'string') {
       const resPath = path.join(data.resource);
       if (await FsUtils.pathExist(resPath)) {
-        await FsUtils.unlinkPath(resPath);
+        await FsUtils.unlinkFile(resPath);
         const response = {
           status: 'ok',
           message: 'Resource removed',
