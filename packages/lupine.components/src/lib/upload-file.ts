@@ -73,9 +73,12 @@ export const uploadFile = async (
     chunkSize = _saveChunkSize.size;
   }
   if (len <= chunkSize) {
-    const uploaded = await uploadFileChunk(file, 0, 1, uploadUrl, key, retryCount, retryMessage);
-    if (!uploaded || uploaded.status !== 'ok') {
-      return false;
+    const result = await uploadFileChunk(file, 0, 1, uploadUrl, key, retryCount, retryMessage);
+    if (!result || result.status !== 'ok') {
+      return result;
+    }
+    if (progressFn) {
+      progressFn(1, 0, len);
     }
     return true;
   }
@@ -85,11 +88,11 @@ export const uploadFile = async (
     const start = i * chunkSize;
     const end = Math.min((i + 1) * chunkSize, len);
     const chunk = file.slice(start, end);
-    const uploaded = await uploadFileChunk(chunk, i, totalChunks, uploadUrl, key, retryCount, retryMessage);
-    if (!uploaded || uploaded.status !== 'ok') {
-      return false;
+    const result = await uploadFileChunk(chunk, i, totalChunks, uploadUrl, key, retryCount, retryMessage);
+    if (!result || result.status !== 'ok') {
+      return result;
     }
-    key = uploaded.key;
+    key = result.key;
     if (progressFn) {
       progressFn(Math.round(((i + 1) / totalChunks) * 100) / 100, i, totalChunks);
     }

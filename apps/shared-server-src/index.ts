@@ -30,7 +30,7 @@ const initAndStartServer = async () => {
       appName: app,
       hosts: appHosts ? appHosts.split(',') : [],
       // web, data, api folders should be created in building process
-      realPath: path.join(serverRootPath, app + '_web'),
+      webPath: path.join(serverRootPath, app + '_web'),
       dataPath: path.join(serverRootPath, app + '_data'),
       apiPath: path.join(serverRootPath, app + '_api'),
       dbType: process.env[`${ServerEnvKeys.DB_TYPE}@${app}`] || process.env[`${ServerEnvKeys.DB_TYPE}`] || 'sqlite',

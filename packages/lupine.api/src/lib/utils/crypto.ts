@@ -43,6 +43,15 @@ export class CryptoUtils {
     return crypto.randomInt(10 ** (len - 1), 10 ** len - 1).toString();
   }
 
+  // first char is alpha, the rest are alpha or number
+  static randomCharNumberString(len: number) {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const chars = letters + '0123456789';
+    return Array.from(crypto.randomBytes(len))
+      .map((b, index) => (index === 0 ? letters[b % letters.length] : chars[b % chars.length]))
+      .join('');
+  }
+
   static uuid() {
     return crypto.randomUUID();
   }

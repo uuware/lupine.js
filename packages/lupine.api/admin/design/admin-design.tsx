@@ -54,6 +54,7 @@ export const AdminDesignPage = async (props: PageProps) => {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
+    height: '100%',
     minHeight: '100%',
     overflowY: 'auto',
     '>.design-container': {
