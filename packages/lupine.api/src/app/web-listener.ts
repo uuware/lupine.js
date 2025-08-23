@@ -74,7 +74,7 @@ export class WebListener {
 
     const host = (req.headers.host || '').split(':')[0]; // req.headers.host contains port
     const hostPath = HostToPath.findHostPath(host);
-    if (!hostPath || !hostPath.realPath || !hostPath.appName) {
+    if (!hostPath || !hostPath.webPath || !hostPath.appName) {
       const msg = `Web root is not defined properly for host: ${host}.`;
       logger.error(msg);
       handler404(res, msg);
