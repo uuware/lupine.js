@@ -4,10 +4,13 @@ export type ActionSheetCloseProps = () => void;
 
 export type ActionSheetShowProps = {
   title: string;
-  children: VNode<any>;
+  children: string | VNode<any>;
+  contentMaxWidth?: string;
   contentMaxHeight?: string;
   closeEvent?: () => void;
   closeWhenClickOutside?: boolean; // default true
+  confirmButtonText?: string; // no showing if not set
+  handleConfirmClicked?: (close: ActionSheetCloseProps) => void;
   cancelButtonText?: string; // no showing if not set
   zIndex?: string;
 };
@@ -19,12 +22,22 @@ export class ActionSheet {
   static async show({
     title,
     children,
+    contentMaxWidth,
     contentMaxHeight,
     closeEvent,
     closeWhenClickOutside = true,
+    confirmButtonText = '',
+    handleConfirmClicked,
     cancelButtonText = 'Cancel',
     zIndex,
   }: ActionSheetShowProps): Promise<ActionSheetCloseProps> {
+    const onConfirm = () => {
+      if (handleConfirmClicked) {
+        handleConfirmClicked(handleClose);
+      } else {
+        handleClose();
+      }
+    };
     const onCancel = () => {
       handleClose();
     };
@@ -64,7 +77,7 @@ export class ActionSheet {
         bottom: '0px',
         left: '0px',
         width: '100%',
-        maxHeight: contentMaxHeight ? contentMaxHeight : '',
+        maxHeight: contentMaxHeight ? contentMaxHeight : '100%',
         color: 'var(--primary-color)',
         padding: '8px',
         transition: 'all 0.3s',
@@ -84,7 +97,7 @@ export class ActionSheet {
           borderRadius: '8px',
           backgroundColor: 'var(--cover-bg-color)', //'#fefefe',
           width: '100%',
-          maxWidth: '450px',
+          maxWidth: contentMaxWidth ? contentMaxWidth : `clamp(200px, 70%, 800px)`,
           margin: '0 auto',
         },
         '.act-sheet-bottom-item, .act-sheet-item': {
@@ -93,7 +106,7 @@ export class ActionSheet {
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           width: '100%',
-          maxWidth: '450px',
+          maxWidth: contentMaxWidth ? contentMaxWidth : `clamp(200px, 70%, 800px)`,
           borderTop: '1px solid var(--primary-border-color)',
         },
         '.act-sheet-bottom-item': {
@@ -104,6 +117,11 @@ export class ActionSheet {
         '.act-sheet-bottom-item:hover, .act-sheet-item:hover': {
           fontWeight: 'bold',
         },
+        '.act-sheet-confirm, .act-sheet-item': {
+          borderRadius: 'unset',
+          marginTop: 'unset',
+          maxWidth: 'unset',
+        },
       },
     };
     const component = (
@@ -112,6 +130,11 @@ export class ActionSheet {
           <div class='act-sheet-content'>
             <div class='act-sheet-title'>{title}</div>
             {children}
+            {confirmButtonText && (
+            <div class='act-sheet-bottom-item act-sheet-confirm' onClick={onConfirm}>
+              {confirmButtonText}
+            </div>
+          )}
           </div>
           {cancelButtonText && (
             <div class='act-sheet-bottom-item' onClick={onCancel}>
@@ -131,7 +154,7 @@ export class ActionSheet {
 
 export const ActionSheetSelectOptionsProps = {
   YesNo: ['Yes', 'No'],
-  OkCancel: ['OK'],
+  Ok: ['OK'],
 };
 export type ActionSheetSelectProps = Omit<ActionSheetShowProps, 'children'> & {
   options: string[];
@@ -142,10 +165,12 @@ export class ActionSheetSelect {
   static async show({
     title,
     contentMaxHeight,
-    options = ActionSheetSelectOptionsProps.OkCancel,
+    options = ActionSheetSelectOptionsProps.Ok,
     closeEvent,
     handleClicked,
     closeWhenClickOutside = true,
+    confirmButtonText,
+    handleConfirmClicked,
     cancelButtonText = 'Cancel',
   }: ActionSheetSelectProps): Promise<ActionSheetCloseProps> {
     const handleClose = await ActionSheet.show({
@@ -160,6 +185,8 @@ export class ActionSheetSelect {
         </div>
       ),
       contentMaxHeight,
+      confirmButtonText,
+      handleConfirmClicked,
       cancelButtonText,
       closeEvent,
       closeWhenClickOutside,
@@ -169,7 +196,7 @@ export class ActionSheetSelect {
 }
 
 export type ActionSheetMessageProps = Omit<ActionSheetShowProps, 'children' | 'handleClicked' | 'closeEvent'> & {
-  message: string;
+  message: string | VNode<any>;
 };
 export class ActionSheetMessage {
   static async show({
@@ -177,13 +204,17 @@ export class ActionSheetMessage {
     message,
     contentMaxHeight,
     closeWhenClickOutside = true,
+    confirmButtonText,
+    handleConfirmClicked,
     cancelButtonText = '',
   }: ActionSheetMessageProps): Promise<ActionSheetCloseProps> {
     const handleClose = await ActionSheet.show({
       title,
-      children: <div css={{ padding: '0 8px 16px 8px' }}>{message}</div>,
+      children: <div css={{ padding: '8px',borderTop: '1px solid var(--primary-border-color)', }}>{message}</div>,
       contentMaxHeight,
-      cancelButtonText,
+      confirmButtonText,
+      handleConfirmClicked,
+        cancelButtonText,
       closeWhenClickOutside,
     });
     return handleClose;

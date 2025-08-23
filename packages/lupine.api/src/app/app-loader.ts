@@ -14,7 +14,7 @@ class AppLoader {
     // for (let key in config.webHostMap) {
     //   // one app may be defined for multiple hosts, but Set only stores unique values
     //   apps.add(config.webHostMap[key].appName);
-    //   config.webHostMap[key].realPath = path.join(config.serverRoot, config.webHostMap[key].appName + '_web');
+    //   config.webHostMap[key].webPath = path.join(config.serverRoot, config.webHostMap[key].appName + '_web');
     //   config.webHostMap[key].dataPath = path.join(config.serverRoot, config.webHostMap[key].appName + '_data');
     //   config.webHostMap[key].apiPath = path.join(config.serverRoot, config.webHostMap[key].appName + '_api');
     // }
