@@ -12,7 +12,6 @@ import {
   adminHelper,
 } from 'lupine.api';
 import path from 'path';
-import { needDevAdminSession } from './admin-auth';
 
 export class AdminResources implements IApiBase {
   private logger = new Logger('resources-api');
@@ -32,7 +31,9 @@ export class AdminResources implements IApiBase {
     this.router.use('/download', this.download.bind(this));
     this.router.use('/upload', this.upload.bind(this));
     this.router.use('/rename', this.rename.bind(this));
+    this.router.use('/newFolder', this.newFolder.bind(this));
     this.router.use('/remove', this.remove.bind(this));
+    this.router.use('/removeDir', this.removeDir.bind(this));
   }
 
   async upload(req: ServerRequest, res: ServerResponse) {
@@ -120,7 +121,7 @@ export class AdminResources implements IApiBase {
 
   private async getFolders(locPath: string) {
     const results: any[] = [];
-    const folders = await FsUtils.getListNames(locPath);
+    const folders = await FsUtils.getDirAndFiles(locPath);
 
     results.push({
       fullPath: locPath,
@@ -135,7 +136,7 @@ export class AdminResources implements IApiBase {
           size: fileInfo?.size,
         });
       } else {
-        const subFolders = await FsUtils.getListNames(path.join(locPath, oneFolder));
+        const subFolders = await FsUtils.getDirAndFiles(path.join(locPath, oneFolder));
         const subFoldersWithTime = [];
         for (let j = 0; j < subFolders.length; j++) {
           const subFile = subFolders[j];
@@ -218,7 +219,7 @@ export class AdminResources implements IApiBase {
       const oldPath = path.join(basePath, data.oldName);
       if (await FsUtils.pathExist(oldPath)) {
         const newPath = path.join(basePath, data.newName);
-        await FsUtils.renamePath(oldPath, newPath);
+        await FsUtils.rename(oldPath, newPath);
         if (await FsUtils.pathExist(newPath)) {
           const response = {
             status: 'ok',
@@ -262,6 +263,54 @@ export class AdminResources implements IApiBase {
     const response = {
       status: 'error',
       message: 'Resource not found',
+    };
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  async removeDir(req: ServerRequest, res: ServerResponse) {
+    const data = this.chkData(req.locals.json(), req, res, true);
+    if (!data) return true;
+
+    if (typeof data.resource === 'string') {
+      const resPath = path.join(data.resource);
+      if (await FsUtils.pathExist(resPath)) {
+        await FsUtils.unlinkFolderEmpty(resPath);
+        const response = {
+          status: 'ok',
+          message: 'Directory removed',
+        };
+        ApiHelper.sendJson(req, res, response);
+        return true;
+      }
+    }
+    const response = {
+      status: 'error',
+      message: 'Directory not found or has files',
+    };
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  async newFolder(req: ServerRequest, res: ServerResponse) {
+    const data = this.chkData(req.locals.json(), req, res, true);
+    if (!data) return true;
+
+    if (typeof data.resource === 'string' && data.newName) {
+      const resPath = path.join(data.resource, data.newName);
+      if (!await FsUtils.pathExist(resPath)) {
+        await FsUtils.mkdir(resPath);
+        const response = {
+          status: 'ok',
+          message: 'Folder created',
+        };
+        ApiHelper.sendJson(req, res, response);
+        return true;
+      }
+    }
+    const response = {
+      status: 'error',
+      message: 'Folder not created',
     };
     ApiHelper.sendJson(req, res, response);
     return true;

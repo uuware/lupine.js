@@ -1,4 +1,9 @@
+/*
+HeaderWithBackFrame is a full page frame with header for mobile sliders.
+It has Back icon at Left and Close icon at Right.
+*/
 import { VNode, CssProps, RefProps, HtmlVar } from 'lupine.components';
+import { MobileHeaderTitleIcon } from './mobile-header-title-icon';
 
 export const HeaderWithBackFrameHeight = '40px';
 export const HeaderWithBackFrameLeft = ({ onClick }: { onClick: (event: Event) => void }) => {
@@ -16,10 +21,11 @@ export const HeaderWithBackFrameEmpty = () => {
 };
 
 export interface HeaderWithBackFrameHookProps {
-  updateTitle?: (title: string) => void;
+  updateTitle?: (title: VNode<any> | string) => void;
   updateLeft?: (left: VNode<any>) => void;
   updateRight?: (right: VNode<any>) => void;
 }
+// there may have a few HeaderWithBackFrame one over another at the same time
 export const HeaderWithBackFrame = ({
   children,
   title,
@@ -30,7 +36,7 @@ export const HeaderWithBackFrame = ({
   noHeader = false,
 }: {
   children: VNode<any>;
-  title: string;
+  title: VNode<any> | string;
   onBack: (event: Event) => void;
   left?: VNode<any>;
   right?: VNode<any>;
@@ -51,7 +57,7 @@ export const HeaderWithBackFrame = ({
       width: '100vw',
       padding: '6px 0',
       backgroundColor: 'var(--activatable-bg-color-normal)',
-      boxShadow: '0 2px 4px var(--primary-border-color)',
+      boxShadow: 'var(--mobile-header-shadow)',
     },
     '.header-back-content': {
       display: 'flex',
@@ -61,10 +67,12 @@ export const HeaderWithBackFrame = ({
       scrollbarWidth: 'none',
       position: 'relative',
       '&::-webkit-scrollbar': {
-        height: '0',
+        display: 'none',
+        // height: '0',
       },
     },
     '.header-back-title': {
+      fontSize: '15px',
       flex: '1',
       color: 'var(--activatable-text-color-normal)',
       overflow: 'hidden',
@@ -84,13 +92,11 @@ export const HeaderWithBackFrame = ({
     '.header-back-left i, .header-back-right i': {
       fontSize: '28px',
     },
-
   };
 
   if (hook) {
-    hook.updateTitle = (title: string) => {
-      const titleDom = ref.current?.querySelector('.header-back-title') as HTMLDivElement;
-      titleDom && (titleDom.textContent = title);
+    hook.updateTitle = (title: VNode<any> | string) => {
+      domCenter.value = title;
     };
     hook.updateLeft = (left: VNode<any>) => {
       domLeft.value = left;
@@ -100,16 +106,19 @@ export const HeaderWithBackFrame = ({
     };
   }
   const domLeft = HtmlVar(left);
+  const domCenter = HtmlVar(title);
   const domRight = HtmlVar(right);
   const ref: RefProps = {};
   return (
     <div ref={ref} css={css} class='header-back-frame'>
       {!noHeader && (
-        <div class='header-back-top'>
-          <div class='header-back-left'>{domLeft.node}</div>
-          <div class='mobile-title header-back-title'>{title}</div>
-          <div class='header-back-right'>{domRight.node}</div>
-        </div>
+        <MobileHeaderTitleIcon
+          onBack={onBack}
+          left={domLeft.node}
+          title={domCenter.node}
+          right={domRight.node}
+          hook={hook}
+        />
       )}
       <div class='header-back-content'>{children}</div>
     </div>

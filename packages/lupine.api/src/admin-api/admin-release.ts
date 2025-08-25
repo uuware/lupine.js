@@ -14,6 +14,7 @@ import {
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
 import { adminTokenHelper } from './admin-token-helper';
+import { Readable } from 'stream';
 
 export class AdminRelease implements IApiBase {
   private logger = new Logger('release-api');
@@ -31,6 +32,7 @@ export class AdminRelease implements IApiBase {
     // called by FE
     this.router.use('/check', needDevAdminSession, this.check.bind(this));
     this.router.use('/update', needDevAdminSession, this.update.bind(this));
+    this.router.use('/view-log', needDevAdminSession, this.viewLog.bind(this));
     // called online or by clients
     this.router.use('/refresh-cache', needDevAdminSession, this.refreshCache.bind(this));
 
@@ -38,6 +40,48 @@ export class AdminRelease implements IApiBase {
     this.router.use('/byClientCheck', this.byClientCheck.bind(this));
     this.router.use('/byClientUpdate', this.byClientUpdate.bind(this));
     this.router.use('/byClientRefreshCache', this.byClientRefreshCache.bind(this));
+    this.router.use('/byClientViewLog', this.byClientViewLog.bind(this));
+  }
+
+  async viewLog(req: ServerRequest, res: ServerResponse) {
+    const jsonData = req.locals.json();
+    const data = await this.chkData(jsonData, req, res, true);
+    if (!data) return true;
+
+    let targetUrl = data.targetUrl as string;
+    if (targetUrl.endsWith('/')) {
+      targetUrl = targetUrl.slice(0, -1);
+    }
+    const remoteData = await fetch(targetUrl + '/api/admin/release/byClientViewLog', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    // (remoteData.body as any).pipe(res);
+    const data2 = await remoteData.text();
+    // res.setHeader('Content-Disposition', 'attachment; filename="log.txt"');
+    res.writeHead(200, { 'Content-Type': 'application/octet-stream' });
+    res.write(data2);
+    res.end();
+    return true;
+  }
+
+  async byClientViewLog(req: ServerRequest, res: ServerResponse) {
+    const jsonData = req.locals.json();
+    const data = await this.chkData(jsonData, req, res, true);
+    if (!data) return true;
+
+    const appData = apiCache.getAppData();
+    const logFile = path.join(appData.apiPath, '../../log', data.logName);
+    if (!(await FsUtils.pathExist(logFile))) {
+      const response = {
+        status: 'error',
+        message: 'Log file not found.',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
+    ApiHelper.sendFile(req, res, logFile);
+    return true;
   }
 
   async refreshCache(req: ServerRequest, res: ServerResponse) {
@@ -96,7 +140,8 @@ export class AdminRelease implements IApiBase {
         return data;
       } else if (
         process.env['DEV_ADMIN_PASS'] !== '' &&
-        data.accessToken === `${process.env['DEV_ADMIN_USER']}@${process.env['DEV_ADMIN_PASS']}`
+        (data.accessToken === `${process.env['DEV_ADMIN_USER']}@${process.env['DEV_ADMIN_PASS']}` ||
+          data.accessToken === `${process.env['DEV_ADMIN_USER']}:${process.env['DEV_ADMIN_PASS']}`)
       ) {
         return data;
       } else {
@@ -119,7 +164,7 @@ export class AdminRelease implements IApiBase {
 
     // From app list is from local
     const appData = apiCache.getAppData();
-    const folders = await FsUtils.getListNames(path.join(appData.apiPath, '..'));
+    const folders = await FsUtils.getDirAndFiles(path.join(appData.apiPath, '..'));
     const apps = folders.filter((app: string) => app.endsWith('_web')).map((app: string) => app.replace('_web', ''));
 
     let targetUrl = data.targetUrl as string;
@@ -137,14 +182,33 @@ export class AdminRelease implements IApiBase {
     } catch (e: any) {
       remoteResult = { status: 'error', message: resultText };
     }
+
+    // local dirs under _web
+    const webSubFolders = await FsUtils.getDirsFullpath(appData.webPath);
     const response = {
       status: 'ok',
       message: 'check.',
       appsFrom: apps,
       ...remoteResult,
+      webSub: webSubFolders.filter((folder) => folder.isDirectory()).map((folder) => folder.name),
     };
     ApiHelper.sendJson(req, res, response);
     return true;
+  }
+
+  async getFileList(parentPath: string, subFolders: string[]) {
+    const subFoldersWithTime = [];
+    for (let j = 0; j < subFolders.length; j++) {
+      const subFolder = subFolders[j];
+      const fileInfo = await FsUtils.fileInfo(path.join(parentPath, subFolder));
+      subFoldersWithTime.push({
+        name: subFolder,
+        time: new Date(fileInfo!.mtime).toLocaleString(),
+        size: fileInfo?.size,
+        dir: fileInfo?.isDir,
+      });
+    }
+    return subFoldersWithTime;
   }
 
   // called by clients
@@ -154,32 +218,25 @@ export class AdminRelease implements IApiBase {
     if (!data) return true;
 
     const appData = apiCache.getAppData();
-    const folders = await FsUtils.getListNames(path.join(appData.apiPath, '..'));
+    const folders = await FsUtils.getDirAndFiles(path.join(appData.apiPath, '..'));
     const apps = folders.filter((app: string) => app.endsWith('_web')).map((app: string) => app.replace('_web', ''));
 
     const foldersWithTime = [];
     for (let i = 0; i < folders.length; i++) {
       const folder = folders[i];
-      const subFolders = await FsUtils.getListNames(path.join(appData.apiPath, '..', folder));
-      const subFoldersWithTime = [];
-      for (let j = 0; j < subFolders.length; j++) {
-        const subFolder = subFolders[j];
-        const fileInfo = await FsUtils.fileInfo(path.join(appData.apiPath, '..', folder, subFolder));
-        subFoldersWithTime.push({
-          name: subFolder,
-          time: new Date(fileInfo!.mtime).toLocaleString(),
-          size: fileInfo?.size,
-        });
-      }
+      const subFolders = await FsUtils.getDirAndFiles(path.join(appData.apiPath, '..', folder));
+      const subFoldersWithTime = await this.getFileList(path.join(appData.apiPath, '..', folder), subFolders);
       const fileInfo = await FsUtils.fileInfo(path.join(appData.apiPath, '..', folder));
       foldersWithTime.push({
         name: folder,
         time: new Date(fileInfo!.mtime).toLocaleString(),
         items: subFoldersWithTime,
+        dir: fileInfo?.isDir,
       });
     }
 
-    // const logFolders = await FsUtils.getListNames(path.join(appData.apiPath, '../../log'));
+    const logFolders = await FsUtils.getDirAndFiles(path.join(appData.apiPath, '../../log'));
+    const logFoldersWithTime = await this.getFileList(path.join(appData.apiPath, '../../log'), logFolders);
     const response = {
       status: 'ok',
       message: 'Remote server information called from a client.',
@@ -187,7 +244,7 @@ export class AdminRelease implements IApiBase {
       apps,
       folders,
       foldersWithTime,
-      // logs: logFolders,
+      logs: logFoldersWithTime,
     };
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -241,6 +298,17 @@ export class AdminRelease implements IApiBase {
           return true;
         }
       }
+
+      if (data.webSubs && data.webSubs.length > 0) {
+        for (let i = 0; i < data.webSubs.length; i++) {
+          data.webSub = data.webSubs[i];
+          const result2 = await this.updateSendFile(data, 'web-sub');
+          if (!result2 || result2.status !== 'ok') {
+            ApiHelper.sendJson(req, res, result2);
+            return true;
+          }
+        }
+      }
     }
     if (data.chkApi) {
       const result = await this.updateSendFile(data, 'api');
@@ -285,7 +353,7 @@ export class AdminRelease implements IApiBase {
     } else if (chkOption.startsWith('.env')) {
       sendFile = path.join(appData.apiPath, '../../..', chkOption);
     }
-    if (!(await FsUtils.fileInfo(sendFile))) {
+    if (!(await FsUtils.pathExist(sendFile))) {
       return { status: 'error', message: 'Client file not found: ' + sendFile };
     }
     const fileContent = (await FsUtils.readFile(sendFile))!;
@@ -369,11 +437,15 @@ export class AdminRelease implements IApiBase {
       } else if (chkOption === 'web') {
         saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
       } else if (chkOption === 'web-sub' && data.webSub) {
+        const folder = path.join(appData.apiPath, '..', toList + '_web', data.webSub);
+        if (!(await FsUtils.pathExist(folder))) {
+          await FsUtils.mkdir(folder);
+        }
         saveFile = path.join(appData.apiPath, '..', toList + '_web', data.webSub, 'index.js');
       } else if ((chkOption as string).startsWith('.env')) {
         saveFile = path.join(appData.apiPath, '../../..', chkOption);
       }
-      if (!(await FsUtils.fileInfo(saveFile))) {
+      if (chkOption !== 'web-sub' && !(await FsUtils.pathExist(saveFile))) {
         const response = {
           status: 'error',
           message: 'Server file not found: ' + saveFile,

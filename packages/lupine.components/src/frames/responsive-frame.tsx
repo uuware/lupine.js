@@ -1,15 +1,26 @@
-import { VNode, CssProps, MediaQueryRange } from 'lupine.components';
-import { MobileFooterMenu, MobileFooterMenuItemProps } from '../components/mobile-components/mobile-footer-menu';
-import { MobileHeaderComponent } from '../components/mobile-components/mobile-header-component';
+/* ResponsiveFrame for desktop and mobile
+sliderFrameHook is for slider frame from right or bottom used in side-menu
+*/
 
-export const ResponsiveFrame = async (
-  placeholderClassname: string,
-  title: string,
-  footerTitle: string,
-  logoUrl: string,
-  vnode: VNode<any>,
-  bottomMenu: MobileFooterMenuItemProps[]
-) => {
+import { VNode, CssProps, MediaQueryRange, SliderFrameHookProps, SliderFrame } from 'lupine.components';
+import { MobileFooterMenu } from '../components/mobile-components/mobile-footer-menu';
+import { DesktopFooter } from '../components/desktop-footer';
+import { DesktopHeader } from '../components/desktop-header';
+import { MobileHeaderComponent } from '../components/mobile-components/mobile-header-component';
+import { MobileSideMenu } from '../components/mobile-components/mobile-side-menu';
+import { IconMenuItemProps } from '../components/mobile-components/icon-menu-item-props';
+
+export interface ResponsiveFrameProps {
+  placeholderClassname: string;
+  mainContent: VNode<any>;
+  desktopHeaderTitle: string;
+  desktopFooterTitle: string;
+  desktopTopMenu: IconMenuItemProps[];
+  mobileBottomMenu: IconMenuItemProps[];
+  mobileSideMenuContent: VNode<any>;
+  sliderFrameHook: SliderFrameHookProps;
+}
+export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
   const cssContainer: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -20,22 +31,16 @@ export const ResponsiveFrame = async (
       display: 'flex',
       flexDirection: 'column',
       width: '100vw',
-      // height: '72px',
-      // position: 'fixed',
-      // left: 0,
-      // top: 0,
-      // zIndex: 'var(--layer-menu)',
       backgroundColor: 'var(--activatable-bg-color-normal)',
     },
     '.frame-content': {
       display: 'flex',
       flex: '1',
       flexDirection: 'column',
-      // paddingTop: '100px',
       overflowY: 'auto',
       scrollbarWidth: 'none',
       '&::-webkit-scrollbar': {
-        height: '0',
+        display: 'none',
       },
     },
     '.content-block': {
@@ -45,39 +50,32 @@ export const ResponsiveFrame = async (
       overflowY: 'auto',
       scrollbarWidth: 'none',
     },
+    '.content-block::-webkit-scrollbar': {
+      display: 'none',
+    },
     '.content-block .padding-block': {
       padding: '0 16px',
     },
-    // '.frame-footer': {
-    //   paddingTop: '57px', // 应该和底部菜单的高度一致
-    // },
     [MediaQueryRange.TabletBelow]: {
-      // .header-box,
       '.frame-footer .footer-box, .frame-top-menu .desktop-menu-box': {
         display: 'none',
-      },
-      // '.content-block': {
-      //   paddingBottom: '16px',
-      // },
-      '.metronome-page-box, .gauge-box': {
-        boxShadow: '#313131 2.02px 2.02px 5.08px 1px !important',
       },
     },
   };
 
   return (
     <div css={cssContainer} class='responsive-frame'>
+      <SliderFrame hook={props.sliderFrameHook} />
       <div class='frame-top-menu'>
-        {/* <DesktopTopMenu title={title}></DesktopTopMenu> */}
+        <DesktopHeader title={props.desktopHeaderTitle} items={props.desktopTopMenu}></DesktopHeader>
         <MobileHeaderComponent></MobileHeaderComponent>
       </div>
       <div class='frame-content'>
-        <div class={'content-block ' + placeholderClassname}>{vnode}</div>
+        <MobileSideMenu>{props.mobileSideMenuContent}</MobileSideMenu>
+        <div class={'content-block ' + props.placeholderClassname}>{props.mainContent}</div>
         <div class='frame-footer'>
-          <div class='footer-box'>
-            <div class='footer-cp'>{footerTitle}</div>
-          </div>
-          <MobileFooterMenu items={bottomMenu}></MobileFooterMenu>
+          <DesktopFooter title={props.desktopFooterTitle}></DesktopFooter>
+          <MobileFooterMenu items={props.mobileBottomMenu}></MobileFooterMenu>
         </div>
       </div>
     </div>

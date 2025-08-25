@@ -170,31 +170,6 @@ body {
   overflow: hidden;
 }
 
-.color-inherit {
-  color: inherit;
-}
-.color-red {
-  color: red;
-}
-.color-green {
-  color: green;
-}
-.color-blue {
-  color: blue;
-}
-.color-yellow {
-  color: yellow;
-}
-.color-gray {
-  color: gray;
-}
-.color-black {
-  color: black;
-}
-.color-white {
-  color: white;
-}
-
 /* h1 {
   font-size: 2.5rem;
 }
@@ -1991,4 +1966,30 @@ h6,
   top: 0;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* colors should be after others, so it can overwrite others */
+.color-inherit {
+  color: inherit;
+}
+.color-red {
+  color: red;
+}
+.color-green {
+  color: green;
+}
+.color-blue {
+  color: blue;
+}
+.color-yellow {
+  color: yellow;
+}
+.color-gray {
+  color: gray;
+}
+.color-black {
+  color: black;
+}
+.color-white {
+  color: white;
 }
