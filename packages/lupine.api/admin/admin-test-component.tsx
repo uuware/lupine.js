@@ -209,14 +209,14 @@ const TestWindows = () => {
           label='Test PopupMenu'
           list={list}
           defaultValue={''}
-          noUpdateValue={true}
+          noUpdateLabel={true}
           handleSelected={handleSelected}
         ></PopupMenuWithButton>
         <PopupMenuWithLabel
           label='Test PopupMenu'
           list={list}
           defaultValue={''}
-          noUpdateValue={true}
+          noUpdateLabel={true}
           handleSelected={handleSelected}
         ></PopupMenuWithLabel>
       </div>

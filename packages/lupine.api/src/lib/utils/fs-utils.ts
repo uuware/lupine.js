@@ -1,3 +1,4 @@
+import { Dirent } from 'fs';
 import * as fs from 'fs/promises';
 
 export type FileInfoProps = {
@@ -62,7 +63,7 @@ export class FsUtils {
     }
   };
 
-  static pathMkdir = async (dirPath: string) => {
+  static mkdir = async (dirPath: string) => {
     try {
       await fs.mkdir(dirPath, { recursive: true });
       return true;
@@ -98,7 +99,7 @@ export class FsUtils {
     }
   };
 
-  static renamePath = async (filePath: string, newPath: string) => {
+  static rename = async (filePath: string, newPath: string) => {
     try {
       await fs.rename(filePath, newPath);
       return true;
@@ -107,7 +108,7 @@ export class FsUtils {
     }
   };
 
-  static getListNames = async (dirPath: string) => {
+  static getDirAndFiles = async (dirPath: string): Promise<string[]> => {
     try {
       const files = await fs.readdir(dirPath, { recursive: false });
       return files;
@@ -116,8 +117,8 @@ export class FsUtils {
     }
   };
 
-  // return with fullpath list
-  static getListDirent = async (dirPath: string) => {
+  // return with fullpath list of Dirent
+  static getDirsFullpath = async (dirPath: string): Promise<Dirent[]> => {
     try {
       const files = await fs.readdir(dirPath, {
         recursive: false,

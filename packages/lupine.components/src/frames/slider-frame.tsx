@@ -1,7 +1,18 @@
-import { VNode, CssProps, RefProps } from 'lupine.web';
-import { stopPropagation } from '../lib';
-import { HtmlVar } from '../components';
-import { MediaQueryRange } from '../styles';
+/* frame component to show pages (sliders) from right or bottom
+  const sliderFrameHook: SliderFrameHookProps = {};
+  const onClick = (event: Event) => {
+    sliderFrameHook.load!(<... />);
+    or
+    sliderFrameHook.close!(event);
+  };
+  return (
+    <div onClick={onClick}>
+      <SliderFrame hook={sliderFrameHook} />
+      ...
+    </div>
+  );
+*/
+import { VNode, CssProps, HtmlVar, RefProps, stopPropagation, MediaQueryRange } from 'lupine.components';
 
 export type SliderFramePosition = 'desktop-slide-left' | 'desktop-slide-right';
 export type SliderFrameHookProps = {
@@ -69,20 +80,21 @@ export const SliderFrame = (props: SliderFrameProps) => {
     },
     '&.desktop-slide-right': {
       [MediaQueryRange.TabletAbove]: {
-        top: '56px',
+        top: '59px',
         left: '30%',
         transform: 'translateX(0)',
-        '.header-back-top': {
+        // notice: here is connected with mobile-header-title-icon.tsx
+        '.mobile-header-title-icon-top': {
           width: '100%',
           boxShadow: 'unset',
         },
         '.header-back-content': {
           width: '100%',
         },
-        '.header-back-title': {
+        '.mhti-title': {
           fontSize: '15px',
         },
-        '.header-back-left, .header-back-right': {
+        '.mhti-left, .mhti-right': {
           display: 'none',
         },
         '&.d-none': {

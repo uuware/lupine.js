@@ -1,4 +1,7 @@
-import { VNode, CssProps } from 'lupine.web';
+/* most top-frame for all other pages
+place to set safe-area-inset-top and other common styles
+*/
+import { VNode, CssProps } from 'lupine.components';
 
 export const TopFrame = async (placeholderClassname: string, vnode: VNode<any>) => {
   const cssContainer: CssProps = {
@@ -18,7 +21,6 @@ export const TopFrame = async (placeholderClassname: string, vnode: VNode<any>) 
     },
   };
 
-  // console.log('Web version: ', getWebVersion());
   return (
     <div css={cssContainer}>
       {/* Can't put css on this placeholder node! */}

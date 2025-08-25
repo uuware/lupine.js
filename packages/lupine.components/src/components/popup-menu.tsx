@@ -1,11 +1,14 @@
 import { CssProps, RefProps, VNode } from 'lupine.web';
 import { stopPropagation } from '../lib';
 
-export type PopupMenuOpenMenuProps = { handle?: Function };
+export type PopupMenuHookProps = {
+  openMenu?: (event?: MouseEvent) => void;
+  getValue?: () => string;
+};
 
 // defaultValue=<i class='ifc-icon co-cil-hamburger-menu'></i>
 export const PopupMenuWithIcon = (props: PopupMenuProps) => {
-  const handle: PopupMenuOpenMenuProps = {};
+  const hook: PopupMenuHookProps = {};
   const css: CssProps = {
     cursor: 'pointer',
     display: 'flex',
@@ -16,7 +19,7 @@ export const PopupMenuWithIcon = (props: PopupMenuProps) => {
   return (
     <div
       onClick={() => {
-        handle.handle && handle.handle();
+        hook.openMenu && hook.openMenu();
       }}
       css={css}
     >
@@ -30,8 +33,8 @@ export const PopupMenuWithIcon = (props: PopupMenuProps) => {
         handleSelected={props.handleSelected}
         handleOpened={props.handleOpened}
         handleClosed={props.handleClosed}
-        noUpdateValue={props.noUpdateValue}
-        refOpenMenu={handle}
+        noUpdateLabel={props.noUpdateLabel}
+        hook={hook}
         noTriangleIcon={props.noTriangleIcon}
       ></PopupMenu>
     </div>
@@ -40,7 +43,7 @@ export const PopupMenuWithIcon = (props: PopupMenuProps) => {
 
 export type PopupMenuProps = {
   list: string[];
-  defaultValue: string | VNode<any>;
+  defaultValue: string;
   tips?: string;
   minWidth?: string;
   maxWidth?: string;
@@ -48,8 +51,8 @@ export type PopupMenuProps = {
   handleSelected?: Function;
   handleOpened?: Function;
   handleClosed?: Function;
-  noUpdateValue?: boolean;
-  refOpenMenu?: PopupMenuOpenMenuProps;
+  noUpdateLabel?: boolean;
+  hook?: PopupMenuHookProps;
   noTriangleIcon?: boolean;
   align?: 'left' | 'right';
 };
@@ -57,12 +60,12 @@ export type PopupMenuProps = {
 export type PopupMenuWithButtonProps = { label: string } & PopupMenuProps;
 
 export const PopupMenuWithButton = (props: PopupMenuWithButtonProps) => {
-  const handle: PopupMenuOpenMenuProps = {};
+  const hook: PopupMenuHookProps = {};
   return (
     <button
       class='button-base'
       onClick={() => {
-        handle.handle && handle.handle();
+        hook.openMenu && hook.openMenu();
       }}
       css={{ '>div': { float: 'right', textAlign: 'left' } }}
     >
@@ -77,8 +80,8 @@ export const PopupMenuWithButton = (props: PopupMenuWithButtonProps) => {
         handleSelected={props.handleSelected}
         handleOpened={props.handleOpened}
         handleClosed={props.handleClosed}
-        noUpdateValue={props.noUpdateValue}
-        refOpenMenu={handle}
+        noUpdateLabel={props.noUpdateLabel}
+        hook={hook}
         noTriangleIcon={props.noTriangleIcon}
         align={props.align}
       ></PopupMenu>
@@ -89,11 +92,11 @@ export const PopupMenuWithButton = (props: PopupMenuWithButtonProps) => {
 export type PopupMenuWithLabelProps = { label: string } & PopupMenuProps;
 
 export const PopupMenuWithLabel = (props: PopupMenuWithLabelProps) => {
-  const handle: PopupMenuOpenMenuProps = {};
+  const hook: PopupMenuHookProps = {};
   return (
     <div
       onClick={() => {
-        handle.handle && handle.handle();
+        hook.openMenu && hook.openMenu();
       }}
       css={{ cursor: 'pointer', '>div': { float: 'right', textAlign: 'left' } }}
     >
@@ -108,8 +111,8 @@ export const PopupMenuWithLabel = (props: PopupMenuWithLabelProps) => {
         handleSelected={props.handleSelected}
         handleOpened={props.handleOpened}
         handleClosed={props.handleClosed}
-        noUpdateValue={props.noUpdateValue}
-        refOpenMenu={handle}
+        noUpdateLabel={props.noUpdateLabel}
+        hook={hook}
         noTriangleIcon={props.noTriangleIcon}
         align={props.align}
       ></PopupMenu>
@@ -127,12 +130,12 @@ export const PopupMenu = ({
   handleSelected,
   handleOpened,
   handleClosed,
-  noUpdateValue,
-  refOpenMenu,
+  noUpdateLabel,
+  hook,
   align = 'right',
   noTriangleIcon,
 }: PopupMenuProps) => {
-  const css: any = {
+  const css: CssProps = {
     '.popup-menu-item': {
       padding: '0 0 1px 0',
       display: 'inline-block',
@@ -209,7 +212,8 @@ export const PopupMenu = ({
 
   let ref: RefProps = { id: '' };
   let isShowing = false;
-  const handleClick = (event: any) => {
+  let selectedValue = defaultValue;
+  const openMenu = (event?: MouseEvent) => {
     stopPropagation(event);
 
     handleOpened && handleOpened();
@@ -224,8 +228,9 @@ export const PopupMenu = ({
     listDom.classList.toggle('open', isShowing);
     ref.$('.popup-menu-list .menu-focus').focus();
   };
-  if (refOpenMenu) {
-    refOpenMenu.handle = handleClick;
+  if (hook) {
+    hook.openMenu = openMenu;
+    hook.getValue = () => selectedValue;
   }
   const itemClick = (event: any) => {
     stopPropagation(event);
@@ -234,7 +239,8 @@ export const PopupMenu = ({
     isShowing = false;
     ref.$('.popup-menu-list').classList.remove('open');
     if (event.target) {
-      if (noUpdateValue !== true) {
+      selectedValue = event.target.innerText;
+      if (noUpdateLabel !== true) {
         ref.$('.popup-menu-item .popup-menu-text').innerText = event.target.innerText;
       }
       if (handleSelected) {
@@ -252,7 +258,7 @@ export const PopupMenu = ({
   };
 
   return (
-    <div ref={ref} css={css} onClick={handleClick} title={tips}>
+    <div ref={ref} css={css} onClick={openMenu} title={tips}>
       <div class='popup-menu-item'>
         <span class={'popup-menu-text' + (noTriangleIcon !== true ? ' triangle-icon' : '')}>
           {defaultValue || '&nbsp;'}
