@@ -26,7 +26,7 @@ export class StaticServer {
       fileStream.on('open', () => {
         let ext = path.extname(realPath);
         ext = ext ? ext.slice(1) : 'unknown';
-        const contentType = serverContentType[ext] || 'text/plain';
+        const contentType = serverContentType[ext] || 'application/octet-stream';
         res.writeHead(200, {
           'Content-Type': contentType + '; charset=UTF-8',
         });

@@ -1,4 +1,4 @@
-import { RefProps } from 'lupine.web';
+import { CssProps, RefProps } from 'lupine.web';
 import { HtmlVar } from './html-var';
 
 export type ProgressHookProps = {
@@ -10,7 +10,7 @@ export type ProgressProps = {
 };
 
 export const Progress = (props: ProgressProps) => {
-  const css: any = {
+  const css: CssProps = {
     position: 'fixed',
     display: 'flex',
     bottom: '0',

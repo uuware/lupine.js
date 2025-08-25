@@ -6,9 +6,22 @@ import {
   HtmlVar,
   NotificationColor,
   NotificationMessage,
+  formatBytes,
 } from 'lupine.components';
 
-const ReleaseList = (props: { result: any; onUpdate: () => void }) => {
+interface DirProps {
+  name: string;
+  time: string;
+  size: number;
+  dir: boolean;
+  items?: DirProps[];
+}
+interface ReleaseListProps {
+  result: any;
+  onUpdate: () => void;
+  onLogClick: (logName: string) => Promise<void>;
+}
+const ReleaseList = (props: ReleaseListProps) => {
   const ref: RefProps = {
     onLoad: async () => {
       const data = JSON.parse(localStorage.getItem('admin-release') || '{}');
@@ -78,9 +91,19 @@ const ReleaseList = (props: { result: any; onUpdate: () => void }) => {
       <div class='row-box mt-m'>
         <label class='label mr-m release-label'>Web Sub-folder:</label>
         <div class='w-50p mr-l'>
-          <input type='text' class='input-base w-100p input-web-sub' placeholder='The Sub-folder you want to update' />
+          {/* <input type='text' class='input-base w-100p input-web-sub' placeholder='The Sub-folder you want to update' /> */}
+
+          {props.result.webSub.map((folder: string) => (
+            <div>
+              <label>
+                <input type='checkbox' class={'chk-web-sub input-' + folder} value={folder} /> {folder}
+              </label>
+            </div>
+          ))}
+          <label class='label mr-m release-label'>(Only update index.js file)</label>
         </div>
       </div>
+      <LogList logs={props.result.logs} onLogClick={props.onLogClick} />
       <div class='row-box mt-m'>
         <button onClick={props.onUpdate} class='button-base release-update-btn'>
           Update
@@ -90,8 +113,29 @@ const ReleaseList = (props: { result: any; onUpdate: () => void }) => {
   );
 };
 
+const LogList = (props: {
+  logs: { name: string; size: number; time: string }[];
+  onLogClick: (logName: string) => Promise<void>;
+}) => {
+  return (
+    <div>
+      <div class='row-box mt-m'>
+        <label class='label mr-m release-label'>Logs:</label>
+        <div type='text'>
+          {props.logs.map((log: { name: string; size: number; time: string }) => (
+            <div>
+              <label class='release-log' onClick={() => props.onLogClick(log.name)}>{`${log.name}`}</label> ({log.time};{' '}
+              {formatBytes(log.size)}){' '}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const AdminReleasePage = () => {
-  const fetchData = async (options: { targetUrl: string; accessToken: string }) => {
+  const fetchData = async (options: { targetUrl: string; accessToken: string; log?: boolean }) => {
     const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/check', options);
     console.log('AdminRelease', data);
     return data.json;
@@ -99,6 +143,10 @@ export const AdminReleasePage = () => {
   const css: CssProps = {
     '.release-label': {
       width: '130px',
+    },
+    '.release-log': {
+      cursor: 'pointer',
+      textDecoration: 'underline',
     },
   };
   const domLog = HtmlVar('');
@@ -127,6 +175,10 @@ export const AdminReleasePage = () => {
     const chkApi = DomUtils.getChecked('.chk-api');
     const chkWeb = DomUtils.getChecked('.chk-web');
     const webSub = DomUtils.getValue('.input-web-sub');
+    const webSubs = document.querySelectorAll<HTMLInputElement>('.chk-web-sub');
+    const webSubsChecked = Array.from(webSubs)
+      .filter((input) => input.checked)
+      .map((input) => input.value);
     const chkEnv = DomUtils.getChecked('.chk-env');
     const chkBackup = DomUtils.getChecked('.chk-backup');
     if (!chkServer && !chkApi && !chkWeb && !chkEnv) {
@@ -149,7 +201,8 @@ export const AdminReleasePage = () => {
       chkServer,
       chkApi,
       chkWeb,
-      webSub,
+      webSub, // will be deprecated
+      webSubs: webSubsChecked,
       chkEnv,
       chkBackup,
     });
@@ -163,6 +216,24 @@ export const AdminReleasePage = () => {
     NotificationMessage.sendMessage('Release updated successfully', NotificationColor.Success);
   };
 
+  const onLogClick = async (logName: string) => {
+    const data = getDomData();
+    if (!data.targetUrl || !data.accessToken) {
+      NotificationMessage.sendMessage('Please fill in all fields', NotificationColor.Error);
+      return;
+    }
+
+    const responseText = await getRenderPageProps().renderPageFunctions.fetchData(
+      '/api/admin/release/view-log',
+      {
+        ...data,
+        logName,
+      },
+      true
+    );
+    const blob = await responseText.blob();
+    DomUtils.downloadStream(blob, logName);
+  };
   const onCheck = async () => {
     const data = getDomData();
     if (!data.targetUrl || !data.accessToken) {
@@ -176,7 +247,7 @@ export const AdminReleasePage = () => {
     }
     console.log(result);
 
-    domUpdate.value = <ReleaseList result={result} onUpdate={onUpdate} />;
+    domUpdate.value = <ReleaseList result={result} onUpdate={onUpdate} onLogClick={onLogClick} />;
     domLog.value = <pre>{JSON.stringify(result, null, 2)}</pre>;
   };
 
@@ -231,10 +302,10 @@ export const AdminReleasePage = () => {
         </div>
       </div>
       <div class='row-box mt1 mb1'>
-        <button onClick={onCheck} class='button-base'>
+        <button onClick={onCheck} class='button-base mr-m'>
           Check
         </button>
-        <button onClick={onRefreshCacheRemote} class='button-base'>
+        <button onClick={onRefreshCacheRemote} class='button-base mr-m'>
           Refresh Cache (Remote)
         </button>
         <button onClick={onRefreshCacheLocal} class='button-base'>

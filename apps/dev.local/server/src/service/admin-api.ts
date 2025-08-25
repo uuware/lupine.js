@@ -63,7 +63,7 @@ export const addCfgFile = async (req: ServerRequest, res: ServerResponse) => {
   const appData = apiCache.getAppData();
   const dataPath = appData.dataPath + '/cfg-files/';
   if (!(await FsUtils.pathExist(dataPath))) {
-    await FsUtils.pathMkdir(dataPath);
+    await FsUtils.mkdir(dataPath);
   }
   const filename = dataPath + fname;
   // write data to a file
