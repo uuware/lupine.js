@@ -19,7 +19,7 @@ export class WebServer {
   handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
     const clientIp = `${(socket as any).remoteAddress}:${(socket as any).remotePort}`;
     if (req.url?.startsWith('/debug') && socket.readable && socket.writable) {
-      logger.info(`Upgrade WebSocket access: ${req.url} from ${clientIp}.`);
+      logger.debug(`Upgrade WebSocket access: ${req.url} from ${clientIp}.`);
       DebugService.handleUpgrade(req, socket, head);
     } else {
       logger.error(`Unexpected web socket access: ${req.url} from ${clientIp}`);

@@ -1,14 +1,8 @@
-import { CssProps } from 'lupine.web';
-import { MediaQueryRange } from '../../styles';
+import { CssProps, MediaQueryRange } from 'lupine.components';
+import { IconMenuItemProps } from './icon-menu-item-props';
 
-export interface MobileFooterMenuItemProps {
-  icon: string;
-  href: string;
-  text: string;
-  topout?: boolean;
-}
 export interface MobileFooterMenuProps {
-  items: MobileFooterMenuItemProps[];
+  items: IconMenuItemProps[];
   color?: string;
   activeColor?: string;
   topoutColor?: string;
@@ -51,8 +45,10 @@ export const MobileFooterMenu = (props: MobileFooterMenuProps) => {
     '.footer-menu .footer-menu-item.footer-menu-topout': {
       marginTop: '-43px',
       borderRadius: '50%',
-      backgroundColor: props.topoutBackgroundColor || '#ff8f8f',
+      backgroundColor: props.topoutBackgroundColor || '#f33939',
       color: props.topoutColor || 'var(--primary-color)',
+    },
+    '.footer-menu .footer-menu-item-a': {
       zIndex: 'var(--layer-header-footer)',
     },
     '.footer-menu .footer-menu-item.active': {
@@ -76,7 +72,7 @@ export const MobileFooterMenu = (props: MobileFooterMenuProps) => {
     <div css={css} class='footer-menu-box'>
       <div class='footer-menu'>
         {props.items.map((item, index) => (
-          <a href={item.href} key={index}>
+          <a class='footer-menu-item-a' href={item.href} key={index}>
             <div
               class={`footer-menu-item ${item.topout ? 'footer-menu-topout' : ''} ${
                 curretnUrl === item.href ? 'active' : ''
@@ -88,11 +84,11 @@ export const MobileFooterMenu = (props: MobileFooterMenuProps) => {
             </div>
           </a>
         ))}
-        {/* <div class='footer-menu-item'><a href='/'><i class="ifc-icon bs-person-gear"></i>主页</a></div>
+        {/* <div class='footer-menu-item'><a href='/'><i class="ifc-icon ma-home-outline"></i>主页</a></div>
         <div class='footer-menu-item'><a href='/user/tools'><i class="ifc-icon bo-multimedia-music-note"></i>工具</a></div>
         <div class='footer-menu-item footer-menu-topout'><a href='/user/customer'><i class="ifc-icon co-cil-chat-bubble"></i>客服</a></div>
         <div class='footer-menu-item'><a href='/user/member'><i class="ifc-icon ma-crown-outline"></i>会员</a></div>
-        <div class='footer-menu-item'><a href='/user/mine'><i class="ifc-icon bs-person-gear"></i>我的</a></div> */}
+        <div class='footer-menu-item'><a href='/user/mine'><i class="ifc-icon ma-account-cog-outline"></i>我的</a></div> */}
       </div>
     </div>
   );

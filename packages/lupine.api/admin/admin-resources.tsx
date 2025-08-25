@@ -19,15 +19,20 @@ const ResourcesList = (props: {
   results: any;
   onDownload: (name: string) => void;
   onUploadLocal: (name: string) => void;
+  onNewFolder: (name: string) => void;
   onRename: (fPath: string, fName: string) => void;
   onRemove: (name: string) => void;
+  onRemoveDir: (name: string) => void;
   onListFolder: (folder: string) => void;
   resourcesFullPath: string;
 }) => {
   const listFolder = (results: any, parentFolder = '') => {
     return results.map((result: any) => (
       <div>
-        <div class='row-box mt-m'>
+        <div
+          class={`row-box mt-m` + (typeof result.size === 'undefined' ? ' f-folder' : '')}
+          onClick={() => props.onListFolder(parentFolder + result.name)}
+        >
           <label class='label mr-m f-name'>{result.name}</label>
           <label class='label mr-m f-time'>{result.time}</label>
           <label class='label mr-m f-size'>{typeof result.size !== 'undefined' && formatBytes(result.size)}</label>
@@ -50,7 +55,7 @@ const ResourcesList = (props: {
               <button
                 title='Delete remote file'
                 onClick={() => props.onRemove(parentFolder + result.name)}
-                class='button-base button-s'
+                class='button-base button-s color-red'
               >
                 &#10008;
               </button>
@@ -64,9 +69,24 @@ const ResourcesList = (props: {
               <button
                 title='Choose a local file to upload to remote'
                 onClick={() => props.onUploadLocal(parentFolder + result.name)}
-                class='button-base button-s'
+                class='button-base button-s mr-m'
               >
                 &#8686;
+              </button>
+
+              <button
+                title='Rename remote file'
+                onClick={() => props.onRename(parentFolder + result.name, result.name)}
+                class='button-base button-s'
+              >
+                &#8654;
+              </button>
+              <button
+                title='Delete remote file'
+                onClick={() => props.onRemoveDir(parentFolder + result.name)}
+                class='button-base button-s color-red'
+              >
+                &#10008;
               </button>
             </div>
           )}
@@ -76,6 +96,10 @@ const ResourcesList = (props: {
     ));
   };
   const css: CssProps = {
+    '.f-folder': {
+      textDecoration: 'underline',
+      cursor: 'pointer',
+    },
     '.f-name': {
       width: '200px',
     },
@@ -95,9 +119,13 @@ const ResourcesList = (props: {
         <button
           title='Choose a local file to upload to remote'
           onClick={() => props.onUploadLocal('')}
-          class='button-base button-s'
+          class='button-base button-s mr-m'
         >
           &#8686;
+        </button>
+
+        <button title='Create a sub folder' onClick={() => props.onNewFolder('')} class='button-base button-s'>
+          &#9874;
         </button>
       </div>
       <div class='label mx-m f-name'>{props.resourcesFullPath}</div>
@@ -138,6 +166,24 @@ export const AdminResourcesPage = () => {
         children: <div>Do you upload local files that may overwrite remote file [{fPath}]?</div>,
       });
     };
+    const onNewFolder = async (fPath: string) => {
+      let newName = '';
+      const content = InputWithTitle('New folder name:', '', (value: string) => {
+        newName = value;
+      });
+      MessageBox.show({
+        title: 'Input new folder name',
+        buttonType: MessageBoxButtonProps.OkCancel,
+        contentMinWidth: '300px',
+        handleClicked: async (index: number, close) => {
+          if (index === 0) {
+            await newFolder(fPath, newName);
+          }
+          close();
+        },
+        children: content,
+      });
+    };
 
     const onDownload = async (name: string) => {
       const response = await getRenderPageProps().renderPageFunctions.fetchData(
@@ -155,6 +201,21 @@ export const AdminResourcesPage = () => {
       DomUtils.downloadStream(await response.blob(), name);
     };
 
+    const newFolder = async (fPath: string, fName: string) => {
+      const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/resources/newFolder', {
+        resource: resourcesFullPath + fPath,
+        newName: fName,
+      });
+      const dataResponse = await response.json;
+      if (!dataResponse || dataResponse.status !== 'ok') {
+        NotificationMessage.sendMessage(dataResponse.message || 'Failed to create a folder', NotificationColor.Error);
+        return;
+      }
+      NotificationMessage.sendMessage(
+        'Folder created successfully, you need to refresh the page',
+        NotificationColor.Success
+      );
+    };
     const renameFile = async (fPath: string, fName: string, fNewName: string) => {
       const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/resources/rename', {
         resource: resourcesFullPath + fPath,
@@ -203,9 +264,23 @@ export const AdminResourcesPage = () => {
         NotificationColor.Success
       );
     };
+    const removeDir = async (name: string) => {
+      const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/resources/removeDir', {
+        resource: resourcesFullPath + name,
+      });
+      const dataResponse = await response.json;
+      if (!dataResponse || dataResponse.status !== 'ok') {
+        NotificationMessage.sendMessage(dataResponse.message || 'Failed to remove resource', NotificationColor.Error);
+        return;
+      }
+      NotificationMessage.sendMessage(
+        'Resource removed successfully, you need to refresh the page',
+        NotificationColor.Success
+      );
+    };
     const onRemove = async (name: string) => {
       MessageBox.show({
-        title: 'Remove file on remote system',
+        title: 'Remove file',
         buttonType: MessageBoxButtonProps.YesNo,
         contentMinWidth: '300px',
         handleClicked: (index: number, close) => {
@@ -215,6 +290,20 @@ export const AdminResourcesPage = () => {
           close();
         },
         children: <div>Do you really want to remove the remote file [{name}]?</div>,
+      });
+    };
+    const onRemoveDir = async (name: string) => {
+      MessageBox.show({
+        title: 'Remove directory',
+        buttonType: MessageBoxButtonProps.YesNo,
+        contentMinWidth: '300px',
+        handleClicked: (index: number, close) => {
+          if (index === 0) {
+            removeDir(name);
+          }
+          close();
+        },
+        children: <div>Do you really want to remove the remote directory [{name}]?</div>,
       });
     };
 
@@ -237,8 +326,10 @@ export const AdminResourcesPage = () => {
         results={dataResponse.results.slice(1)}
         onDownload={onDownload}
         onUploadLocal={onUploadLocal}
+        onNewFolder={onNewFolder}
         onRename={onRename}
         onRemove={onRemove}
+        onRemoveDir={onRemoveDir}
         onListFolder={onListFolder}
         resourcesFullPath={resourcesFullPath}
       />
