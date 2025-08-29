@@ -39,3 +39,6 @@ export const clearCookie = (name: string, path?: string, domain?: string, secure
     (domain ? ';domain=' + domain : '') +
     (secure ? ';secure' : '');
 };
+
+// convinent but not good for tree-shaking
+export const cookie = { set: setCookie, get: getCookie, clear: clearCookie };

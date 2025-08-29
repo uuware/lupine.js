@@ -1,13 +1,5 @@
-import { bindGlobalStyles, CssProps, RefProps, VNode, MenuItemProps } from 'lupine.components';
-import {
-  NestMenuItemProps,
-  DomUtils,
-  MenuSidebar,
-  ThemeSelector,
-  TabsHookProps,
-  TabsPageProps,
-  Tabs,
-} from 'lupine.components';
+import { bindGlobalStyles, CssProps, RefProps, VNode, MenuItemProps, clearCookie } from 'lupine.components';
+import { NestMenuItemProps, MenuSidebar, ThemeSelector, TabsHookProps, TabsPageProps, Tabs } from 'lupine.components';
 import { adminCss } from './admin-css';
 import { CreateTablesPage, RunSqlPage } from './admin-db';
 import { TableListPage } from './admin-table-list';
@@ -25,7 +17,7 @@ import { TestComponentPage } from './admin-test-component';
 import { AdminConfigPage } from './admin-config';
 import { AdminAboutPage } from './admin-about';
 
-const chineseMenuText: { text: string, zh: string }[] = [
+const chineseMenuText: { text: string; zh: string }[] = [
   { text: 'Contents', zh: '内容管理' },
   { text: 'Menu List', zh: '菜单列表' },
   { text: 'Page List', zh: '页面列表' },
@@ -56,7 +48,7 @@ const chineseMenuText: { text: string, zh: string }[] = [
   { text: 'About', zh: '关于' },
 ];
 const translateMenuToChinese = (text: string) => {
-  const menuItem = chineseMenuText.find(item => item.text === text);
+  const menuItem = chineseMenuText.find((item) => item.text === text);
   return menuItem ? menuItem.zh : text;
 };
 
@@ -221,7 +213,7 @@ export class AdminFrameHelper {
     },
   ];
 
-  hookBeforeShowMenu?: (adminTopMenu: NestMenuItemProps[]) => NestMenuItemProps[]
+  hookBeforeShowMenu?: (adminTopMenu: NestMenuItemProps[]) => NestMenuItemProps[];
   // Set a hook to modify the admin top menu dynamically before it is shown
   setHookBeforeShowMenu(hook: (adminTopMenu: NestMenuItemProps[]) => NestMenuItemProps[]) {
     this.hookBeforeShowMenu = hook;
@@ -236,9 +228,9 @@ export class AdminFrameHelper {
     this.adminTopMenu = adminTopMenu;
   }
   setChineseAdminTopMenu() {
-    this.adminTopMenu.forEach(item => {
+    this.adminTopMenu.forEach((item) => {
       item.text = translateMenuToChinese(item.text);
-      item.items?.forEach(subItem => {
+      item.items?.forEach((subItem) => {
         subItem.text = translateMenuToChinese(subItem.text);
       });
     });
@@ -255,7 +247,7 @@ export class AdminFrameHelper {
   insertMenuItem(item: NestMenuItemProps[], beforeMenuId?: string) {
     let index = -1;
     if (beforeMenuId) {
-      index = this.adminTopMenu.findIndex(m => m.id === beforeMenuId);
+      index = this.adminTopMenu.findIndex((m) => m.id === beforeMenuId);
     }
     if (index !== -1) {
       this.adminTopMenu.splice(index, 0, ...item);
@@ -264,10 +256,10 @@ export class AdminFrameHelper {
     }
   }
   insertSubMenuItem(item: MenuItemProps[], beforeMenuId: string, beforeSubMenuId?: string) {
-    const index = this.adminTopMenu.findIndex(m => m.id === beforeMenuId);
+    const index = this.adminTopMenu.findIndex((m) => m.id === beforeMenuId);
     if (index !== -1) {
       const subMenu = this.adminTopMenu[index].items || [];
-      const subIndex = subMenu.findIndex(s => s.id === beforeSubMenuId);
+      const subIndex = subMenu.findIndex((s) => s.id === beforeSubMenuId);
       if (subIndex !== -1) {
         subMenu.splice(subIndex, 0, ...item);
       } else {
@@ -277,17 +269,17 @@ export class AdminFrameHelper {
     }
   }
   getMenuItem(menuId: string): NestMenuItemProps | null {
-    const index = this.adminTopMenu.findIndex(m => m.id === menuId);
+    const index = this.adminTopMenu.findIndex((m) => m.id === menuId);
     if (index !== -1) {
       return this.adminTopMenu[index];
     }
     return null;
   }
   getSubMenuItem(menuId: string, subMenuId: string): MenuItemProps | null {
-    const index = this.adminTopMenu.findIndex(m => m.id === menuId);
+    const index = this.adminTopMenu.findIndex((m) => m.id === menuId);
     if (index !== -1) {
       const subMenu = this.adminTopMenu[index].items || [];
-      const subIndex = subMenu.findIndex(s => s.id === subMenuId);
+      const subIndex = subMenu.findIndex((s) => s.id === subMenuId);
       if (subIndex !== -1) {
         return subMenu[subIndex];
       }
@@ -305,7 +297,7 @@ export class AdminFrameHelper {
       return;
     }
     await adminFrameProps.tabsHook.newPage!(title, page);
-  };
+  }
 }
 export const adminFrameHelper = /* @__PURE__ */ new AdminFrameHelper();
 
@@ -355,7 +347,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
       minHeight: '0',
     },
     '.body-menu': {
-      width: '200px',
+      width: '165px',
       // padding: '8px 16px',
       borderRight: 'var(--primary-border)',
       overflowY: 'auto',
@@ -395,7 +387,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
     ...props.css,
   };
   const onLogoutClick = () => {
-    DomUtils.clearCookie('_token_dev', '/');
+    clearCookie('_token_dev', '/');
     window.location.href = '/admin';
   };
 
