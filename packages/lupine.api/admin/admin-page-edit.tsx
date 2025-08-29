@@ -76,9 +76,9 @@ export const AdminPageEditPage = (menuId: string) => {
     onClick();
   };
 
-  const onDownload = async (tableName: string) => {
-    DomUtils.download('/api/admin/db/table-download?table=' + tableName);
-  };
+  // const onDownload = async (tableName: string) => {
+  //   downloadLink('/api/admin/db/table-download?table=' + tableName);
+  // };
 
   const onClick = async () => {
     const json = await fetchTableList();

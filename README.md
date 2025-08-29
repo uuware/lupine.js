@@ -39,6 +39,16 @@ npm run dev
 
 4, now you can open http://localhost:11080 to see the development application
 
+https for localhost
+https://github.com/FiloSottile/mkcert
+1, download mkcert-v1.4.4-windows-amd64.exe
+2, open admin console, run: ./mkcert-v1.4.4-windows-amd64 -install
+3, for a new pc, needs to re-generate the certificate:
+mkcert example.com "*.example.com" localhost 127.0.0.1 ::1
+4, copy the generated certificate to /dev folder
+
+5, in .env file for local api calls with mkcert
+NODE_TLS_REJECT_UNAUTHORIZED=0
 
 # How to debug
 

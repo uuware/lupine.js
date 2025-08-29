@@ -1,4 +1,4 @@
-export const download = (link: string, filename?: string) => {
+export const downloadLink = (link: string, filename?: string) => {
   const dom = document.createElement('a');
   dom.setAttribute('href', link);
   dom.setAttribute('download', filename || 'true');

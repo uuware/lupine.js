@@ -1,4 +1,4 @@
-import { DomUtils, getEitherCookie } from 'lupine.components';
+import { getEitherCookie, setCookie } from 'lupine.components';
 import { userCookieName } from '../models';
 
 export type UserCookieType = {
@@ -15,5 +15,5 @@ export const getCookieUser = (): UserCookieType => {
 export const setCookieUser = (user: UserCookieType) => {
   // for web, client and server are the same domain
   // for mobile and desktop, client domain is localhost and userCookieName is for the client
-  DomUtils.setCookie(userCookieName, JSON.stringify(user || {}), 360, '/');
+  setCookie(userCookieName, JSON.stringify(user || {}), 360, '/');
 };
