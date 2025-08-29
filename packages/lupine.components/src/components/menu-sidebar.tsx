@@ -67,7 +67,7 @@ export const MenuSidebar = ({
       // position: 'absolute',
       // color: 'var(--sidebar-sub-color)',
       // backgroundColor: 'var(--sidebar-sub-bg-color)',
-      minWidth: '160px',
+      minWidth: '165px',
       // boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
       zIndex: 'var(--layer-sidebar-sub)',
       flexDirection: 'column',

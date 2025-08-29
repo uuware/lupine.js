@@ -7,6 +7,7 @@ import {
   NotificationColor,
   NotificationMessage,
   formatBytes,
+  downloadStream,
 } from 'lupine.components';
 
 interface DirProps {
@@ -122,7 +123,7 @@ const LogList = (props: {
       <div class='row-box mt-m'>
         <label class='label mr-m release-label'>Logs:</label>
         <div type='text'>
-          {props.logs.map((log: { name: string; size: number; time: string }) => (
+          {props.logs && props.logs.map((log: { name: string; size: number; time: string }) => (
             <div>
               <label class='release-log' onClick={() => props.onLogClick(log.name)}>{`${log.name}`}</label> ({log.time};{' '}
               {formatBytes(log.size)}){' '}
@@ -232,7 +233,7 @@ export const AdminReleasePage = () => {
       true
     );
     const blob = await responseText.blob();
-    DomUtils.downloadStream(blob, logName);
+    downloadStream(blob, logName);
   };
   const onCheck = async () => {
     const data = getDomData();

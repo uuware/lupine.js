@@ -1,6 +1,6 @@
 import {
+  clearCookie,
   CssProps,
-  DomUtils,
   getRenderPageProps,
   HtmlVar,
   NotificationColor,
@@ -40,7 +40,7 @@ export const UserInfo = (props?: any) => {
 
   const onLogout = async () => {
     // DomUtils.clearCookie(tokenCookieName, '/');
-    DomUtils.clearCookie(userCookieName, '/');
+    clearCookie(userCookieName, '/');
     // call server to clear cookie
     await getRenderPageProps().renderPageFunctions.fetchData('/api/logout');
     window.location.href = '/';

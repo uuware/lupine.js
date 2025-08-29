@@ -1,4 +1,4 @@
-import { CssProps, PageProps, webEnv, DomUtils, NotificationColor, NotificationMessage } from 'lupine.components';
+import { CssProps, PageProps, webEnv, DomUtils, NotificationColor, NotificationMessage, setCookie } from 'lupine.components';
 import { adminCss } from './admin-css';
 
 const fetchLogin = async (props: PageProps, username: string, password: string) => {
@@ -58,7 +58,7 @@ export const AdminLoginPage = async (props: PageProps) => {
       NotificationMessage.sendMessage((auth && auth.message) || 'Login failed', NotificationColor.Error);
     }
     if (auth.result) {
-      DomUtils.setCookie('_token_dev', auth.result, 30, '/');
+      setCookie('_token_dev', auth.result, 30, '/');
       window.location.href = '/admin_dev';
     }
   };

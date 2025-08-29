@@ -6,6 +6,7 @@ import {
   RefProps,
   getRenderPageProps,
   mountComponents,
+  downloadLink,
 } from 'lupine.components';
 import { adminFrameProps } from './admin-frame-props';
 import { TableDataPage } from './admin-table-data';
@@ -52,7 +53,7 @@ export const TableListPage = () => {
   };
 
   const onDownload = async (tableName: string) => {
-    DomUtils.download('/api/admin/db/table/download/' + tableName);
+    downloadLink('/api/admin/db/table/download/' + tableName);
   };
 
   const onTruncate = async (tableName: string) => {
@@ -66,7 +67,7 @@ export const TableListPage = () => {
   };
 
   const onDownloadAll = async () => {
-    DomUtils.download('/api/admin/db/tables/download');
+    downloadLink('/api/admin/db/tables/download');
   };
 
   const onTruncateAll = async () => {
