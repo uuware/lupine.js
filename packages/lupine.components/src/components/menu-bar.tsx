@@ -58,7 +58,7 @@ export const MenuBar = ({
       display: 'none',
       position: 'absolute',
       backgroundColor: 'var(--menubar-sub-bg-color)', //'#f9f9f9',
-      minWidth: '160px',
+      minWidth: '165px',
       boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
       zIndex: 'var(--layer-menu-sub)',
       flexDirection: 'column',

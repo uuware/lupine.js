@@ -12,6 +12,7 @@ import {
   Progress,
   ProgressHookProps,
   uploadFile,
+  downloadStream,
 } from 'lupine.components';
 
 // https://www.toptal.com/designers/htmlarrows/symbols/
@@ -198,7 +199,7 @@ export const AdminResourcesPage = () => {
         return;
       }
 
-      DomUtils.downloadStream(await response.blob(), name);
+      downloadStream(await response.blob(), name);
     };
 
     const newFolder = async (fPath: string, fName: string) => {
