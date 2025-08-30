@@ -23,6 +23,7 @@ export class WebServer {
       DebugService.handleUpgrade(req, socket, head);
     } else {
       logger.error(`Unexpected web socket access: ${req.url} from ${clientIp}`);
+      socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
       socket.destroy();
     }
   }
