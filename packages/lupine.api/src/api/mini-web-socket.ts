@@ -8,159 +8,263 @@ import crypto from 'crypto';
 
 // This is a specification specific to WebSocket protocol
 const WEBSOCKET_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-const SEVEN_BITS_INTEGER_MARKER = 125;
-const SIXTEEN_BITS_INTEGER_MARKER = 126;
 
-const MAXIMUM_SIXTEEN_BITS_INTEGER = 2 ** 16; // 0 to 65536
 const MASK_KEY_BYTES_LENGTH = 4;
-const OPCODE_TEXT = 0x01; // 1 bit in binary 1
-const FIRST_BIT = 128;
+// opcodes
+const OPCODE_CONTINUATION = 0x0;
+const OPCODE_TEXT = 0x1;
+const OPCODE_BINARY = 0x2;
+const OPCODE_CLOSE = 0x8;
+const OPCODE_PING = 0x9;
+const OPCODE_PONG = 0xa;
 
 // This is only used in debug mode (no clusters)
+export type MiniWebSocketMsgProps = (msg: string, socket: Duplex) => void;
+export type MiniWebSocketCloseProps = (status: string) => void;
 export class MiniWebSocket {
   clientRefreshFlag = Date.now();
-  clients = new Set();
-  _onMessage: Function;
+  clients = new Set<Duplex>();
+  private _onMessage: MiniWebSocketMsgProps;
+  private _onClose?: MiniWebSocketCloseProps;
 
-  constructor(onMessage: Function) {
+  constructor(onMessage: MiniWebSocketMsgProps, onClose?: MiniWebSocketCloseProps) {
     this._onMessage = onMessage;
+    this._onClose = onClose;
   }
 
   public handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
+    const key = req.headers['sec-websocket-key'];
+    const upgrade = (req.headers.upgrade || '').toString().toLowerCase();
+    const connection = (req.headers.connection || '').toString().toLowerCase();
+
+    if (!key || upgrade !== 'websocket' || !connection.includes('upgrade')) {
+      socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    const cleanup = (status: string) => {
+      if (this.clients.has(socket)) this.clients.delete(socket);
+      if (!socket.destroyed) socket.destroy();
+      if (this._onClose) this._onClose(status);
+    };
     this.clients.add(socket);
-    socket.on('close', () => {
-      console.log('socket closed');
-      this.clients.delete(socket);
-    });
-    socket.on('error', () => {
-      console.log('socket error');
-      this.clients.delete(socket);
-    });
-    socket.on('end', () => {
-      console.log('socket end');
-      this.clients.delete(socket);
-    });
-    socket.on('readable', () => this.onSocketReadable(socket));
-    const key = req.headers['sec-websocket-key']!;
+    socket.on('close', () => cleanup('close'));
+    socket.on('error', () => cleanup('error'));
+    socket.on('end', () => cleanup('end'));
     socket.write(this.handleHeaders(key));
+
+    // buffer for cumulative data, parse frame; first append head (possible residual data)
+    let buffer = head && head.length ? Buffer.from(head) : Buffer.alloc(0);
+    const onData = (chunk: Buffer) => {
+      buffer = Buffer.concat([buffer, chunk]);
+      // try to parse as many complete frames as possible
+      parseFrames();
+    };
+
+    const parseFrames = () => {
+      while (true) {
+        if (buffer.length < 2) return;
+
+        const firstByte = buffer[0];
+        const secondByte = buffer[1];
+
+        const fin = (firstByte & 0x80) !== 0; // FIN bit
+        const rsv = firstByte & 0x70; // must be 0
+        const opcode = firstByte & 0x0f;
+
+        const masked = (secondByte & 0x80) !== 0; // must be 1
+        let payloadLen = secondByte & 0x7f;
+
+        let offset = 2;
+
+        // illegal case: RSV set bits; or client not mask
+        if (rsv !== 0 || !masked) {
+          this.sendClose(socket, 1002); // protocol error
+          cleanup('protocol error');
+          return;
+        }
+
+        // only accept single frame (FIN=1) simple message, ignore fragmented/continuation frame
+        if (!fin && opcode !== OPCODE_CONTINUATION) {
+          this.sendClose(socket, 1003); // unsupported data
+          cleanup('unsupported opcode');
+          return;
+        }
+
+        if (payloadLen === 126) {
+          if (buffer.length < offset + 2) return;
+          payloadLen = buffer.readUInt16BE(offset);
+          offset += 2;
+        } else if (payloadLen === 127) {
+          // read 64-bit length: we only take low 32 bits (enough for your scene)
+          if (buffer.length < offset + 8) return;
+          // ignore high 32
+          payloadLen = buffer.readUInt32BE(offset + 4);
+          offset += 8;
+        }
+
+        const needed = offset + MASK_KEY_BYTES_LENGTH + payloadLen;
+        if (buffer.length < needed) return;
+
+        const maskKey = buffer.slice(offset, offset + MASK_KEY_BYTES_LENGTH);
+        offset += MASK_KEY_BYTES_LENGTH;
+
+        let payload = buffer.slice(offset, offset + payloadLen);
+        // unmask
+        for (let i = 0; i < payload.length; i++) {
+          payload[i] ^= maskKey[i % MASK_KEY_BYTES_LENGTH];
+        }
+
+        // consume this frame
+        buffer = buffer.slice(needed);
+
+        switch (opcode) {
+          case OPCODE_TEXT: {
+            const text = payload.toString('utf8');
+            try {
+              this._onMessage(text, socket);
+            } catch {
+              // ignore user callback error
+            }
+            break;
+          }
+          case OPCODE_BINARY: {
+            // don't support binary, close
+            this.sendClose(socket, 1003); // unsupported data
+            cleanup('unsupported binary');
+            return;
+          }
+          case OPCODE_PING: {
+            // reply Pong, with same payload
+            this.safeWrite(socket, this.encodeFrame(payload, OPCODE_PONG));
+            break;
+          }
+          case OPCODE_PONG: {
+            // ignore
+            break;
+          }
+          case OPCODE_CLOSE: {
+            // parse status code
+            let code = 1000;
+            if (payload.length >= 2) {
+              code = payload.readUInt16BE(0);
+            }
+            // reply Close, then end
+            this.sendClose(socket, code);
+            setTimeout(() => {
+              try {
+                socket.end();
+              } catch {}
+              cleanup('close');
+            }, 20);
+            return; // end loop
+          }
+          case OPCODE_CONTINUATION: {
+            // don't support continuation, close
+            this.sendClose(socket, 1003);
+            cleanup('unsupported continuation');
+            return;
+          }
+          default: {
+            // unknown opcode
+            this.sendClose(socket, 1002);
+            cleanup('unknown opcode');
+            return;
+          }
+        }
+      }
+    };
+    socket.on('data', onData);
   }
 
   private handleHeaders(key: string) {
-    const digest = crypto
+    const acceptKey = crypto
       .createHash('sha1')
       .update(key + WEBSOCKET_GUID)
       .digest('base64');
     const headers = [
       'HTTP/1.1 101 Switching Protocols',
-      'Content-Type: text/html',
+      // 'Content-Type: text/html',
       'Upgrade: websocket',
       'Connection: Upgrade',
-      `Sec-WebSocket-Accept: ${digest}`,
+      `Sec-WebSocket-Accept: ${acceptKey}`,
+      '\r\n',
     ];
-    return headers.concat('\r\n').join('\r\n');
-  }
-
-  private onSocketReadable(socket: Duplex) {
-    try {
-      // consume optcode (first byte)
-      // 1 - 1 byte - 8bits
-      socket.read(1);
-
-      const [markerAndPayloadLength] = socket.read(1);
-      // Because the first bit is always 1 for client-to-server messages
-      // you can subtract one bit (128 or '10000000')
-      // from this byte to get rid of the MASK bit
-      const lengthIndicatorInBits = markerAndPayloadLength - FIRST_BIT;
-
-      let messageLength = 0;
-      if (lengthIndicatorInBits <= SEVEN_BITS_INTEGER_MARKER) {
-        messageLength = lengthIndicatorInBits;
-      } else if (lengthIndicatorInBits === SIXTEEN_BITS_INTEGER_MARKER) {
-        // unsigned, big-endian 16-bit integer [0 - 65K] - 2 ** 16
-        messageLength = socket.read(2).readUint16BE(0);
-      } else {
-        throw new Error(`Message is too long!`);
-      }
-      if (messageLength < 1) {
-        return;
-      }
-
-      const maskKey = socket.read(MASK_KEY_BYTES_LENGTH);
-      const encoded = socket.read(messageLength);
-      const decoded = this.unmask(encoded, maskKey);
-      const received = decoded.toString('utf8');
-      console.log('message received: ', received);
-      this._onMessage(received, socket);
-    } catch (error) {}
-  }
-
-  private unmask(encodedBuffer: Buffer, maskKey: Buffer) {
-    const finalBuffer = Buffer.from(encodedBuffer);
-    for (let index = 0; index < encodedBuffer.length; index++) {
-      finalBuffer[index] = encodedBuffer[index] ^ maskKey[index % MASK_KEY_BYTES_LENGTH];
-    }
-
-    return finalBuffer;
+    return headers.join('\r\n');
   }
 
   public broadcast(msg: string) {
-    const data = this.prepareMessage(msg);
-    this.clients.forEach((socket: any) => {
-      if (socket.readyState === 'open' || socket.readyState === 'writeOnly') {
-        socket.write(data);
-      } else {
-        this.clients.delete(socket);
-      }
-    });
+    const payload = Buffer.from(msg);
+    const frame = this.encodeFrame(payload, OPCODE_TEXT);
+    for (const socket of this.clients) {
+      this.safeWrite(socket, frame);
+    }
   }
   public sendMessage(socket: Duplex, msg: string) {
-    const data = this.prepareMessage(msg);
-    socket.write(data);
+    const payload = Buffer.from(msg);
+    this.safeWrite(socket, this.encodeFrame(payload, OPCODE_TEXT));
   }
 
-  private concat(bufferList: any, totalLength: any) {
-    const target = Buffer.allocUnsafe(totalLength);
-    let offset = 0;
-    for (const buffer of bufferList) {
-      target.set(buffer, offset);
-      offset += buffer.length;
-    }
-
-    return target;
-  }
-
-  private prepareMessage(message: string) {
-    const msg = Buffer.from(message);
-    const messageSize = msg.length;
-
-    let dataFrameBuffer;
+  encodeFrame(payload: Buffer, opcode: number) {
+    const len = payload.length;
 
     // 0x80 === 128 in binary
-    // '0x' +  Math.abs(128).toString(16) == 0x80
-    const firstByte = 0x80 | OPCODE_TEXT; // single frame + text
-    if (messageSize <= SEVEN_BITS_INTEGER_MARKER) {
-      const bytes = [firstByte];
-      dataFrameBuffer = Buffer.from(bytes.concat(messageSize));
-    } else if (messageSize <= MAXIMUM_SIXTEEN_BITS_INTEGER) {
-      const offsetFourBytes = 4;
-      const target = Buffer.allocUnsafe(offsetFourBytes);
-      target[0] = firstByte;
-      target[1] = SIXTEEN_BITS_INTEGER_MARKER | 0x0; // just to know the mask
+    // FIN=1 + opcode
+    if (len <= 125) {
+      const header = Buffer.from([0x80 | opcode, len]);
+      return Buffer.concat([header, payload]);
+    }
 
-      target.writeUint16BE(messageSize, 2); // content lenght is 2 bytes
-      dataFrameBuffer = target;
-
+    if (len < 0x10000) {
       // alloc 4 bytes
       // [0] - 128 + 1 - 10000001  fin + opcode
       // [1] - 126 + 0 - payload length marker + mask indicator
       // [2] 0 - content length
       // [3] 113 - content length
       // [ 4 - ..] - the message itself
-    } else {
-      throw new Error('Message is too long.');
+      const header = Buffer.allocUnsafe(4);
+      header[0] = 0x80 | opcode;
+      header[1] = 126;
+      header.writeUInt16BE(len, 2);
+      return Buffer.concat([header, payload]);
     }
-    const totalLength = dataFrameBuffer.byteLength + messageSize;
-    const dataFrameResponse = this.concat([dataFrameBuffer, msg], totalLength);
-    return dataFrameResponse;
+
+    // 64-bit length：write high 32 bits as 0, low 32 bits as len (enough for your scene)
+    const header = Buffer.allocUnsafe(10);
+    header[0] = 0x80 | opcode;
+    header[1] = 127;
+    header.writeUInt32BE(0, 2); // high 32
+    header.writeUInt32BE(len, 6); // low 32
+    return Buffer.concat([header, payload]);
+  }
+
+  sendClose(socket: Duplex, code = 1000) {
+    const payload = Buffer.allocUnsafe(2);
+    payload.writeUInt16BE(code, 0);
+    this.safeWrite(socket, this.encodeFrame(payload, OPCODE_CLOSE));
+  }
+
+  safeWrite(socket: Duplex, data: Buffer) {
+    try {
+      if (!socket.destroyed) socket.write(data);
+    } catch {
+      // ignore
+    }
+  }
+
+  close(socket: Duplex, code = 1000) {
+    this.sendClose(socket, code);
+    setTimeout(() => {
+      try {
+        socket.end();
+      } catch {}
+    }, 20);
+  }
+
+  closeAll(code = 1000) {
+    for (const s of this.clients) {
+      this.close(s, code);
+    }
   }
 }
