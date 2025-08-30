@@ -20,7 +20,7 @@ const OPCODE_PONG = 0xa;
 
 // This is only used in debug mode (no clusters)
 export type MiniWebSocketMsgProps = (msg: string, socket: Duplex) => void;
-export type MiniWebSocketCloseProps = (status: string) => void;
+export type MiniWebSocketCloseProps = (socket: Duplex, status: string) => void;
 export class MiniWebSocket {
   clientRefreshFlag = Date.now();
   clients = new Set<Duplex>();
@@ -43,15 +43,15 @@ export class MiniWebSocket {
       return;
     }
 
-    const cleanup = (status: string) => {
+    const cleanup = (socket: Duplex, status: string) => {
       if (this.clients.has(socket)) this.clients.delete(socket);
       if (!socket.destroyed) socket.destroy();
-      if (this._onClose) this._onClose(status);
+      if (this._onClose) this._onClose(socket, status);
     };
     this.clients.add(socket);
-    socket.on('close', () => cleanup('close'));
-    socket.on('error', () => cleanup('error'));
-    socket.on('end', () => cleanup('end'));
+    socket.on('close', () => cleanup(socket, 'close'));
+    socket.on('error', () => cleanup(socket, 'error'));
+    socket.on('end', () => cleanup(socket, 'end'));
     socket.write(this.handleHeaders(key));
 
     // buffer for cumulative data, parse frame; first append head (possible residual data)
@@ -81,14 +81,14 @@ export class MiniWebSocket {
         // illegal case: RSV set bits; or client not mask
         if (rsv !== 0 || !masked) {
           this.sendClose(socket, 1002); // protocol error
-          cleanup('protocol error');
+          cleanup(socket, 'protocol error');
           return;
         }
 
         // only accept single frame (FIN=1) simple message, ignore fragmented/continuation frame
         if (!fin && opcode !== OPCODE_CONTINUATION) {
           this.sendClose(socket, 1003); // unsupported data
-          cleanup('unsupported opcode');
+          cleanup(socket, 'unsupported opcode');
           return;
         }
 
@@ -132,7 +132,7 @@ export class MiniWebSocket {
           case OPCODE_BINARY: {
             // don't support binary, close
             this.sendClose(socket, 1003); // unsupported data
-            cleanup('unsupported binary');
+            cleanup(socket, 'unsupported binary');
             return;
           }
           case OPCODE_PING: {
@@ -156,20 +156,20 @@ export class MiniWebSocket {
               try {
                 socket.end();
               } catch {}
-              cleanup('close');
+              cleanup(socket, 'close');
             }, 20);
             return; // end loop
           }
           case OPCODE_CONTINUATION: {
             // don't support continuation, close
             this.sendClose(socket, 1003);
-            cleanup('unsupported continuation');
+            cleanup(socket, 'unsupported continuation');
             return;
           }
           default: {
             // unknown opcode
             this.sendClose(socket, 1002);
-            cleanup('unknown opcode');
+            cleanup(socket, 'unknown opcode');
             return;
           }
         }
