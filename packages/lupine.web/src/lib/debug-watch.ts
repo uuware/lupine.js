@@ -1,7 +1,8 @@
 let flag = 0;
 export const debugWatch = (port: number) => {
   console.log('Creating debug-watch socket');
-  const socket = new WebSocket('ws://localhost:' + port + '/debug/client');
+  const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+  const socket = new WebSocket(`${protocol}//${location.host}/debug/client`);
   window.addEventListener('beforeunload', () => {
     socket.close();
   });
