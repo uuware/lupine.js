@@ -32,5 +32,3 @@ export class DocumentReady {
     });
   }
 }
-
-export default new DocumentReady();

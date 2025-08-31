@@ -1,4 +1,4 @@
-import { RefProps, VNode, mountComponents } from 'lupine.web';
+import { RefProps, VNode, mountInnerComponent } from 'lupine.web';
 import { stopPropagation } from '../lib';
 
 export type TabsHookProps = {
@@ -86,8 +86,8 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
       ref.$(`.pages[data-refid=${ref.id}]`).insertBefore(newPage, pages[newPageIndex]);
     }
 
-    await mountComponents(newTab, newTab2);
-    await mountComponents(newPage, page);
+    await mountInnerComponent(newTab, newTab2);
+    await mountInnerComponent(newPage, page);
     updateIndex(newPageIndex);
   };
   const createTabHeader = (title: string, className: string) => {

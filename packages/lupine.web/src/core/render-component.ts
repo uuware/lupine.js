@@ -25,7 +25,7 @@ function renderChildren(html: string[], children: any) {
       renderChildren(html, item);
     }
   } else if (children.type && children.props) {
-    renderComponents(children.type, children.props);
+    renderComponent(children.type, children.props);
     html.push(...children.props._html);
     children.props._html.length = 0;
   } else {
@@ -137,11 +137,11 @@ function renderAttribute(type: any, props: any, jsxNodes: any) {
 // }
 
 // The result has only one element
-export const renderComponents = (type: any, props: any) => {
+export const renderComponent = (type: any, props: any) => {
   //   logger.log("==================renderComponent", type);
   if (Array.isArray(props)) {
     const jsxNodes = { type: 'Fragment', props: { children: props } } as any;
-    renderComponents(jsxNodes.type, jsxNodes.props);
+    renderComponent(jsxNodes.type, jsxNodes.props);
     return;
   }
 
@@ -159,7 +159,7 @@ export const renderComponents = (type: any, props: any) => {
     // }
     // logger.log('==========props._result', props._result);
     if (typeof props._result.type === 'function') {
-      renderComponents(props._result.type, props._result.props);
+      renderComponent(props._result.type, props._result.props);
       if (props._result.props._html) {
         props._html.push(...props._result.props._html);
         props._result.props._html.length = 0;

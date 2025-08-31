@@ -42,7 +42,6 @@ import { ContactPage } from './pages/contact';
 import { UserMinePage } from './pages/user-mine-page';
 import { UserFavoritePage } from './pages/user-favorite-page';
 import { LoginCodePage } from './components/login-code';
-import { Test1Page } from './pages/test1';
 
 if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
@@ -148,7 +147,6 @@ pageRouter.use('/login', LoginPage);
 pageRouter.use('/login-code', LoginCodePage);
 pageRouter.use('/register', RegisterPage);
 pageRouter.use('/reset-pw', ResetPasswordPage);
-pageRouter.use('/test1', Test1Page);
 
 pageRouter.use('/', userPageRouter);
 pageRouter.use('*', NotFoundPage);

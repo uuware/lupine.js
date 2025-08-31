@@ -5,6 +5,14 @@ export const replaceInnerhtml = async (el: Element, newHtml: string) => {
     firstDom.parentNode?.removeChild(firstDom);
   }
 
+  await callUnload(el);
+  el.innerHTML = newHtml;
+
+  if (firstDom && firstDom.tagName === 'STYLE') {
+    el.insertBefore(firstDom, el.firstChild);
+  }
+};
+export const callUnload = async (el: Element) => {
   const promises: Promise<void>[] = [];
   el.querySelectorAll('[data-ref]').forEach((child: any) => {
     if (child._lj && child._lj.onUnload) {
@@ -12,9 +20,4 @@ export const replaceInnerhtml = async (el: Element, newHtml: string) => {
     }
   });
   await Promise.all(promises);
-  el.innerHTML = newHtml;
-
-  if (firstDom && firstDom.tagName === 'STYLE') {
-    el.insertBefore(firstDom, el.firstChild);
-  }
 };
