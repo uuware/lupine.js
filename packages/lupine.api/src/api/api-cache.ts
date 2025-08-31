@@ -22,6 +22,7 @@ enum ApiCacheKeys {
   // APP_CACHE = 'APP_CACHE',
 }
 
+// For cross clusters sharing, use AppSharedStorage
 // ApiCache doesn't share cross clusters
 // Since apis and app are independent, so ApiCache in apis and app are different instances.
 // ApiCache is not shared cross app and apis, so `set` is only supposed to be called when app starts, or

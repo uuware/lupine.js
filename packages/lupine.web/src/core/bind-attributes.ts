@@ -22,7 +22,10 @@ export const bindAttributesChildren = (topEl: Element, children: any) => {
 export const bindAttributes = (topEl: Element, type: any, props: any) => {
   const newProps = (props._result && props._result.props) || props;
   if (newProps._id) {
-    const el = topEl.querySelector(`[${newProps._id}]`);
+    let el = topEl.querySelector(`[${newProps._id}]`);
+    if (!el && topEl.getAttribute(newProps._id) === '') {
+      el = topEl;
+    }
     if (el) {
       for (let i in newProps) {
         if (i === 'ref') {

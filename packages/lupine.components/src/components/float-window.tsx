@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode, mountComponents } from 'lupine.web';
+import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
 import { stopPropagation } from '../lib';
 
 export type FloatWindowCloseProps = () => void;
@@ -184,7 +184,7 @@ export class FloatWindow {
     base.style.position = 'fixed';
     base.style.zIndex = zIndex || 'var(--layer-float-window)';
     document.body.appendChild(base);
-    await mountComponents(base, component);
+    await mountInnerComponent(base, component);
     return handleClose;
   }
 

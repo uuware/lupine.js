@@ -2,9 +2,7 @@
  * for my-apps
  */
 export class DynamicalLoad {
-  constructor() {}
-
-  loadScript(url: string, idForReplace?: string, removeOnLoaded = false): Promise<string> {
+  static loadScript(url: string, idForReplace?: string, removeOnLoaded = false): Promise<string> {
     return new Promise((resolve, reject) => {
       if (this.existScript(url, idForReplace)) {
         resolve(url);
@@ -36,7 +34,7 @@ export class DynamicalLoad {
   }
 
   // TODO: more accuracy
-  existScript(url: string, id?: string) {
+  static existScript(url: string, id?: string) {
     if (id) {
       const scriptDom = document.getElementById(id);
       if (scriptDom && scriptDom.tagName === 'SCRIPT') {
@@ -56,7 +54,7 @@ export class DynamicalLoad {
     }
   }
 
-  loadCss(url: string, idForReplace?: string): Promise<string> {
+  static loadCss(url: string, idForReplace?: string): Promise<string> {
     return new Promise((resolve, reject) => {
       if (this.existCss(url, idForReplace)) {
         resolve(url);
@@ -90,7 +88,7 @@ export class DynamicalLoad {
   }
 
   // TODO: more accuracy
-  existCss(url: string, id?: string) {
+  static existCss(url: string, id?: string) {
     if (id) {
       const linkDom = document.getElementById(id);
       if (linkDom && linkDom.tagName === 'LINK') {
@@ -134,5 +132,3 @@ export class DynamicalLoad {
   //     }
   // }
 }
-
-export default new DynamicalLoad();

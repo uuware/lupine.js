@@ -223,5 +223,3 @@ export class LiteDom {
     return this.node.tagName.toUpperCase();
   }
 }
-
-export default LiteDom.queryOne;
