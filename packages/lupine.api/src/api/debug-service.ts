@@ -1,11 +1,13 @@
 import { IncomingMessage } from 'http';
 import { Duplex } from 'stream';
 import { MiniWebSocket } from './mini-web-socket';
+import { ShellService } from './shell-service';
 
 // This is only used in debug mode (no clusters)
 export class DebugService {
   static clientRefreshFlag = Date.now();
   static miniWebSocket = new MiniWebSocket(this.onMessage.bind(this));
+  static shellMap = new Map<Duplex, ShellService>();
 
   public static onMessage(msg: string, socket: Duplex) {
     try {
@@ -18,6 +20,16 @@ export class DebugService {
             flag: DebugService.clientRefreshFlag,
           })
         );
+      } else if (json.message === 'shell') {
+        console.log(json);
+        let shell: ShellService;
+        if (this.shellMap.has(socket)) {
+          shell = this.shellMap.get(socket)!;
+        } else {
+          shell = new ShellService(socket, this.miniWebSocket);
+          this.shellMap.set(socket, shell);
+        }
+        shell.cmd(json.cmd);
       }
     } catch (error) {
       console.error(error);
