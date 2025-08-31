@@ -28,6 +28,10 @@ export class DebugService {
         } else {
           shell = new ShellService(socket, this.miniWebSocket);
           this.shellMap.set(socket, shell);
+          socket.on('close', () => {
+            shell.stop();
+            this.shellMap.delete(socket);
+          });
         }
         shell.cmd(json.cmd);
       }
