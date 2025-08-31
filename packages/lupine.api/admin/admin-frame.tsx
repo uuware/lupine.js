@@ -42,6 +42,7 @@ const chineseMenuText: { text: string; zh: string }[] = [
   { text: 'Server Info', zh: '服务器信息' },
   { text: 'Resources', zh: '管理资源' },
   { text: 'Config', zh: '管理配置' },
+  { text: 'Shell', zh: '命令终端' },
   { text: 'Server Info', zh: '服务器信息' },
   { text: 'Performance', zh: '性能' },
 

@@ -12,9 +12,6 @@ export class ShellService {
   constructor(socket: Duplex, miniWebSocket: MiniWebSocket) {
     this._socket = socket;
     this._miniWebSocket = miniWebSocket;
-    socket.on('close', () => {
-      this.stop();
-    });
     try {
       const shellCmd: string = this.getDefaultShell();
       this._shell = spawn(shellCmd, [], {
