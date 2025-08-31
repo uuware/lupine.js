@@ -16,6 +16,7 @@ import { AdminTokensPage } from './admin-tokens';
 import { TestComponentPage } from './admin-test-component';
 import { AdminConfigPage } from './admin-config';
 import { AdminAboutPage } from './admin-about';
+import { AdminShellPage } from './admin-shell';
 
 const chineseMenuText: { text: string; zh: string }[] = [
   { text: 'Contents', zh: '内容管理' },
@@ -195,6 +196,12 @@ export class AdminFrameHelper {
           text: 'Config',
           url: '',
           js: () => this.addPanel('Config', AdminConfigPage()),
+        },
+        {
+          id: 'shell',
+          text: 'Shell',
+          url: '',
+          js: () => this.addPanel('Shell', AdminShellPage()),
         },
       ],
     },
