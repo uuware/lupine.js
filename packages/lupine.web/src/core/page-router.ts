@@ -1,7 +1,7 @@
 import { VNode } from '../jsx';
 import { isFrontEnd } from '../lib/is-frontend';
 import { PageProps } from './export-lupine';
-import { mountComponents } from './mount-components';
+import { mountInnerComponent } from './mount-component';
 import { Logger } from '../lib/logger';
 
 export type PageRouterCallback = (props: PageProps) => Promise<VNode<any> | null>;
@@ -160,7 +160,7 @@ export class PageRouter {
     if (vNode && this.framePage) {
       const selector = '.' + this.framePage.placeholderClassname;
       if (renderPartPage && isFrontEnd() && document.querySelector(selector)) {
-        await mountComponents(selector, vNode);
+        await mountInnerComponent(selector, vNode);
         return null;
       } else {
         return this.framePage.component(this.framePage.placeholderClassname, vNode);

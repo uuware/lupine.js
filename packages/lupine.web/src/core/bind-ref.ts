@@ -1,10 +1,9 @@
-// import { mountSelfComponents, renderComponent } from "./mount-components";
-
-import { VNode } from "../jsx";
-import { bindAttributes } from "./bind-attributes";
-import { bindLinks } from "./bind-links";
-import { renderComponents } from "./render-components";
-import { replaceInnerhtml } from "./replace-innerhtml";
+import { VNode } from '../jsx';
+import { bindAttributes } from './bind-attributes';
+import { bindLinks } from './bind-links';
+import { mountInnerComponent, mountOuterComponent } from './mount-component';
+import { renderComponent } from './render-component';
+import { replaceInnerhtml } from './replace-innerhtml';
 
 export const bindRef = (type: any, newProps: any, el: Element) => {
   // console.log('========', newProps, el);
@@ -31,22 +30,19 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
    */
   newProps['ref'].$ = (selector: string) => {
     return el.querySelector(`[${id}] ` + selector);
-    // const dom = LiteDom.queryOne(el);
-    // return dom && dom.$(selector, value);
   };
   newProps['ref'].$all = (selector: string) => {
     return el.querySelectorAll(`[${id}] ` + selector);
   };
 
-  newProps['ref'].loadContent = async (content: string | VNode<any>) => {
+  newProps['ref'].mountInnerComponent = async (content: string | VNode<any>) => {
     if (typeof content === 'object' && content.type && content.props) {
-      // await mountComponents(el, content);
-      renderComponents(content.type, content.props);
-      await replaceInnerhtml(el, content.props._html.join(''));
-      bindAttributes(el, content.type, content.props);
-      bindLinks(el);
+      await mountInnerComponent(el, content);
     } else {
       await replaceInnerhtml(el, content as string);
     }
+  };
+  newProps['ref'].mountOuterComponent = async (content: VNode<any>) => {
+    await mountOuterComponent(el, content);
   };
 };

@@ -6,7 +6,7 @@ export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
   let _dirty = false;
   const waitUpdate = async (value: string | VNode<any>) => {
     if (!ref.current) return;
-    await ref.loadContent!(value);
+    await ref.mountInnerComponent!(value);
     _dirty = false;
   };
   const ref: RefProps = {

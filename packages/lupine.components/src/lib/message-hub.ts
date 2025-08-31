@@ -79,7 +79,6 @@ export class MessageHub {
   }
 }
 
-export const defaultMessageHub = new MessageHub();
 
 // /*[TEST-START]*/
 // function TEST_sample() {

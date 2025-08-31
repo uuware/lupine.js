@@ -143,7 +143,7 @@ const TestHtmlVar = () => {
   );
 };
 
-const TestLoadContent = () => {
+const TestMountInnerComponent = () => {
   let count = 0;
   const css: CssProps = {
     backgroundColor: '#a1ffa7',
@@ -152,7 +152,7 @@ const TestLoadContent = () => {
   const ref: RefProps = {};
   const onClick = () => {
     count++;
-    ref.loadContent!(defaultContent());
+    ref.mountInnerComponent!(defaultContent());
   };
   const defaultContent = () => {
     // <></> is not needed, and here is used to test that <fragment> tag is not added
@@ -301,8 +301,8 @@ export const AdminTestAnimationsPage = () => {
         <br />
         <hr />
         <br />
-        <div>Test LoadContent</div>
-        <TestLoadContent />
+        <div>Test mountInnerComponent</div>
+        <TestMountInnerComponent />
       </div>
 
       <div class='pt-m'>

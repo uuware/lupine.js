@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode, mountComponents } from 'lupine.web';
+import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
 
 export type ActionSheetCloseProps = () => void;
 
@@ -147,7 +147,7 @@ export class ActionSheet {
     base.style.position = 'fixed';
     base.style.zIndex = zIndex || 'var(--layer-actionsheet-window)';
     document.body.appendChild(base);
-    await mountComponents(base, component);
+    await mountInnerComponent(base, component);
     return handleClose;
   }
 }

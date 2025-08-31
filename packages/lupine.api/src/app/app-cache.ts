@@ -3,7 +3,7 @@
  */
 
 import { AppCacheGlobal, AppCacheKeys, IAppCache } from '../models/app-cache-props';
-
+// For cross clusters sharing, use AppSharedStorage
 // ApiCache doesn't share cross clusters
 // Since apis and app are independent, so AppCache in apis and app are different instances.
 // That's why replaceInstance is used to copy data from app to apis,

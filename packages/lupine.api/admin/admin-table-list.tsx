@@ -5,7 +5,7 @@ import {
   CssProps,
   RefProps,
   getRenderPageProps,
-  mountComponents,
+  mountInnerComponent,
   downloadLink,
 } from 'lupine.components';
 import { adminFrameProps } from './admin-frame-props';
@@ -142,7 +142,7 @@ export const TableListPage = () => {
         <div>No Result</div>
       );
 
-    await mountComponents(document.querySelector('.admin-table-list'), dom);
+    await mountInnerComponent(document.querySelector('.admin-table-list'), dom);
   };
   const onUpload = async () => {
     const domFile = document.querySelector('#upload_data') as HTMLInputElement;
