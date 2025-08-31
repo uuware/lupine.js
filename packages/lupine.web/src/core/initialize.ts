@@ -1,7 +1,7 @@
 import { Logger } from '../lib/logger';
 import { generateAllGlobalStyles } from './bind-styles';
 import { defaultThemeName, getCurrentTheme, updateTheme } from './bind-theme';
-import { mountComponents } from './mount-components';
+import { mountInnerComponent } from './mount-component';
 // import { callPageResetEvent } from './page-reset-events';
 import { PageRouter } from './page-router';
 import { callPageLoadedEvent } from './page-loaded-events';
@@ -42,7 +42,7 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
     };
   }
 
-  await mountComponents(null, jsxNodes);
+  await mountInnerComponent(null, jsxNodes);
   const currentTheme = getCurrentTheme();
   const cssText = generateAllGlobalStyles();
   const content = jsxNodes.props._html.join('');
@@ -93,7 +93,7 @@ export const initializePage = async (newUrl?: string) => {
   }
 
   // generateAllGlobalStyles will be updated directly in Browser
-  await mountComponents('.lupine-root', jsxNodes);
+  await mountInnerComponent('.lupine-root', jsxNodes);
   updateTheme(getCurrentTheme().themeName);
 
   // title
