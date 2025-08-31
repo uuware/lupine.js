@@ -89,6 +89,7 @@ export const AdminTableData = (props: { tableName: string; update?: TableDataUpd
   const css: CssProps = {
     '.table-box': {
       overflowX: 'auto',
+      overflowY: 'hidden',
     },
     '.table': {
       borderCollapse: 'collapse',

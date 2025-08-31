@@ -1,5 +1,5 @@
-export const escapeHtml = (str: string) => {
-  if (!str) return str;
+export const escapeHtml = (str: string | number | boolean) => {
+  if (!str || typeof str !== 'string') return str;
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
