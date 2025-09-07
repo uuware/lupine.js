@@ -23,11 +23,17 @@ export class PageRouter {
   private routerData: PageRouterData[] = [];
   private filter: PageRouterCallback | undefined;
   private framePage: FramePageProps | undefined;
+  private subDir: string = '';
 
   // if the filter returns null (passed filter), the router will continue.
   // it works in the same way as in use method
   setFilter(filter: PageRouterCallback) {
     this.filter = filter;
+  }
+
+  // if the script is under a sub-dir (without last /), then findRoute needs to remove it from the url
+  setSubDir(subDir: string) {
+    this.subDir = subDir;
   }
 
   setFramePage(framePage: FramePageProps) {
@@ -149,6 +155,9 @@ export class PageRouter {
   }
 
   async handleRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<VNode<any> | null> {
+    if (url.startsWith(this.subDir)) {
+      url = url.substring(this.subDir.length);
+    }
     let vNode = null;
     if (this.filter) {
       vNode = await this.callHandle(this.filter, url, props);

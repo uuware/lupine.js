@@ -21,7 +21,12 @@ export const pathUtils = {
     p = p.replace(/\/+$/, '');
     const idx = p.lastIndexOf('/');
     let base = idx === -1 ? p : p.slice(idx + 1);
-    if (ext && base.endsWith(ext)) {
+    if (!ext) {
+      const lastPot = p.lastIndexOf('.');
+      if (lastPot >= 0) {
+        base = base.slice(0, lastPot);
+      }
+    } else if (ext && base.endsWith(ext)) {
       base = base.slice(0, -ext.length);
     }
     return base;
