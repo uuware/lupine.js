@@ -1,6 +1,12 @@
 // here it must import from async-storage but not from api!
 import { asyncLocalStorage } from '../api/async-storage';
-import { LogConfig, LogLevels, LogMessageFromSubProcess, LoggerColors, getDefaultLogConfig } from '../models/logger-props';
+import {
+  LogConfig,
+  LogLevels,
+  LogMessageFromSubProcess,
+  LoggerColors,
+  getDefaultLogConfig,
+} from '../models/logger-props';
 
 const fs = require('fs');
 const util = require('util');
@@ -54,10 +60,7 @@ export class LogWriter {
         fs.mkdirSync(this.getConfig().folder, { recursive: true });
       }
 
-      const filename = path.join(
-        this.getConfig().folder,
-        this.getConfig().filename.replace('%index%', '0')
-      );
+      const filename = path.join(this.getConfig().folder, this.getConfig().filename.replace('%index%', '0'));
       this.fileHandle = fs.openSync(filename, 'a+');
       if (this.fileHandle <= 0) {
         this.savedSize = 0;
@@ -84,7 +87,14 @@ export class LogWriter {
           const nameFrom = path.join(this.getConfig().folder, filename.replace('%index%', (i - 1).toString()));
           const nameTo = path.join(this.getConfig().folder, filename.replace('%index%', i.toString()));
           if (fs.existsSync(nameFrom)) {
-            fs.renameSync(nameFrom, nameTo);
+            // rename can cause errors if the file is being used on windows
+            // fs.renameSync(nameFrom, nameTo);
+            try {
+              fs.copyFileSync(nameFrom, nameTo);
+              fs.unlinkSync(nameFrom);
+            } catch (err: any) {
+              console.log('Rename log error: ', err.message);
+            }
           }
         }
       } else if (fs.existsSync(filename)) {
