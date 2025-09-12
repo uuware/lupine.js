@@ -1,8 +1,5 @@
 import { VNode } from '../jsx';
-import { bindAttributes } from './bind-attributes';
-import { bindLinks } from './bind-links';
 import { mountInnerComponent, mountOuterComponent } from './mount-component';
-import { renderComponent } from './render-component';
 import { replaceInnerhtml } from './replace-innerhtml';
 
 export const bindRef = (type: any, newProps: any, el: Element) => {

@@ -57,7 +57,7 @@ export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
       padding: '0 16px',
     },
     [MediaQueryRange.TabletBelow]: {
-      '.frame-footer .footer-box, .frame-top-menu .desktop-menu-box': {
+      '.frame-footer .d-footer-box, .frame-top-menu .desktop-menu-box': {
         display: 'none',
       },
     },
