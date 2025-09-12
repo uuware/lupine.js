@@ -21,17 +21,14 @@ const loadData = async (
   const data = await getRenderPageProps().renderPageFunctions.fetchData(
     `/api/admin/db/table/data/${tableName}/${pageIndex}/${pageLimit}`
   );
-  const pageLink = (
-    <PagingLink
-      itemsCount={data && data.json && data.json.itemsCount}
-      pageIndex={data && data.json && data.json.pageIndex}
-      baseLink=''
-      onClick={onLinkClick}
-    ></PagingLink>
-  );
   return data && data.json && data.json.result && data.json.result.length > 0 ? (
     <div class='table-box-outer'>
-      {pageLink}
+      <PagingLink
+        itemsCount={data && data.json && data.json.itemsCount}
+        pageIndex={data && data.json && data.json.pageIndex}
+        baseLink=''
+        onClick={onLinkClick}
+      ></PagingLink>
       <div class='table-box'>
         <div class='fields bg-gray'></div>
         <div class='table'>
@@ -73,10 +70,15 @@ const loadData = async (
           })}
         </div>
       </div>
-      {pageLink}
+      <PagingLink
+        itemsCount={data && data.json && data.json.itemsCount}
+        pageIndex={data && data.json && data.json.pageIndex}
+        baseLink=''
+        onClick={onLinkClick}
+      ></PagingLink>
     </div>
   ) : (
-    <div>{pageLink}No data.</div>
+    <div>No data.</div>
   );
 };
 

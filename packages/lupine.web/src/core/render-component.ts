@@ -64,6 +64,9 @@ function renderAttribute(type: any, props: any, jsxNodes: any) {
   //      <div data-refid={ref}>
   // then data-refid can be located:
   //   ref.$(`.class-name[data-refid=${ref.id}]`)
+  if (props._id) {
+    console.warn('This component reference is used more than once and will have binding issues: ', props);
+  }
   if (props['data-refid'] && props['data-refid'].id) {
     props['data-refid'] = props['data-refid'].id;
   }

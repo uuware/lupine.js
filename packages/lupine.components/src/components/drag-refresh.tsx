@@ -49,7 +49,7 @@ export const DragFresh = (props: DragRefreshProps) => {
       if (!container || !pullDom || !spinnerDom) return;
       let touchstartY = 0;
       let touchstartX = 0;
-      let direction = '';
+      let direction: 'X' | 'Y' | '' = '';
       let needRefresh = false;
       const maxHeight = 150;
       container.addEventListener('touchstart', (e: any) => {
@@ -59,23 +59,23 @@ export const DragFresh = (props: DragRefreshProps) => {
         needRefresh = false;
       });
       container.addEventListener('touchmove', (e: any) => {
-        console.log(`window.scrollY: ${window.scrollY}`);
         const touchY = e.touches[0].clientY;
         const touchX = e.touches[0].clientX;
         const movedY = touchY - touchstartY;
         const movedX = touchX - touchstartX;
         if (direction === '') {
-          if (movedY > 0) {
+          if (Math.abs(movedY) > Math.abs(movedX)) {
             direction = 'Y';
-          } else if (movedX > 0) {
+          } else {
             direction = 'X';
           }
         }
-        if (direction === 'X') {
+        // console.log(`direction: ${direction}, movedX: ${movedX}, movedY: ${movedY}, container.scrollTop: ${container.scrollTop}`);
+        if (direction !== 'Y') {
           return;
         }
-        if (window.scrollY === 0) {
-          needRefresh = movedY > 30;
+        if (container.scrollTop <= 0 && movedY > 5) {
+          needRefresh = movedY > 60;
           if (movedY > 5) {
             pullDom.classList.add('show');
             spinnerDom.style.height = `${Math.min(maxHeight, movedY)}px`;
@@ -83,7 +83,7 @@ export const DragFresh = (props: DragRefreshProps) => {
             pullDom.classList.remove('show');
             spinnerDom.style.height = '0';
           }
-        } else if (window.scrollY > Math.min(maxHeight, movedY)) {
+        } else {
           pullDom.classList.remove('show');
           spinnerDom.style.height = '0';
         }
