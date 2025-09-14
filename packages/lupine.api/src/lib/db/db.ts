@@ -43,6 +43,23 @@ export class Db {
     throw new Error('Method not implemented');
   }
 
+  // can be used like this: order by ${db.getRandomOrder()}
+  // MySQL / MariaDB: RAND()
+  // PostgreSQL, SQLite: RANDOM()
+  // SQL Server: NEWID()
+  public getRandomOrder(): string {
+    if (this.type === 'mysql' || this.type === 'mariadb') {
+      return 'RAND()';
+    }
+    if (this.type === 'postgres' || this.type === 'sqlite') {
+      return 'RANDOM()';
+    }
+    if (this.type === 'sqlserver') {
+      return 'NEWID()';
+    }
+    throw new Error(`Unsupported database type: ${this.type}`);
+  }
+
   protected nativeQuery(sql: string, params?: any, isSelect?: boolean): Promise<any> {
     throw new Error('Method not implemented');
   }
