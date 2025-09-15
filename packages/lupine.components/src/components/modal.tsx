@@ -13,6 +13,7 @@ export class ModalWindow {
     handleClicked,
     closeWhenClickOutside = true,
     zIndex,
+    contentOverflowY,
   }: FloatWindowShowProps): Promise<FloatWindowCloseProps> {
     return FloatWindow.show({
       title,
@@ -26,6 +27,7 @@ export class ModalWindow {
       handleClicked,
       closeWhenClickOutside,
       zIndex,
+      contentOverflowY,
     });
   }
 }
