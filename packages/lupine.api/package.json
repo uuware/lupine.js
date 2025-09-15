@@ -1,6 +1,6 @@
 {
   "name": "lupine.api",
-  "version": "1.1.41",
+  "version": "1.0.41",
   "license": "MIT",
   "author": "uuware.com",
   "homepage": "https://github.com/uuware/lupine.js",
@@ -45,6 +45,9 @@
     "better-sqlite3": "^11.9.1",
     "lupine.web": "^1.0.0",
     "lupine.components": "^1.0.0"
+  },
+  "optionalDependencies": {
+    "mysql2": "^3.0.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12"
