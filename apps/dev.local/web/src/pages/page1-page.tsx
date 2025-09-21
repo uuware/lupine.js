@@ -19,7 +19,7 @@ export const Page1Page = async () => {
     },
   };
 
-  const nodeTest1 = HtmlVar('');
+  const nodeTest1 = new HtmlVar('');
   const ref: RefProps = {
     onLoad: async (el: Element) => {
       nodeTest1.value = 'parameter1: ' + getRenderPageProps().urlParameters?.parameter1 + ', option1: ' + getRenderPageProps().urlParameters?.option1;

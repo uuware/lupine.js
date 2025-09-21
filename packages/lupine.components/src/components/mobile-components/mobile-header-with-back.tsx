@@ -20,11 +20,6 @@ export const HeaderWithBackFrameEmpty = () => {
   return <div class='header-back-top-empty'></div>;
 };
 
-export interface HeaderWithBackFrameHookProps {
-  updateTitle?: (title: VNode<any> | string) => void;
-  updateLeft?: (left: VNode<any>) => void;
-  updateRight?: (right: VNode<any>) => void;
-}
 // there may have a few HeaderWithBackFrame one over another at the same time
 export const HeaderWithBackFrame = ({
   children,
@@ -32,15 +27,13 @@ export const HeaderWithBackFrame = ({
   onBack,
   left,
   right,
-  hook,
   noHeader = false,
 }: {
   children: VNode<any>;
-  title: VNode<any> | string;
+  title: VNode<any> | string | HtmlVar;
   onBack: (event: Event) => void;
-  left?: VNode<any>;
-  right?: VNode<any>;
-  hook?: HeaderWithBackFrameHookProps;
+  left?: VNode<any> | HtmlVar;
+  right?: VNode<any> | HtmlVar;
   noHeader?: boolean;
 }) => {
   left = left || <HeaderWithBackFrameLeft onClick={onBack} />;
@@ -94,32 +87,13 @@ export const HeaderWithBackFrame = ({
     },
   };
 
-  if (hook) {
-    hook.updateTitle = (title: VNode<any> | string) => {
-      domCenter.value = title;
-    };
-    hook.updateLeft = (left: VNode<any>) => {
-      domLeft.value = left;
-    };
-    hook.updateRight = (right: VNode<any>) => {
-      domRight.value = right;
-    };
-  }
-  const domLeft = HtmlVar(left);
-  const domCenter = HtmlVar(title);
-  const domRight = HtmlVar(right);
+  const domLeft = left instanceof HtmlVar ? left : new HtmlVar(left);
+  const domCenter = title instanceof HtmlVar ? title : new HtmlVar(title);
+  const domRight = right instanceof HtmlVar ? right : new HtmlVar(right);
   const ref: RefProps = {};
   return (
     <div ref={ref} css={css} class='header-back-frame'>
-      {!noHeader && (
-        <MobileHeaderTitleIcon
-          onBack={onBack}
-          left={domLeft.node}
-          title={domCenter.node}
-          right={domRight.node}
-          hook={hook}
-        />
-      )}
+      {!noHeader && <MobileHeaderTitleIcon onBack={onBack} left={domLeft} title={domCenter} right={domRight} />}
       <div class='header-back-content'>{children}</div>
     </div>
   );
