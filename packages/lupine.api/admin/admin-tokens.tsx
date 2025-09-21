@@ -234,7 +234,7 @@ export const TokenShowItem = (props: { item: TokenProps }) => {
     );
   };
 
-  const dom = HtmlVar(makeDom(props.item));
+  const dom = new HtmlVar(makeDom(props.item));
   return (
     <div ref={ref} css={css} class='sample-data'>
       {dom.node}
@@ -299,7 +299,7 @@ const TokenList = () => {
       </div>
     );
   };
-  const listDom = HtmlVar(<div></div>);
+  const listDom = new HtmlVar(<div></div>);
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',

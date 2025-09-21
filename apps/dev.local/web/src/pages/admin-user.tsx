@@ -137,7 +137,7 @@ export const AdminUserPage = async (props: PageProps) => {
       userList.value = <UserList users={response.results} />;
     },
   };
-  const userList = HtmlVar('');
+  const userList = new HtmlVar('');
   return (
     <div css={css} class='management-user-page-box' ref={ref}>
       <div class='list-top'>{userList.node}</div>

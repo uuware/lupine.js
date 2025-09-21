@@ -87,7 +87,7 @@ export const HomeSearchComponent = (props: SearchMusicProps) => {
     },
   };
 
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   const ref: RefProps = {
     onLoad: async () => {
       await onSearch();

@@ -150,8 +150,8 @@ export const AdminReleasePage = () => {
       textDecoration: 'underline',
     },
   };
-  const domLog = HtmlVar('');
-  const domUpdate = HtmlVar('');
+  const domLog = new HtmlVar('');
+  const domUpdate = new HtmlVar('');
   const getDomData = () => {
     const dataOld = JSON.parse(localStorage.getItem('admin-release') || '{}');
     const data = {

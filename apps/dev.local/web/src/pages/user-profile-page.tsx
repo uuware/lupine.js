@@ -114,7 +114,7 @@ export const UserProfilePage = async (props: PageProps) => {
       );
     },
   };
-  const dom = HtmlVar('Loading...');
+  const dom = new HtmlVar('Loading...');
   return (
     <div>
       <div ref={ref}>{dom.node}</div>

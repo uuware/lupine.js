@@ -217,7 +217,7 @@ export const BookShowItem = (props: { item: SampleDataProps }) => {
     );
   };
 
-  const dom = HtmlVar(makeDom(props.item));
+  const dom = new HtmlVar(makeDom(props.item));
   return (
     <div ref={ref} css={css} class='sample-data'>
       {dom.node}
@@ -280,7 +280,7 @@ export const BookList = () => {
       </div>
     );
   };
-  const listDom = HtmlVar(makeList(currentIndex));
+  const listDom = new HtmlVar(makeList(currentIndex));
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',

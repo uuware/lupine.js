@@ -15,9 +15,9 @@ import { CssProps, HtmlVar, VNode } from 'lupine.components';
 export class MobileHeaderHelper {
   private static instance: MobileHeaderHelper;
 
-  private leftContent = HtmlVar('');
-  private centerContent = HtmlVar('');
-  private rightContent = HtmlVar('');
+  private leftContent = new HtmlVar('');
+  private centerContent = new HtmlVar('');
+  private rightContent = new HtmlVar('');
   private constructor() {}
 
   public static getInstance(): MobileHeaderHelper {
