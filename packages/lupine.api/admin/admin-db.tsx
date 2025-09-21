@@ -39,6 +39,7 @@ const fetchRunSql = async (sql: string) => {
 
 export const RunSqlPage = () => {
   const onClick = async () => {
+    ref.$('.sql-result').innerHTML = 'Running...';
     const json = await fetchRunSql((ref.$('.sql') as HTMLFormElement).value);
     console.log('====homepage', json);
     ref.$('.sql-result').innerHTML = JSON.stringify(json.result, null, 4);
