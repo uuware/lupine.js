@@ -26,7 +26,7 @@ const TestButton = () => {
       dom.value = 'This value is set in onLoad event.';
     },
   };
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   return (
     <div ref={ref} class='row-box pt-m'>
       <button onClick={onClick} class='button-base'>
@@ -46,7 +46,7 @@ const TestInput = () => {
     refInput.current.value = '';
     refInput.current.dispatchEvent(new Event('input'));
   };
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   const refInput: RefProps = {};
   return (
     <div>
@@ -70,7 +70,7 @@ const TestMouse = () => {
   const onMMove = (ev: any) => {
     dom.value = `Moving: x: ${ev.clientX}, y: ${ev.clientY}`;
   };
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   return (
     <div style={{ border: 'solid 1px red' }} class='row-box p-m' onMouseMove={onMMove}>
       <button onClick={onClick} class='button-base'>
@@ -98,7 +98,7 @@ const TestCommunication = (props: CommunicationProps) => {
     dom.value = `received message, id: ${obj.id}, msg: ${obj.message}`;
     return { status: 'ok', message: 'echo: ' + obj.message };
   };
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   return (
     <div>
       <div class='row-box pt-m'>
@@ -130,7 +130,7 @@ const TestHtmlVar = () => {
       </>
     );
   };
-  const dom = HtmlVar(defaultContent());
+  const dom = new HtmlVar(defaultContent());
   const css: CssProps = {
     backgroundColor: '#a1ffe8',
     padding: '10px',

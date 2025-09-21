@@ -135,8 +135,8 @@ const ResourcesList = (props: {
   );
 };
 export const AdminResourcesPage = () => {
-  const domLog = HtmlVar('');
-  const domUpdate = HtmlVar('');
+  const domLog = new HtmlVar('');
+  const domUpdate = new HtmlVar('');
 
   let resourcesFullPath = '';
   const onResources = async () => {

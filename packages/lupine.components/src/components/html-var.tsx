@@ -1,35 +1,56 @@
 import { RefProps, VNode } from 'lupine.web';
 
 export type HtmlVarResult = { value: string | VNode<any>; ref: RefProps; node: VNode<any> };
-export const HtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
-  let _value: string | VNode<any> = initial || '';
-  let _dirty = false;
-  const waitUpdate = async (value: string | VNode<any>) => {
-    if (!ref.current) return;
-    await ref.mountInnerComponent!(value);
-    _dirty = false;
-  };
-  const ref: RefProps = {
-    onLoad: async (el: Element) => {
-      _dirty && waitUpdate(_value);
-    },
-  };
-  return {
-    set value(value: string | VNode<any>) {
-      _value = value;
-      _dirty = true;
-      waitUpdate(value);
-    },
-    get value() {
-      return ref.current ? ref.current.innerHTML : _value;
-    },
-    get ref() {
-      return ref;
-    },
-    get node() {
-      _dirty = false;
-      // the Fragment Tag will be present in the html if ref is assigned
-      return { type: 'Fragment', props: { ref, children: _value }, html: [] };
-    },
-  };
+
+export class HtmlVar implements HtmlVarResult {
+  private _value: string | VNode<any>;
+  private _dirty = false;
+  private _ref: RefProps;
+
+  constructor(initial?: string | VNode<any>) {
+    this._value = initial || '';
+    this._ref = {
+      onLoad: async (el: Element) => {
+        this._dirty && this.waitUpdate(this._value);
+      },
+    };
+  }
+
+  private async waitUpdate(value: string | VNode<any>): Promise<void> {
+    if (!this._ref.current) return;
+    await this._ref.mountInnerComponent!(value);
+    this._dirty = false;
+  }
+
+  set value(value: string | VNode<any>) {
+    this._value = value;
+    this._dirty = true;
+    this.waitUpdate(value);
+  }
+
+  get value(): string | VNode<any> {
+    return this._ref.current ? this._ref.current.innerHTML : this._value;
+  }
+
+  get ref(): RefProps {
+    return this._ref;
+  }
+
+  get node(): VNode<any> {
+    this._dirty = false;
+    // the Fragment Tag will be present in the html if ref is assigned
+    return { 
+      type: 'Fragment', 
+      props: { 
+        ref: this._ref, 
+        children: this._value 
+      }, 
+      html: [] 
+    };
+  }
+}
+
+// For backward compatibility
+export const createHtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
+  return new HtmlVar(initial);
 };

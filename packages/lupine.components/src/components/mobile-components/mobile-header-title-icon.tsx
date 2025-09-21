@@ -17,20 +17,14 @@ export const MobileHeaderEmptyIcon = () => {
   return <div class='mhti-empty-icon' style={{ width: '28px' }}></div>;
 };
 
-export interface MobileHeaderTitleIconHookProps {
-  updateTitle?: (title: VNode<any> | string) => void;
-  updateLeft?: (left: VNode<any>) => void;
-  updateRight?: (right: VNode<any>) => void;
-}
 export interface MobileHeaderTitleIconProps {
-  title: VNode<any> | string;
+  title: VNode<any> | string | HtmlVar;
   onBack?: (event: Event) => void;
-  left?: VNode<any>;
-  right?: VNode<any>;
-  hook?: MobileHeaderTitleIconHookProps;
+  left?: VNode<any> | HtmlVar;
+  right?: VNode<any> | HtmlVar;
 }
 // there may have a few MobileHeaderTitleIcon for different pages
-export const MobileHeaderTitleIcon = ({ title, onBack, left, right, hook }: MobileHeaderTitleIconProps) => {
+export const MobileHeaderTitleIcon = ({ title, onBack, left, right }: MobileHeaderTitleIconProps) => {
   // const processBack = (event: Event) => {
   //   if (onBack) {
   //     onBack(event);
@@ -45,6 +39,7 @@ export const MobileHeaderTitleIcon = ({ title, onBack, left, right, hook }: Mobi
     padding: '6px 0',
     backgroundColor: 'var(--activatable-bg-color-normal)',
     boxShadow: 'var(--mobile-header-shadow)',
+    zIndex: 'var(--layer-inside)', // bring boxShadow to front
     '.mhti-title': {
       display: 'flex',
       fontSize: '1.3rem',
@@ -81,20 +76,9 @@ export const MobileHeaderTitleIcon = ({ title, onBack, left, right, hook }: Mobi
     },
   };
 
-  if (hook) {
-    hook.updateTitle = (title: VNode<any> | string) => {
-      domCenter.value = title;
-    };
-    hook.updateLeft = (left: VNode<any>) => {
-      domLeft.value = left;
-    };
-    hook.updateRight = (right: VNode<any>) => {
-      domRight.value = right;
-    };
-  }
-  const domLeft = HtmlVar(left);
-  const domCenter = HtmlVar(title);
-  const domRight = HtmlVar(right);
+  const domLeft = left instanceof HtmlVar ? left : new HtmlVar(left);
+  const domCenter = title instanceof HtmlVar ? title : new HtmlVar(title);
+  const domRight = right instanceof HtmlVar ? right : new HtmlVar(right);
   return (
     <div css={css} class='mobile-header-title-icon-top'>
       <div class='mhti-left'>{domLeft.node}</div>

@@ -125,7 +125,7 @@ export const AdminTableData = (props: { tableName: string; update?: TableDataUpd
     props.update.refreshRef = refresh;
   }
   bindGlobalStyles('admin-table-data', '.admin-table-data', css);
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   return (
     <div className='admin-table-data' ref={ref}>
       <button class='button-base button-s' onClick={refresh}>

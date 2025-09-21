@@ -51,7 +51,7 @@ export const SliderFrame = (props: SliderFrameProps) => {
       ref.current?.classList.add(className);
     };
   }
-  const dom = HtmlVar(<div class='slider-frame-default'>{props.defaultContent || '(No Content)'}</div>);
+  const dom = new HtmlVar(<div class='slider-frame-default'>{props.defaultContent || '(No Content)'}</div>);
   const ref: RefProps = {};
   const css: CssProps = {
     display: 'flex',

@@ -16,7 +16,7 @@ export const AdminPerformancePage = () => {
       onRefresh();
     },
   };
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   return (
     <div ref={ref}>
       <button onClick={onRefresh} class='button-base'>

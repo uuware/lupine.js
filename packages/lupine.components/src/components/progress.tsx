@@ -74,8 +74,8 @@ export const Progress = (props: ProgressProps) => {
   };
 
   const ref: RefProps = {};
-  const domTitle = HtmlVar('Progress');
-  const dom = HtmlVar('0 %');
+  const domTitle = new HtmlVar('Progress');
+  const dom = new HtmlVar('0 %');
   return (
     <div ref={ref} css={css} class='progress-top d-none'>
       <div class='progress-box'>

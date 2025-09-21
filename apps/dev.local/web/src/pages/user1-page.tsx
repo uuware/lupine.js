@@ -31,8 +31,8 @@ export const User1Page = async () => {
     },
   };
 
-  const nodeTest1 = HtmlVar('');
-  const nodeTest2 = HtmlVar('Initial Value');
+  const nodeTest1 = new HtmlVar('');
+  const nodeTest2 = new HtmlVar('Initial Value');
   const onClickTuner = async (checked: boolean) => {
     nodeTest1.value = 'Value set in onClickTuner event: ' + checked;
   };

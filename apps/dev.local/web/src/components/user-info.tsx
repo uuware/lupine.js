@@ -45,7 +45,7 @@ export const UserInfo = (props?: any) => {
     await getRenderPageProps().renderPageFunctions.fetchData('/api/logout');
     window.location.href = '/';
   };
-  const dom = HtmlVar('');
+  const dom = new HtmlVar('');
   const ref: RefProps = {
     onLoad: async () => {
       const user = await getUserInfo();
