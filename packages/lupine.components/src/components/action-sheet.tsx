@@ -42,7 +42,7 @@ export class ActionSheet {
       handleClose();
     };
     const onClickContainer = (event: any) => {
-      if (closeWhenClickOutside !== false && event.target.className === 'act-sheet-box') {
+      if (closeWhenClickOutside !== false && event.target.classList.contains('act-sheet-box')) {
         handleClose();
       }
     };

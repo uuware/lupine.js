@@ -1,3 +1,16 @@
+/*
+Esbuild plugin for conditional code logic
+
+A sample:
+#if TEST || DEBUG
+console.log('test');
+#elseif PROD
+console.log('prod');
+#else
+console.log('not test');
+#endif
+
+*/
 const fs = require('fs/promises');
 const path = require('path');
 
@@ -21,7 +34,7 @@ const endifRegExp = /^\/\/\s*#endif$/;
 const ifdefRegExpMultiLine = new RegExp(`^${ifRegExp.source}`, 'gm');
 
 // if a variable is not defined, exception will be thrown
-// if a variable is '', 0, false, undefined, null, NaN, or any other value, it will be considered as false
+// if a variable is '', 0, false, undefined, null, NaN, it will be considered as false
 /*
 var vars = {
     TEST1: '', // false

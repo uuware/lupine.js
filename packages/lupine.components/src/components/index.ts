@@ -30,6 +30,7 @@ export * from './spinner';
 export * from './svg';
 export * from './tabs';
 export * from './text-glow';
+export * from './text-scale';
 export * from './text-wave';
 export * from './theme-selector';
 export * from './toggle-base';

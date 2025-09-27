@@ -26,10 +26,16 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
    * @returns Element
    */
   newProps['ref'].$ = (selector: string) => {
-    return el.querySelector(`[${id}] ` + selector);
+    if (selector.startsWith('&')) {
+      return el.querySelector(`.${id}${selector.substring(1).replace(/&/g, id)}`);
+    }
+    return el.querySelector(`.${id} ${selector.replace(/&/g, id)}`);
   };
   newProps['ref'].$all = (selector: string) => {
-    return el.querySelectorAll(`[${id}] ` + selector);
+    if (selector.startsWith('&')) {
+      return el.querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, id)}`);
+    }
+    return el.querySelectorAll(`.${id} ${selector.replace(/&/g, id)}`);
   };
 
   newProps['ref'].mountInnerComponent = async (content: string | VNode<any>) => {

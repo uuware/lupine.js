@@ -4,8 +4,6 @@ import {
   ButtonPushAnimation,
   ButtonPushAnimationSize,
   HtmlVar,
-  PlayButton,
-  PlayButtonSize,
   Progress,
   ProgressHookProps,
   Spinner01,
@@ -15,6 +13,10 @@ import {
   TextGlow,
   TextWave,
   CssProps,
+  ToggleButton,
+  TogglePlayButton,
+  TogglePlayButtonSize,
+  TextScale,
 } from 'lupine.components';
 
 const TestButton = () => {
@@ -125,7 +127,9 @@ const TestHtmlVar = () => {
       <>
         <div class='row-box pt-m'>
           <label class='pr-m'>Count: {count}</label>
-          <button class='button-base' onClick={onClick}>Click me</button>
+          <button class='button-base' onClick={onClick}>
+            Click me
+          </button>
         </div>
       </>
     );
@@ -160,7 +164,9 @@ const TestMountInnerComponent = () => {
       <>
         <div class='row-box pt-m'>
           <label class='pr-m'>Count: {count}</label>
-          <button class='button-base' onClick={onClick}>Click me</button>
+          <button class='button-base' onClick={onClick}>
+            Click me
+          </button>
         </div>
       </>
     );
@@ -210,7 +216,7 @@ const TestStyles = () => {
   let ref: RefProps = { id: '' };
   const onClick = () => {
     css.color = css.color === 'blue' ? 'green' : 'blue';
-    updateStyles(`[${ref.id}]`, css);
+    updateStyles(`${ref.id}`, css);
     console.log(`update styles`, css.color, css);
   };
   return (
@@ -328,10 +334,20 @@ export const AdminTestAnimationsPage = () => {
       </div>
 
       <div class='pt-m'>
-        PlayButton
-        <PlayButton size={PlayButtonSize.Small} />
-        <PlayButton size={PlayButtonSize.Medium} />
-        <PlayButton size={PlayButtonSize.Large} />
+        TextScale
+        <TextScale text='This is a sample of Text Scale' />
+      </div>
+
+      <div class='pt-m'>
+        TogglePlayButton
+        <TogglePlayButton size={TogglePlayButtonSize.Small} />
+        <TogglePlayButton size={TogglePlayButtonSize.Medium} />
+        <TogglePlayButton size={TogglePlayButtonSize.Large} />
+      </div>
+
+      <div class='pt-m'>
+        ToggleButton
+        <ToggleButton onText='On' offText='Off' />
       </div>
 
       <div class='p2'>

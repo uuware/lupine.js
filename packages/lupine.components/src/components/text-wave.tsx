@@ -1,4 +1,4 @@
-import { CssProps } from "lupine.web";
+import { bindGlobalStyles, CssProps } from "lupine.web";
 
 export type TextLoadingProps = {
   text: string;
@@ -21,12 +21,12 @@ export const TextWave = (props: TextLoadingProps) => {
     fontSize: props.fontSize || '20px',
     fontWeight: props.fontWeight,
     textShadow: '1px -1px #ffffff, -2px 2px #999, -6px 7px 3px #131f5be6',
-    '.text-loading.wave-animetion span': {
+    '.text-wave.wave-animetion span': {
       display: 'inline-block',
       padding: '0 4px',
       animation: 'wave-text 1s ease-in-out infinite',
     },
-    '.text-loading.wave-animetion': {
+    '.text-wave.wave-animetion': {
       marginTop: '0.6em',
       ...cssMap,
     },
@@ -42,9 +42,10 @@ export const TextWave = (props: TextLoadingProps) => {
       },
     },
   };
+  bindGlobalStyles('text-wave-top', css);
   return (
-    <div css={css} class='text-loading-top'>
-      <div class='text-loading wave-animetion'>
+    <div class='text-wave-top'>
+      <div class='text-wave wave-animetion'>
         {props.text.split('').map((char, index) => (
           <span class={`span${index}`}>{char}</span>
         ))}

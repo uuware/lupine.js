@@ -36,20 +36,32 @@ const updateOneBlock = (css: string[], cssTemp: string[], className: string, med
   }
 };
 
-export const processStyle = (className: string, style: CssProps, mediaQuery?: string): string[] => {
+const processStyleSub = (
+  topUniqueClassName: string,
+  classSelector: string,
+  style: CssProps,
+  mediaQuery?: string
+): string[] => {
+  const outClassName = classSelector
+    .split(',')
+    .map((key0) => key0.trim())
+    .map((key0) => {
+      return (key0.startsWith('&') ? `${classSelector}${key0.substring(1)}` : key0).replace(/&/g, topUniqueClassName);
+    })
+    .join(',');
   const css: string[] = [];
   const cssTemp: string[] = [];
   for (let i in style) {
     const value = style[i];
     if (value === null || typeof value !== 'object') {
       if (value !== '' && typeof value !== 'undefined') {
-        if (!className) {
+        if (!classSelector) {
           console.warn(`No className is defined for: ${camelToHyphens(i)}:${value};`);
         }
         cssTemp.push(`${camelToHyphens(i)}:${value};`);
       }
     } else {
-      updateOneBlock(css, cssTemp, className, mediaQuery);
+      updateOneBlock(css, cssTemp, outClassName, mediaQuery);
 
       if (i.startsWith('@keyframes')) {
         const cssText = Object.keys(value)
@@ -57,17 +69,22 @@ export const processStyle = (className: string, style: CssProps, mediaQuery?: st
           .join('');
         css.push(`${i}{${cssText}}`);
       } else if (i.startsWith('@media')) {
-        const ret = processStyle(className, value, i);
+        const ret = processStyleSub(topUniqueClassName, classSelector, value, i);
         css.push(...ret);
       } else {
         // '&:hover, &.open': {
-        //     '>.d1, .d2': {
-        //     },
+        //     '>.d1, .d2': {...},
         // }, ==>
         // &:hover >.d1, &:hover >.d2, &.open >.d1, &.open .d2
-        const newClassName = !className
+
+        // '.aa': {
+        //     '&:hover': {...},
+        //     '.bb': {...},
+        // }, ==>
+        // .aa:hover, .aa .bb
+        const newClassSelector = !classSelector
           ? i
-          : className
+          : classSelector
               .split(',')
               .map((key0) => key0.trim())
               .map((key0) => {
@@ -77,25 +94,31 @@ export const processStyle = (className: string, style: CssProps, mediaQuery?: st
                   .map((key) => {
                     // not needed to "+" as them share same parents?
                     // return key.split('+').map(key2 => key2.startsWith('&') ? key0 + key2.substring(1) : key0 + ' ' + key2).join('+');
-                    return key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
+                    // return key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
+                    const newKey = key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
+                    return newKey.replace(/&/g, topUniqueClassName);
                   })
                   .join(',');
               })
               .join(',');
-        const ret = processStyle(newClassName, value, mediaQuery);
+        const ret = processStyleSub(topUniqueClassName, newClassSelector, value, mediaQuery);
         css.push(...ret);
       }
     }
   }
-  updateOneBlock(css, cssTemp, className, mediaQuery);
+  updateOneBlock(css, cssTemp, outClassName, mediaQuery);
   return css;
+};
+// topUniqueClassName is used to replace '&' in className, and '.' + topUniqueClassName is used as selector in styles ".xxx {}"
+export const processStyle = (topUniqueClassName: string, style: CssProps): string[] => {
+  return processStyleSub(topUniqueClassName, topUniqueClassName ? `.${topUniqueClassName}` : '', style);
 };
 
 // mount-components has the same name `sty-`
-export const updateStyles = (selector: string, style: CssProps) => {
-  const el = selector && document.querySelector(selector);
+export const updateStyles = (topUniqueClassName: string, style: CssProps) => {
+  const el = topUniqueClassName && document.querySelector(`.${topUniqueClassName}`);
   if (el) {
-    const cssText = processStyle(selector, style).join('');
+    const cssText = processStyle(topUniqueClassName, style).join('');
     // if the first child is style, then update it
     if (el.firstChild && el.firstChild.nodeName === 'STYLE') {
       (el.firstChild as any).innerHTML = cssText;
@@ -106,7 +129,7 @@ export const updateStyles = (selector: string, style: CssProps) => {
       el.prepend(style);
     }
   } else {
-    console.warn(`Can't find "${selector}" to update styles.`);
+    console.warn(`Can't find "${topUniqueClassName}" to update styles.`);
   }
 };
 
@@ -120,21 +143,36 @@ const updateCssDom = (uniqueStyleId: string, cssText: string, cssDom: HTMLElemen
 };
 
 /*
+If selectors in GlobalStyles have '&' at top level, then classSelector is needed, otherwise classSelector can be ''
+This is ok:
+{
+  '.aa':{
+    '&:hover': {...}
+  }
+}
+This needs classSelector:
+{
+  'color': 'red', // will need and be put under .topUniqueClassName
+  '&:hover': {...} // & will be replaced by .topUniqueClassName
+}
 Global styles including theme will not be updated once it's created.
-topClassName is a className or a tag name.
+topUniqueClassName is a className or a tag name.
+classSelector is a selector used in styles ".xxx {}"
 For example, it can be like this for all elements:
   html { ... } or :root { ... }
+
+For themes like [data-theme="dark" i], the topUniqueClassName should be empty
 */
 const _globalStyle = new Map();
-export const bindGlobalStyles = (uniqueStyleId: string, topClassName: string, style: CssProps, forceUpdate = false) => {
+export const bindGlobalStyles = (topUniqueClassName: string, style: CssProps, forceUpdate = false, isTheme = false) => {
   if (typeof document !== 'undefined') {
-    let cssDom = document.getElementById(`sty-${uniqueStyleId}`);
+    let cssDom = document.getElementById(`sty-${topUniqueClassName}`);
     if (forceUpdate || !cssDom) {
-      updateCssDom(uniqueStyleId, processStyle(topClassName, style).join(''), cssDom);
+      updateCssDom(topUniqueClassName, processStyle(isTheme ? '' : topUniqueClassName, style).join(''), cssDom);
     }
-  } else if (!_globalStyle.has(uniqueStyleId) || forceUpdate) {
+  } else if (!_globalStyle.has(topUniqueClassName) || forceUpdate) {
     // don't overwrite it to have the same behavior as in the Browser
-    _globalStyle.set(uniqueStyleId, { topClassName, style });
+    _globalStyle.set(topUniqueClassName, { topUniqueClassName, style });
   }
 };
 
@@ -143,7 +181,11 @@ const generateThemeStyles = () => {
   const themeCss = [];
   for (let themeName in currentTheme.themes) {
     // i is for case-insensitive
-    themeCss.push(...processStyle(`[data-theme="${themeName}" i]`, currentTheme.themes[themeName]));
+    themeCss.push(
+      ...processStyle('', {
+        [`[data-theme="${themeName}" i]`]: currentTheme.themes[themeName],
+      })
+    );
   }
   return themeCss.join('\n');
 };
@@ -159,7 +201,7 @@ if (typeof document !== 'undefined') {
   });
 }
 
-// 不能清空，在index.tsx中加载的只会被加载一次，清空了就没有了
+// can't clear global styles，because in index.tsx it is only loaded once, clear it it will be gone
 // const clearGlobalStyles = () => {
 //   // reset unique id
 //   _globalStyle.clear();
@@ -169,10 +211,10 @@ if (typeof document !== 'undefined') {
 export const generateAllGlobalStyles = () => {
   const result = [];
 
-  result.push(`<style id="sty-theme">${generateThemeStyles()}</style>`);
+  result.push(`<style id="sty-${themeCookieName}">${generateThemeStyles()}</style>`);
 
-  for (let [uniqueStyleId, { topClassName, style }] of _globalStyle) {
-    const cssText = processStyle(topClassName, style).join('');
+  for (let [uniqueStyleId, { topUniqueClassName, style }] of _globalStyle) {
+    const cssText = processStyle(topUniqueClassName, style).join('');
     result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);
   }
 

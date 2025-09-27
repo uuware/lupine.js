@@ -24,7 +24,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 
 bindLang('zh-cn', {});
 bindTheme('light', themes);
-bindGlobalStyles('comm-css', ':root', baseCss);
+bindGlobalStyles('comm-css', baseCss);
 setDefaultPageTitle('Sample - Page Title');
 setDefaultMetaDescription('Sample - Page Description');
 

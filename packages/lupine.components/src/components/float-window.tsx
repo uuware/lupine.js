@@ -49,7 +49,7 @@ export class FloatWindow {
     contentOverflowY = 'auto', // set to unset for having popup menu inside
   }: FloatWindowShowProps): Promise<FloatWindowCloseProps> {
     const onClickContainer = (event: any) => {
-      if (closeWhenClickOutside !== false && event.target.className === 'fwin-box') {
+      if (closeWhenClickOutside !== false && event.target.classList.contains('fwin-box')) {
         handleClose();
       }
     };
