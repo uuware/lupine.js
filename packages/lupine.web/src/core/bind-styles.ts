@@ -164,15 +164,20 @@ For example, it can be like this for all elements:
 For themes like [data-theme="dark" i], the topUniqueClassName should be empty
 */
 const _globalStyle = new Map();
-export const bindGlobalStyles = (topUniqueClassName: string, style: CssProps, forceUpdate = false, isTheme = false) => {
+export const bindGlobalStyles = (
+  topUniqueClassName: string,
+  style: CssProps,
+  forceUpdate = false,
+  noTopClassName = false
+) => {
   if (typeof document !== 'undefined') {
     let cssDom = document.getElementById(`sty-${topUniqueClassName}`);
     if (forceUpdate || !cssDom) {
-      updateCssDom(topUniqueClassName, processStyle(isTheme ? '' : topUniqueClassName, style).join(''), cssDom);
+      updateCssDom(topUniqueClassName, processStyle(noTopClassName ? '' : topUniqueClassName, style).join(''), cssDom);
     }
   } else if (!_globalStyle.has(topUniqueClassName) || forceUpdate) {
     // don't overwrite it to have the same behavior as in the Browser
-    _globalStyle.set(topUniqueClassName, { topUniqueClassName, style });
+    _globalStyle.set(topUniqueClassName, { topUniqueClassName, noTopClassName, style });
   }
 };
 
@@ -213,8 +218,8 @@ export const generateAllGlobalStyles = () => {
 
   result.push(`<style id="sty-${themeCookieName}">${generateThemeStyles()}</style>`);
 
-  for (let [uniqueStyleId, { topUniqueClassName, style }] of _globalStyle) {
-    const cssText = processStyle(topUniqueClassName, style).join('');
+  for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of _globalStyle) {
+    const cssText = processStyle(noTopClassName ? '' : topUniqueClassName, style).join('');
     result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);
   }
 
