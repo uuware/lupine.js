@@ -25,7 +25,7 @@ export const ToggleSwitch = (props: ToggleSwitchProps) => {
       : props.size === ToggleSwitchSize.Large
       ? 42
       : 34;
-  const cssSize =
+  const classSize =
     props.size === ToggleSwitchSize.SmallSmall
       ? 'smallsmall'
       : props.size === ToggleSwitchSize.Small
@@ -93,10 +93,6 @@ export const ToggleSwitch = (props: ToggleSwitchProps) => {
       bottom: '2px',
     },
 
-    '& .ts-on-text, & .ts-off-text': {
-      display: 'none',
-      width: props.textWidth,
-    },
     '&.toggle-on .ts-on-text': {
       display: 'block',
     },
@@ -136,14 +132,22 @@ export const ToggleSwitch = (props: ToggleSwitchProps) => {
     },
   };
 
-  bindGlobalStyles('toggle-switch-theme', '', cssTheme);
+  bindGlobalStyles('toggle-switch-theme', cssTheme, false, true);
+  bindGlobalStyles('toggle-switch-component', css);
+
+  const cssSize: CssProps = {
+    '& .ts-on-text, & .ts-off-text': {
+      display: 'none',
+      width: props.textWidth,
+    },
+  };
   return (
     <ToggleBase {...props} size={{ w: 'auto', h: sizeH }}>
       <div
-        css={css}
+        css={cssSize}
         class={`toggle-switch-component toggle-placeholder ${props.checked ? 'toggle-on' : 'toggle-off'}${
           props.disabled ? ' disabled' : ''
-        } ${cssSize}`}
+        } ${classSize}`}
       >
         <span class='ts-slider'>
           <span class='ts-on-text'>{props.text?.on}</span>

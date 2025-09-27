@@ -71,7 +71,7 @@ export class NotificationMessage {
         color: 'black',
       },
     };
-    bindGlobalStyles('lj_notification', '.lj_notification', css);
+    bindGlobalStyles('lj_notification', css);
 
     let container = document.querySelector('.lj_notification');
     if (!container) {

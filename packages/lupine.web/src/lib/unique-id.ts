@@ -25,9 +25,10 @@
 
 export function uniqueIdGenerator(preKey: string) {
   let count = 0;
-  let lastKey = Math.round(new Date().getTime() / 1000).toString(36);
+  const baseTime = Math.round(Date.now() / 1000);
+  let lastKey = '';
   return function (): string {
-    const key = Math.round(new Date().getTime() / 1000).toString(36);
+    const key = Math.round(Date.now() / 1000 - baseTime).toString(36);
     if (key !== lastKey) {
       count = 0;
       lastKey = key;

@@ -1,20 +1,17 @@
-import { CssProps, bindGlobalStyles, getCurrentTheme, updateTheme } from 'lupine.web';
+import { CssProps, getCurrentTheme, updateTheme } from 'lupine.web';
 import { PopupMenu } from './popup-menu';
 
 export type ThemeSelectorProps = {
   className?: string;
-  css?: CssProps;
 };
 
-export const ThemeSelector = ({ className, css }: ThemeSelectorProps) => {
-  const newCss: CssProps = {
+export const ThemeSelector = ({ className }: ThemeSelectorProps) => {
+  const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
     alignSelf: 'end',
-    ...css,
   };
 
-  bindGlobalStyles('theme-switch', '.theme-switch', newCss);
   const handleSelected = (themeName: string) => {
     updateTheme(themeName);
   };
@@ -24,7 +21,7 @@ export const ThemeSelector = ({ className, css }: ThemeSelectorProps) => {
     list.push(themeName);
   }
   return (
-    <div css={newCss} class={['theme-switch', className].join(' ')} title='Select theme'>
+    <div css={css} class={['theme-switch', className].join(' ')} title='Select theme'>
       <PopupMenu list={list} defaultValue={currentTheme.themeName} handleSelected={handleSelected}></PopupMenu>
     </div>
   );

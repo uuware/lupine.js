@@ -49,8 +49,3 @@ export class HtmlVar implements HtmlVarResult {
     };
   }
 }
-
-// For backward compatibility
-export const createHtmlVar = (initial?: string | VNode<any>): HtmlVarResult => {
-  return new HtmlVar(initial);
-};

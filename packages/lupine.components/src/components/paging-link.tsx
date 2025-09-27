@@ -70,7 +70,7 @@ export const PagingLink = ({
     },
   };
 
-  bindGlobalStyles('paging-link-box', '.paging-link-box', css);
+  bindGlobalStyles('paging-link-box', css);
   pageIndex = pageIndex ?? (Number.parseInt(getRenderPageProps().query['pg_i'] || '') || 0);
   pageLimit = pageLimit || _DEFAULT_PAGE_LIMIT;
   let maxPages = Math.floor(itemsCount / pageLimit);

@@ -51,7 +51,7 @@ export const DesignBlockBox = (props: BlockBoxProps) => {
       height: '100%',
     },
   };
-  bindGlobalStyles('design-block-box', '.design-block-box', css);
+  bindGlobalStyles('design-block-box', css);
 
   const findMsgSender = (ev: any) => {
     const msgSender = (window as any)._lj_design;

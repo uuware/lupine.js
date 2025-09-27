@@ -1,4 +1,4 @@
-import { RefProps, VNode, mountInnerComponent } from 'lupine.web';
+import { CssProps, RefProps, VNode, bindGlobalStyles, mountInnerComponent } from 'lupine.web';
 import { stopPropagation } from '../lib';
 
 export type TabsHookProps = {
@@ -27,28 +27,28 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
   const ref: RefProps = {};
   let newIndex = typeof defaultIndex === 'number' ? defaultIndex : 0;
   const clearIndex = () => {
-    const header = ref.$(`.tabs[data-refid=${ref.id}] > div > .tab.active`);
+    const header = ref.$(`.&tabs > div > .tab.active`);
     header && header.classList.remove('active');
-    const page = ref.$(`.pages[data-refid=${ref.id}] > .page.active`);
+    const page = ref.$(`.&pages > .page.active`);
     page && page.classList.remove('active');
   };
   const updateIndex = (index: number) => {
     clearIndex();
-    const doms = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+    const doms = ref.$all(`.&tabs > div > .tab`);
     if (index >= 0 && index < doms.length) {
       doms[index].classList.add('active');
-      const pages = ref.$all(`.pages[data-refid=${ref.id}] > .page`);
+      const pages = ref.$all(`.&pages > .page`);
       pages[index].classList.add('active');
       refUpdate?.indexChanged && refUpdate?.indexChanged(index);
     }
   };
   const removePage = (index: number) => {
-    const doms = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+    const doms = ref.$all(`.&tabs > div > .tab`);
     if (index >= 0 && index < doms.length) {
       const newIndex = index === doms.length - 1 ? index - 1 : index;
       const isAct = doms[index].classList.contains('active');
       doms[index].parentNode.remove();
-      const pages = ref.$all(`.pages[data-refid=${ref.id}] > .page`);
+      const pages = ref.$all(`.&pages > .page`);
       pages[index].remove();
 
       if (isAct) {
@@ -65,7 +65,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
   };
 
   const newPage = async (title: string, page: VNode<any>, index?: number) => {
-    const allTabs = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+    const allTabs = ref.$all(`.&tabs > div > .tab`);
     let newPageIndex = allTabs.length;
     if (typeof index === 'number' && index >= 0 && index < allTabs.length) {
       newPageIndex = index;
@@ -78,12 +78,12 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     const newPage = document.createElement('div');
     newPage.className = 'page';
     if (newPageIndex === allTabs.length) {
-      ref.$(`.tabs[data-refid=${ref.id}]`).appendChild(newTab);
-      ref.$(`.pages[data-refid=${ref.id}]`).appendChild(newPage);
+      ref.$(`.&tabs`).appendChild(newTab);
+      ref.$(`.&pages`).appendChild(newPage);
     } else {
-      ref.$(`.tabs[data-refid=${ref.id}]`).insertBefore(newTab, allTabs[newPageIndex]);
-      const pages = ref.$all(`.pages[data-refid=${ref.id}] > .page`);
-      ref.$(`.pages[data-refid=${ref.id}]`).insertBefore(newPage, pages[newPageIndex]);
+      ref.$(`.&tabs`).insertBefore(newTab, allTabs[newPageIndex]);
+      const pages = ref.$all(`.&pages > .page`);
+      ref.$(`.&pages`).insertBefore(newPage, pages[newPageIndex]);
     }
 
     await mountInnerComponent(newTab, newTab2);
@@ -108,7 +108,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     updateIndex(index);
   };
   const flashTitle = (index: number) => {
-    const doms = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+    const doms = ref.$all(`.&tabs > div > .tab`);
     if (index >= 0 && index < doms.length) {
       doms[index].classList.add('flash');
       setTimeout(() => {
@@ -118,7 +118,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
   };
   if (refUpdate) {
     refUpdate.updateTitle = (index: number, title: string) => {
-      const doms = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+      const doms = ref.$all(`.&tabs > div > .tab`);
       if (index >= 0 && index < doms.length) {
         doms[index].innerHTML = title;
       }
@@ -127,15 +127,15 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     refUpdate.removePage = removePage;
     refUpdate.newPage = newPage;
     refUpdate.getIndex = () => {
-      const header = ref.$(`.tabs[data-refid=${ref.id}] > div > .tab.active`);
+      const header = ref.$(`.&tabs > div > .tab.active`);
       return header ? Array.prototype.indexOf.call(header.parentNode.parentNode.children, header.parentNode) : -1;
     };
     refUpdate.getCount = () => {
-      const doms = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+      const doms = ref.$all(`.&tabs > div > .tab`);
       return doms.length;
     };
     refUpdate.findAndActivate = (title: string) => {
-      const doms = ref.$all(`.tabs[data-refid=${ref.id}] > div > .tab`);
+      const doms = ref.$all(`.&tabs > div > .tab`);
       for (let i = 0; i < doms.length; i++) {
         if (doms[i].innerText === title) {
           updateIndex(i);
@@ -148,7 +148,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
   }
 
   // pay attention to nest tabs
-  const newCss: any = {
+  const css: CssProps = {
     display: 'flex',
     'flex-direction': 'column',
     width: '100%',
@@ -232,16 +232,27 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
       },
     },
   };
+  // we want to put all common styles in the header
+  bindGlobalStyles('s-tabs-box', css);
 
+  // but we also want to create unique id for the current tab
+  const cssTab: CssProps = {
+    '&tabs': {
+      display: 'flex',
+    },
+    '&pages': {
+      display: 'flex',
+    },
+  };
   return (
-    <div ref={ref} css={newCss} class={'tabs-box' + (topClassName ? ' ' + topClassName : '')}>
-      <div class='tabs' data-refid={ref}>
+    <div ref={ref} css={cssTab} class={'s-tabs-box' + (topClassName ? ' ' + topClassName : '')}>
+      <div class='&tabs tabs'>
         {pages.map((i, index) => {
           const className = index === newIndex ? ' active' : '';
           return <div>{createTabHeader(i.title, className)}</div>;
         })}
       </div>
-      <div class='pages' data-refid={ref}>
+      <div class='&pages pages'>
         {pages.map((i, index) => {
           const className = index === newIndex ? ' active' : '';
           return <div class={'page' + className}>{i.page}</div>;

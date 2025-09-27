@@ -1,3 +1,4 @@
+export * from './base62';
 export * from './blob-utils';
 export * from './calculate-text-width';
 export * from './date-utils';

@@ -3,11 +3,18 @@ import { Spinner02, SpinnerSize } from './spinner';
 
 export type DragRefreshCloseProps = () => void;
 
+export type DragRefreshHookProps = {
+  setEnable: (enable: boolean) => void;
+  updateOnDragRefresh: (onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>) => void;
+};
+
 export type DragRefreshProps = {
   container: string;
   onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>;
+  hook?: DragRefreshHookProps;
 };
 
+// globally there should be only one DragFresh
 export const DragFresh = (props: DragRefreshProps) => {
   const css: CssProps = {
     display: 'flex',
@@ -20,7 +27,7 @@ export const DragFresh = (props: DragRefreshProps) => {
       top: '0',
       left: '0',
       width: '100%',
-      zIndex: 3,
+      zIndex: 'var(--layer-dragged-item)',
       display: 'none',
       justifyContent: 'center',
       transition: 'opacity 0.5s ease',
@@ -32,6 +39,15 @@ export const DragFresh = (props: DragRefreshProps) => {
     },
   };
 
+  let isEnabled = true;
+  if (props.hook) {
+    props.hook.setEnable = (enable: boolean) => {
+      isEnabled = enable;
+    };
+    props.hook.updateOnDragRefresh = (onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>) => {
+      props.onDragRefresh = onDragRefresh;
+    };
+  }
   const closeSpin = () => {
     const spinnerDom = ref.$('.drag-spinner') as HTMLDivElement;
     if (!spinnerDom) return;
@@ -53,12 +69,14 @@ export const DragFresh = (props: DragRefreshProps) => {
       let needRefresh = false;
       const maxHeight = 150;
       container.addEventListener('touchstart', (e: any) => {
+        if (!isEnabled) return;
         touchstartY = e.touches[0].clientY;
         touchstartX = e.touches[0].clientX;
         direction = '';
         needRefresh = false;
       });
       container.addEventListener('touchmove', (e: any) => {
+        if (!isEnabled) return;
         const touchY = e.touches[0].clientY;
         const touchX = e.touches[0].clientX;
         const movedY = touchY - touchstartY;
@@ -89,6 +107,7 @@ export const DragFresh = (props: DragRefreshProps) => {
         }
       });
       container.addEventListener('touchend', (e) => {
+        if (!isEnabled) return;
         if (direction === 'Y') {
           if (needRefresh) {
             props.onDragRefresh(closeSpin);
