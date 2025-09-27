@@ -50,7 +50,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 // addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);
-bindGlobalStyles('comm-css', ':root', baseCss);
+bindGlobalStyles('comm-css', baseCss);
 setDefaultPageTitle('Development Project for LupineJS');
 setDefaultMetaDescription('Development Project for LupineJS');
 

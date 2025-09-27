@@ -1,15 +1,29 @@
+// esbuild command tools
+
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs/promises');
-const { runCmd, copyFolder, sendRequest, loadEnv, readJson, pathExists, cpIndexHtml, pluginIfelse, genVersions } = require('lupine.api/dev');
-// import pkg from "../package.json" assert { type: "json" };
-const pkg = require("../package.json");
+const {
+  runCmd,
+  copyFolder,
+  sendRequest,
+  loadEnv,
+  readJson,
+  pathExists,
+  cpIndexHtml,
+  pluginIfelse,
+  genVersions,
+} = require('lupine.api/dev');
+const pkg = require('../package.json');
+// generate versions.ts that can be used by logs
 const outputVersionsFile = 'apps/shared-web-src/common/versions.ts';
 
 const triggerHandle = {
   restart: null,
   refresh: null,
 };
+
+// restart server for server code changes
 const triggerReStartServer = async (isDev, npmCmd, httpPort) => {
   if (triggerHandle.restart) {
     clearTimeout(triggerHandle.restart);
@@ -21,6 +35,8 @@ const triggerReStartServer = async (isDev, npmCmd, httpPort) => {
     isDev && runCmd(npmCmd);
   }, 500);
 };
+
+// refresh server for client code changes
 const triggerRefreshServer = async (isDev, httpPort) => {
   if (triggerHandle.refresh) {
     clearTimeout(triggerHandle.refresh);
@@ -32,6 +48,7 @@ const triggerRefreshServer = async (isDev, httpPort) => {
   }, 500);
 };
 
+// watch server code changes
 const watchServerPlugin = (isDev, npmCmd, httpPort) => {
   return {
     name: 'watchServerPlugin',
@@ -47,6 +64,7 @@ const watchServerPlugin = (isDev, npmCmd, httpPort) => {
   };
 };
 
+// watch server code changes
 const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
@@ -67,6 +85,7 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
   isDev && console.log('[dev-server] Watching...');
 };
 
+// copy files to output directory
 const copyCache = new Map();
 const clientProcessOnEnd = async (saved) => {
   saved.indexHtml &&
@@ -91,6 +110,7 @@ const clientProcessOnEnd = async (saved) => {
   }
 };
 
+// watch client code changes
 const watchClientPlugin = (saved) => {
   return {
     name: 'watchClientPlugin',
@@ -104,6 +124,12 @@ const watchClientPlugin = (saved) => {
   };
 };
 
+// plugin for conditional code logic
+/*
+#if MOBILE && DEV
+console.log('this is mobile and dev');
+#endif
+*/
 const ifPluginVars = {
   MOBILE: '',
   DEV: '',
@@ -141,7 +167,6 @@ const watchApiPlugin = (isDev, httpPort) => {
     name: 'watchApiPlugin',
     setup(build) {
       build.onEnd(async (res) => {
-        // console.log(`Build meta data: `, res);
         console.log(`[dev-api] Build finished`);
 
         if (isDev) {
@@ -188,10 +213,10 @@ const watchAdditionalFiles = async (saved, entryPoints) => {
 
 // Add Server, API, Client and additional files entry points to esbuild
 const start = async () => {
-  // Any code accessing from process.env should be after loadEnv
-  // process env files, "#!import .env" can be used to include another env file
+  // Any code accessing process.env should be after loadEnv
+  // process env files, "#!import .env" in .env file can be used to include another env file
   let envFile = process.argv.find((i) => i.startsWith('--env='))?.substring(6);
-  // load env file, but not overwrite existing env variables
+  // load env file, but don't overwrite existing env variables
   await loadEnv(envFile);
 
   const serverRootPathEnv = process.env['SERVER_ROOT_PATH'];
@@ -272,19 +297,9 @@ const start = async () => {
       watchApi(saved, isDev, [entryPointApi]);
     }
     if (additionalFiles.length > 0) {
+      // when some resources are changed, need to run command or refresh the server
       watchAdditionalFiles(saved, additionalFiles);
     }
-
-    // if (isMobile && await pathExists(`${serverRootPath}/${appName}_data/cfg-files`)) {
-    //   // copy web setting image files to data folder
-    //   const tmpCache = new Map();
-    //   await copyFolder(
-    //     tmpCache,
-    //     `${serverRootPath}/${appName}_data/cfg-files`,
-    //     `${serverRootPath}/${appName}_web/api/image/`,
-    //     isDev
-    //   );
-    // }
   }
 
   watchServer(isDev, npmCmd, httpPort, serverRootPath);

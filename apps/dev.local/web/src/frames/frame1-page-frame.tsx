@@ -10,13 +10,13 @@ import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 
 const defaultTopMenu = [
-  { text: 'Home', url: '/' },
-  { text: 'Page1', url: '/user/page1/parameter1/fixed-section/parameter2/option1' },
-  { text: 'Frame1', url: '/frame1' },
-  { text: 'Frame1-1', url: '/frame1/page1' },
-  { text: 'Frame1-2', url: '/frame1/page2' },
-  { text: 'Frame2', url: '/frame2' },
-  { text: 'Frame2-1', url: '/frame2/page1' },
+  { id: 'home', text: 'Home', url: '/' },
+  { id: 'page1', text: 'Page1', url: '/user/page1/parameter1/fixed-section/parameter2/option1' },
+  { id: 'frame1', text: 'Frame1', url: '/frame1' },
+  { id: 'frame1-1', text: 'Frame1-1', url: '/frame1/page1' },
+  { id: 'frame1-2', text: 'Frame1-2', url: '/frame1/page2' },
+  { id: 'frame2', text: 'Frame2', url: '/frame2' },
+  { id: 'frame2-1', text: 'Frame2-1', url: '/frame2/page1' },
 ];
 
 export const Frame1PageFrame = async (placeholderClassname: string, vnode: VNode<any>) => {

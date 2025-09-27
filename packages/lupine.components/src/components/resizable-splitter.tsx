@@ -63,7 +63,7 @@ export class ResizableSplitter {
         backgroundColor: '#ccc',
       },
     };
-    bindGlobalStyles('resizable-splitter', 'html', css);
+    bindGlobalStyles('resizable-splitter', css);
 
     window.addEventListener('mousemove', ResizableSplitter.onMousemove.bind(ResizableSplitter), false);
     document.documentElement.addEventListener('mouseup', ResizableSplitter.onMouseup.bind(ResizableSplitter), false);

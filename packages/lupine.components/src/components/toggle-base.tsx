@@ -1,22 +1,22 @@
-import { CssProps, RefProps, VNode } from 'lupine.web';
+import { bindGlobalStyles, CssProps, RefProps, VNode } from 'lupine.web';
 
-export const PlayButtonSize = {
+export const TogglePlayButtonSize = {
   Small: { w: 50, h: 50 },
   Medium: { w: 70, h: 70 },
   Large: { w: 90, h: 90 },
 };
-export type PlayButtonSizeProps = {
+export type TogglePlayButtonSizeProps = {
   w: number;
   h: number;
 };
-export type PlayButtonProps = {
-  size: PlayButtonSizeProps;
+export type TogglePlayButtonProps = {
+  size: TogglePlayButtonSizeProps;
   disabled?: boolean;
   checked?: boolean;
   onClick?: (checked: boolean) => void;
   hook?: ToggleBaseHookProps;
 };
-export const PlayButton = (props: PlayButtonProps) => {
+export const TogglePlayButton = (props: TogglePlayButtonProps) => {
   const css: CssProps = {
     width: `100%`,
     height: `100%`,
@@ -45,12 +45,12 @@ export const PlayButton = (props: PlayButtonProps) => {
       backgroundColor: '#5d578b',
     },
   };
+  bindGlobalStyles('toggle-play-button-component', css);
   return (
     <ToggleBase {...props}>
       <ToggleWaveFrame>
         <div
-          css={css}
-          class={`toggle-button-component toggle-placeholder ${props.checked ? 'toggle-on' : 'toggle-off'}${
+          class={`toggle-play-button-component toggle-placeholder ${props.checked ? 'toggle-on' : 'toggle-off'}${
             props.disabled ? ' disabled' : ''
           }`}
         >
@@ -62,7 +62,7 @@ export const PlayButton = (props: PlayButtonProps) => {
 };
 
 export type ToggleButtonProps = {
-  size: ToggleBaseSizeProps;
+  // size: ToggleBaseSizeProps;
   onText: string;
   offText: string;
   disabled?: boolean;
@@ -85,7 +85,7 @@ export const ToggleButton = (props: ToggleButtonProps) => {
     },
   };
   return (
-    <ToggleBase {...props}>
+    <ToggleBase {...props} size={{ w: 'auto', h: 'auto' }}>
       <div
         css={css}
         class={`toggle-button-component toggle-placeholder ${props.checked ? 'toggle-on' : 'toggle-off'}${
@@ -120,12 +120,11 @@ export const ToggleWaveFrame = (props: ToggleWaveFrameProps) => {
       position: 'absolute',
       width: `100%`,
       height: `100%`,
-      top: '-0',
+      top: '0',
       left: '0',
       borderRadius: '50%',
       backgroundColor: '#eb205580',
       opacity: 0,
-      zIndex: -1,
       animation: 'pulse-border 3s ease-in-out infinite',
     },
     '.toggle-waves-1': {
@@ -143,16 +142,20 @@ export const ToggleWaveFrame = (props: ToggleWaveFrameProps) => {
       'animation-delay': '2s',
     },
     '.toggle-waves-box': {
+      position: 'absolute',
       width: `100%`,
       height: `100%`,
+      top: '0',
+      left: '0',
       padding: `18%`,
     },
     '&.disabled .toggle-waves': {
       backgroundColor: '#5d578b',
     },
   };
+  bindGlobalStyles('toggle-waves-box', css);
   return (
-    <div css={css} class='toggle-waves-box toggle-placeholder'>
+    <div class='toggle-waves-box toggle-placeholder'>
       <div class='toggle-waves toggle-waves-1'></div>
       <div class='toggle-waves toggle-waves-2'></div>
       <div class='toggle-waves toggle-waves-3'></div>
@@ -230,8 +233,6 @@ export const ToggleBase = (props: ToggleBaseProps) => {
   }
 
   const css: CssProps = {
-    width: `${typeof props.size.w === 'number' ? props.size.w + 'px' : props.size.w}`,
-    height: `${typeof props.size.h === 'number' ? props.size.h + 'px' : props.size.h}`,
     '.toggle-base-box, .toggle-base-container': {
       position: 'relative',
       width: `100%`,
@@ -243,8 +244,16 @@ export const ToggleBase = (props: ToggleBaseProps) => {
       pointerEvents: 'none',
     },
   };
+  bindGlobalStyles('toggle-base-component', css);
   return (
-    <div ref={ref} css={css} class='toggle-base-component'>
+    <div
+      ref={ref}
+      css={{
+        width: `${typeof props.size.w === 'number' ? props.size.w + 'px' : props.size.w}`,
+        height: `${typeof props.size.h === 'number' ? props.size.h + 'px' : props.size.h}`,
+      }}
+      class='toggle-base-component'
+    >
       <label class='toggle-base-box'>
         <div class='toggle-base-container'>{props.children}</div>
         <input

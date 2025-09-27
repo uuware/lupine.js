@@ -283,7 +283,7 @@ export const MenuSidebar = ({
   };
 
   // if this component is used twice, then the Global styles is only set at the first time
-  bindGlobalStyles('menu-sidebar-box', '.menu-sidebar-box', css);
+  bindGlobalStyles('menu-sidebar-box', css);
 
   // show the menu on both mobile and desktop
   const newCss: CssProps =

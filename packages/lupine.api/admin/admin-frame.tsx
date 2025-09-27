@@ -358,6 +358,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
       width: '165px',
       // padding: '8px 16px',
       borderRight: 'var(--primary-border)',
+      overflowX: 'hidden',
       overflowY: 'auto',
       color: 'var(--sidebar-color)',
       backgroundColor: 'var(--sidebar-bg-color)',
@@ -399,7 +400,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
     window.location.href = '/admin';
   };
 
-  bindGlobalStyles('admin-frame', '.admin-frame-box', css);
+  bindGlobalStyles('admin-frame-box', css);
 
   const refCloseMenu: RefProps = {};
   const adminTopMenu = adminFrameHelper.getAdminTopMenu();
@@ -456,10 +457,9 @@ export const AdminPanel = (props: AdminPanelProps) => {
   const css: CssProps = {
     height: '100%',
   };
-  bindGlobalStyles('admin-panel', '.admin-panel-box', css);
   const pages: TabsPageProps[] = [];
   return (
-    <div class='admin-panel-box'>
+    <div css={css}>
       <Tabs pages={pages} hook={props.refUpdate} pagePadding='8px'></Tabs>
     </div>
   );
