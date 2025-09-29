@@ -1,6 +1,6 @@
 import { devAdminPageRouter } from 'lupine.api/admin';
 import {
-  bindGlobalStyles,
+  bindGlobalStyle,
   bindLang,
   bindRenderPageFunctions,
   bindRouter,
@@ -24,7 +24,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 
 bindLang('zh-cn', {});
 bindTheme('light', themes);
-bindGlobalStyles('comm-css', baseCss, false, true);
+bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Sample - Page Title');
 setDefaultMetaDescription('Sample - Page Description');
 

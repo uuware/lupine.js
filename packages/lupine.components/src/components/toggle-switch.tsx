@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps } from 'lupine.web';
+import { bindGlobalStyle, CssProps } from 'lupine.web';
 import { ToggleBase, ToggleBaseHookProps } from './toggle-base';
 
 export enum ToggleSwitchSize {
@@ -132,8 +132,8 @@ export const ToggleSwitch = (props: ToggleSwitchProps) => {
     },
   };
 
-  bindGlobalStyles('toggle-switch-theme', cssTheme, false, true);
-  bindGlobalStyles('toggle-switch-component', css);
+  bindGlobalStyle('toggle-switch-theme', cssTheme, false, true);
+  bindGlobalStyle('toggle-switch-component', css);
 
   const cssSize: CssProps = {
     '& .ts-on-text, & .ts-off-text': {

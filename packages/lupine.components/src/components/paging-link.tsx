@@ -1,4 +1,4 @@
-import { CssProps, RefProps, bindGlobalStyles, getRenderPageProps } from 'lupine.web';
+import { CssProps, RefProps, bindGlobalStyle, getRenderPageProps } from 'lupine.web';
 
 let _DEFAULT_PAGE_LIMIT = 10;
 export const getDefaultPageLimit = () => {
@@ -70,7 +70,7 @@ export const PagingLink = ({
     },
   };
 
-  bindGlobalStyles('paging-link-box', css);
+  bindGlobalStyle('paging-link-box', css);
   pageIndex = pageIndex ?? (Number.parseInt(getRenderPageProps().query['pg_i'] || '') || 0);
   pageLimit = pageLimit || _DEFAULT_PAGE_LIMIT;
   let maxPages = Math.floor(itemsCount / pageLimit);

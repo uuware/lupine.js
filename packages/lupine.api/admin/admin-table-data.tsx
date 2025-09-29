@@ -1,7 +1,7 @@
 import {
   CssProps,
   RefProps,
-  bindGlobalStyles,
+  bindGlobalStyle,
   getRenderPageProps,
   getDefaultPageLimit,
   HtmlVar,
@@ -124,7 +124,7 @@ export const AdminTableData = (props: { tableName: string; update?: TableDataUpd
   if (props.update) {
     props.update.refreshRef = refresh;
   }
-  bindGlobalStyles('admin-table-data', css);
+  bindGlobalStyle('admin-table-data', css);
   const dom = new HtmlVar('');
   return (
     <div className='admin-table-data' ref={ref}>

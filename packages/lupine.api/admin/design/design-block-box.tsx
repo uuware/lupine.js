@@ -1,4 +1,4 @@
-import { bindGlobalStyles, ComponentChildren, CssProps } from 'lupine.web';
+import { bindGlobalStyle, ComponentChildren, CssProps } from 'lupine.web';
 import { dragData, findTopBlock } from './drag-data';
 
 export type BlockBoxProps = {
@@ -51,7 +51,7 @@ export const DesignBlockBox = (props: BlockBoxProps) => {
       height: '100%',
     },
   };
-  bindGlobalStyles('design-block-box', css);
+  bindGlobalStyle('design-block-box', css);
 
   const findMsgSender = (ev: any) => {
     const msgSender = (window as any)._lj_design;
