@@ -20,6 +20,8 @@ export type Ref<T> = RefObject<T> | RefCallback<T>;
 // Ref can only apply to a DOM element (not a function component)
 export type RefProps = {
   id?: string;
+  // if a component has global styles, and also has "&" classNames, then globalCssId is needed to replace "&"
+  globalCssId?: string;
   current?: any; // Element | null,
   onLoad?: (el: Element) => Promise<void>;
   onUnload?: (el: Element) => Promise<void>;

@@ -1,3 +1,4 @@
+import { uniqueIdGenerator } from 'lupine.components';
 import { CssProps } from '../jsx';
 import { getCurrentTheme, themeCookieName } from './bind-theme';
 import { camelToHyphens } from './camel-to-hyphens';
@@ -163,8 +164,18 @@ For example, it can be like this for all elements:
 
 For themes like [data-theme="dark" i], the topUniqueClassName should be empty
 */
+export const globalStyleUniqueId = uniqueIdGenerator('g'); // g means global style
+const _globalStyleIds = new Map<CssProps, string>();
+export const getGlobalStylesId = (style: CssProps): string => {
+  if (!_globalStyleIds.has(style)) {
+    const id = globalStyleUniqueId();
+    _globalStyleIds.set(style, id);
+  }
+  return _globalStyleIds.get(style)!;
+};
+
 const _globalStyle = new Map();
-export const bindGlobalStyles = (
+export const bindGlobalStyle = (
   topUniqueClassName: string,
   style: CssProps,
   forceUpdate = false,

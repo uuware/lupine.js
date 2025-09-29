@@ -11,7 +11,7 @@ export const domUniqueId = uniqueIdGenerator('l'); // l means label
 //   domUniqueId(true);
 // });
 
-function renderChildren(html: string[], children: any, uniqueClassName?: string) {
+function renderChildren(html: string[], children: any, uniqueClassName?: string, globalCssId?: string) {
   if (typeof children === 'string') {
     html.push(children);
   } else if (children === false || children === null || typeof children === 'undefined') {
@@ -22,10 +22,10 @@ function renderChildren(html: string[], children: any, uniqueClassName?: string)
   } else if (Array.isArray(children)) {
     for (let i = 0; i < children.length; i++) {
       const item = children[i];
-      renderChildren(html, item, uniqueClassName);
+      renderChildren(html, item, uniqueClassName, globalCssId);
     }
   } else if (children.type && children.props) {
-    renderComponent(children.type, children.props, uniqueClassName);
+    renderComponent(children.type, children.props, uniqueClassName, globalCssId);
     html.push(...children.props._html);
     children.props._html.length = 0;
   } else {
@@ -57,7 +57,7 @@ const genUniqueId = (props: any) => {
   return props._id;
 };
 // data-refid will be assigned with a ref.id
-function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?: string) {
+function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?: string, globalCssId?: string) {
   const html = [];
   // data-refid is used for nested components like this:
   //    <div class='class-name' ref={ref} ...>...
@@ -108,7 +108,21 @@ function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?:
           // add as the first
           classNameList.unshift(props._id);
         }
-        if (uniqueClassName) {
+        if (props['ref'] && props['ref'].globalCssId && !classNameList.includes(props['ref'].globalCssId)) {
+          // add as the first
+          classNameList.unshift(props['ref'].globalCssId);
+        }
+        if (globalCssId && uniqueClassName) {
+          // &xx -> globalCssId + xx and uniqueClassName+xx
+          classNameList = classNameList.flatMap((item: string) => {
+            if (item.includes('&')) {
+              return [item.replace(/&/g, globalCssId), item.replace(/&/g, uniqueClassName)];
+            }
+            return [item];
+          });
+        } else if (globalCssId) {
+          classNameList = classNameList.map((item: string) => item.replace(/&/g, globalCssId));
+        } else if (uniqueClassName) {
           classNameList = classNameList.map((item: string) => item.replace(/&/g, uniqueClassName));
         }
         html.push(`class="${classNameList.join(' ')}"`);
@@ -125,11 +139,11 @@ function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?:
 }
 
 // The result has only one element
-export const renderComponent = (type: any, props: any, uniqueClassName?: string) => {
+export const renderComponent = (type: any, props: any, uniqueClassName?: string, globalCssId?: string) => {
   //   logger.log("==================renderComponent", type);
   if (Array.isArray(props)) {
     const jsxNodes = { type: 'Fragment', props: { children: props } } as any;
-    renderComponent(jsxNodes.type, jsxNodes.props, uniqueClassName);
+    renderComponent(jsxNodes.type, jsxNodes.props, uniqueClassName, globalCssId);
     return;
   }
 
@@ -147,7 +161,7 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string)
     // }
     // logger.log('==========props._result', props._result);
     if (typeof props._result.type === 'function') {
-      renderComponent(props._result.type, props._result.props, uniqueClassName);
+      renderComponent(props._result.type, props._result.props, uniqueClassName, globalCssId);
       if (props._result.props._html) {
         props._html.push(...props._result.props._html);
         props._result.props._html.length = 0;
@@ -172,7 +186,11 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string)
         newProps['class'] = newUniqueClassName;
       }
     }
-    const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName);
+    let newGlobalCssId = globalCssId;
+    if (newProps['ref'] && newProps['ref'].globalCssId) {
+      newGlobalCssId = newProps['ref'].globalCssId;
+    }
+    const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName, newGlobalCssId);
     if (selfClosingTags.includes(newType.toLowerCase())) {
       // for Fragment, only needs this tag when Ref is assigned
       if (newType !== 'Fragment' || newProps.ref) {
@@ -196,7 +214,7 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string)
         //     assignLabels(newProps._lb, newProps.children);
         // }
 
-        renderChildren(props._html, newProps.children, newUniqueClassName);
+        renderChildren(props._html, newProps.children, newUniqueClassName, newGlobalCssId);
       } else if (newProps['dangerouslySetInnerHTML']) {
         props._html.push(newProps['dangerouslySetInnerHTML']);
       } else {
@@ -208,7 +226,7 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string)
       }
     }
   } else if (newType.name === 'Fragment') {
-    renderChildren(props._html, newProps.children, uniqueClassName);
+    renderChildren(props._html, newProps.children, uniqueClassName, globalCssId);
   } else {
     logger.warn('Unknown type: ', type, props, newType, newProps);
   }

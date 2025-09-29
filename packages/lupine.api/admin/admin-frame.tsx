@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps, RefProps, VNode, MenuItemProps, clearCookie } from 'lupine.components';
+import { bindGlobalStyle, CssProps, RefProps, VNode, MenuItemProps, clearCookie } from 'lupine.components';
 import { NestMenuItemProps, MenuSidebar, ThemeSelector, TabsHookProps, TabsPageProps, Tabs } from 'lupine.components';
 import { adminCss } from './admin-css';
 import { CreateTablesPage, RunSqlPage } from './admin-db';
@@ -400,7 +400,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
     window.location.href = '/admin';
   };
 
-  bindGlobalStyles('admin-frame-box', css);
+  bindGlobalStyle('admin-frame-box', css);
 
   const refCloseMenu: RefProps = {};
   const adminTopMenu = adminFrameHelper.getAdminTopMenu();

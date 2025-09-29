@@ -1,4 +1,4 @@
-import { CssProps, bindGlobalStyles } from 'lupine.web';
+import { CssProps, bindGlobalStyle } from 'lupine.web';
 /**
 How to use:
   Notification.sendMessage(message);
@@ -71,7 +71,7 @@ export class NotificationMessage {
         color: 'black',
       },
     };
-    bindGlobalStyles('lj_notification', css);
+    bindGlobalStyle('lj_notification', css);
 
     let container = document.querySelector('.lj_notification');
     if (!container) {

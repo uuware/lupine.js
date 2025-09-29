@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps, RefProps, VNode } from 'lupine.web';
+import { bindGlobalStyle, CssProps, RefProps, VNode } from 'lupine.web';
 
 export const TogglePlayButtonSize = {
   Small: { w: 50, h: 50 },
@@ -45,7 +45,7 @@ export const TogglePlayButton = (props: TogglePlayButtonProps) => {
       backgroundColor: '#5d578b',
     },
   };
-  bindGlobalStyles('toggle-play-button-component', css);
+  bindGlobalStyle('toggle-play-button-component', css);
   return (
     <ToggleBase {...props}>
       <ToggleWaveFrame>
@@ -153,7 +153,7 @@ export const ToggleWaveFrame = (props: ToggleWaveFrameProps) => {
       backgroundColor: '#5d578b',
     },
   };
-  bindGlobalStyles('toggle-waves-box', css);
+  bindGlobalStyle('toggle-waves-box', css);
   return (
     <div class='toggle-waves-box toggle-placeholder'>
       <div class='toggle-waves toggle-waves-1'></div>
@@ -244,7 +244,7 @@ export const ToggleBase = (props: ToggleBaseProps) => {
       pointerEvents: 'none',
     },
   };
-  bindGlobalStyles('toggle-base-component', css);
+  bindGlobalStyle('toggle-base-component', css);
   return (
     <div
       ref={ref}

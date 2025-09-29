@@ -1,4 +1,12 @@
-import { CssProps, RefProps, VNode, bindGlobalStyles, mountInnerComponent } from 'lupine.web';
+import {
+  CssProps,
+  RefProps,
+  VNode,
+  bindGlobalStyle,
+  domUniqueId,
+  getGlobalStylesId,
+  mountInnerComponent,
+} from 'lupine.web';
 import { stopPropagation } from '../lib';
 
 export type TabsHookProps = {
@@ -24,7 +32,6 @@ export type TabsProps = {
 };
 // For CSS or query selectors, please pay attention to that Tabs can be nested
 export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: refUpdate }: TabsProps) => {
-  const ref: RefProps = {};
   let newIndex = typeof defaultIndex === 'number' ? defaultIndex : 0;
   const clearIndex = () => {
     const header = ref.$(`.&tabs > div > .tab.active`);
@@ -158,7 +165,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
       // hide tabs when there is no tabs (not need to show borders)
       display: 'none',
     },
-    '> .tabs': {
+    '> .&tabs': {
       display: 'flex',
       height: 'auto',
       'border-bottom': '1px solid grey',
@@ -212,7 +219,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
         color: '#ff0000',
       },
     },
-    '> .pages': {
+    '> .&pages': {
       display: 'flex',
       flex: '1',
       position: 'relative',
@@ -233,7 +240,12 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     },
   };
   // we want to put all common styles in the header
-  bindGlobalStyles('s-tabs-box', css);
+  const tabGlobalCssId = getGlobalStylesId(css);
+  bindGlobalStyle(tabGlobalCssId, css);
+
+  const ref: RefProps = {
+    globalCssId: tabGlobalCssId,
+  };
 
   // but we also want to create unique id for the current tab
   const cssTab: CssProps = {
@@ -245,7 +257,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     },
   };
   return (
-    <div ref={ref} css={cssTab} class={'s-tabs-box' + (topClassName ? ' ' + topClassName : '')}>
+    <div ref={ref} css={cssTab} class={topClassName ? ' ' + topClassName : ''}>
       <div class='&tabs tabs'>
         {pages.map((i, index) => {
           const className = index === newIndex ? ' active' : '';

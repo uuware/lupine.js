@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps } from 'lupine.web';
+import { bindGlobalStyle, CssProps } from 'lupine.web';
 
 export type TextScaleProps = {
   text: string;
@@ -33,7 +33,7 @@ export const TextScale = (props: TextScaleProps) => {
       },
     },
   };
-  bindGlobalStyles('text-scale-top', css);
+  bindGlobalStyle('text-scale-top', css);
   return (
     <div class='text-scale-top'>
       <div class='text-scale'>{props.text}</div>

@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps } from 'lupine.web';
+import { bindGlobalStyle, CssProps } from 'lupine.web';
 import { stopPropagation } from '../lib';
 /**
 How to use:
@@ -63,7 +63,7 @@ export class ResizableSplitter {
         backgroundColor: '#ccc',
       },
     };
-    bindGlobalStyles('resizable-splitter', css);
+    bindGlobalStyle('resizable-splitter', css);
 
     window.addEventListener('mousemove', ResizableSplitter.onMousemove.bind(ResizableSplitter), false);
     document.documentElement.addEventListener('mouseup', ResizableSplitter.onMouseup.bind(ResizableSplitter), false);
