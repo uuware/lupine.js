@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps } from 'lupine.web';
+import { bindGlobalStyle, CssProps } from 'lupine.web';
 
 export type TextGlowProps = {
   text: string;
@@ -28,7 +28,7 @@ export const TextGlow = (props: TextGlowProps) => {
       },
     },
   };
-  bindGlobalStyles('text-glow-top', css);
+  bindGlobalStyle('text-glow-top', css);
   return (
     <div class='text-glow-top'>
       <div class='text-glow'>{props.text}</div>

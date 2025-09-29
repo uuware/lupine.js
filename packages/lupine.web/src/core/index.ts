@@ -10,6 +10,7 @@ export * from './camel-to-hyphens';
 export * from './mount-component';
 export * from './page-loaded-events';
 export * from './page-router';
+export * from './render-component';
 export * from './replace-innerhtml';
 export * from './server-cookie';
 

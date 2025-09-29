@@ -7,7 +7,7 @@ import {
   bindTheme,
   setDefaultPageTitle,
   setDefaultMetaDescription,
-  bindGlobalStyles,
+  bindGlobalStyle,
   _LupineJs,
   _lupineJs,
   bindLang,
@@ -50,7 +50,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 // addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);
-bindGlobalStyles('comm-css', baseCss, false, true);
+bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Development Project for LupineJS');
 setDefaultMetaDescription('Development Project for LupineJS');
 

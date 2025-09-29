@@ -1,4 +1,4 @@
-import { bindGlobalStyles, CssProps } from "lupine.web";
+import { bindGlobalStyle, CssProps } from "lupine.web";
 
 export type TextLoadingProps = {
   text: string;
@@ -42,7 +42,7 @@ export const TextWave = (props: TextLoadingProps) => {
       },
     },
   };
-  bindGlobalStyles('text-wave-top', css);
+  bindGlobalStyle('text-wave-top', css);
   return (
     <div class='text-wave-top'>
       <div class='text-wave wave-animetion'>
