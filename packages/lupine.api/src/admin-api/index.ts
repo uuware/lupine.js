@@ -1,2 +1,2 @@
 export * from './admin-api';
-export * from './admin-helper';
+export * from './admin-api-helper';

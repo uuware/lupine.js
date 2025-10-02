@@ -18,6 +18,7 @@ export type MenuSidebarProps = {
   maxWidth?: string;
   color?: string;
   backgroundColor?: string;
+  isDevAdmin?: boolean;
 };
 export const MenuSidebar = ({
   mobileMenu,
@@ -29,6 +30,7 @@ export const MenuSidebar = ({
   backgroundColor = 'dark',
   maxWidth = '100%',
   maxWidthMobileMenu = MediaQueryMaxWidth.TabletMax,
+  isDevAdmin = false,
 }: MenuSidebarProps) => {
   const css: CssProps = {
     // backgroundColor,
@@ -218,7 +220,7 @@ export const MenuSidebar = ({
   const renderItems = (items: NestMenuItemProps[], className: string) => {
     return (
       <div class={className}>
-        {items.map((item) => {
+        {items.filter((item) => isDevAdmin || !item.devAdmin).map((item) => {
           if (item.hide === true) {
             return null;
           }

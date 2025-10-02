@@ -8,7 +8,7 @@ import {
   ApiHelper,
   langHelper,
   FsUtils,
-  adminHelper,
+  adminApiHelper,
   processRefreshCache,
 } from 'lupine.api';
 import path from 'path';
@@ -86,7 +86,7 @@ export class AdminRelease implements IApiBase {
 
   async refreshCache(req: ServerRequest, res: ServerResponse) {
     // check whether it's from online admin
-    const json = await adminHelper.getDevAdminFromCookie(req, res, false);
+    const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
     const jsonData = req.locals.json();
     if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
       await processRefreshCache(req);

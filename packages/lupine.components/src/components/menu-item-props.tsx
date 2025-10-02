@@ -5,6 +5,7 @@ export type MenuItemProps = {
   js?: () => void;
   alt?: string;
   hide?: boolean;
+  devAdmin?: boolean;
 };
 
 export type NestMenuItemProps = MenuItemProps & {

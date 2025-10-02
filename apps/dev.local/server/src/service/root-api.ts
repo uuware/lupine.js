@@ -1,16 +1,31 @@
-import { IApiBase, Logger, StaticServer, ApiRouter, langHelper } from 'lupine.api';
+import {
+  IApiBase,
+  Logger,
+  StaticServer,
+  ApiRouter,
+  langHelper,
+  adminApiHelper,
+} from 'lupine.api';
 import { Api } from './api';
 import { apiLangEn } from '../lang/api-lang-en';
 import { apiLangZhCn } from '../lang/api-lang-zh-cn';
+import { appAdminHookCheckLogin, appAdminHookLogout, appAdminHookSetCookie } from './user-api';
 
 const logger = new Logger('root-api');
+const patchAdminLogin = () => {
+  adminApiHelper.setAppAdminHookSetCookie(appAdminHookSetCookie);
+  adminApiHelper.setAppAdminHookCheckLogin(appAdminHookCheckLogin);
+  adminApiHelper.setAppAdminHookLogout(appAdminHookLogout);
+};
 export class RootApi implements IApiBase {
   protected router = new ApiRouter();
 
   constructor() {
+    logger.info('RootApi is loaded.');
     langHelper.addLang(apiLangEn);
     langHelper.addLang(apiLangZhCn);
-    logger.info('RootApi is loaded.');
+
+    patchAdminLogin();
     this.mountDashboard();
   }
 
