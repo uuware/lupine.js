@@ -1,6 +1,6 @@
 import { apiStorage } from '../api';
 import { CryptoUtils, Logger } from '../lib';
-import { adminHelper } from './admin-helper';
+import { adminApiHelper } from './admin-api-helper';
 
 export type TokenProps = {
   token: string;
@@ -64,7 +64,7 @@ export class AdminTokenHelper {
 
   generate() {
     const salt = 'Lupine:' + CryptoUtils.uuid() + ':' + new Date().getTime().toString();
-    return adminHelper.encryptJson(salt) as string;
+    return adminApiHelper.encryptJson(salt) as string;
   }
 
   async validateToken(token: string) {

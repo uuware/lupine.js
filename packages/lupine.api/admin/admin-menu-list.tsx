@@ -1,7 +1,7 @@
 import { CssProps, PageProps, RefProps, getRenderPageProps, NotificationMessage } from 'lupine.components';
 import { AdminTableData } from './admin-table-data';
-import { adminFrameProps } from './admin-frame-props';
 import { AdminMenuEditPage } from './admin-menu-edit';
+import { adminFrameHelper } from './admin-frame-helper';
 
 const tableName = '$__s_menu';
 const fetchTableDelete = async (tableName: string, id: string) => {
@@ -14,7 +14,7 @@ export const AdminMenuSinglePage = async (props: PageProps) => {
 };
 
 export const AdminMenuPage = () => {
-  const refUpdate = adminFrameProps.tabsHook;
+  const refUpdate = adminFrameHelper.getTabsHook();
   const onDelete = async (rowData: any) => {
     if (!confirm(`Are you really Deleting ${rowData['menuid']}?`)) {
       return;
@@ -26,7 +26,7 @@ export const AdminMenuPage = () => {
   };
 
   const onEdit = async (rowData: any) => {
-    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameProps.maxTabsCount) {
+    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameHelper.getMaxTabsCount()) {
       alert('You are opening too many pages');
       return;
     }
@@ -57,7 +57,7 @@ export const AdminMenuPage = () => {
     }, 500);
   };
   const onNewMenu = async () => {
-    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameProps.maxTabsCount) {
+    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameHelper.getMaxTabsCount()) {
       alert('You are opening too many pages');
       return;
     }

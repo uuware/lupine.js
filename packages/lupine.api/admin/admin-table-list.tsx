@@ -1,5 +1,4 @@
 import {
-  DomUtils,
   NotificationColor,
   NotificationMessage,
   CssProps,
@@ -8,8 +7,8 @@ import {
   mountInnerComponent,
   downloadLink,
 } from 'lupine.components';
-import { adminFrameProps } from './admin-frame-props';
 import { TableDataPage } from './admin-table-data';
+import { adminFrameHelper } from './admin-frame-helper';
 
 const fetchTableList = async () => {
   const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/db/tables/list');
@@ -29,10 +28,10 @@ const fetchTableTruncateAll = async () => {
 };
 
 export const TableListPage = () => {
-  const refUpdate = adminFrameProps.tabsHook;
+  const refUpdate = adminFrameHelper.getTabsHook();
 
   const openTablePanel = async (tableName: string) => {
-    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameProps.maxTabsCount) {
+    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameHelper.getMaxTabsCount()) {
       alert('You are opening too many pages');
       return;
     }

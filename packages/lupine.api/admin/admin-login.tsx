@@ -1,5 +1,14 @@
-import { CssProps, PageProps, webEnv, DomUtils, NotificationColor, NotificationMessage, setCookie } from 'lupine.components';
+import {
+  CssProps,
+  PageProps,
+  webEnv,
+  NotificationColor,
+  NotificationMessage,
+  setCookie,
+  RefProps,
+} from 'lupine.components';
 import { adminCss } from './admin-css';
+import { adminFrameHelper } from './admin-frame-helper';
 
 const fetchLogin = async (props: PageProps, username: string, password: string) => {
   const data = await props.renderPageFunctions.fetchData('/api/admin/auth', {
@@ -17,78 +26,81 @@ export const AdminLoginPage = async (props: PageProps) => {
     width: '100%',
     minHeight: '100%',
     overflowY: 'auto',
-    '.top-header': {
+    '.&header': {
       padding: '50px 0',
       margin: 'auto',
       fontSize: '200%',
     },
-    '.top-content': {
+    '.&content': {
       flex: '1',
       padding: '8px 16px',
       margin: 'auto',
-      '.login-button, .login-tip': {
+      '.&button, .&tip': {
         justifyContent: 'center',
       },
-      '.login-button button': {
+      '.&button button': {
         width: '80%',
         fontSize: '150%',
         height: '40px',
       },
-      '.login-tip': {
+      '.&tip': {
         color: 'gray',
         fontSize: '90%',
       },
-      '.label': {
+      '.&label': {
         width: '100px',
       },
       '.row-box': {
         marginBottom: '8px',
       },
     },
-    '.top-footer': {
+    '.&footer': {
       padding: '16px 16px 4px 16px',
       margin: 'auto',
     },
   };
 
   const onLogin = async () => {
-    const auth = await fetchLogin(props, DomUtils.getValue('.u-name')!, DomUtils.getValue('.u-pass')!);
+    const auth = await fetchLogin(props, ref.$('.&name')!.value, ref.$('.&pass')!.value);
     console.log('====auth', auth);
     if (!auth || auth.status !== 'ok') {
       NotificationMessage.sendMessage((auth && auth.message) || 'Login failed', NotificationColor.Error);
     }
-    if (auth.result) {
-      setCookie('_token_dev', auth.result, 30, '/');
+    if (auth.devLogin) {
+      setCookie('_token_dev', auth.devLogin, 30, '/');
       window.location.href = '/admin_dev';
     }
+    const appAdminHookCheckLogin = adminFrameHelper.getAppAdminHookCheckLogin();
+    if (appAdminHookCheckLogin) {
+      if (await appAdminHookCheckLogin(auth)) {
+        window.location.href = '/admin_dev';
+      }
+    }
   };
+  const ref: RefProps = {};
   return (
-    <div css={css} class='admin-login'>
-      <div class='top-header'>
-        <div class='top-title'>Site Management (Lupine.JS 1.0)</div>
+    <div ref={ref} css={css} class='admin-login'>
+      <div class='&header'>
+        <div class='&title'>Site Management (Lupine.JS 1.0)</div>
       </div>
-      <div class='top-content'>
+      <div class='&content'>
         <div class='row-box'>
-          <div class='label'>Username:</div>
-          <div>
-            <input class='input-base u-name' type='text' />
-          </div>
+          <div class='&label'>Username:</div>
+          <input class='input-base &name' type='text' />
         </div>
         <div class='row-box'>
-          <div class='label'>Password:</div>
-          <div>
-            <input class='input-base u-pass' type='password' />
-          </div>
+          <div class='&label'>Password:</div>
+          <input class='input-base &pass' type='password' />
         </div>
-        <div class='row-box login-button'>
+        <div class='row-box &button'>
           <button onClick={() => onLogin()} class='button-base'>
             Login
           </button>
         </div>
-        <div class='row-box login-tip'>* Login after using the system.</div>
+        <div class='row-box &tip'>* Login after using the system.</div>
       </div>
-      <div class='top-footer'>
-        Copyright© 2023-2024 Lupine.JS{' '}
+      <div class='&footer'>
+        Copyright© 2023-2025 Lupine.JS{' '}
         <a href={`http://localhost:${webEnv('API_PORT', 11080)}/`} target='_blank'>
           http://localhost:{webEnv('API_PORT', 11080)}/
         </a>

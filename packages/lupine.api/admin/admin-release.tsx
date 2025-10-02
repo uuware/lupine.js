@@ -10,13 +10,6 @@ import {
   downloadStream,
 } from 'lupine.components';
 
-interface DirProps {
-  name: string;
-  time: string;
-  size: number;
-  dir: boolean;
-  items?: DirProps[];
-}
 interface ReleaseListProps {
   result: any;
   onUpdate: () => void;
