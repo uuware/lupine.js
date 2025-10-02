@@ -71,6 +71,14 @@ export class AdminFrameHelper {
     this.isDevAdmin = isDevAdmin;
   }
 
+  maxWidthMobileMenu = '700px';
+  setMaxWidthMobileMenu(maxWidthMobileMenu: string) {
+    this.maxWidthMobileMenu = maxWidthMobileMenu;
+  }
+  getMaxWidthMobileMenu() {
+    return this.maxWidthMobileMenu;
+  }
+
   maxTabsCount = 20;
   setMaxTabsCount(count: number) {
     this.maxTabsCount = count;
