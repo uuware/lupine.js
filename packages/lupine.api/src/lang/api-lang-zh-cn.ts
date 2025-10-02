@@ -23,6 +23,5 @@ export const apiLangZhCn: OneLangProps = {
     'shared:not_found_file': '文件 {fileName} 未找到',
 
     'shared:wrong_hash': '错误的hash',
-    'shared:crypto_key_not_set': 'Crypto key [{cryptoKey}] 未设置',
   },
 };

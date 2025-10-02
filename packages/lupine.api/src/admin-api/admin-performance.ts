@@ -16,7 +16,7 @@ import {
   AppCacheGlobal,
   getAppCache,
 } from 'lupine.api';
-import { adminHelper } from './admin-helper';
+import { adminApiHelper } from './admin-api-helper';
 import { needDevAdminSession } from './admin-auth';
 
 // #https://github.com/sebhildebrandt/systeminformation
@@ -38,7 +38,7 @@ export class AdminPerformance implements IApiBase {
   }
 
   async performanceData(req: ServerRequest, res: ServerResponse) {
-    const json = adminHelper.getDevAdminFromCookie(req, res, true);
+    const json = adminApiHelper.getDevAdminFromCookie(req, res, true);
     if (!json) {
       return false;
     }

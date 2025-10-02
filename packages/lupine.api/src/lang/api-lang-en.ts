@@ -22,6 +22,5 @@ export const apiLangEn: OneLangProps = {
     'shared:not_found_file': 'File {fileName} is not found.',
 
     'shared:wrong_hash': 'Wrong hash.',
-    'shared:crypto_key_not_set': 'Crypto key [{cryptoKey}] not set',
   },
 };

@@ -9,7 +9,7 @@ import {
   ApiHelper,
   langHelper,
   FsUtils,
-  adminHelper,
+  adminApiHelper,
 } from 'lupine.api';
 import path from 'path';
 
@@ -64,7 +64,7 @@ export class AdminResources implements IApiBase {
     const chunkNumberStr = req.locals.query.get('chunkNumber') as string;
     const chunkNumber = parseInt(chunkNumberStr);
     const totalChunks = parseInt(req.locals.query.get('totalChunks') as string);
-    const decryptedKey = key && adminHelper.decryptJson(key.replace(/ /g, '+'));
+    const decryptedKey = key && adminApiHelper.decryptJson(key.replace(/ /g, '+'));
     const keyNG =
       !chunkNumberStr ||
       !totalChunks ||
@@ -100,7 +100,7 @@ export class AdminResources implements IApiBase {
       chunkNumber,
       totalChunks,
       message: langHelper.getLang('shared:file_part_updated'),
-      key: adminHelper.encryptJson({ ind: chunkNumber + 1, cnt: totalChunks, t: new Date().getTime() }),
+      key: adminApiHelper.encryptJson({ ind: chunkNumber + 1, cnt: totalChunks, t: new Date().getTime() }),
     };
     ApiHelper.sendJson(req, res, response);
     return true;

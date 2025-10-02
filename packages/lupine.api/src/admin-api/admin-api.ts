@@ -2,7 +2,7 @@ import { ServerResponse } from 'http';
 // import { AdminUser } from './admin-user';
 import { AdminDb } from './admin-db';
 import { AdminMenu } from './admin-menu';
-import { devAdminAuth, needDevAdminSession } from './admin-auth';
+import { devAdminAuth, devAdminLogout, needDevAdminSession } from './admin-auth';
 import { AdminPerformance } from './admin-performance';
 import { AdminRelease } from './admin-release';
 import { AdminResources } from './admin-resources';
@@ -10,7 +10,7 @@ import { AdminTokens } from './admin-tokens';
 import { AdminConfig } from './admin-config';
 import { Logger } from '../lib';
 import { IApiBase, ServerRequest } from '../models';
-import {ApiRouter } from '../api';
+import { ApiRouter } from '../api';
 
 const logger = new Logger('admin-api');
 
@@ -54,6 +54,9 @@ export class AdminApi implements IApiBase {
 
     this.router.use('/auth', async (req: ServerRequest, res: ServerResponse) => {
       return devAdminAuth(req, res);
+    });
+    this.router.use('/logout', async (req: ServerRequest, res: ServerResponse) => {
+      return devAdminLogout(req, res);
     });
   }
 }

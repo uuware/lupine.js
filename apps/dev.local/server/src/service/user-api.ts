@@ -9,8 +9,12 @@ import {
   JsonKeyValue,
   langHelper,
   apiStorage,
+  AppAdminHookSetCookieProps,
+  AppAdminHookCheckLoginProps,
+  AppAdminHookLogoutProps,
 } from 'lupine.api';
 import { sendEmail, sendSiteEmail } from './send-email';
+import { clearCookie } from 'lupine.web';
 
 const PW_RETRY_MAX = 5;
 const PW_RETRY_RESET_MINUTES = 15;
@@ -50,6 +54,68 @@ export const encryptJson = (jsonOrText: string | object) => {
     }
   }
   return false;
+};
+
+export const appAdminHookSetCookie: AppAdminHookSetCookieProps = async (
+  req: ServerRequest,
+  res: ServerResponse,
+  username: string
+) => {
+  const cryptoKey = process.env['CRYPTO_KEY'];
+  const u = process.env['ADMIN_USER'];
+  const p = process.env['ADMIN_PASS'];
+  if (!cryptoKey || !u || !p) {
+    return false;
+  }
+
+  const specialToken = CryptoUtils.hash((u + ':' + p) as string);
+  const loginJson: LoginJsonProps = {
+    ip: '',
+    id: 0,
+    u: u,
+    t: 'admin',
+    h: specialToken,
+  };
+
+  const token = JSON.stringify(loginJson);
+  const tokenCookie = CryptoUtils.encrypt(token, cryptoKey);
+  const response = {
+    status: 'ok',
+    message: langHelper.getLang('shared:login_success'),
+    result: tokenCookie,
+    user: {
+      u: loginJson.u,
+      t: loginJson.t,
+    },
+  };
+
+  // sameSite: 'none' needs secure=true
+  req.locals.setCookie('_token', tokenCookie, {
+    expireDays: 360,
+    path: '/',
+    httpOnly: false,
+    secure: true,
+    sameSite: 'none',
+  });
+  return response;
+};
+
+export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
+  req: ServerRequest,
+  res: ServerResponse,
+  username: string,
+  password: string
+) => {
+  if (process.env['ADMIN_PASS'] && username === process.env['ADMIN_USER'] && password === process.env['ADMIN_PASS']) {
+    const appAdminResponse = await appAdminHookSetCookie(req, res, username);
+    ApiHelper.sendJson(req, res, appAdminResponse);
+    return true;
+  }
+  return false;
+};
+
+export const appAdminHookLogout: AppAdminHookLogoutProps = async (req: ServerRequest, res: ServerResponse) => {
+  clearCookie('_token', '/');
 };
 
 export const getUserFromCookie = async (
@@ -185,8 +251,8 @@ export const needLoginSession = async (req: ServerRequest, res: ServerResponse) 
   if (!cryptoKey) {
     const response = {
       status: 'error',
-      message: langHelper.getLang('shared:crypto_key_not_set', {
-        cryptoKey: 'CRYPTO_KEY',
+      message: langHelper.getLang('shared:name_not_set', {
+        name: 'ENV CRYPTO_KEY',
       }),
     };
     ApiHelper.sendJson(req, res, response);
@@ -214,8 +280,8 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
   if (!cryptoKey) {
     const response = {
       status: 'error',
-      message: langHelper.getLang('shared:crypto_key_not_set', {
-        cryptoKey: 'CRYPTO_KEY',
+      message: langHelper.getLang('shared:name_not_set', {
+        name: 'ENV CRYPTO_KEY',
       }),
     };
     ApiHelper.sendJson(req, res, response);
@@ -430,8 +496,8 @@ export const userReg = async (req: ServerRequest, res: ServerResponse) => {
   if (!cryptoKey) {
     const response = {
       status: 'error',
-      message: langHelper.getLang('shared:crypto_key_not_set', {
-        cryptoKey: 'CRYPTO_KEY',
+      message: langHelper.getLang('shared:name_not_set', {
+        name: 'ENV CRYPTO_KEY',
       }),
     };
     ApiHelper.sendJson(req, res, response);
