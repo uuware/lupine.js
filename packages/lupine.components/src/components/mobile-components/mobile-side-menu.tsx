@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode } from 'lupine.components';
+import { backActionHelper, CssProps, RefProps, VNode } from 'lupine.components';
 
 export class MobileSideMenuHelper {
   static show() {
@@ -7,10 +7,14 @@ export class MobileSideMenuHelper {
     setTimeout(() => {
       ref.classList.add('animate-show');
     }, 1);
+
+    const backActionId = backActionHelper.genBackActionId();
+    ref.setAttribute('data-back-action', backActionId);
   }
 
   static hide() {
     const ref = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
+    ref.removeAttribute('data-back-action');
     ref.classList.remove('animate-show');
     setTimeout(() => {
       ref.classList.remove('show');

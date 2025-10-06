@@ -2,13 +2,17 @@
 HeaderWithBackFrame is a full page frame with header for mobile sliders.
 It has Back icon at Left and Close icon at Right.
 */
-import { VNode, CssProps, RefProps, HtmlVar } from 'lupine.components';
+import { VNode, CssProps, RefProps, HtmlVar, backActionHelper } from 'lupine.components';
 import { MobileHeaderTitleIcon } from './mobile-header-title-icon';
 
 export const HeaderWithBackFrameHeight = '40px';
 export const HeaderWithBackFrameLeft = ({ onClick }: { onClick: (event: Event) => void }) => {
   return (
-    <i class='ifc-icon mg-arrow_back_ios_new_outlined header-back-left-icon' onClick={(event) => onClick(event)}></i>
+    <i
+      class='ifc-icon mg-arrow_back_ios_new_outlined header-back-left-icon'
+      data-back-action={backActionHelper.genBackActionId()}
+      onClick={(event) => onClick(event)}
+    ></i>
   );
 };
 
