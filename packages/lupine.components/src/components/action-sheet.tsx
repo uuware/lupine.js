@@ -1,4 +1,5 @@
 import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
+import { backActionHelper } from '../lib';
 
 export type ActionSheetCloseProps = () => void;
 
@@ -125,16 +126,21 @@ export class ActionSheet {
       },
     };
     const component = (
-      <div css={cssContainer} class='act-sheet-box' onClick={onClickContainer}>
+      <div
+        css={cssContainer}
+        class='act-sheet-box'
+        onClick={onClickContainer}
+        data-back-action={backActionHelper.genBackActionId()}
+      >
         <div ref={ref} class='act-sheet-body'>
           <div class='act-sheet-content'>
             <div class='act-sheet-title'>{title}</div>
             {children}
             {confirmButtonText && (
-            <div class='act-sheet-bottom-item act-sheet-confirm' onClick={onConfirm}>
-              {confirmButtonText}
-            </div>
-          )}
+              <div class='act-sheet-bottom-item act-sheet-confirm' onClick={onConfirm}>
+                {confirmButtonText}
+              </div>
+            )}
           </div>
           {cancelButtonText && (
             <div class='act-sheet-bottom-item' onClick={onCancel}>
@@ -210,11 +216,11 @@ export class ActionSheetMessage {
   }: ActionSheetMessageProps): Promise<ActionSheetCloseProps> {
     const handleClose = await ActionSheet.show({
       title,
-      children: <div css={{ padding: '8px',borderTop: '1px solid var(--primary-border-color)', }}>{message}</div>,
+      children: <div css={{ padding: '8px', borderTop: '1px solid var(--primary-border-color)' }}>{message}</div>,
       contentMaxHeight,
       confirmButtonText,
       handleConfirmClicked,
-        cancelButtonText,
+      cancelButtonText,
       closeWhenClickOutside,
     });
     return handleClose;

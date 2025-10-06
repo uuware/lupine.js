@@ -2,11 +2,17 @@
 MobileHeaderTitleIcon can be used in MobileHeaderComponent's Center part.
 It has it's own Left and Right icons.
 */
-import { VNode, CssProps, HtmlVar } from 'lupine.components';
+import { VNode, CssProps, HtmlVar, backActionHelper } from 'lupine.components';
 
 export const MobileHeadeIconHeight = '40px';
 export const MobileHeadeBackIcon = ({ onClick }: { onClick: (event: Event) => void }) => {
-  return <i class='ifc-icon mg-arrow_back_ios_new_outlined mhti-back-icon' onClick={(event) => onClick(event)}></i>;
+  return (
+    <i
+      class={'ifc-icon mg-arrow_back_ios_new_outlined mhti-back-icon'}
+      data-back-action={backActionHelper.genBackActionId()}
+      onClick={(event) => onClick(event)}
+    ></i>
+  );
 };
 
 export const MobileHeadeCloseIcon = ({ onClick }: { onClick: (event: Event) => void }) => {

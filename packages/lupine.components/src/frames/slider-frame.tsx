@@ -25,7 +25,7 @@ export type SliderFrameProps = {
   defaultContent?: VNode<any> | string;
   direction?: 'right' | 'bottom';
   hook?: SliderFrameHookProps;
-  afterClose?: () => void;
+  afterClose?: () => void | Promise<void>;
 };
 export const SliderFrame = (props: SliderFrameProps) => {
   if (props.hook) {
@@ -39,11 +39,11 @@ export const SliderFrame = (props: SliderFrameProps) => {
     props.hook.close = (event: Event) => {
       stopPropagation(event);
       ref.current?.classList.remove('show');
-      setTimeout(() => {
+      setTimeout(async () => {
         ref.current?.classList.add('d-none');
         dom.value = '';
         if (props.afterClose) {
-          props.afterClose();
+          await props.afterClose();
         }
       }, 400);
     };
