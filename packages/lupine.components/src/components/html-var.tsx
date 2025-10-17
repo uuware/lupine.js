@@ -6,26 +6,50 @@ export class HtmlVar implements HtmlVarResult {
   private _value: string | VNode<any>;
   private _dirty = false;
   private _ref: RefProps;
+  private resolve!: () => void;
+  private promise: Promise<void>;
 
   constructor(initial?: string | VNode<any>) {
+    this.promise = new Promise<void>((res) => {
+      this.resolve = res;
+    });
+
     this._value = initial || '';
     this._ref = {
       onLoad: async (el: Element) => {
-        this._dirty && this.waitUpdate(this._value);
+        // in case new resolve is created while updating
+        const res = this.resolve;
+        if (this._dirty) {
+          await this.update(this._value);
+        }
+        res();
       },
     };
   }
 
-  private async waitUpdate(value: string | VNode<any>): Promise<void> {
-    if (!this._ref.current) return;
-    await this._ref.mountInnerComponent!(value);
+  private async update(value: string | VNode<any>): Promise<void> {
     this._dirty = false;
+    this._value = '';
+    await this._ref.mountInnerComponent!(value);
+  }
+
+  // need to wait before use ref.current
+  async waitUpdate() {
+    await this.promise;
   }
 
   set value(value: string | VNode<any>) {
     this._value = value;
+    if (this._dirty || !this._ref.current) {
+      return;
+    }
+
     this._dirty = true;
-    this.waitUpdate(value);
+    this.promise = new Promise<void>(async (res) => {
+      this.resolve = res;
+      await this.update(value);
+      this.resolve();
+    });
   }
 
   get value(): string | VNode<any> {
@@ -39,13 +63,13 @@ export class HtmlVar implements HtmlVarResult {
   get node(): VNode<any> {
     this._dirty = false;
     // the Fragment Tag will be present in the html if ref is assigned
-    return { 
-      type: 'Fragment', 
-      props: { 
-        ref: this._ref, 
-        children: this._value 
-      }, 
-      html: [] 
+    return {
+      type: 'Fragment',
+      props: {
+        ref: this._ref,
+        children: this._value,
+      },
+      html: [],
     };
   }
 }
