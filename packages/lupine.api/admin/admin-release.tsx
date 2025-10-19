@@ -94,7 +94,7 @@ const ReleaseList = (props: ReleaseListProps) => {
               </label>
             </div>
           ))}
-          <label class='label mr-m release-label'>(Only update index.js file)</label>
+          <label class='label mr-m release-label'>(Skip *.js.map files)</label>
         </div>
       </div>
       <LogList logs={props.result.logs} onLogClick={props.onLogClick} />
@@ -116,12 +116,13 @@ const LogList = (props: {
       <div class='row-box mt-m'>
         <label class='label mr-m release-label'>Logs:</label>
         <div type='text'>
-          {props.logs && props.logs.map((log: { name: string; size: number; time: string }) => (
-            <div>
-              <label class='release-log' onClick={() => props.onLogClick(log.name)}>{`${log.name}`}</label> ({log.time};{' '}
-              {formatBytes(log.size)}){' '}
-            </div>
-          ))}
+          {props.logs &&
+            props.logs.map((log: { name: string; size: number; time: string }) => (
+              <div>
+                <label class='release-log' onClick={() => props.onLogClick(log.name)}>{`${log.name}`}</label> (
+                {log.time}; {formatBytes(log.size)}){' '}
+              </div>
+            ))}
         </div>
       </div>
     </div>
@@ -131,7 +132,7 @@ const LogList = (props: {
 export const AdminReleasePage = () => {
   const fetchData = async (options: { targetUrl: string; accessToken: string; log?: boolean }) => {
     const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/check', options);
-    console.log('AdminRelease', data);
+    console.log('release/check', data);
     return data.json;
   };
   const css: CssProps = {
@@ -146,11 +147,18 @@ export const AdminReleasePage = () => {
   const domLog = new HtmlVar('');
   const domUpdate = new HtmlVar('');
   const getDomData = () => {
-    const dataOld = JSON.parse(localStorage.getItem('admin-release') || '{}');
+    const domFromList = ref.$('.from-list');
+    let fromValue = '';
+    if (!domFromList) {
+      const dataOld = JSON.parse(localStorage.getItem('admin-release') || '{}');
+      fromValue = dataOld.fromList;
+    } else {
+      fromValue = domFromList.value;
+    }
     const data = {
-      targetUrl: DomUtils.getValue('.target-url'),
-      accessToken: DomUtils.getValue('.access-token'),
-      fromList: DomUtils.getValue('.from-list') || dataOld.fromList,
+      targetUrl: ref.$('.target-url').value,
+      accessToken: ref.$('.access-token').value,
+      fromList: fromValue,
     };
     localStorage.setItem('admin-release', JSON.stringify(data));
     return data;
@@ -163,18 +171,23 @@ export const AdminReleasePage = () => {
       return;
     }
 
-    const fromList = DomUtils.getValue('.from-list');
-    const toList = DomUtils.getValue('.to-list');
-    const chkServer = DomUtils.getChecked('.chk-server');
-    const chkApi = DomUtils.getChecked('.chk-api');
-    const chkWeb = DomUtils.getChecked('.chk-web');
-    const webSub = DomUtils.getValue('.input-web-sub');
-    const webSubs = document.querySelectorAll<HTMLInputElement>('.chk-web-sub');
+    const fromList = ref.$('.from-list').value;
+    const toList = ref.$('.to-list').value;
+    const chkServer = ref.$('.chk-server').checked;
+    const chkApi = ref.$('.chk-api').checked;
+    const chkWeb = ref.$('.chk-web').checked;
+    // const webSub = ref.$('.input-web-sub').value;
+    const webSubs = ref.$all('.chk-web-sub') as HTMLInputElement[];
     const webSubsChecked = Array.from(webSubs)
       .filter((input) => input.checked)
       .map((input) => input.value);
-    const chkEnv = DomUtils.getChecked('.chk-env');
-    const chkBackup = DomUtils.getChecked('.chk-backup');
+    const wrongWebSubs = webSubsChecked.filter((s) => !s.startsWith(fromList + '_web/'));
+    if (wrongWebSubs.length > 0) {
+      NotificationMessage.sendMessage(`Some web sub folder is not under ${fromList}`, NotificationColor.Error);
+      return;
+    }
+    const chkEnv = ref.$('.chk-env').checked;
+    const chkBackup = ref.$('.chk-backup').checked;
     if (!chkServer && !chkApi && !chkWeb && !chkEnv) {
       NotificationMessage.sendMessage('Please select the release options', NotificationColor.Error);
       return;
@@ -195,16 +208,19 @@ export const AdminReleasePage = () => {
       chkServer,
       chkApi,
       chkWeb,
-      webSub, // will be deprecated
+      // webSub, // will be deprecated
       webSubs: webSubsChecked,
       chkEnv,
       chkBackup,
     });
     const dataResponse = await response.json;
-    console.log('AdminRelease', dataResponse);
+    console.log('release/update', dataResponse);
     releaseUpdateBtn.disabled = false;
     if (!dataResponse || dataResponse.status !== 'ok') {
-      NotificationMessage.sendMessage(dataResponse.message || 'Failed to update release', NotificationColor.Error);
+      NotificationMessage.sendMessage(
+        dataResponse.message || 'Failed to update release (timeout, possibly backend is runing, please wait!)',
+        NotificationColor.Error
+      );
       return;
     }
     NotificationMessage.sendMessage('Release updated successfully', NotificationColor.Success);

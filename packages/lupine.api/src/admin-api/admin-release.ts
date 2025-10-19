@@ -14,7 +14,6 @@ import {
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
 import { adminTokenHelper } from './admin-token-helper';
-import { Readable } from 'stream';
 
 export class AdminRelease implements IApiBase {
   private logger = new Logger('release-api');
@@ -184,13 +183,25 @@ export class AdminRelease implements IApiBase {
     }
 
     // local dirs under _web
-    const webSubFolders = await FsUtils.getDirsFullpath(appData.webPath);
+    const webSub: string[] = [];
+    for (let j = 0; j < apps.length; j++) {
+      const e = apps[j];
+      const p0 = path.join(appData.apiPath, '..');
+      const subFolders = await FsUtils.getDirsFullpath(path.join(p0, e + '_web'), 5);
+      webSub.push(
+        ...subFolders
+          .filter((i) => i.isDirectory())
+          .map((i) => path.join(i.parentPath.substring(p0.length + 1), i.name).replace(/\\/g, '/'))
+      );
+    }
+    // const webSub = webSubFolders.filter(i => i.isDirectory()).map(i => path.join(i.parentPath.substring(appData.webPath.length + 1), i.name).replace(/\\/g, '/')).sort();
+
     const response = {
       status: 'ok',
       message: 'check.',
       appsFrom: apps,
       ...remoteResult,
-      webSub: webSubFolders.filter((folder) => folder.isDirectory()).map((folder) => folder.name),
+      webSub: webSub, // webSubFolders.filter((folder) => folder.isDirectory()).map((folder) => folder.name),
     };
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -264,6 +275,7 @@ export class AdminRelease implements IApiBase {
       return true;
     }
 
+    const appData = apiCache.getAppData();
     let targetUrl = data.targetUrl as string;
     if (targetUrl.endsWith('/')) {
       targetUrl = targetUrl.slice(0, -1);
@@ -291,21 +303,41 @@ export class AdminRelease implements IApiBase {
         ApiHelper.sendJson(req, res, result);
         return true;
       }
-      if (data.webSub) {
-        const result2 = await this.updateSendFile(data, 'web-sub');
-        if (!result2 || result2.status !== 'ok') {
-          ApiHelper.sendJson(req, res, result2);
-          return true;
-        }
-      }
+      // if (data.webSub) {
+      //   const result2 = await this.updateSendFile(data, 'web-sub');
+      //   if (!result2 || result2.status !== 'ok') {
+      //     ApiHelper.sendJson(req, res, result2);
+      //     return true;
+      //   }
+      // }
 
       if (data.webSubs && data.webSubs.length > 0) {
+        const subTop = path.join(appData.apiPath, '..', data.fromList + '_web/');
         for (let i = 0; i < data.webSubs.length; i++) {
-          data.webSub = data.webSubs[i];
-          const result2 = await this.updateSendFile(data, 'web-sub');
-          if (!result2 || result2.status !== 'ok') {
-            ApiHelper.sendJson(req, res, result2);
+          if (!data.webSubs[i].startsWith(data.fromList + '_web/')) {
+            const response = {
+              status: 'error',
+              message: `Error: ${data.webSubs[i]} is not under ${data.fromList}`,
+            };
+            ApiHelper.sendJson(req, res, response);
             return true;
+          }
+          const subFolders = await FsUtils.getDirsFullpath(path.join(appData.apiPath, '..', data.webSubs[i]));
+          const subFiles = subFolders
+            .filter((e) => e.isFile())
+            .map((e) => path.join(e.parentPath.substring(subTop.length), e.name).replace(/\\/g, '/'))
+            .sort();
+          for (let j = 0; j < subFiles.length; j++) {
+            if (subFiles[j].endsWith('.js.map')) {
+              continue;
+            }
+            data.webSub = subFiles[j];
+            this.logger.info(`update, webSubs: ${data.webSubs[i]}, subFiles: ${subFiles[j]})`);
+            const result2 = await this.updateSendFile(data, 'web-sub');
+            if (!result2 || result2.status !== 'ok') {
+              ApiHelper.sendJson(req, res, result2);
+              return true;
+            }
           }
         }
       }
@@ -331,6 +363,7 @@ export class AdminRelease implements IApiBase {
       message: 'updated',
     };
     ApiHelper.sendJson(req, res, response);
+    this.logger.info(`updated, successful`);
     return true;
   }
 
@@ -349,11 +382,13 @@ export class AdminRelease implements IApiBase {
     } else if (chkOption === 'web') {
       sendFile = path.join(appData.apiPath, '..', fromList + '_web', 'index.js');
     } else if (chkOption === 'web-sub' && data.webSub) {
-      sendFile = path.join(appData.apiPath, '..', fromList + '_web', data.webSub, 'index.js');
+      // sendFile = path.join(appData.apiPath, '..', fromList + '_web', data.webSub, 'index.js');
+      sendFile = path.join(appData.apiPath, '..', fromList + '_web', data.webSub);
     } else if (chkOption.startsWith('.env')) {
       sendFile = path.join(appData.apiPath, '../../..', chkOption);
     }
     if (!(await FsUtils.pathExist(sendFile))) {
+      this.logger.error(`updateSendFile, not found: ${sendFile}`);
       return { status: 'error', message: 'Client file not found: ' + sendFile };
     }
     const fileContent = (await FsUtils.readFile(sendFile))!;
@@ -368,6 +403,7 @@ export class AdminRelease implements IApiBase {
     // })
     const chunkSize = 1024 * 500;
     let cnt = 0;
+    this.logger.info(`updateSendFile, sendFile: ${sendFile}, len: ${fileContent.length}`);
     for (let i = 0; i < fileContent.length; i += chunkSize) {
       const chunk = fileContent.slice(i, i + chunkSize);
       if (!chunk) break;
@@ -376,9 +412,15 @@ export class AdminRelease implements IApiBase {
         method: 'POST',
         body: JSON.stringify({ ...data, chkOption, index: cnt, size: fileContent.length }) + '\n\n' + chunk,
       };
-      this.logger.debug(`updateSendFile, index: ${cnt}, sending (max): ${i + chunkSize} / ${fileContent.length}`);
+      this.logger.info(
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
+          fileContent.length
+        }), f: ${sendFile}`
+      );
+      i > 0 && (await new Promise((resolve) => setTimeout(resolve, 1000)));
       const remoteData = await fetch(targetUrl + '/api/admin/release/byClientUpdate', postData);
       const resultText = await remoteData.text();
+      this.logger.info(`updateSendFile, index: ${cnt}, resultText: ${resultText}`);
       let remoteResult: any;
       try {
         remoteResult = JSON.parse(resultText);
@@ -437,11 +479,11 @@ export class AdminRelease implements IApiBase {
       } else if (chkOption === 'web') {
         saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
       } else if (chkOption === 'web-sub' && data.webSub) {
-        const folder = path.join(appData.apiPath, '..', toList + '_web', data.webSub);
+        const folder = path.join(appData.apiPath, '..', toList + '_web', path.basename(data.webSub));
         if (!(await FsUtils.pathExist(folder))) {
           await FsUtils.mkdir(folder);
         }
-        saveFile = path.join(appData.apiPath, '..', toList + '_web', data.webSub, 'index.js');
+        saveFile = path.join(appData.apiPath, '..', toList + '_web', data.webSub);
       } else if ((chkOption as string).startsWith('.env')) {
         saveFile = path.join(appData.apiPath, '../../..', chkOption);
       }
@@ -460,6 +502,10 @@ export class AdminRelease implements IApiBase {
           await FsUtils.writeFile(bakFile, bakContent);
         }
       }
+
+      this.logger.info(
+        `byClientUpdate, index: ${data.index}, saveFile: ${saveFile}, received len: ${(fileContent || '').length}`
+      );
       if (data.index === 0) {
         await FsUtils.writeFile(saveFile, fileContent || '');
       } else {
