@@ -1,5 +1,6 @@
 import { Dirent } from 'fs';
 import * as fs from 'fs/promises';
+import path from 'path';
 
 export type FileInfoProps = {
   size: number;
@@ -118,12 +119,25 @@ export class FsUtils {
   };
 
   // return with fullpath list of Dirent
-  static getDirsFullpath = async (dirPath: string): Promise<Dirent[]> => {
+  static getDirsFullpath = async (dirPath: string, maxDepth = 1): Promise<Dirent[]> => {
+    return this.getDirsFullpathDepthSub(dirPath, 0, maxDepth);
+  };
+  private static getDirsFullpathDepthSub = async (dirPath: string, depth = 0, maxDepth = 1): Promise<Dirent[]> => {
     try {
       const files = await fs.readdir(dirPath, {
         recursive: false,
         withFileTypes: true,
       });
+      if (depth + 1 < maxDepth) {
+        for (const entry of files) {
+          if (entry.isDirectory()) {
+            if (depth < maxDepth) {
+              const fullPath = path.join(dirPath, entry.name);
+              (entry as any).sub = await this.getDirsFullpathDepthSub(fullPath, depth + 1, maxDepth);
+            }
+          }
+        }
+      }
       return files;
     } catch {
       return [];

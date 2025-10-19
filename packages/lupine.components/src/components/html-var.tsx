@@ -20,17 +20,17 @@ export class HtmlVar implements HtmlVarResult {
         // in case new resolve is created while updating
         const res = this.resolve;
         if (this._dirty) {
-          await this.update(this._value);
+          await this.update();
         }
         res();
       },
     };
   }
 
-  private async update(value: string | VNode<any>): Promise<void> {
+  private async update(): Promise<void> {
+    await this._ref.mountInnerComponent!(this._value);
     this._dirty = false;
     this._value = '';
-    await this._ref.mountInnerComponent!(value);
   }
 
   // need to wait before use ref.current
@@ -40,14 +40,17 @@ export class HtmlVar implements HtmlVarResult {
 
   set value(value: string | VNode<any>) {
     this._value = value;
-    if (this._dirty || !this._ref.current) {
+    if (this._dirty) {
       return;
     }
 
     this._dirty = true;
+    if (!this._ref.current) {
+      return;
+    }
     this.promise = new Promise<void>(async (res) => {
       this.resolve = res;
-      await this.update(value);
+      await this.update();
       this.resolve();
     });
   }
