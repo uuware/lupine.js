@@ -124,21 +124,21 @@ export class FsUtils {
   };
   private static getDirsFullpathDepthSub = async (dirPath: string, depth = 0, maxDepth = 1): Promise<Dirent[]> => {
     try {
+      const ret = [];
       const files = await fs.readdir(dirPath, {
         recursive: false,
         withFileTypes: true,
       });
+      ret.push(...files);
       if (depth + 1 < maxDepth) {
         for (const entry of files) {
           if (entry.isDirectory()) {
-            if (depth < maxDepth) {
-              const fullPath = path.join(dirPath, entry.name);
-              (entry as any).sub = await this.getDirsFullpathDepthSub(fullPath, depth + 1, maxDepth);
-            }
+            const fullPath = path.join(dirPath, entry.name);
+            ret.push(...(await this.getDirsFullpathDepthSub(fullPath, depth + 1, maxDepth)));
           }
         }
       }
-      return files;
+      return ret;
     } catch {
       return [];
     }
