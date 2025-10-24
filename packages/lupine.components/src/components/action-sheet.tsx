@@ -226,3 +226,45 @@ export class ActionSheetMessage {
     return handleClose;
   }
 }
+
+export type ActionSheetInputProps = Omit<
+  ActionSheetShowProps,
+  'children' | 'handleClicked' | 'closeEvent' | 'handleConfirmClicked'
+> & {
+  defaultValue?: string;
+  handleConfirmValue: (value: string, close: ActionSheetCloseProps) => void;
+};
+export class ActionSheetInput {
+  static async show({
+    title,
+    defaultValue,
+    contentMaxHeight,
+    closeWhenClickOutside = true,
+    confirmButtonText = 'OK',
+    handleConfirmValue: handleConfirmValue,
+    cancelButtonText = 'Cancel',
+  }: ActionSheetInputProps): Promise<ActionSheetCloseProps> {
+    let value: string = defaultValue || '';
+    const handleClose = await ActionSheet.show({
+      title,
+      children: (
+        <div css={{ padding: '8px', borderTop: '1px solid var(--primary-border-color)' }}>
+          <input
+            class='input-base w-100p'
+            type='text'
+            value={value}
+            onInput={(e) => (value = (e.target as HTMLInputElement).value)}
+          />
+        </div>
+      ),
+      contentMaxHeight,
+      confirmButtonText,
+      handleConfirmClicked: (close) => {
+        handleConfirmValue(value, close);
+      },
+      cancelButtonText,
+      closeWhenClickOutside,
+    });
+    return handleClose;
+  }
+}
