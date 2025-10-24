@@ -10,6 +10,10 @@ export const handler304 = (res: ServerResponse, msg?: string | object, contentTy
   handlerResponse(res, 304, '304 Not Modified', msg, contentType);
 };
 
+export const handler400 = (res: ServerResponse, msg?: string | object, contentType?: string) => {
+  handlerResponse(res, 400, '400 Bad Request', msg, contentType);
+};
+
 export const handler403 = (res: ServerResponse, msg?: string | object, contentType?: string) => {
   handlerResponse(res, 403, '403 Forbidden', msg, contentType);
 };
@@ -30,8 +34,8 @@ export const handler500 = (res: ServerResponse, msg?: string | object, contentTy
   handlerResponse(res, 500, '500 Internal Server Error', msg, contentType);
 };
 
-export const handler400 = (res: ServerResponse, msg?: string | object, contentType?: string) => {
-  handlerResponse(res, 400, '400 Bad Request', msg, contentType);
+export const handler503 = (res: ServerResponse, msg?: string | object, contentType?: string) => {
+  handlerResponse(res, 503, '503 Service Unavailable', msg, contentType);
 };
 
 export const handlerResponse = (
