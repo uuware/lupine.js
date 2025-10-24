@@ -3,7 +3,7 @@ import { Logger } from '../lib/logger';
 import crypto from 'crypto';
 import { parseCookies } from '../lib/utils/cookie-util';
 import { WebProcessor } from './web-processor';
-import { handler403, handler404, handler500, SimpleStorage } from '../api';
+import { handler403, handler404, handler500, handler503, SimpleStorage } from '../api';
 import { JsonObject, AsyncStorageProps, ServerRequest, SetCookieProps } from '../models';
 import { HostToPath } from './host-to-path';
 import { serializeCookie } from '../lib/utils/cookie-util';
@@ -15,7 +15,7 @@ export const setMaxRequestSize = (size: number) => {
 };
 
 // The maximum number of requests being processed. If there are no requests for 10 minutes, this number will be reset to 0.
-let MAX_REQUEST_COUNT = 1024 * 1;
+let MAX_REQUEST_COUNT = 100;
 let REQUEST_COUNT = 0;
 export const setMaxRequestCount = (count: number) => {
   MAX_REQUEST_COUNT = count;
@@ -39,17 +39,37 @@ export const setServerName = (serverName: string) => {
   SERVER_NAME = serverName;
 };
 
+export type RawMiddleware = (req: IncomingMessage, res: ServerResponse, next: () => void) => void;
+
 let lastRequestTime = new Date().getTime();
 
 // type ProcessRequest = (req: ServerRequest, res: ServerResponse) => void;
 export class WebListener {
+  // process requests before business logic, for example IP filter, rate limit, etc.
+  rawMiddlewares: RawMiddleware[];
   processor: WebProcessor;
 
   constructor(processRequest: WebProcessor) {
+    this.rawMiddlewares = [];
     this.processor = processRequest;
   }
 
-  listener(reqOrigin: IncomingMessage, res: ServerResponse) {
+  addRawMiddlewareChain(middleware: RawMiddleware) {
+    this.rawMiddlewares.push(middleware);
+  }
+  async handleRawMiddlewares(req: IncomingMessage, res: ServerResponse) {
+    const runChain = (list: RawMiddleware[], context: { req: IncomingMessage; res: ServerResponse }) => {
+      const dispatch = async (i: number) => {
+        const fn = list[i];
+        if (!fn) return;
+        await fn(context.req, context.res, () => dispatch(i + 1));
+      };
+      return dispatch(0);
+    };
+    await runChain(this.rawMiddlewares, { req, res });
+  }
+
+  async listener(reqOrigin: IncomingMessage, res: ServerResponse) {
     // If there is no request in the last 10 minutes, reset the request count.
     if (new Date().getTime() - lastRequestTime > 1000 * 60 * 10) {
       if (REQUEST_COUNT != 0) {
@@ -60,9 +80,15 @@ export class WebListener {
       lastRequestTime = new Date().getTime();
     }
 
+    // back-pressure
     if (REQUEST_COUNT > MAX_REQUEST_COUNT) {
       logger.warn(`Too many requests, count: ${REQUEST_COUNT} > ${MAX_REQUEST_COUNT}`);
-      handler403(res, 'Too many requests');
+      handler503(res, 'Server is busy, please retry later.');
+      return;
+    }
+
+    await this.handleRawMiddlewares(reqOrigin, res);
+    if (res.writableEnded || res.headersSent) {
       return;
     }
 
@@ -78,7 +104,7 @@ export class WebListener {
       const msg = `Web root is not defined properly for host: ${host}.`;
       logger.error(msg);
       handler404(res, msg);
-      return true;
+      return;
     }
 
     REQUEST_COUNT++;

@@ -17,7 +17,7 @@ export class IsType {
 
   static isObject(input: any) {
     // null is not object
-    return input != null && Object.prototype.toString.call(input) === '[object Object]';
+    return input !== null && Object.prototype.toString.call(input) === '[object Object]';
   }
 
   static isObjectEmpty(obj: any) {
