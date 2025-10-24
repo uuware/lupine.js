@@ -4,7 +4,7 @@ import { WebListener } from './web-listener';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
-import { IncomingMessage } from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
 import { Duplex } from 'stream';
 import { WebProcessor } from './web-processor';
 import { DebugService } from '../api/debug-service';
@@ -23,13 +23,25 @@ export class WebServer {
       DebugService.handleUpgrade(req, socket, head);
     } else {
       logger.error(`Unexpected web socket access: ${req.url} from ${clientIp}`);
-      socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+      socket.write('HTTP/1.1 404 Not Found\r\n\r\n');
       socket.destroy();
     }
   }
 
+  async listenerWrap(reqOrigin: IncomingMessage, res: ServerResponse) {
+    try {
+      await this.webListener.listener.bind(this.webListener)(reqOrigin, res);
+    } catch (err) {
+      console.error('Request error:', err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.end('Internal Server Error');
+      }
+    }
+  }
+
   startHttp(httpPort: number, bindIp?: string, timeout?: number) {
-    const httpServer = http.createServer(this.webListener.listener.bind(this.webListener));
+    const httpServer = http.createServer(this.listenerWrap.bind(this));
     if (typeof timeout === 'number') httpServer.setTimeout(timeout);
 
     httpServer.on('upgrade', this.handleUpgrade.bind(this));
@@ -69,7 +81,7 @@ export class WebServer {
       );
     }
 
-    const httpsServer = https.createServer(httpsOptions, this.webListener.listener.bind(this.webListener));
+    const httpsServer = https.createServer(httpsOptions, this.listenerWrap.bind(this));
     httpsServer.on('upgrade', this.handleUpgrade.bind(this));
 
     if (typeof timeout === 'number') {
