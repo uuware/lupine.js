@@ -4,6 +4,7 @@ import { stopPropagation } from '../lib';
 export type PopupMenuHookProps = {
   openMenu?: (event?: MouseEvent) => void;
   getValue?: () => string;
+  setLabel?: (label: string) => void;
 };
 
 // defaultValue=<i class='ifc-icon co-cil-hamburger-menu'></i>
@@ -231,6 +232,9 @@ export const PopupMenu = ({
   if (hook) {
     hook.openMenu = openMenu;
     hook.getValue = () => selectedValue;
+    hook.setLabel = (label: string) => {
+      ref.$('.popup-menu-item .popup-menu-text').innerText = label;
+    };
   }
   const itemClick = (event: any) => {
     stopPropagation(event);
