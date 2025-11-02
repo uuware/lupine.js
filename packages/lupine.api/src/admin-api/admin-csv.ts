@@ -54,6 +54,8 @@ export const loadCSV = async (db: Db, lines: string[]) => {
   let table = '';
   let insSql = '';
   const result: any = {};
+  let toFields: string[] = [];
+  let toFieldsIndex: number[] = [];
   for (const i in lines) {
     if (!lines[i] || lines[i].startsWith('#')) {
       continue;
@@ -61,14 +63,25 @@ export const loadCSV = async (db: Db, lines: string[]) => {
     if (lines[i].startsWith('@TABLE,')) {
       table = lines[i].substring(7);
       result[table] = { succeeded: 0, failed: 0, errorMessage: [] };
+
+      const toTableInfo = await db.getTableInfo(table);
+      toFields = toTableInfo.map((item: any) => item.name);
     } else if (lines[i].startsWith('@FIELD,')) {
-      const fields = lines[i].substring(7); //.split(',');
-      const values = Array(fields.split(',').length).fill('?').join(',');
-      insSql = `INSERT INTO ${table} (${fields} ) VALUES (${values})`;
+      const fromFields = lines[i]
+        .substring(7)
+        .split(',')
+        .filter((item: string) => toFields.includes(item));
+      toFieldsIndex = toFields.map((item: string) => fromFields.indexOf(item));
+      const values = Array(fromFields.length).fill('?').join(',');
+      insSql = `INSERT INTO ${table} (${fromFields.join(',')} ) VALUES (${values})`;
     } else {
+      if (toFields.length === 0 || !insSql) {
+        throw new Error('Invalid CSV format (no @TABLE or @FIELD)');
+      }
       try {
         const row = JSON.parse(lines[i]);
-        const r = await db.execute(insSql, row);
+        const values = toFieldsIndex.map((index: number) => row[index]);
+        await db.execute(insSql, values);
         result[table].succeeded++;
       } catch (error: any) {
         result[table].failed++;
