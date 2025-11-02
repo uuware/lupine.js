@@ -25,9 +25,16 @@ export const LogWriterMessageId = 'LogWriter';
 logger.info('log test. numer: %d, string: %s, json: %j', 11, 'p2', {key: 'value', n: 22});
 */
 export class LogWriter {
-  static instance = new LogWriter();
+  static instance?: LogWriter;
 
   private constructor() {}
+
+  public static getInstance(): LogWriter {
+    if (!LogWriter.instance) {
+      LogWriter.instance = new LogWriter();
+    }
+    return LogWriter.instance;
+  }
 
   private _config: LogConfig | undefined;
   getConfig = (): LogConfig => {
@@ -138,7 +145,7 @@ export class LogWriter {
       console.error('Logger got wrong message: ', msgObject);
       return;
     }
-    LogWriter.instance._log(
+    LogWriter.getInstance()._log(
       msgObject.level,
       msgObject.namespace,
       msgObject.color,
@@ -234,41 +241,41 @@ export class Logger {
   }
 
   isDebug(): boolean {
-    return LogWriter.instance.level <= 4;
+    return LogWriter.getInstance().level <= 4;
   }
 
   debug(...message: (string | object | number)[]) {
-    if (LogWriter.instance.level < 4) {
+    if (LogWriter.getInstance().level < 4) {
       return;
     }
-    LogWriter.instance._log('DEBUG', this.namespace, this.color, message);
+    LogWriter.getInstance()._log('DEBUG', this.namespace, this.color, message);
   }
 
   info(...message: (string | object | number)[]) {
-    if (LogWriter.instance.level < 3) {
+    if (LogWriter.getInstance().level < 3) {
       return;
     }
-    LogWriter.instance._log('INFO', this.namespace, this.color, message);
+    LogWriter.getInstance()._log('INFO', this.namespace, this.color, message);
   }
 
   warn(...message: (string | object | number)[]) {
-    if (LogWriter.instance.level < 2) {
+    if (LogWriter.getInstance().level < 2) {
       return;
     }
-    LogWriter.instance._log('WARN', this.namespace, this.color, message);
+    LogWriter.getInstance()._log('WARN', this.namespace, this.color, message);
   }
 
   error(...message: (string | object | number)[]) {
-    if (LogWriter.instance.level < 1) {
+    if (LogWriter.getInstance().level < 1) {
       return;
     }
-    LogWriter.instance._log('ERROR', this.namespace, this.color, message);
+    LogWriter.getInstance()._log('ERROR', this.namespace, this.color, message);
   }
 
   fatal(...message: (string | object | number)[]) {
-    if (LogWriter.instance.level < 0) {
+    if (LogWriter.getInstance().level < 0) {
       return;
     }
-    LogWriter.instance._log('FATAL', this.namespace, this.color, message);
+    LogWriter.getInstance()._log('FATAL', this.namespace, this.color, message);
   }
 }

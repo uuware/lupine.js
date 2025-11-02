@@ -95,7 +95,7 @@ export class DbSqlite extends Db {
 
   public async getTableInfo(table: string): Promise<any> {
     const query = `PRAGMA table_info(${table});`;
-    const result = await this.execute(query);
+    const result = await this.select(query);
     return result;
   }
 }

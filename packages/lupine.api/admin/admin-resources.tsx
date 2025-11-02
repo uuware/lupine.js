@@ -30,11 +30,10 @@ const ResourcesList = (props: {
   const listFolder = (results: any, parentFolder = '') => {
     return results.map((result: any) => (
       <div>
-        <div
-          class={`row-box mt-m` + (typeof result.size === 'undefined' ? ' f-folder' : '')}
-          onClick={() => props.onListFolder(parentFolder + result.name)}
-        >
-          <label class='label mr-m f-name'>{result.name}</label>
+        <div class={`row-box mt-m`}>
+          <label class='label mr-m f-name' onClick={() => props.onListFolder(parentFolder + result.name)}>
+            {result.name}
+          </label>
           <label class='label mr-m f-time'>{result.time}</label>
           <label class='label mr-m f-size'>{typeof result.size !== 'undefined' && formatBytes(result.size)}</label>
           {typeof result.size !== 'undefined' && (
@@ -97,12 +96,10 @@ const ResourcesList = (props: {
     ));
   };
   const css: CssProps = {
-    '.f-folder': {
-      textDecoration: 'underline',
-      cursor: 'pointer',
-    },
     '.f-name': {
+      textDecoration: 'underline',
       width: '200px',
+      cursor: 'pointer',
     },
     '.f-size span, .f-time span': {
       color: 'red',
@@ -154,18 +151,18 @@ export const AdminResourcesPage = () => {
       fDom.click();
     };
     const onUploadLocal = (fPath: string) => {
-      MessageBox.show({
-        title: 'Override remote file',
-        buttonType: MessageBoxButtonProps.YesNo,
-        contentMinWidth: '300px',
-        handleClicked: (index: number, close) => {
-          if (index === 0) {
-            uploadFile(fPath);
-          }
-          close();
-        },
-        children: <div>Do you upload local files that may overwrite remote file [{fPath}]?</div>,
-      });
+      // MessageBox.show({
+      //   title: 'Override remote file',
+      //   buttonType: MessageBoxButtonProps.YesNo,
+      //   contentMinWidth: '300px',
+      //   handleClicked: (index: number, close) => {
+      //     if (index === 0) {
+      uploadFile(fPath);
+      //     }
+      //     close();
+      //   },
+      //   children: <div>Do you upload local files that may overwrite remote file [{fPath}]?</div>,
+      // });
     };
     const onNewFolder = async (fPath: string) => {
       let newName = '';

@@ -9,7 +9,7 @@ export const InputWithTitle = (
 ) => {
   return (
     <div>
-      <div>{title}</div>
+      <div style={{ paddingBottom: '4px' }}>{title}</div>
       <div>
         <input
           class={className}

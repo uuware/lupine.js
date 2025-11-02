@@ -10,11 +10,13 @@ import {
   FsUtils,
   adminApiHelper,
   processRefreshCache,
+  apiStorage,
 } from 'lupine.api';
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
 import { adminTokenHelper } from './admin-token-helper';
 
+const releaseProgress = 'admin-release-progress';
 export class AdminRelease implements IApiBase {
   private logger = new Logger('release-api');
   protected router = new ApiRouter();
@@ -197,6 +199,7 @@ export class AdminRelease implements IApiBase {
     // const webSub = webSubFolders.filter(i => i.isDirectory()).map(i => path.join(i.parentPath.substring(appData.webPath.length + 1), i.name).replace(/\\/g, '/')).sort();
 
     const response = {
+      releaseProgress: await apiStorage.get(releaseProgress),
       status: 'ok',
       message: 'check.',
       appsFrom: apps,
@@ -259,6 +262,24 @@ export class AdminRelease implements IApiBase {
     };
     ApiHelper.sendJson(req, res, response);
     return true;
+  }
+
+  async callUpdate(req: ServerRequest, res: ServerResponse) {
+    // when remote server is slow, then local update call may be timeout.
+    // so we set a flag to prevent multiple update calls
+    apiStorage.set(releaseProgress, 'update started: ' + new Date().toLocaleString());
+    let result = true;
+    try {
+      result = await this.update(req, res);
+    } catch (e: any) {
+      const response = {
+        status: 'error',
+        message: e.message,
+      };
+      ApiHelper.sendJson(req, res, response);
+    }
+    apiStorage.set(releaseProgress, undefined);
+    return result;
   }
 
   async update(req: ServerRequest, res: ServerResponse) {
@@ -391,6 +412,7 @@ export class AdminRelease implements IApiBase {
       this.logger.error(`updateSendFile, not found: ${sendFile}`);
       return { status: 'error', message: 'Client file not found: ' + sendFile };
     }
+    apiStorage.set(releaseProgress, 'updateSendFile: ' + sendFile);
     const fileContent = (await FsUtils.readFile(sendFile))!;
     // const compressedContent = await new Promise<Buffer>((resolve, reject) => {
     //     zlib.gzip(fileContent, (err, buffer) => {
@@ -413,6 +435,12 @@ export class AdminRelease implements IApiBase {
         body: JSON.stringify({ ...data, chkOption, index: cnt, size: fileContent.length }) + '\n\n' + chunk,
       };
       this.logger.info(
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
+          fileContent.length
+        }), f: ${sendFile}`
+      );
+      apiStorage.set(
+        releaseProgress,
         `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
           fileContent.length
         }), f: ${sendFile}`

@@ -43,7 +43,7 @@ export const UserInfo = (props?: any) => {
     clearCookie(userCookieName, '/');
     // call server to clear cookie
     await getRenderPageProps().renderPageFunctions.fetchData('/api/logout');
-    window.location.href = '/';
+    // window.location.href = '/';
   };
   const dom = new HtmlVar('');
   const ref: RefProps = {
@@ -52,7 +52,7 @@ export const UserInfo = (props?: any) => {
       const userCookie = getCookieUser();
       if (user && (user.username !== userCookie.u || user.usertype !== userCookie.t)) {
         await onLogout();
-        window.location.href = '/login';
+        // window.location.href = '/login';
         return;
       }
       if (user && user.username === userCookie.u && user.usertype === userCookie.t) {

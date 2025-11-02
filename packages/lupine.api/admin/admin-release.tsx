@@ -218,7 +218,7 @@ export const AdminReleasePage = () => {
     releaseUpdateBtn.disabled = false;
     if (!dataResponse || dataResponse.status !== 'ok') {
       NotificationMessage.sendMessage(
-        dataResponse.message || 'Failed to update release (timeout, possibly backend is runing, please wait!)',
+        dataResponse.message || 'Failed to update release (timeout, possibly backend is runing, please wait and click Check!)',
         NotificationColor.Error
       );
       return;
@@ -259,6 +259,9 @@ export const AdminReleasePage = () => {
 
     domUpdate.value = <ReleaseList result={result} onUpdate={onUpdate} onLogClick={onLogClick} />;
     domLog.value = <pre>{JSON.stringify(result, null, 2)}</pre>;
+    if (result.releaseProgress) {
+      NotificationMessage.sendMessage('Release progress: ' + result.releaseProgress, NotificationColor.Warning);
+    }
   };
 
   const onRefreshCacheLocal = async () => {
