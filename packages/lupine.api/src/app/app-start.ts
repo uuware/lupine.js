@@ -46,7 +46,7 @@ class AppStart {
       }
     }
 
-    if (props.debug || !cluster.isPrimary) {
+    if (!cluster.isPrimary) {
       console.log(`Worker id ${this.getWorkerId()}`);
 
       process.on('message', processMessageFromPrimary);
@@ -55,7 +55,7 @@ class AppStart {
       appLoader.loadApi(props.apiConfig);
       this.initServer(props.serverConfig);
     } else if (cluster.isPrimary) {
-      const numCPUs = require('os').cpus().length;
+      const numCPUs = props.debug ? 1 : require('os').cpus().length;
       console.log(`Master Process is trying to fork ${numCPUs} processes`);
 
       for (let i = 0; i < numCPUs; i++) {
@@ -73,7 +73,7 @@ class AppStart {
   bindProcess() {
     if (cluster.isPrimary) {
       // it looks like the child processes are hung up here
-      process.stdin.resume(); // so the program will not close instantly
+      process.stdin.resume(); // so the program will not close instantly, keep isPrimary process running
     }
     // Emitted whenever a no-error-handler Promise is rejected
     process.on('unhandledRejection', (reason: string, promise) => {

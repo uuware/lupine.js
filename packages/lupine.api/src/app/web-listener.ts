@@ -39,7 +39,47 @@ export const setServerName = (serverName: string) => {
   SERVER_NAME = serverName;
 };
 
-export type RawMiddleware = (req: IncomingMessage, res: ServerResponse, next: () => void) => void;
+export type RawMiddleware = (req: IncomingMessage, res: ServerResponse, next: () => void) => Promise<void>;
+
+/*
+IP limit
+
+let IP_LIMIT_ENABLED = false;
+export const setIpLimitEnabled = (enabled: boolean) => {
+  IP_LIMIT_ENABLED = enabled;
+};
+
+let IP_LIMIT_RATE = 60;
+let IP_LIMIT_DURATION = 1000 * 30;
+export const setIpLimitRateAndDuration = (rate: number, durationSeconds: number) => {
+  IP_LIMIT_RATE = rate;
+  IP_LIMIT_DURATION = durationSeconds * 1000;
+};
+
+
+class TTLMap<K, V> extends Map<K, V> {
+  set(key: K, value: V): this;
+  set(key: K, value: V, ttl: number): this;
+  set(key: K, value: V, ttl?: number): this {
+    const isNew = !this.has(key);
+    super.set(key, value);
+    if (isNew && ttl) {
+      setTimeout(() => this.delete(key), ttl).unref?.();
+    }
+    return this;
+  }
+}
+const counts = new TTLMap<string, number>();
+
+function checkFixedWindow(ip: string, limit = IP_LIMIT_RATE) {
+  const now = Date.now();
+  const key = `${ip}:${Math.floor(now / IP_LIMIT_DURATION)}`;
+  const count = (counts.get(key) || 0) + 1;
+  counts.set(key, count, IP_LIMIT_DURATION * 2); // key自动过期
+  return count > limit;
+}
+
+*/
 
 let lastRequestTime = new Date().getTime();
 
@@ -57,16 +97,14 @@ export class WebListener {
   addRawMiddlewareChain(middleware: RawMiddleware) {
     this.rawMiddlewares.push(middleware);
   }
-  async handleRawMiddlewares(req: IncomingMessage, res: ServerResponse) {
-    const runChain = (list: RawMiddleware[], context: { req: IncomingMessage; res: ServerResponse }) => {
-      const dispatch = async (i: number) => {
-        const fn = list[i];
-        if (!fn) return;
-        await fn(context.req, context.res, () => dispatch(i + 1));
-      };
-      return dispatch(0);
+
+  runMiddlewareChain(list: RawMiddleware[], context: { req: IncomingMessage; res: ServerResponse }) {
+    const dispatch = async (i: number) => {
+      const fn = list[i];
+      if (!fn) return;
+      await fn(context.req, context.res, () => dispatch(i + 1));
     };
-    await runChain(this.rawMiddlewares, { req, res });
+    return dispatch(0);
   }
 
   async listener(reqOrigin: IncomingMessage, res: ServerResponse) {
@@ -87,7 +125,7 @@ export class WebListener {
       return;
     }
 
-    await this.handleRawMiddlewares(reqOrigin, res);
+    await this.runMiddlewareChain(this.rawMiddlewares, { req: reqOrigin, res });
     if (res.writableEnded || res.headersSent) {
       return;
     }

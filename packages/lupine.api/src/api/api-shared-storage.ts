@@ -1,11 +1,11 @@
 /**
- * A persistent storage for the Api
+ * A persistent storage for the Api (stored in primary process)
  */
 import { IAppSharedStorage } from '../models';
 import { SimpleStorageDataProps } from '../models';
 import { apiCache } from './api-cache';
 
-// ApiSharedStorage is used in api module to store variables inside an api scope
+// ApiSharedStorage is used in api module to store variables under appName scope, but is stored in one place - primary process
 export class ApiSharedStorage {
   private storage: IAppSharedStorage | undefined;
 

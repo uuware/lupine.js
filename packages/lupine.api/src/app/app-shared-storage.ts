@@ -1,5 +1,7 @@
 /**
- * A persistent storage for the Api
+ * A persistent storage to store data in primary process and share to all workers
+ * 
+ * You should use apiStorage in api module
  */
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -14,6 +16,7 @@ import {
   IAppSharedStorage,
   StorageMessageFromSubProcess,
 } from '../models';
+import { registerMessageHandlerFromPrimary, registerMessageHandlerFromWorker } from './app-message';
 
 // in Api scope, use ApiSharedStorage instead of this
 // storage cross clusters, loaded when start and saved before exist
@@ -27,6 +30,15 @@ export class AppSharedStorage implements IAppSharedStorage {
   public static getInstance(): IAppSharedStorage {
     if (!AppSharedStorage.instance) {
       AppSharedStorage.instance = new AppSharedStorage();
+      // register app message handlers
+      registerMessageHandlerFromPrimary(
+        AppSharedStorageMessageId,
+        AppSharedStorage.instance.messageFromPrimaryProcess.bind(AppSharedStorage.instance)
+      );
+      registerMessageHandlerFromWorker(
+        AppSharedStorageMessageId,
+        AppSharedStorage.instance.messageFromSubProcess.bind(AppSharedStorage.instance)
+      );
     }
     return AppSharedStorage.instance;
   }
@@ -278,7 +290,12 @@ class AppSharedStorageWorker {
     process.send!(obj);
   }
 
-  static getWithPrefix(appName: string, prefixKey: string, resolve: (value: any) => void, reject: (reason: any) => void) {
+  static getWithPrefix(
+    appName: string,
+    prefixKey: string,
+    resolve: (value: any) => void,
+    reject: (reason: any) => void
+  ) {
     if (cluster.isPrimary) {
       throw new Error('AppSharedStorageWorker should be only called from workers');
     }

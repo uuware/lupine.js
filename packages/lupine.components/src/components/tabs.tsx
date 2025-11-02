@@ -169,6 +169,10 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
       display: 'flex',
       height: 'auto',
       'border-bottom': '1px solid grey',
+      'overflow-x': 'auto',
+      'overflow-y': 'hidden',
+      'scrollbar-width': 'thin',
+      'scrollbar-color': '#ababab4d #d5d5d552',
       '> div > .tab': {
         padding: '2px 3px',
         width: 'auto',
