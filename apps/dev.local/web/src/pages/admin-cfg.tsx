@@ -1,5 +1,5 @@
 import { DomUtils, MediaQueryMaxWidth, NotificationColor, NotificationMessage, uploadFile } from 'lupine.components';
-import { getRenderPageProps, PageProps, webSetting, CssProps } from 'lupine.web';
+import { getRenderPageProps, PageProps, CssProps } from 'lupine.web';
 
 export const AdminCfgPage = async (props: PageProps) => {
   const css: CssProps = {
@@ -104,7 +104,7 @@ export const AdminCfgPage = async (props: PageProps) => {
           Save
         </button>
       </div>
-      <div class='row-box'>
+      {/* <div class='row-box'>
         <label class='m-label'>Site Title:</label>{' '}
         <input type='text' class='input-base m-text f-title' value={webSetting('siteTitle', '(not set)')} />
       </div>
@@ -134,7 +134,7 @@ export const AdminCfgPage = async (props: PageProps) => {
       <div class='row-box'>
         <label class='m-label'>Website Url:</label>{' '}
         <input type='text' class='input-base m-text f-siteUrl' value={webSetting('siteUrl', '(not set)')} />
-      </div>
+      </div> */}
     </div>
   );
 };

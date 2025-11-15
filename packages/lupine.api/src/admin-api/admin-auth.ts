@@ -10,6 +10,11 @@ export const needDevAdminSession = async (req: ServerRequest, res: ServerRespons
   const devAdminSession = await adminApiHelper.getDevAdminFromCookie(req, res, true);
   if (!devAdminSession) {
     // return true to skip the rest of the middleware
+    const response = {
+      status: 'error',
+      message: langHelper.getLang('shared:permission_denied'),
+    };
+    ApiHelper.sendJson(req, res, response);
     return true;
   }
   return false;

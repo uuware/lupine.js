@@ -1,4 +1,4 @@
-import { MenuBar, MediaQueryMaxWidth, webSetting, VNode, CssProps } from 'lupine.components';
+import { MenuBar, MediaQueryMaxWidth, VNode, CssProps, WebConfig, HtmlLoad } from 'lupine.components';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 
@@ -34,7 +34,13 @@ export const AdminPageFrame = async (placeholderClassname: string, vnode: VNode<
       <MenuBar items={defaultTopMenu} maxWidthMobileMenu={'800px'} maxWidth={MediaQueryMaxWidth.DesktopMax}></MenuBar>
       <div class={'content-block ' + placeholderClassname}>{vnode}</div>
       <div class='top-footer'>
-        <Footer title={webSetting('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}></Footer>
+        <HtmlLoad
+          html={async () => (
+            <Footer
+              title={await WebConfig.get('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}
+            ></Footer>
+          )}
+        ></HtmlLoad>
       </div>
     </div>
   );

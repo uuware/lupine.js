@@ -209,7 +209,7 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string,
         props._html.push(`<style id="sty-${newUniqueClassName}">${cssText}</style>`); // sty means style, and updateStyles has the same name
       }
 
-      if (newProps.children) {
+      if (newProps.children || newProps.children === 0) {
         // if (newProps._lb) {
         //     assignLabels(newProps._lb, newProps.children);
         // }

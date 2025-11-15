@@ -6,7 +6,7 @@ export const cleanupAndExit = async () => {
   // save shared storage first
   if (cluster.isPrimary) {
     // save only happens once
-    await appStorage.save();
+    await appStorage.save('', true);
   }
   process.exit(0);
 };

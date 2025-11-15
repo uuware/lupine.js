@@ -1,6 +1,6 @@
 /**
  * A persistent storage to store data in primary process and share to all workers
- * 
+ *
  * You should use apiStorage in api module
  */
 import * as fs from 'fs/promises';
@@ -141,9 +141,9 @@ export class AppSharedStorage implements IAppSharedStorage {
   }
 
   // called from primary before exit, or from api to save changes
-  async save(appName?: string) {
+  async save(appName?: string, exit?: boolean) {
     if (!cluster.isPrimary) {
-      AppSharedStorageWorker.save(appName);
+      await AppSharedStorageWorker.save(appName);
       return;
     }
 
@@ -183,8 +183,16 @@ export class AppSharedStorage implements IAppSharedStorage {
   getApi(appName: string, key: string): Promise<string> {
     return this.get(appName, AppSharedStorageApiPrefix + key);
   }
-  getWebAll(appName: string): Promise<SimpleStorageDataProps> {
-    return this.getWithPrefix(appName, AppSharedStorageWebPrefix);
+  async getWebAll(appName: string): Promise<SimpleStorageDataProps> {
+    const webAll = await this.getWithPrefix(appName, AppSharedStorageWebPrefix);
+
+    const webSettingShortKey: SimpleStorageDataProps = {};
+    for (let item of Object.keys(webAll)) {
+      const newItem = item.substring(AppSharedStorageWebPrefix.length);
+      webSettingShortKey[newItem] = webAll[item];
+    }
+
+    return webSettingShortKey;
   }
   getWithPrefix(appName: string, prefixKey: string): Promise<SimpleStorageDataProps> {
     return new Promise((resolve, reject) => {
@@ -267,7 +275,7 @@ class AppSharedStorageWorker {
       workerId: cluster.worker?.id || 0,
       action: 'save',
       appName: appName || '',
-      key: '',
+      key: 'save',
     };
     process.send!(obj);
   }
