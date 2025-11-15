@@ -37,7 +37,7 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
   // if isMobile=true, then the last number is 1, or if isMobile=false, the last is 2
   const chgTime = Math.trunc(f1.mtime.getTime() / 10) * 10 + (isMobile ? 1 : 2);
 
-  // when it's isMobile, need to update env and configs
+  // when it's isMobile, need to update env and configs => no configs as mobile app fetches it from api
   if (!f2 || f2.mtime.getTime() !== chgTime || isMobile) {
     const inHtml = await fs.readFile(htmlFile, 'utf-8');
     let outStr = inHtml.replace(/{hash}/gi, new Date().getTime().toString(36));
@@ -48,7 +48,7 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
       const metaIndexStart = inHtml.indexOf(metaTextStart);
       const metaIndexEnd = inHtml.indexOf(metaTextEnd);
 
-      const webConfig = await readWebConfig(outdirData);
+      // const webConfig = await readWebConfig(outdirData);
       const webEnvData = webEnv.getWebEnv(appName);
 
       outStr =
@@ -56,9 +56,9 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
         '<script id="web-env" type="application/json">' +
         JSON.stringify(webEnvData) +
         '</script>\r\n' +
-        '<script id="web-setting" type="application/json">' +
-        JSON.stringify(webConfig) +
-        '</script>' +
+        // '<script id="web-setting" type="application/json">' +
+        // JSON.stringify(webConfig) +
+        // '</script>' +
         outStr.substring(metaIndexEnd + metaTextEnd.length);
       // outStr = webEnv.replaceWebEnv(inHtml, appName, true);
     }

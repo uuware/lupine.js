@@ -10,6 +10,7 @@ import {
   updateProfile,
   userResetCode,
   userResetPw,
+  userLogout,
 } from './user-api';
 import { writeSetting } from './setting-api';
 import { addCfgFile, serveCfgImage } from './admin-api';
@@ -49,6 +50,7 @@ export class Api implements IApiBase {
     this.router.use('/user-block', blockUser);
 
     this.router.use('/login', userLogin);
+    this.router.use('/logout', userLogout);
     this.router.use('/register', userReg);
     // this.router.use('/user-activate', userActivation);
     this.router.use('/reset-code', userResetCode);

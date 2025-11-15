@@ -2,7 +2,12 @@ import { Logger } from '../logger';
 import { DbConfig } from '../../models/db-config';
 
 // Instead, Boolean values are stored as integers 0 (false) and 1 (true).
+export type DbFieldExprssionProps = { exprssion: string; params?: (string | number)[] };
 export type DbFieldValue = { [key: string]: string | number };
+export type DbFieldExpression = { [key: string]: string | number | DbFieldExprssionProps };
+const isDbFieldExprssion = (value: any): value is DbFieldExprssionProps => {
+  return value && typeof value === 'object' && 'exprssion' in value;
+};
 
 const logger = new Logger('db');
 export class Db {
@@ -252,12 +257,28 @@ export class Db {
     return await this.execute(sql, params);
   }
 
-  public async updateObject(table: string, updateFieldValues: DbFieldValue, whereFieldValues: DbFieldValue) {
+  public async updateObject(table: string, updateFieldValues: DbFieldExpression, whereFieldValues: DbFieldValue) {
     table = this.replacePrefix(table);
     const fields = Object.keys(updateFieldValues);
-    let sql = 'UPDATE ' + table + ' SET ' + fields.map((item) => `${item}=?`).join(',');
-    const params = Object.values(updateFieldValues);
+    const setClauseParts: string[] = [];
+    const params: (string | number)[] = [];
+    // let sql = 'UPDATE ' + table + ' SET ' + fields.map((item) => `${item}=?`).join(',');
+    // const params = Object.values(updateFieldValues);
+    for (const field of fields) {
+      const value = updateFieldValues[field];
 
+      // expression
+      if (isDbFieldExprssion(value)) {
+        setClauseParts.push(`${field} = ${value.exprssion}`);
+        if (value.params) params.push(...value.params);
+      } else {
+        // static value
+        setClauseParts.push(`${field} = ?`);
+        params.push(value);
+      }
+    }
+
+    let sql = `UPDATE ${table} SET ${setClauseParts.join(', ')}`;
     if (whereFieldValues && Object.keys(whereFieldValues).length > 0) {
       sql +=
         ' WHERE ' +

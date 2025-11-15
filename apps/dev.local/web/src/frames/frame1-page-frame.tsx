@@ -1,11 +1,4 @@
-import {
-  MenuBar,
-  LinkList,
-  MediaQueryMaxWidth,
-  webSetting,
-  VNode,
-  CssProps,
-} from 'lupine.components';
+import { MenuBar, LinkList, MediaQueryMaxWidth, VNode, CssProps, HtmlLoad, WebConfig } from 'lupine.components';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 
@@ -43,15 +36,24 @@ export const Frame1PageFrame = async (placeholderClassname: string, vnode: VNode
   return (
     <div css={cssContainer}>
       <Header title={'This is Frame1'} subtitle=''></Header>
-      <MenuBar items={defaultTopMenu} maxWidthMobileMenu={'800px'} maxWidth={MediaQueryMaxWidth.DesktopMax} backgroundColor='#595959'></MenuBar>
+      <MenuBar
+        items={defaultTopMenu}
+        maxWidthMobileMenu={'800px'}
+        maxWidth={MediaQueryMaxWidth.DesktopMax}
+        backgroundColor='#595959'
+      ></MenuBar>
       <div class={'content-block ' + placeholderClassname}>{vnode}</div>
       <div class='top-link-list'>
         <LinkList items={defaultTopMenu} title=''></LinkList>
       </div>
       <div class='top-footer'>
-        <Footer
-          title={webSetting('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}
-        ></Footer>
+        <HtmlLoad
+          html={async () => (
+            <Footer
+              title={await WebConfig.get('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}
+            ></Footer>
+          )}
+        ></HtmlLoad>
       </div>
     </div>
   );

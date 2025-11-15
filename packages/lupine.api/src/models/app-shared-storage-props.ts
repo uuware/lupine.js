@@ -25,7 +25,7 @@ export interface IAppSharedStorage {
   // this is primary, msg is from a client
   messageFromSubProcess(msgObject: any): void;
   load(appName: string, rootPath: string): Promise<void>;
-  save(appName?: string): Promise<void>;
+  save(appName?: string, exit?: boolean): Promise<void>;
   get(appName: string, key: string): Promise<string>;
   getWeb(appName: string, key: string): Promise<string>;
   getApi(appName: string, key: string): Promise<string>;

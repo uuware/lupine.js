@@ -8,9 +8,10 @@ import { callPageLoadedEvent } from './page-loaded-events';
 import { initServerCookies } from './server-cookie';
 import { IToClientDelivery } from '../models';
 import { getMetaDataObject, getMetaDataTags, getPageTitle } from './bind-meta';
-import { initWebEnv, initWebSetting } from '../lib/web-env';
+import { initWebEnv } from '../lib/web-env';
 import { _lupineJs, PageProps, PageResultType, setRenderPageProps } from './export-lupine';
 import { isFrontEnd } from '../lib/is-frontend';
+import { WebConfig } from '../lib/web-config';
 
 const logger = new Logger('initialize');
 
@@ -26,7 +27,8 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
   setRenderPageProps(props);
 
   initWebEnv(toClientDelivery.getWebEnv());
-  initWebSetting(toClientDelivery.getWebSetting());
+  WebConfig.initFromData(toClientDelivery.getWebSetting());
+  // initWebSetting(toClientDelivery.getWebSetting());
   initServerCookies(toClientDelivery.getServerCookie());
   // callPageResetEvent();
   callPageLoadedEvent();
@@ -57,12 +59,14 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
 };
 _lupineJs.generatePage = generatePage;
 
-let _pageInitialized = false;
+const _initSaved = {
+  pageInitialized: false,
+};
 // this is called in the FE when the document is loaded
 // to avoid circular reference, bindLinks can't call initializePage directly
 export const initializePage = async (newUrl?: string) => {
-  const currentPageInitialized = _pageInitialized;
-  _pageInitialized = true;
+  const currentPageInitialized = _initSaved.pageInitialized;
+  _initSaved.pageInitialized = true;
   logger.log('initializePage: ', newUrl);
   if (newUrl) {
     window.history.pushState({ urlPath: newUrl }, '', newUrl);

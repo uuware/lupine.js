@@ -9,7 +9,6 @@ import { IToClientDelivery } from '../models/to-client-delivery-props';
 import { JsonObject } from '../models/json-object';
 import { getTemplateCache } from './api-cache';
 import { apiStorage } from './api-shared-storage';
-import { SimpleStorageDataProps } from '../models';
 import { RuntimeRequire } from '../lib/runtime-require';
 
 const logger = new Logger('StaticServer');
@@ -159,13 +158,13 @@ export const serverSideRenderPage = async (
   const _lupineJs = cachedHtml[nearRoot]._lupineJs;
   const currentCache = cachedHtml[nearRoot] as CachedHtmlProps;
   const webSetting = await apiStorage.getWebAll();
-  const webSettingShortKey: SimpleStorageDataProps = {};
-  for (let item of Object.keys(webSetting)) {
-    const newItem = item.substring(4);
-    webSettingShortKey[newItem] = webSetting[item];
-  }
+  // const webSettingShortKey: SimpleStorageDataProps = {};
+  // for (let item of Object.keys(webSetting)) {
+  //   const newItem = item.substring(4);
+  //   webSettingShortKey[newItem] = webSetting[item];
+  // }
   // const webSetting = AppConfig.get(AppConfig.WEB_SETTINGS_KEY) || {};
-  const clientDelivery = new ToClientDelivery(currentCache.webEnv, webSettingShortKey, req.locals.cookies());
+  const clientDelivery = new ToClientDelivery(currentCache.webEnv, webSetting, req.locals.cookies());
   const page = await _lupineJs.generatePage(props, clientDelivery);
   // console.log(`=========load lupin: `, content);
 
@@ -199,7 +198,7 @@ export const serverSideRenderPage = async (
   res.write(page.metaData);
   res.write(page.globalCss);
   res.write('<script id="web-env" type="application/json">' + JSON.stringify(currentCache.webEnv) + '</script>');
-  res.write('<script id="web-setting" type="application/json">' + JSON.stringify(webSettingShortKey) + '</script>');
+  res.write('<script id="web-setting" type="application/json">' + JSON.stringify(webSetting) + '</script>');
   res.write(
     currentCache.content.substring(
       currentCache.metaIndexEnd + metaTextEnd.length,
