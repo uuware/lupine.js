@@ -1,4 +1,4 @@
-import { MediaQueryRange, MediaQueryMaxWidth, webSetting } from 'lupine.components';
+import { MediaQueryRange, MediaQueryMaxWidth, HtmlLoad, WebConfig } from 'lupine.components';
 import { UserInfo } from './user-info';
 
 export const Header = (props: { title: string; subtitle?: string }) => {
@@ -61,7 +61,9 @@ export const Header = (props: { title: string; subtitle?: string }) => {
         <UserInfo />
       </div>
       <div class='logo-box'>
-        <img class='logo' src={`/api/image/${webSetting('siteLogo', '(not set)')}`} />
+        <HtmlLoad
+          html={async () => <img class='logo' src={`/api/image/${await WebConfig.get('siteLogo', '(not set)')}`} />}
+        ></HtmlLoad>
       </div>
       <div class='header-title'>
         {props.title}

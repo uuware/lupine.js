@@ -1,4 +1,13 @@
-import { CssProps, PageProps, DomUtils, getRenderPageProps, NotificationColor, NotificationMessage, webSetting } from 'lupine.components';
+import {
+  CssProps,
+  PageProps,
+  DomUtils,
+  getRenderPageProps,
+  NotificationColor,
+  NotificationMessage,
+  WebConfig,
+  HtmlLoad,
+} from 'lupine.components';
 import { Footer } from './footer';
 
 const fetchReg = async (body: any) => {
@@ -115,11 +124,15 @@ export const RegisterPage = async (props: PageProps) => {
               <input class='input-base u-name' type='text' maxLength={50} />
             </div>
           </div>
-          {webSetting('verifyEmail', '1') === '1' && (
-            <div class='row-box login-tip'>
-              * Confirm you email carefully and your email is used to receive authentication code.
-            </div>
-          )}
+          <HtmlLoad
+            html={async () =>
+              (await WebConfig.get('verifyEmail', `1`)) ? (
+                <div class='row-box login-tip'>
+                  * Confirm you email carefully and your email is used to receive authentication code.
+                </div>
+              ) : null
+            }
+          ></HtmlLoad>
           <div class='row-box'>
             <div class='label'>Password:</div>
             <div>

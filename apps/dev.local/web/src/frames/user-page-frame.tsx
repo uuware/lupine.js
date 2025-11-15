@@ -2,10 +2,12 @@ import {
   MenuBar,
   LinkList,
   MediaQueryMaxWidth,
-  webSetting,
   VNode,
   CssProps,
   MediaQueryRange,
+  HtmlLoad,
+  WebConfig,
+  HtmlVar,
 } from 'lupine.components';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
@@ -58,7 +60,7 @@ export const UserPageFrame = async (placeholderClassname: string, vnode: VNode<a
       '.header-box, .top-link-list, .top-footer .footer-box, .menu-bar-box': {
         display: 'none',
       },
-      '.content-block' : {
+      '.content-block': {
         paddingBottom: '16px',
       },
       '.metronome-page-box, .gauge-box': {
@@ -71,14 +73,32 @@ export const UserPageFrame = async (placeholderClassname: string, vnode: VNode<a
   const actualMenu = !userCookie || !userCookie.u ? defaultTopMenu : defaultTopMenuUser;
   return (
     <div css={cssContainer}>
-      <Header title={webSetting('siteTitle', 'lupine.dev')} subtitle=''></Header>
+      <HtmlLoad
+        html={async () => <Header title={await WebConfig.get('siteTitle', `lupine.dev`)} subtitle=''></Header>}
+      ></HtmlLoad>
       <MenuBar items={actualMenu} maxWidthMobileMenu={'800px'} maxWidth={MediaQueryMaxWidth.DesktopMax}></MenuBar>
       <div class={'content-block ' + placeholderClassname}>{vnode}</div>
       <div class='top-link-list'>
         <LinkList items={actualMenu} title=''></LinkList>
       </div>
       <div class='top-footer'>
-        <Footer title={webSetting('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}></Footer>
+        <HtmlLoad
+          html={async () => (
+            <Footer
+              title={await WebConfig.get('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}
+            ></Footer>
+          )}
+        ></HtmlLoad>
+        {/* {
+          new HtmlVar(async () => (
+            <Footer
+              title={await WebConfig.get('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}
+            ></Footer>
+          )).node
+        } */}
+        {/* <Footer
+          title={webSetting('footer', `Copyright© 2024 <a href='/'>lupine.dev</a>. All Rights Reserved.`)}
+        ></Footer> */}
         <FooterMenu></FooterMenu>
       </div>
     </div>

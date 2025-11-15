@@ -32,7 +32,7 @@ export class AdminRelease implements IApiBase {
   protected mountDashboard() {
     // called by FE
     this.router.use('/check', needDevAdminSession, this.check.bind(this));
-    this.router.use('/update', needDevAdminSession, this.update.bind(this));
+    this.router.use('/update', needDevAdminSession, this.callUpdate.bind(this));
     this.router.use('/view-log', needDevAdminSession, this.viewLog.bind(this));
     // called online or by clients
     this.router.use('/refresh-cache', needDevAdminSession, this.refreshCache.bind(this));

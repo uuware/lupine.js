@@ -1,15 +1,15 @@
 import { RefProps, VNode } from 'lupine.web';
 
-export type HtmlVarResult = { value: string | VNode<any>; ref: RefProps; node: VNode<any> };
-
+export type HtmlVarValueProps = string | VNode<any> | (() => Promise<VNode<any>>);
+export type HtmlVarResult = { value: HtmlVarValueProps; ref: RefProps; node: VNode<any> };
 export class HtmlVar implements HtmlVarResult {
-  private _value: string | VNode<any>;
+  private _value: HtmlVarValueProps;
   private _dirty = false;
   private _ref: RefProps;
   private resolve!: () => void;
   private promise: Promise<void>;
 
-  constructor(initial?: string | VNode<any>) {
+  constructor(initial?: HtmlVarValueProps) {
     this.promise = new Promise<void>((res) => {
       this.resolve = res;
     });
@@ -28,7 +28,8 @@ export class HtmlVar implements HtmlVarResult {
   }
 
   private async update(): Promise<void> {
-    await this._ref.mountInnerComponent!(this._value);
+    const v = typeof this._value === 'function' ? await this._value() : this._value;
+    await this._ref.mountInnerComponent!(v);
     this._dirty = false;
     this._value = '';
   }
@@ -38,7 +39,7 @@ export class HtmlVar implements HtmlVarResult {
     await this.promise;
   }
 
-  set value(value: string | VNode<any>) {
+  set value(value: HtmlVarValueProps) {
     this._value = value;
     if (this._dirty) {
       return;
@@ -55,7 +56,7 @@ export class HtmlVar implements HtmlVarResult {
     });
   }
 
-  get value(): string | VNode<any> {
+  get value(): HtmlVarValueProps {
     return this._ref.current ? this._ref.current.innerHTML : this._value;
   }
 
@@ -64,13 +65,15 @@ export class HtmlVar implements HtmlVarResult {
   }
 
   get node(): VNode<any> {
-    this._dirty = false;
+    // if value is a function, it will be loaded later in onLoad
+    const delayLoad = typeof this._value === 'function';
+    this._dirty = delayLoad ? true : false;
     // the Fragment Tag will be present in the html if ref is assigned
     return {
       type: 'Fragment',
       props: {
         ref: this._ref,
-        children: this._value,
+        children: delayLoad ? '' : this._value,
       },
       html: [],
     };

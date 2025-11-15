@@ -11,6 +11,7 @@ import { AdminConfig } from './admin-config';
 import { Logger } from '../lib';
 import { IApiBase, ServerRequest } from '../models';
 import { ApiRouter } from '../api';
+import { readWebConfig } from './web-config-api';
 
 const logger = new Logger('admin-api');
 
@@ -27,6 +28,8 @@ export class AdminApi implements IApiBase {
   }
 
   protected mountDashboard() {
+    this.router.use('/web-config', readWebConfig);
+
     const adminDb = new AdminDb();
     this.router.use('/db', needDevAdminSession, adminDb.getRouter());
 
