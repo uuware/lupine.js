@@ -1,8 +1,7 @@
 import cluster from 'cluster';
 import { Logger, LogWriter, LogWriterMessageId } from '../lib';
-import { processDebugMessage } from './process-dev-requests';
+import { processDebugMessage, snedRestartAppMsgToLoader } from './process-dev-requests';
 import { cleanupAndExit } from './cleanup-exit';
-import { restartApp } from './app-restart';
 
 export type AppMessageProps = {
   id: string;
@@ -80,7 +79,7 @@ export const processMessageFromWorker = (msgObject: AppMessageProps) => {
       `Message from worker ${cluster.worker?.id}, message: ${msgObject.message}, appName: ${msgObject.appName}`
     );
     if (msgObject.message === 'restartApp') {
-      restartApp();
+      snedRestartAppMsgToLoader();
       return;
     } else if (msgObject.message === 'refresh') {
       broadcast(msgObject);
@@ -97,4 +96,14 @@ export const processMessageFromWorker = (msgObject: AppMessageProps) => {
   } else {
     logger.warn(`Unknown message id: ${msgObject.id}`);
   }
+};
+
+// this is primary, and receive messages from loader
+export const receiveMessageFromLoader = () => {
+  process.on('message', async (msg: AppMessageProps) => {
+    if (msg?.id === 'debug' && msg?.message === 'shutdown') {
+      console.log(`App ${process.pid}: received shutdown message from loader.`);
+      processMessageFromWorker(msg);
+    }
+  });
 };

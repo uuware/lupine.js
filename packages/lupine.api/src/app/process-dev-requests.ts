@@ -1,3 +1,4 @@
+import cluster from 'cluster';
 import { Logger } from '../lib/logger';
 import { ServerResponse } from 'http';
 import { AddressInfo } from 'net';
@@ -5,7 +6,6 @@ import { appLoader } from './app-loader';
 import { DebugService } from '../api/debug-service';
 import { AppCacheGlobal, AppCacheKeys, getAppCache, ServerRequest } from '../models';
 import { cleanupAndExit } from './cleanup-exit';
-import { restartApp } from './app-restart';
 const logger = new Logger('process-dev-requests');
 
 function deleteRequireCache(moduleName: string) {
@@ -45,18 +45,18 @@ export const processDebugMessage = async (msgObject: any) => {
   }
   if (msgObject.id === 'debug' && msgObject.message === 'shutdown') {
     // Only when it's debug mode, it can go here, otherwise shutdown should be processed in processMessageFromWorker
-    console.log(`[server] Received shutdown command.`);
+    console.log(`${process.pid} - [server] Received shutdown command.`);
     await cleanupAndExit();
   }
 };
 
 export async function processRefreshCache(req: ServerRequest) {
-  // if this is a child process, we need to notice parent process to broadcast to all clients to refresh
-  if (process.send) {
+  // if this is a child process, we need to notice parent process to broadcast to all clients
+  if (!cluster.isPrimary && process.send) {
     const appName = req.locals.query.get('appName');
     process.send({ id: 'debug', message: 'refresh', appName });
   }
-  // if it's debug mode (only one process)
+  // in case if it's only one process (primary process)
   else {
     // if (getAppCache().get(APP_GLOBAL, AppCacheKeys.API_DEBUG) === true)
     const appName = req.locals.query.get('appName');
@@ -65,27 +65,27 @@ export async function processRefreshCache(req: ServerRequest) {
 }
 
 export async function processRestartApp(req: ServerRequest) {
-  // if this is a child process, we need to notice parent process to broadcast to all clients to refresh
-  if (process.send) {
+  // if this is a child process, we need to notice parent process to broadcast to all clients
+  if (!cluster.isPrimary && process.send) {
     // send message to Primary to handle it
     process.send({ id: 'debug', message: 'restartApp' });
   }
   // in case if it's only one process (primary process)
   else {
-    await restartApp();
+    snedRestartAppMsgToLoader();
   }
 }
 
-// this is only for local development
+// this is called from a request in debug mode
 export async function processDevRequests(req: ServerRequest, res: ServerResponse, rootUrl?: string) {
   res.end();
   const address = req.socket.address() as AddressInfo;
   if (address.address !== '127.0.0.1') {
-    console.log(`[server] Ignore request from: `, req.url, address.address);
+    console.log(`${process.pid} - [server] Ignore request from: `, req.url, address.address);
     return true;
   }
   if (req.url === '/debug/shutdown') {
-    console.log(`[server] Received shutdown command.`);
+    console.log(`${process.pid} - [server] Received shutdown command.`);
     if (process.send) {
       // send to parent process to kill all
       process.send({ id: 'debug', message: 'shutdown' });
@@ -97,7 +97,23 @@ export async function processDevRequests(req: ServerRequest, res: ServerResponse
   } else if (req.url === '/debug/refresh') {
     await processRefreshCache(req);
   }
-  if (req.url === '/debug/client') {
-  }
+  // else if (req.url === '/debug/client') {
+  // }
   return true;
 }
+
+// this is called from a request and passes the restartApp message to loader
+export const snedRestartAppMsgToLoader = async () => {
+  if (!cluster.isPrimary) {
+    console.warn(`restartApp: shouldn't come here`);
+    return;
+  }
+
+  if (!process.send) {
+    console.log(`${process.pid} - The primary process is not focked from loader, so cannot restart.`);
+  } else {
+    console.log(`${process.pid} - Old app sends restartApp to loader (${process.execPath})`);
+
+    process.send({ id: 'debug', message: 'restartApp' });
+  }
+};
