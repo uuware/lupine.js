@@ -421,6 +421,11 @@ export class AdminRelease implements IApiBase {
         ApiHelper.sendJson(req, res, result);
         return true;
       }
+      const result2 = await this.updateSendFile(data, 'app-loader');
+      if (!result2 || result2.status !== 'ok') {
+        ApiHelper.sendJson(req, res, result2);
+        return true;
+      }
     }
 
     const response = {
@@ -442,6 +447,8 @@ export class AdminRelease implements IApiBase {
     let sendFile = '';
     if (chkOption === 'server') {
       sendFile = path.join(appData.apiPath, '..', 'server', 'index.js');
+    } else if (chkOption === 'app-loader') {
+      sendFile = path.join(appData.apiPath, '..', 'server', 'app-loader.js');
     } else if (chkOption === 'api') {
       sendFile = path.join(appData.apiPath, '..', fromList + '_api', 'index.js');
     } else if (chkOption === 'web') {
@@ -546,6 +553,8 @@ export class AdminRelease implements IApiBase {
       let saveFile = '';
       if (chkOption === 'server') {
         saveFile = path.join(appData.apiPath, '..', 'server', 'index.js');
+      } else if (chkOption === 'app-loader') {
+        saveFile = path.join(appData.apiPath, '..', 'server', 'app-loader.js');
       } else if (chkOption === 'api') {
         saveFile = path.join(appData.apiPath, '..', toList + '_api', 'index.js');
       } else if (chkOption === 'web') {
