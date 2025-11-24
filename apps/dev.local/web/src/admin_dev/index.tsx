@@ -1,4 +1,4 @@
-import { devAdminPageRouter } from 'lupine.api/admin';
+import { adminFrameHelper, devAdminPageRouter } from 'lupine.api/admin';
 import {
   bindGlobalStyle,
   bindLang,
@@ -7,7 +7,9 @@ import {
   bindTheme,
   debugWatch,
   isFrontEnd,
+  PageProps,
   PageRouter,
+  Redirect,
   setDefaultMetaDescription,
   setDefaultPageTitle,
   webEnv,
@@ -16,11 +18,35 @@ import { themes } from '../styles/theme';
 import { baseCss } from '../styles/base-css';
 import { ClientEnvKeys } from '../../../../shared-web-src';
 import { baseUrl, fetchData } from '../services/fetch-data';
-import { fixAdminAboutPage } from './admin';
+import { patchAdminFrame } from './admin-patch';
+import { setCookieUser } from '../services/shared-data';
 
 if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
 }
+
+export const checkDevAndAppAuth = async (props: PageProps) => {
+  adminFrameHelper.setIsDevAdmin(false);
+  if (typeof document === 'undefined') {
+    // no ssr for admin pages
+    return <div></div>;
+  }
+
+  // check dev admin
+  const data = await props.renderPageFunctions.fetchData('/api/admin/auth');
+  if (data && data.json && data.json.devLogin) {
+    adminFrameHelper.setIsDevAdmin(true);
+    return null;
+  }
+  if (data && data.json && data.json.appLogin && data.json.user) {
+    setCookieUser(data.json.user || {});
+    return null;
+  }
+  if (props.url !== '/admin_dev/login') {
+    return Redirect({ url: '/admin_dev/login' });
+  }
+  return null;
+};
 
 bindLang('zh-cn', {});
 bindTheme('light', themes);
@@ -30,7 +56,9 @@ setDefaultMetaDescription('Sample - Page Description');
 
 bindRenderPageFunctions({ fetchData, baseUrl });
 
-fixAdminAboutPage();
+patchAdminFrame();
 const pageRouter = new PageRouter();
+// devadmin and appadmin can access
+devAdminPageRouter.setFilter(checkDevAndAppAuth);
 pageRouter.use('/admin_dev', devAdminPageRouter);
 bindRouter(pageRouter);

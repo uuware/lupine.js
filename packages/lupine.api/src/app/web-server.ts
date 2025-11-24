@@ -8,6 +8,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { Duplex } from 'stream';
 import { WebProcessor } from './web-processor';
 import { DebugService } from '../api/debug-service';
+import cluster from 'cluster';
 const logger = new Logger('web-server');
 
 export class WebServer {
@@ -47,7 +48,7 @@ export class WebServer {
     httpServer.on('upgrade', this.handleUpgrade.bind(this));
 
     httpServer.listen(httpPort, bindIp, () => {
-      logger.info(`Http Server is started: http://localhost:${httpPort}`);
+      logger.info(`Http Server ${cluster.worker ? cluster.worker.id : -1} is started: http://localhost:${httpPort}`);
     });
     httpServer.on('error', (error: any) => {
       logger.error('Error occurred on http server', error);
@@ -88,11 +89,12 @@ export class WebServer {
       httpsServer.setTimeout(timeout);
     }
     httpsServer.listen(httpsPort, bindIp, () => {
-      logger.info(`Https Server is started: https://localhost:${httpsPort}`);
+      logger.info(`Https Server ${cluster.worker ? cluster.worker.id : -1} is started: https://localhost:${httpsPort}`);
     });
     httpsServer.on('error', (error: any) => {
       logger.error('Error occurred on https server', error);
     });
+
     return httpsServer;
   }
 }

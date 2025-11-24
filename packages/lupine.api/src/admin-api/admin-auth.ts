@@ -69,14 +69,15 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
       ApiHelper.sendJson(req, res, response);
       return true;
     }
-    // if it's dev admin, then set app admin cookie as well
-    let addLoginResponse = {};
-    const appAdminHookSetCookie = adminApiHelper.getAppAdminHookSetCookie();
-    if (appAdminHookSetCookie) {
-      addLoginResponse = await appAdminHookSetCookie(req, res, devAdminSession.u);
-    }
+    // on set app cookie when login, not every time
+    // // if it's dev admin, then set app admin cookie as well
+    // let addLoginResponse = {};
+    // const appAdminHookSetCookie = adminApiHelper.getAppAdminHookSetCookie();
+    // if (appAdminHookSetCookie) {
+    //   addLoginResponse = await appAdminHookSetCookie(req, res, devAdminSession.u);
+    // }
     const response = {
-      ...addLoginResponse,
+      // ...addLoginResponse,
       status: 'ok',
       message: langHelper.getLang('shared:login_success'),
       devLogin: CryptoUtils.encrypt(JSON.stringify(devAdminSession), cryptoKey),
@@ -109,13 +110,13 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
       message: langHelper.getLang('shared:login_success'),
       devLogin: tokenCookie,
     };
-    req.locals.setCookie('_token', tokenCookie, {
-      expireDays: 360,
-      path: '/',
-      httpOnly: false,
-      secure: true,
-      sameSite: 'none',
-    });
+    // req.locals.setCookie('_token', tokenCookie, {
+    //   expireDays: 360,
+    //   path: '/',
+    //   httpOnly: false,
+    //   secure: true,
+    //   sameSite: 'none',
+    // });
     ApiHelper.sendJson(req, res, response);
     return true;
   }

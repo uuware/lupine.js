@@ -5,6 +5,7 @@ import { appLoader } from './app-loader';
 import { DebugService } from '../api/debug-service';
 import { AppCacheGlobal, AppCacheKeys, getAppCache, ServerRequest } from '../models';
 import { cleanupAndExit } from './cleanup-exit';
+import { restartApp } from './app-restart';
 const logger = new Logger('process-dev-requests');
 
 function deleteRequireCache(moduleName: string) {
@@ -42,10 +43,10 @@ export const processDebugMessage = async (msgObject: any) => {
     // this only works in debug mode (no clusters)
     DebugService.broadcastRefresh();
   }
-  if (msgObject.id === 'debug' && msgObject.message === 'suspend') {
-    // Only when it's debug mode, it can go here, otherwise suspend should be processed in processMessageFromWorker
-    console.log(`[server] Received suspend command.`);
-    cleanupAndExit();
+  if (msgObject.id === 'debug' && msgObject.message === 'shutdown') {
+    // Only when it's debug mode, it can go here, otherwise shutdown should be processed in processMessageFromWorker
+    console.log(`[server] Received shutdown command.`);
+    await cleanupAndExit();
   }
 };
 
@@ -63,6 +64,18 @@ export async function processRefreshCache(req: ServerRequest) {
   }
 }
 
+export async function processRestartApp(req: ServerRequest) {
+  // if this is a child process, we need to notice parent process to broadcast to all clients to refresh
+  if (process.send) {
+    // send message to Primary to handle it
+    process.send({ id: 'debug', message: 'restartApp' });
+  }
+  // in case if it's only one process (primary process)
+  else {
+    await restartApp();
+  }
+}
+
 // this is only for local development
 export async function processDevRequests(req: ServerRequest, res: ServerResponse, rootUrl?: string) {
   res.end();
@@ -71,15 +84,15 @@ export async function processDevRequests(req: ServerRequest, res: ServerResponse
     console.log(`[server] Ignore request from: `, req.url, address.address);
     return true;
   }
-  if (req.url === '/debug/suspend') {
-    console.log(`[server] Received suspend command.`);
+  if (req.url === '/debug/shutdown') {
+    console.log(`[server] Received shutdown command.`);
     if (process.send) {
       // send to parent process to kill all
-      process.send({ id: 'debug', message: 'suspend' });
+      process.send({ id: 'debug', message: 'shutdown' });
     }
     // if it's debug mode (only one process)
     else if (getAppCache().get(AppCacheGlobal, AppCacheKeys.APP_DEBUG) === true) {
-      await processDebugMessage({ id: 'debug', message: 'suspend' });
+      await processDebugMessage({ id: 'debug', message: 'shutdown' });
     }
   } else if (req.url === '/debug/refresh') {
     await processRefreshCache(req);
