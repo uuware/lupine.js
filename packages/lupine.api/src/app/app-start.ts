@@ -8,8 +8,8 @@ import { appCache } from './app-cache';
 import { AppStartProps, InitStartProps, AppCacheGlobal, AppCacheKeys } from '../models';
 import { appStorage } from './app-shared-storage';
 import { HostToPath } from './host-to-path';
-import { cleanupAndExit } from './cleanup-exit';
-import { _restartApp, receiveMessageFromLoader } from './app-restart';
+import { _exitApp, cleanupAndExit } from './cleanup-exit';
+import { receiveMessageFromLoader } from './app-message';
 
 // Don't use logger before set process message
 class AppStart {
@@ -41,9 +41,9 @@ class AppStart {
 
     // call the Logger after initLog
     console.log(
-      `${cluster.isPrimary ? 'Primary Process' : 'Worker Process'}, Starting Server - process id ${
-        process.pid
-      }, path: ${process.cwd()}`
+      `${process.pid} - ${
+        cluster.isPrimary ? 'Primary Process' : 'Worker Process'
+      }, Starting Server, path: ${process.cwd()}`
     );
 
     // when it's cluster.isPrimary or props.debug, initialize the shared storage first
@@ -54,7 +54,7 @@ class AppStart {
     }
 
     if (!cluster.isPrimary) {
-      console.log(`Worker id ${this.getWorkerId()}`);
+      console.log(`${process.pid} - Worker id ${this.getWorkerId()}`);
 
       process.on('message', processMessageFromPrimary);
 
@@ -63,7 +63,7 @@ class AppStart {
       this.initServer(props.serverConfig);
     } else if (cluster.isPrimary) {
       const numCPUs = props.debug ? 1 : require('os').cpus().length;
-      console.log(`Master Process is trying to fork ${numCPUs} processes`);
+      console.log(`${process.pid} - Primary Process is trying to fork ${numCPUs} processes`);
 
       receiveMessageFromLoader();
 
@@ -73,11 +73,11 @@ class AppStart {
       }
 
       cluster.on('death', (worker: any) => {
-        if (!_restartApp.isRestarting) {
-          console.log(`Worker ${worker.pid} died; starting a new one...`);
+        if (!_exitApp.isExiting) {
+          console.log(`${worker.pid} - Worker died; starting a new one...`);
           cluster.fork();
         } else {
-          console.log(`Worker ${worker.pid} exited during restart`);
+          console.log(`${worker.pid} - Worker exited during restart`);
         }
       });
     }
@@ -125,12 +125,11 @@ class AppStart {
     const httpServer = httpPort && this.webServer!.startHttp(httpPort, bindIp);
     const heepsServer = httpsPort && this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath);
 
-    process.on("SIGTERM", () => {
+    process.on('SIGTERM', () => {
       console.log(`${process.pid} - Worker closing servers...`);
       httpServer && httpServer.close();
       heepsServer && heepsServer.close();
     });
-
   }
 }
 

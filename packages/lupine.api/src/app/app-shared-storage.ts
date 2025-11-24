@@ -166,7 +166,7 @@ export class AppSharedStorage implements IAppSharedStorage {
   // this can be called in primary or worker
   get(appName: string, key: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      console.log(`AppStorage get value start in ${process.pid}, for key: ${key}`);
+      console.log(`${process.pid} - AppStorage get value for key: ${key}`);
 
       if (!cluster.isPrimary) {
         AppSharedStorageWorker.get(appName, key, resolve, reject);
@@ -196,7 +196,7 @@ export class AppSharedStorage implements IAppSharedStorage {
   }
   getWithPrefix(appName: string, prefixKey: string): Promise<SimpleStorageDataProps> {
     return new Promise((resolve, reject) => {
-      console.log(`AppStorage getWithPrefix start in ${process.pid}, for prefixKey: ${prefixKey}`);
+      console.log(`${process.pid} - AppStorage getWithPrefix for prefixKey: ${prefixKey}`);
 
       if (!cluster.isPrimary) {
         AppSharedStorageWorker.getWithPrefix(appName, prefixKey, resolve, reject);
@@ -238,7 +238,7 @@ class AppSharedStorageWorker {
     }
 
     if (msgObject.action === 'get') {
-      console.log(`AppStorage get value end in process: ${process.pid}, for key: ${msgObject.key}`);
+      console.log(`${process.pid} - AppStorage get value end for key: ${msgObject.key}`);
 
       const value = msgObject.value;
       // how to pass the value to the caller
@@ -250,7 +250,7 @@ class AppSharedStorageWorker {
         throw new Error(`Unknown uniqueKey: ${msgObject.uniqueKey}`);
       }
     } else if (msgObject.action === 'getWithPrefix') {
-      console.log(`AppStorage get value end in process: ${process.pid}, for key: ${msgObject.key}`);
+      console.log(`${process.pid} - AppStorage get value end for key: ${msgObject.key}`);
       const value = JSON.parse(msgObject.value);
       // how to pass the value to the caller
       const map = this.handleMap[msgObject.uniqueKey];
