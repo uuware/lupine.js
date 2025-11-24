@@ -48,7 +48,7 @@ export class DebugService {
 
   // broadcast to all frontend clients
   public static broadcastRefresh() {
-    console.log(`broadcast refresh request to clients.`);
+    console.log(`${process.pid} - broadcast refresh request to clients.`);
     this.clientRefreshFlag = Date.now();
     const msg = { message: 'Refresh', flag: this.clientRefreshFlag };
     this.miniWebSocket.broadcast(JSON.stringify(msg));

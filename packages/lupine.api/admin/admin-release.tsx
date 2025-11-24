@@ -8,6 +8,7 @@ import {
   NotificationMessage,
   formatBytes,
   downloadStream,
+  ActionSheetSelectPromise,
 } from 'lupine.components';
 
 interface ReleaseListProps {
@@ -306,6 +307,15 @@ export const AdminReleasePage = () => {
         NotificationMessage.sendMessage('Please fill in all fields', NotificationColor.Error);
         return;
       }
+    }
+
+    const index = await ActionSheetSelectPromise({
+      title: 'Restart App (users may get disconnected errors) ?',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (index !== 0) {
+      return;
     }
 
     const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/restart-app', {

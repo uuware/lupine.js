@@ -71,7 +71,7 @@ export class StaticServer {
 
       // if fullPath doesn't exist, it will throw ENOENT error
       const realPath = await fs.promises.realpath(fullPath);
-      console.log(`request: ${realPath}`);
+      console.log(`${process.pid} - request: ${realPath}`);
       // for security reason, the requested file should be inside of wwwRoot
       if (realPath.substring(0, hostPath.webPath.length) !== hostPath.webPath) {
         this.logger.warn(`ACCESS DENIED: ${urlSplit[0]}`);
