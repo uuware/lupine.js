@@ -24,7 +24,7 @@ Subject: ${data.subject}
 Email: ${data.email}
 Message: ${data.message}`;
 
-  await sendEmail('yyonlineyy@gmail.com', subject, boyd);
+  await sendEmail('test@gmail.com', subject, boyd);
   console.log(data);
   const response = {
     status: 'ok',
