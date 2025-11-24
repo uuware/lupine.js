@@ -51,27 +51,29 @@ export class WebConfig {
   static async get(key: string, defaultValue?: any): Promise<any> {
     await WebConfig.init();
 
-    if (typeof WebConfig.cfg[key] === 'undefined') {
+    const v = WebConfig.cfg[key];
+    if (typeof v === 'undefined') {
       return defaultValue;
     }
 
     if (typeof defaultValue === 'number') {
-      return Number.parseInt(WebConfig.cfg[key]!);
+      return Number.parseInt(v!);
     }
     if (typeof defaultValue === 'boolean') {
-      return WebConfig.cfg[key]!.toLocaleLowerCase() === 'true' || WebConfig.cfg[key] === '1';
+      return v!.toLocaleLowerCase() === 'true' || v === '1';
     }
     if (typeof defaultValue === 'object') {
-      if (typeof WebConfig.cfg[key] === 'object') {
-        return WebConfig.cfg[key];
+      if (typeof v === 'object') {
+        return v;
       }
       try {
-        return JSON.parse(WebConfig.cfg[key]!);
+        return JSON.parse(v!);
       } catch (error) {
         console.error(`WebConfig JSON.parse error: `, error);
       }
       return defaultValue;
     }
-    return WebConfig.cfg[key] || defaultValue;
+    // if empty, then return default value
+    return v || defaultValue;
   }
 }

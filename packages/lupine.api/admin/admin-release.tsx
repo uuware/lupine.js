@@ -284,13 +284,42 @@ export const AdminReleasePage = () => {
       isLocal,
     });
     const dataResponse = await response.json;
-    console.log('AdminRelease', dataResponse);
+    console.log('refresh-cache', dataResponse);
     if (!dataResponse || dataResponse.status !== 'ok') {
       NotificationMessage.sendMessage(dataResponse.message || 'Failed to refresh cache', NotificationColor.Error);
       return;
     }
     domLog.value = <pre>{JSON.stringify(dataResponse, null, 2)}</pre>;
     NotificationMessage.sendMessage('Cache refreshed successfully', NotificationColor.Success);
+  };
+
+  const onRestartAppLocal = async () => {
+    return onRestartApp(true);
+  };
+  const onRestartAppRemote = async () => {
+    return onRestartApp(false);
+  };
+  const onRestartApp = async (isLocal?: boolean) => {
+    const data = getDomData();
+    if (!isLocal) {
+      if (!data.targetUrl || !data.accessToken) {
+        NotificationMessage.sendMessage('Please fill in all fields', NotificationColor.Error);
+        return;
+      }
+    }
+
+    const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/restart-app', {
+      ...data,
+      isLocal,
+    });
+    const dataResponse = await response.json;
+    console.log('restart-app', dataResponse);
+    if (!dataResponse || dataResponse.status !== 'ok') {
+      NotificationMessage.sendMessage(dataResponse.message || 'Failed to Restart App', NotificationColor.Error);
+      return;
+    }
+    domLog.value = <pre>{JSON.stringify(dataResponse, null, 2)}</pre>;
+    NotificationMessage.sendMessage('Restart App successfully', NotificationColor.Success);
   };
 
   const ref: RefProps = {
@@ -321,8 +350,14 @@ export const AdminReleasePage = () => {
         <button onClick={onRefreshCacheRemote} class='button-base mr-m'>
           Refresh Cache (Remote)
         </button>
-        <button onClick={onRefreshCacheLocal} class='button-base'>
+        <button onClick={onRestartAppRemote} class='button-base mr-m color-red'>
+          Restart App (Remote)
+        </button>
+        <button onClick={onRefreshCacheLocal} class='button-base mr-m'>
           Refresh Cache (Local)
+        </button>
+        <button onClick={onRestartAppLocal} class='button-base color-red'>
+          Restart App (Local)
         </button>
       </div>
       {domUpdate.node}

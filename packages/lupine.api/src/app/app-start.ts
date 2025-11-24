@@ -9,6 +9,7 @@ import { AppStartProps, InitStartProps, AppCacheGlobal, AppCacheKeys } from '../
 import { appStorage } from './app-shared-storage';
 import { HostToPath } from './host-to-path';
 import { cleanupAndExit } from './cleanup-exit';
+import { _restartApp, receiveMessageFromLoader } from './app-restart';
 
 // Don't use logger before set process message
 class AppStart {
@@ -16,10 +17,16 @@ class AppStart {
   webServer: WebServer | undefined;
 
   getWorkerId() {
-    return cluster.worker ? cluster.worker.id : 0;
+    return cluster.worker ? cluster.worker.id : -1;
   }
 
   async start(props: AppStartProps, webServer?: WebServer) {
+    // if it's started from spawn, wait for old master to clear ports
+    if (cluster.isPrimary && process.env.RESTARTING === '1') {
+      console.log(`New app ${process.pid} RESTARTING.`);
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
     this.debug = props.debug;
     this.bindProcess();
 
@@ -58,14 +65,20 @@ class AppStart {
       const numCPUs = props.debug ? 1 : require('os').cpus().length;
       console.log(`Master Process is trying to fork ${numCPUs} processes`);
 
+      receiveMessageFromLoader();
+
       for (let i = 0; i < numCPUs; i++) {
         let worker = cluster.fork();
         worker.on('message', processMessageFromWorker);
       }
 
       cluster.on('death', (worker: any) => {
-        console.log(`Worker ${worker.pid} died; starting a new one...`);
-        cluster.fork();
+        if (!_restartApp.isRestarting) {
+          console.log(`Worker ${worker.pid} died; starting a new one...`);
+          cluster.fork();
+        } else {
+          console.log(`Worker ${worker.pid} exited during restart`);
+        }
       });
     }
   }
@@ -82,7 +95,7 @@ class AppStart {
 
     // do something when app is closing
     process.on('beforeExit', async () => {
-      cleanupAndExit();
+      await cleanupAndExit();
     });
     process.on('exit', (ret) => {
       console.log(`${process.pid} - Process on exit, code: ${ret}`);
@@ -103,14 +116,21 @@ class AppStart {
     const sslKeyPath = config.sslKeyPath || '';
     const sslCrtPath = config.sslCrtPath || '';
 
-    console.log(`Starting Web Server, httpPort: ${httpPort}, httpsPort: ${httpsPort}`);
+    console.log(`${process.pid} - Starting Web Server, httpPort: ${httpPort}, httpsPort: ${httpsPort}`);
     // for dev to refresh the FE or stop the server
     if (this.debug) {
       WebProcessor.enableDebug('/debug', processDevRequests);
     }
 
-    httpPort && this.webServer!.startHttp(httpPort, bindIp);
-    httpsPort && this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath);
+    const httpServer = httpPort && this.webServer!.startHttp(httpPort, bindIp);
+    const heepsServer = httpsPort && this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath);
+
+    process.on("SIGTERM", () => {
+      console.log(`${process.pid} - Worker closing servers...`);
+      httpServer && httpServer.close();
+      heepsServer && heepsServer.close();
+    });
+
   }
 }
 
