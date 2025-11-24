@@ -82,8 +82,11 @@ export const appAdminHookSetCookie: AppAdminHookSetCookieProps = async (
   const response = {
     status: 'ok',
     message: langHelper.getLang('shared:login_success'),
+    appLogin: tokenCookie,
     result: tokenCookie,
     user: {
+      nickname: loginJson.u,
+      admin: loginJson.t === 'admin' ? '1' : '0',
       u: loginJson.u,
       t: loginJson.t,
     },
@@ -106,6 +109,16 @@ export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
   username: string,
   password: string
 ) => {
+  if (!username || !password) {
+    const json = await getUserFromCookie(req, res, false);
+    if (json && json.t && json.h) {
+      const appAdminResponse = await appAdminHookSetCookie(req, res, username);
+      ApiHelper.sendJson(req, res, appAdminResponse);
+      return true;
+    }
+    return false;
+  }
+
   if (process.env['ADMIN_PASS'] && username === process.env['ADMIN_USER'] && password === process.env['ADMIN_PASS']) {
     const appAdminResponse = await appAdminHookSetCookie(req, res, username);
     ApiHelper.sendJson(req, res, appAdminResponse);
@@ -302,6 +315,8 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
           message: langHelper.getLang('shared:login_success'),
           result: token,
           user: {
+            nickname: loginJson.u,
+            admin: loginJson.t === 'admin' ? '1' : '0',
             u: loginJson.u,
             t: loginJson.t,
           },
@@ -335,6 +350,8 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
       message: langHelper.getLang('shared:login_success'),
       result: tokenCookie,
       user: {
+        nickname: loginJson.u,
+        admin: loginJson.t === 'admin' ? '1' : '0',
         u: loginJson.u,
         t: loginJson.t,
       },
@@ -461,6 +478,8 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
       message: langHelper.getLang('shared:login_success'),
       result: tokenCookie,
       user: {
+        nickname: loginJson.u,
+        admin: loginJson.t === 'admin' ? '1' : '0',
         u: loginJson.u,
         t: loginJson.t,
       },

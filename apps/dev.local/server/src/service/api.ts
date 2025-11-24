@@ -1,4 +1,4 @@
-import { IApiBase, Logger, ServerRequest, ApiRouter, AdminApi } from 'lupine.api';
+import { IApiBase, Logger, ServerRequest, ApiRouter, AdminApi, adminApiHelper } from 'lupine.api';
 import {
   userLogin,
   userReg,
@@ -11,6 +11,9 @@ import {
   userResetCode,
   userResetPw,
   userLogout,
+  appAdminHookSetCookie,
+  appAdminHookCheckLogin,
+  appAdminHookLogout,
 } from './user-api';
 import { writeSetting } from './setting-api';
 import { addCfgFile, serveCfgImage } from './admin-api';
@@ -20,11 +23,18 @@ import { ServerResponse } from 'http';
 // addApiVersion('20250409');
 const logger = new Logger('api');
 
+const patchAdminLogin = () => {
+  adminApiHelper.setAppAdminHookSetCookie(appAdminHookSetCookie);
+  adminApiHelper.setAppAdminHookCheckLogin(appAdminHookCheckLogin);
+  adminApiHelper.setAppAdminHookLogout(appAdminHookLogout);
+};
+
 export class Api implements IApiBase {
   protected router = new ApiRouter();
   adminUser: any;
 
   constructor() {
+    patchAdminLogin();
     this.mountDashboard();
   }
 

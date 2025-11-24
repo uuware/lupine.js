@@ -2,6 +2,7 @@ import cluster from 'cluster';
 import { Logger, LogWriter, LogWriterMessageId } from '../lib';
 import { processDebugMessage } from './process-dev-requests';
 import { cleanupAndExit } from './cleanup-exit';
+import { restartApp } from './app-restart';
 
 export type AppMessageProps = {
   id: string;
@@ -78,15 +79,22 @@ export const processMessageFromWorker = (msgObject: AppMessageProps) => {
     logger.debug(
       `Message from worker ${cluster.worker?.id}, message: ${msgObject.message}, appName: ${msgObject.appName}`
     );
-    broadcast(msgObject);
-    // if it's suspend, the primary process will exit
-    if (msgObject.message === 'suspend') {
-      setTimeout(() => {
-        console.log(`[server primary] Received suspend command.`, cluster.workers);
-        cleanupAndExit();
+    if (msgObject.message === 'restartApp') {
+      restartApp();
+      return;
+    } else if (msgObject.message === 'refresh') {
+      broadcast(msgObject);
+    } else if (msgObject.message === 'shutdown') {
+      broadcast(msgObject);
+      // if it's shutdown, the primary process will exit
+      setTimeout(async () => {
+        console.log(`[server primary] Received shutdown command.`, cluster.workers);
+        await cleanupAndExit();
       }, 100);
+    } else {
+      logger.warn(`Unknown message: ${msgObject.id}`);
     }
   } else {
-    logger.warn(`Unknown message: ${msgObject.id}`);
+    logger.warn(`Unknown message id: ${msgObject.id}`);
   }
 };

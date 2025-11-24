@@ -29,7 +29,7 @@ const triggerReStartServer = async (isDev, npmCmd, httpPort) => {
     clearTimeout(triggerHandle.restart);
   }
   triggerHandle.restart = setTimeout(async () => {
-    const url = `http://127.0.0.1:${httpPort}/debug/suspend`;
+    const url = `http://127.0.0.1:${httpPort}/debug/shutdown`;
     await sendRequest(url, isDev ? 2 : 0);
     console.log('[dev-server] ReStart Server: ', url);
     isDev && runCmd(npmCmd);
@@ -62,6 +62,27 @@ const watchServerPlugin = (isDev, npmCmd, httpPort) => {
       });
     },
   };
+};
+
+// watch server code changes
+const watchAppLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
+  const cmd = isDev ? esbuild.context : esbuild.build;
+  const ctx = await cmd({
+    entryPoints: ['apps/shared-server-src/app-loader.ts'],
+    // outdir: path.join(serverRootPath, 'server'),
+    outfile: path.join(serverRootPath, 'server', 'app-loader.js'),
+    platform: 'node',
+    sourcemap: !!isDev,
+    format: 'cjs',
+    bundle: true,
+    treeShaking: true,
+    metafile: true,
+    minify: !isDev,
+    plugins: [watchServerPlugin(isDev, npmCmd, httpPort)],
+  });
+
+  isDev && (await ctx.watch());
+  isDev && console.log('[dev-server] Watching...');
 };
 
 // watch server code changes
@@ -149,9 +170,9 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     external: [],
     metafile: true,
     minify: !isDev,
-    loader: { '.svg': 'text' },
-    loader: { '.png': 'file' },
-    loader: { '.glsl': 'text' },
+    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file' },
+    assetNames: '/pub_assets/[name]-[hash]',
+    publicPath: saved.outdirSub,
     jsxImportSource: 'lupine.web',
     jsx: 'automatic',
     target: ['chrome87'],
@@ -263,7 +284,7 @@ const start = async () => {
       appName,
       httpPort,
       serverRoot: serverRootPath,
-      outdir: `${serverRootPath}/${appName}_web`,
+      outdirWeb: `${serverRootPath}/${appName}_web`,
       outdirApi: `${serverRootPath}/${appName}_api`,
       outdirData: `${serverRootPath}/${appName}_data`,
       copyFiles: appCfg['copyFiles'].map((item) => ({
@@ -281,6 +302,7 @@ const start = async () => {
       watchClient(
         {
           ...saved,
+          outdirSub: item.outdir,
           outdir: `${serverRootPath}/${appName}_web/` + item.outdir,
           indexHtml,
           copyFiles: [],
@@ -300,8 +322,20 @@ const start = async () => {
       // when some resources are changed, need to run command or refresh the server
       watchAdditionalFiles(saved, additionalFiles);
     }
+
+    // if (isMobile && await pathExists(`${serverRootPath}/${appName}_data/cfg-files`)) {
+    //   // copy web setting image files to data folder
+    //   const tmpCache = new Map();
+    //   await copyFolder(
+    //     tmpCache,
+    //     `${serverRootPath}/${appName}_data/cfg-files`,
+    //     `${serverRootPath}/${appName}_web/api/image/`,
+    //     isDev
+    //   );
+    // }
   }
 
   watchServer(isDev, npmCmd, httpPort, serverRootPath);
+  watchAppLoader(isDev, npmCmd, httpPort, serverRootPath);
 };
 start();
