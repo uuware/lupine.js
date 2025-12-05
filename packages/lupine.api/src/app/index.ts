@@ -1,5 +1,5 @@
 export * from './app-cache';
-export * from './app-loader';
+export * from './app-helper';
 export * from './app-message';
 export * from './app-shared-storage';
 export * from './app-start';

@@ -2,7 +2,7 @@ import cluster from 'cluster';
 import { Logger } from '../lib/logger';
 import { ServerResponse } from 'http';
 import { AddressInfo } from 'net';
-import { appLoader } from './app-loader';
+import { appHelper } from './app-helper';
 import { DebugService } from '../api/debug-service';
 import { AppCacheGlobal, AppCacheKeys, getAppCache, ServerRequest } from '../models';
 import { cleanupAndExit } from './cleanup-exit';
@@ -27,13 +27,13 @@ export const processDebugMessage = async (msgObject: any) => {
   if (msgObject.id === 'debug' && msgObject.message === 'refresh') {
     if (msgObject.appName) {
       const appConfig = getAppCache().get(msgObject.appName, AppCacheKeys.API_CONFIG);
-      appLoader.refreshApi(appConfig);
+      appHelper.refreshApi(appConfig);
     } else {
       // refresh all in a worker (app scope)
       let appList = getAppCache().get(AppCacheGlobal, AppCacheKeys.APP_LIST);
       for (const appName of appList) {
         const appConfig = getAppCache().get(appName, AppCacheKeys.API_CONFIG);
-        appLoader.refreshApi(appConfig);
+        appHelper.refreshApi(appConfig);
       }
     }
 
@@ -72,7 +72,7 @@ export async function processRestartApp(req: ServerRequest) {
   }
   // in case if it's only one process (primary process)
   else {
-    snedRestartAppMsgToLoader();
+    sendRestartAppMsgToLoader();
   }
 }
 
@@ -103,7 +103,7 @@ export async function processDevRequests(req: ServerRequest, res: ServerResponse
 }
 
 // this is called from a request and passes the restartApp message to loader
-export const snedRestartAppMsgToLoader = async () => {
+export const sendRestartAppMsgToLoader = async () => {
   if (!cluster.isPrimary) {
     console.warn(`restartApp: shouldn't come here`);
     return;

@@ -22,7 +22,7 @@ export class ApiModule implements IApiModule {
     return result;
   }
 
-  // appCache is from app-loader (parent scope), not the same in current scope
+  // appCache is from app-helper (parent scope), not the same in current scope
   public async initApi(appConfig: HostToPathProps, appCacheFromApp: IAppCache, appStorageFromApp: IAppSharedStorage) {
 
     // const evnFile = appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.APP_ENV_FILE);
