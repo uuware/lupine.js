@@ -1,5 +1,5 @@
 import { RenderPageFunctionsType } from '../api';
-import { AppLoaderProps } from './app-loader-props';
+import { AppLoaderProps } from './app-helper-props';
 
 export type InitStartProps = {
   bindIp: string;

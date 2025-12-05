@@ -536,6 +536,7 @@ export class AdminRelease implements IApiBase {
         !chkOption ||
         !toList ||
         (chkOption !== 'server' &&
+          chkOption !== 'app-loader' &&
           chkOption !== 'api' &&
           chkOption !== 'web' &&
           chkOption !== 'web-sub' &&

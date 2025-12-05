@@ -42,6 +42,28 @@ var cssTemplate = `
   margin: auto;
 }
 
+/*
+<div class='ifc-over-box'>
+  <i class='ifc-icon ma-refresh'></i>
+  <i class='ifc-icon ma-play ifc-over'></i>
+</div>
+*/
+.ifc-over-box {
+  display: flex;
+  position: relative;
+  width: min-content;
+}
+
+.ifc-over {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 60%;
+  z-index: 1;
+  color: red;
+  transform: translate(-50%, -50%);
+}
+
 /* Animation for spinners */
 .ifc-spin {
   animation: ifc-spin-f 2s infinite linear;

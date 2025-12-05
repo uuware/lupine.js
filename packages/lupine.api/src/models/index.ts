@@ -3,7 +3,7 @@ export * from './api-module-props';
 export * from './api-router-props';
 export * from './app-cache-props';
 export * from './app-data-props';
-export * from './app-loader-props';
+export * from './app-helper-props';
 export * from './app-shared-storage-props';
 export * from './app-start-props';
 export * from './async-storage-props';
