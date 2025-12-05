@@ -1,6 +1,6 @@
 import cluster from 'cluster';
 import { WebProcessor } from './web-processor';
-import { appLoader } from './app-loader';
+import { appHelper } from './app-helper';
 import { processMessageFromPrimary, processMessageFromWorker } from './app-message';
 import { WebServer } from './web-server';
 import { processDevRequests } from './process-dev-requests';
@@ -59,7 +59,7 @@ class AppStart {
       process.on('message', processMessageFromPrimary);
 
       HostToPath.setHostToPathList(props.apiConfig.webHostMap);
-      appLoader.loadApi(props.apiConfig);
+      appHelper.loadApi(props.apiConfig);
       this.initServer(props.serverConfig);
     } else if (cluster.isPrimary) {
       const numCPUs = props.debug ? 1 : require('os').cpus().length;

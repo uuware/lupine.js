@@ -2,7 +2,7 @@ import { ISimpleStorage, SimpleStorageDataProps } from './simple-storage-props';
 
 // interface of AppSharedStorage
 export const AppSharedStorageMessageId = 'AppSharedStorage';
-export type StorageMessageAction = 'get' | 'set' | 'save' | 'getWithPrefix';
+export type StorageMessageAction = 'get' | 'set' | 'load'  | 'save' | 'getWithPrefix';
 export interface StorageMessageFromSubProcess {
   id: string;
   pid: number | undefined;
@@ -13,6 +13,7 @@ export interface StorageMessageFromSubProcess {
   value?: any;
   uniqueKey?: string;
   appName: string;
+  rootPath?: string;
 }
 
 // also used in packages\lupine.api\src\common-js\web-env.js

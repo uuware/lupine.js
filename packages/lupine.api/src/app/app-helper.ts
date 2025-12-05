@@ -4,8 +4,8 @@ import { appCache } from './app-cache';
 import { AppCacheKeys, AppLoaderProps, HostToPathProps, IApiModule, setAppCache } from '../models';
 import { appStorage } from './app-shared-storage';
 
-class AppLoader {
-  logger: Logger = new Logger('app-loader');
+class AppHelper {
+  logger: Logger = new Logger('app-helper');
 
   constructor() {}
 
@@ -59,4 +59,4 @@ class AppLoader {
   }
 }
 
-export const appLoader = /* @__PURE__ */ new AppLoader();
+export const appHelper = /* @__PURE__ */ new AppHelper();

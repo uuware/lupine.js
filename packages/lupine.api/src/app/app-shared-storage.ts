@@ -99,6 +99,8 @@ export class AppSharedStorage implements IAppSharedStorage {
     } else if (msgObject.action === 'set') {
       const storage = this.getStorage(msgObject.appName);
       storage.set(msgObject.key, msgObject.value);
+    } else if (msgObject.action === 'load') {
+      this.load(msgObject.appName, msgObject.rootPath || '');
     } else if (msgObject.action === 'save') {
       this.save(msgObject.appName);
     } else {
@@ -116,7 +118,9 @@ export class AppSharedStorage implements IAppSharedStorage {
   // should be only called from primary when the app is starting
   async load(appName: string, rootPath: string) {
     if (!cluster.isPrimary) {
-      throw new Error('AppStorage.load should be only called from primary');
+      // throw new Error('AppStorage.load should be only called from primary');
+      await AppSharedStorageWorker.load(appName, rootPath);
+      return;
     }
 
     const map = this.getStorageMap(appName);
@@ -147,6 +151,7 @@ export class AppSharedStorage implements IAppSharedStorage {
       return;
     }
 
+    console.log(`${process.pid} - AppStorage save, appName: ${appName}, exit: ${exit}`);
     if (appName) {
       const map = this.configMap[appName];
       if (map && map.fPath && map.storage.size() > 0 && map.storage.Dirty) {
@@ -166,7 +171,7 @@ export class AppSharedStorage implements IAppSharedStorage {
   // this can be called in primary or worker
   get(appName: string, key: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      console.log(`${process.pid} - AppStorage get value for key: ${key}`);
+      // console.log(`${process.pid} - AppStorage get value for key: ${key}`);
 
       if (!cluster.isPrimary) {
         AppSharedStorageWorker.get(appName, key, resolve, reject);
@@ -196,7 +201,7 @@ export class AppSharedStorage implements IAppSharedStorage {
   }
   getWithPrefix(appName: string, prefixKey: string): Promise<SimpleStorageDataProps> {
     return new Promise((resolve, reject) => {
-      console.log(`${process.pid} - AppStorage getWithPrefix for prefixKey: ${prefixKey}`);
+      // console.log(`${process.pid} - AppStorage getWithPrefix for prefixKey: ${prefixKey}`);
 
       if (!cluster.isPrimary) {
         AppSharedStorageWorker.getWithPrefix(appName, prefixKey, resolve, reject);
@@ -238,7 +243,7 @@ class AppSharedStorageWorker {
     }
 
     if (msgObject.action === 'get') {
-      console.log(`${process.pid} - AppStorage get value end for key: ${msgObject.key}`);
+      // console.log(`${process.pid} - AppStorage get value end for key: ${msgObject.key}`);
 
       const value = msgObject.value;
       // how to pass the value to the caller
@@ -263,6 +268,22 @@ class AppSharedStorageWorker {
     } else {
       this.logger.warn(`Unknown message: ${msgObject.action}`);
     }
+  }
+
+  static async load(appName: string, rootPath: string) {
+    if (cluster.isPrimary) {
+      throw new Error('AppSharedStorageWorker should be only called from workers');
+    }
+    const obj: StorageMessageFromSubProcess = {
+      id: AppSharedStorageMessageId,
+      pid: process.pid,
+      workerId: cluster.worker?.id || 0,
+      action: 'load',
+      appName: appName,
+      rootPath: rootPath,
+      key: 'load',
+    };
+    process.send!(obj);
   }
 
   static async save(appName?: string) {

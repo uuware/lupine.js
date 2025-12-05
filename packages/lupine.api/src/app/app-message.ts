@@ -1,6 +1,6 @@
 import cluster from 'cluster';
 import { Logger, LogWriter, LogWriterMessageId } from '../lib';
-import { processDebugMessage, snedRestartAppMsgToLoader } from './process-dev-requests';
+import { processDebugMessage, sendRestartAppMsgToLoader } from './process-dev-requests';
 import { cleanupAndExit } from './cleanup-exit';
 
 export type AppMessageProps = {
@@ -79,7 +79,7 @@ export const processMessageFromWorker = (msgObject: AppMessageProps) => {
       `Message from worker ${cluster.worker?.id}, message: ${msgObject.message}, appName: ${msgObject.appName}`
     );
     if (msgObject.message === 'restartApp') {
-      snedRestartAppMsgToLoader();
+      sendRestartAppMsgToLoader();
       return;
     } else if (msgObject.message === 'refresh') {
       broadcast(msgObject);
