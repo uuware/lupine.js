@@ -32,6 +32,11 @@ export const HeaderWithBackFrame = ({
   left,
   right,
   noHeader = false,
+  background,
+  color,
+  noShadow,
+  contentColor,
+  contentBackground,
 }: {
   children: VNode<any>;
   title: VNode<any> | string | HtmlVar;
@@ -39,6 +44,11 @@ export const HeaderWithBackFrame = ({
   left?: VNode<any> | HtmlVar;
   right?: VNode<any> | HtmlVar;
   noHeader?: boolean;
+  color?: string;
+  background?: string;
+  noShadow?: boolean;
+  contentColor?: string;
+  contentBackground?: string;
 }) => {
   left = left || <HeaderWithBackFrameLeft onClick={onBack} />;
   right = right || <HeaderWithBackFrameRight onClick={onBack} />;
@@ -48,6 +58,7 @@ export const HeaderWithBackFrame = ({
     width: '100%',
     height: '100%',
     minHeight: '100%',
+    background: background || 'var(--activatable-bg-color-normal)',
     '.header-back-top': {
       display: 'flex',
       flexDirection: 'row',
@@ -63,6 +74,8 @@ export const HeaderWithBackFrame = ({
       overflowY: 'auto',
       scrollbarWidth: 'none',
       position: 'relative',
+      color: contentColor || 'var(--primary-color)',
+      background: contentBackground || 'var(--activatable-bg-color-normal)',
       '&::-webkit-scrollbar': {
         display: 'none',
         // height: '0',
@@ -97,7 +110,7 @@ export const HeaderWithBackFrame = ({
   const ref: RefProps = {};
   return (
     <div ref={ref} css={css} class='header-back-frame'>
-      {!noHeader && <MobileHeaderTitleIcon onBack={onBack} left={domLeft} title={domCenter} right={domRight} />}
+      {!noHeader && <MobileHeaderTitleIcon onBack={onBack} left={domLeft} title={domCenter} right={domRight} background={background} color={color} noShadow={noShadow} />}
       <div class='header-back-content'>{children}</div>
     </div>
   );
