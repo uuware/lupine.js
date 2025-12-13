@@ -28,9 +28,12 @@ export interface MobileHeaderTitleIconProps {
   onBack?: (event: Event) => void;
   left?: VNode<any> | HtmlVar;
   right?: VNode<any> | HtmlVar;
+  background?: string;
+  color?: string;
+  noShadow?: boolean;
 }
 // there may have a few MobileHeaderTitleIcon for different pages
-export const MobileHeaderTitleIcon = ({ title, onBack, left, right }: MobileHeaderTitleIconProps) => {
+export const MobileHeaderTitleIcon = ({ title, onBack, left, right, background, color, noShadow }: MobileHeaderTitleIconProps) => {
   // const processBack = (event: Event) => {
   //   if (onBack) {
   //     onBack(event);
@@ -43,8 +46,11 @@ export const MobileHeaderTitleIcon = ({ title, onBack, left, right }: MobileHead
     flexDirection: 'row',
     width: '100vw',
     padding: '6px 0',
-    backgroundColor: 'var(--activatable-bg-color-normal)',
-    boxShadow: 'var(--mobile-header-shadow)',
+    // backgroundColor: 'var(--activatable-bg-color-normal)',
+    // boxShadow: 'var(--mobile-header-shadow)',
+    color: color || 'var(--primary-color)',
+    background: background || 'var(--activatable-bg-color-normal)',
+    boxShadow: noShadow ? 'unset' : 'var(--mobile-header-shadow)',
     zIndex: 'var(--layer-inside)', // bring boxShadow to front
     '.mhti-title': {
       display: 'flex',
