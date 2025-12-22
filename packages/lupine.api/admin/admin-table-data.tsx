@@ -6,7 +6,7 @@ import {
   getDefaultPageLimit,
   HtmlVar,
   PagingLink,
-  escapeHtml,
+  encodeHtml,
 } from 'lupine.components';
 
 const loadData = async (
@@ -34,7 +34,7 @@ const loadData = async (
         <div class='table'>
           <div class='fields bg-gray'>
             {Object.keys(data.json.result[0]).map((field: any, index: number) => {
-              return <div class='p1 item'>{escapeHtml(field)}</div>;
+              return <div class='p1 item'>{encodeHtml(field)}</div>;
             })}
             {update && update.onDelete && update.onEdit && <div class='p1 item'>Action</div>}
           </div>
@@ -43,7 +43,7 @@ const loadData = async (
             return (
               <div class='values'>
                 {Object.keys(item).map((field: any, index: number) => {
-                  return <div class='p1 item'>{escapeHtml(item[field])}</div>;
+                  return <div class='p1 item'>{encodeHtml(item[field])}</div>;
                 })}
                 {update && update.onDelete && update.onEdit && (
                   <div class='p1 item'>

@@ -12,6 +12,7 @@ import {
   processRefreshCache,
   apiStorage,
   processRestartApp,
+  processShell,
 } from 'lupine.api';
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
@@ -39,12 +40,16 @@ export class AdminRelease implements IApiBase {
     this.router.use('/refresh-cache', needDevAdminSession, this.refreshCache.bind(this));
     this.router.use('/restart-app', needDevAdminSession, this.restartApp.bind(this));
 
+    this.router.use('/shell', needDevAdminSession, this.shell.bind(this));
+
     // ...ByClient will verify credentials from post, so it doesn't need AdminSession
     this.router.use('/byClientCheck', this.byClientCheck.bind(this));
     this.router.use('/byClientUpdate', this.byClientUpdate.bind(this));
     this.router.use('/byClientRefreshCache', this.byClientRefreshCache.bind(this));
     this.router.use('/byClientRestartApp', this.byClientRestartApp.bind(this));
     this.router.use('/byClientViewLog', this.byClientViewLog.bind(this));
+
+    this.router.use('/byClientShell', this.byClientShell.bind(this));
   }
 
   async viewLog(req: ServerRequest, res: ServerResponse) {
@@ -151,6 +156,48 @@ export class AdminRelease implements IApiBase {
       targetUrl = targetUrl.slice(0, -1);
     }
     const remoteData = await fetch(targetUrl + '/api/admin/release/byClientRestartApp', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    const resultText = await remoteData.text();
+    let remoteResult: any;
+    try {
+      remoteResult = JSON.parse(resultText);
+    } catch (e: any) {
+      remoteResult = { status: 'error', message: resultText };
+    }
+    const response = {
+      status: 'ok',
+      message: 'check.',
+      ...remoteResult,
+    };
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  async shell(req: ServerRequest, res: ServerResponse) {
+    // check whether it's from online admin
+    const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
+    const jsonData = req.locals.json();
+    if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
+      const result = await processShell(req);
+      const response = {
+        status: 'ok',
+        message: 'Shell executed successfully.',
+        result,
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
+
+    const data = await this.chkData(jsonData, req, res, true);
+    if (!data) return true;
+
+    let targetUrl = data.targetUrl as string;
+    if (targetUrl.endsWith('/')) {
+      targetUrl = targetUrl.slice(0, -1);
+    }
+    const remoteData = await fetch(targetUrl + '/api/admin/release/byClientShell', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -486,14 +533,12 @@ export class AdminRelease implements IApiBase {
         body: JSON.stringify({ ...data, chkOption, index: cnt, size: fileContent.length }) + '\n\n' + chunk,
       };
       this.logger.info(
-        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
-          fileContent.length
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${fileContent.length
         }), f: ${sendFile}`
       );
       apiStorage.set(
         releaseProgress,
-        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
-          fileContent.length
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${fileContent.length
         }), f: ${sendFile}`
       );
       i > 0 && (await new Promise((resolve) => setTimeout(resolve, 1000)));
@@ -633,6 +678,21 @@ export class AdminRelease implements IApiBase {
     const response = {
       status: 'ok',
       message: 'Restart app successfully.',
+    };
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  async byClientShell(req: ServerRequest, res: ServerResponse) {
+    const jsonData = req.locals.json();
+    const data = await this.chkData(jsonData, req, res, true);
+    if (!data) return true;
+
+    const result = await processShell(req);
+    const response = {
+      status: 'ok',
+      message: 'Shell executed successfully.',
+      result,
     };
     ApiHelper.sendJson(req, res, response);
     return true;

@@ -9,6 +9,7 @@ import {
   formatBytes,
   downloadStream,
   ActionSheetSelectPromise,
+  encodeHtml,
 } from 'lupine.components';
 
 interface ReleaseListProps {
@@ -290,7 +291,7 @@ export const AdminReleasePage = () => {
       NotificationMessage.sendMessage(dataResponse.message || 'Failed to refresh cache', NotificationColor.Error);
       return;
     }
-    domLog.value = <pre>{JSON.stringify(dataResponse, null, 2)}</pre>;
+    domLog.value = <pre>{encodeHtml(JSON.stringify(dataResponse, null, 2))}</pre>;
     NotificationMessage.sendMessage('Cache refreshed successfully', NotificationColor.Success);
   };
 
@@ -308,9 +309,25 @@ export const AdminReleasePage = () => {
         return;
       }
     }
+  };
+
+  const onShellLocal = async () => {
+    return onShell(true);
+  };
+  const onShellRemote = async () => {
+    return onShell(false);
+  };
+  const onShell = async (isLocal?: boolean) => {
+    const data = getDomData();
+    if (!isLocal) {
+      if (!data.targetUrl || !data.accessToken) {
+        NotificationMessage.sendMessage('Please fill in all fields', NotificationColor.Error);
+        return;
+      }
+    }
 
     const index = await ActionSheetSelectPromise({
-      title: 'Restart App (users may get disconnected errors) ?',
+      title: 'Run Cmd ?',
       options: ['OK'],
       cancelButtonText: 'Cancel',
     });
@@ -318,17 +335,18 @@ export const AdminReleasePage = () => {
       return;
     }
 
-    const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/restart-app', {
+    const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/shell', {
       ...data,
       isLocal,
+      cmd: ref.$('.release-cmd').value,
     });
     const dataResponse = await response.json;
-    console.log('restart-app', dataResponse);
+    console.log('shell', dataResponse);
     if (!dataResponse || dataResponse.status !== 'ok') {
-      NotificationMessage.sendMessage(dataResponse.message || 'Failed to Restart App', NotificationColor.Error);
+      NotificationMessage.sendMessage(dataResponse.message || 'Failed to run cmd', NotificationColor.Error);
       return;
     }
-    domLog.value = <pre>{JSON.stringify(dataResponse, null, 2)}</pre>;
+    domLog.value = <pre>{encodeHtml(dataResponse.message) + '\r\n<br>' + encodeHtml(dataResponse.result)}</pre>;
     NotificationMessage.sendMessage('Restart App successfully', NotificationColor.Success);
   };
 
@@ -341,19 +359,19 @@ export const AdminReleasePage = () => {
   };
   return (
     <div ref={ref} css={css} class='admin-release-top'>
-      <div class='row-box mt1 mb1'>
+      <div class='row-box mt-m'>
         <label class='label mr-m release-label'>Target Url:</label>
         <div class='w-50p'>
           <input type='text' class='input-base w-100p target-url' placeholder='Target Url' />
         </div>
       </div>
-      <div class='row-box mt1 mb1'>
+      <div class='row-box mt-m'>
         <label class='label mr-m release-label'>Access token:</label>
         <div class='w-50p'>
           <input type='text' class='input-base w-100p access-token' placeholder='Access token' />
         </div>
       </div>
-      <div class='row-box mt1 mb1'>
+      <div class='row-box mt-m'>
         <button onClick={onCheck} class='button-base mr-m'>
           Check
         </button>
@@ -368,6 +386,15 @@ export const AdminReleasePage = () => {
         </button>
         <button onClick={onRestartAppLocal} class='button-base color-red'>
           Restart App (Local)
+        </button>
+      </div>
+      <div class='row-box mt-m mb-m'>
+        <input type='text' class='input-base w-50p release-cmd' placeholder='Command' />
+        <button onClick={onShellRemote} class='button-base color-red'>
+          Run Cmd (Remote)
+        </button>
+        <button onClick={onShellLocal} class='button-base'>
+          Run Cmd (Local)
         </button>
       </div>
       {domUpdate.node}
