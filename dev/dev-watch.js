@@ -12,11 +12,7 @@ const {
   pathExists,
   cpIndexHtml,
   pluginIfelse,
-  genVersions,
 } = require('lupine.api/dev');
-const pkg = require('../package.json');
-// generate versions.ts that can be used by logs
-const outputVersionsFile = 'apps/shared-web-src/common/versions.ts';
 
 const triggerHandle = {
   restart: null,
@@ -68,7 +64,7 @@ const watchServerPlugin = (isDev, npmCmd, httpPort) => {
 const watchAppLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
-    entryPoints: ['apps/shared-server-src/app-loader.ts'],
+    entryPoints: ['apps/server/src/app-loader.ts'],
     // outdir: path.join(serverRootPath, 'server'),
     outfile: path.join(serverRootPath, 'server', 'app-loader.js'),
     platform: 'node',
@@ -89,7 +85,7 @@ const watchAppLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
 const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
-    entryPoints: ['apps/shared-server-src/index.ts'],
+    entryPoints: ['apps/server/src/index.ts'],
     outdir: path.join(serverRootPath, 'server'),
     platform: 'node',
     sourcemap: !!isDev,
@@ -176,7 +172,7 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     jsxImportSource: 'lupine.web',
     jsx: 'automatic',
     target: ['chrome87'],
-    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars), genVersions(pkg.dependencies, outputVersionsFile)],
+    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars)],
   });
 
   isDev && (await ctx.watch());
@@ -256,6 +252,7 @@ const start = async () => {
   const npmCmd = process.argv.find((i) => i.startsWith('--cmd='))?.substring(6);
   const isDev = process.argv.find((i) => i === '--dev=1');
   const isMobile = process.argv.find((i) => i === '--mobile=1'); // when this changed, need to rebuild index.html
+  // this is for esbuild conditional compile
   ifPluginVars.DEV = isDev ? '1' : '0';
   ifPluginVars.MOBILE = isMobile ? '1' : '0';
 
@@ -296,7 +293,7 @@ const start = async () => {
       })),
     };
 
-    appCfg['entryPoints'].forEach((item, index) => {
+    appCfg['webEntryPoints'].forEach((item, index) => {
       const entryPoint = `${appDir}/${item.index}`;
       const indexHtml = `${appDir}/${item.html}`;
       watchClient(
@@ -314,25 +311,14 @@ const start = async () => {
       additionalFiles.push(indexHtml);
     });
 
-    if (appCfg['entryPointApi']) {
-      const entryPointApi = `${appDir}/${appCfg['entryPointApi']}`;
+    if (appCfg['apiEntryPoint']) {
+      const entryPointApi = `${appDir}/${appCfg['apiEntryPoint']}`;
       watchApi(saved, isDev, [entryPointApi]);
     }
     if (additionalFiles.length > 0) {
       // when some resources are changed, need to run command or refresh the server
       watchAdditionalFiles(saved, additionalFiles);
     }
-
-    // if (isMobile && await pathExists(`${serverRootPath}/${appName}_data/cfg-files`)) {
-    //   // copy web setting image files to data folder
-    //   const tmpCache = new Map();
-    //   await copyFolder(
-    //     tmpCache,
-    //     `${serverRootPath}/${appName}_data/cfg-files`,
-    //     `${serverRootPath}/${appName}_web/api/image/`,
-    //     isDev
-    //   );
-    // }
   }
 
   watchServer(isDev, npmCmd, httpPort, serverRootPath);

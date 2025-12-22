@@ -42,7 +42,11 @@ export const mountOuterComponent = async (selector: string | Element, jsxNodes: 
 };
 
 // suggest to use HtmlVar.
-export const mountSiblingComponent = async (selector: string | Element, jsxNodes: VNode<any>, position: 'before' | 'after' = 'after') => {
+export const mountSiblingComponent = async (
+  selector: string | Element,
+  jsxNodes: VNode<any>,
+  position: 'before' | 'after' = 'after'
+) => {
   renderComponent(jsxNodes.type, jsxNodes.props);
   let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
   if (el) {

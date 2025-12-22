@@ -139,7 +139,13 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
 };
 
 export const devAdminLogout = async (req: ServerRequest, res: ServerResponse) => {
-  req.locals.setCookie('_token_dev', '', { expireDays: 360, path: '/', httpOnly: false, secure: true, sameSite: 'none' });
+  req.locals.setCookie('_token_dev', '', {
+    expireDays: 360,
+    path: '/',
+    httpOnly: false,
+    secure: true,
+    sameSite: 'none',
+  });
   await adminApiHelper.getAppAdminHookLogout()?.(req, res);
   ApiHelper.sendJson(req, res, { status: 'ok', message: langHelper.getLang('shared:process_completed') });
   return true;

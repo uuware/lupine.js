@@ -33,7 +33,15 @@ export interface MobileHeaderTitleIconProps {
   noShadow?: boolean;
 }
 // there may have a few MobileHeaderTitleIcon for different pages
-export const MobileHeaderTitleIcon = ({ title, onBack, left, right, background, color, noShadow }: MobileHeaderTitleIconProps) => {
+export const MobileHeaderTitleIcon = ({
+  title,
+  onBack,
+  left,
+  right,
+  background,
+  color,
+  noShadow,
+}: MobileHeaderTitleIconProps) => {
   // const processBack = (event: Event) => {
   //   if (onBack) {
   //     onBack(event);

@@ -6,4 +6,3 @@ export * from './mobile-header-title-icon';
 export * from './mobile-side-menu';
 export * from './mobile-top-sys-icon';
 export * from './mobile-top-sys-menu';
-

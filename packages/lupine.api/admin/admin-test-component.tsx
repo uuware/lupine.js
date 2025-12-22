@@ -194,7 +194,8 @@ const TestWindows = () => {
           onClick={() => {
             ActionSheetMessage.show({
               title: 'Title',
-              message: 'This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message.',
+              message:
+                'This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message. This is a long Message.',
             });
           }}
         >
@@ -383,8 +384,22 @@ const TestButtons = () => {
 
       <div class='row-box mb-s h3 bold'>Lupine Buttons</div>
       <div class='row-box mb-s'>
-        <Button text='Test 1' size={ButtonSize.SmallLarge} disabled={true} class='mr-m' onClick={onButtonClick} hook={buttonHook1} />
-        <Button text='Test 2' size={ButtonSize.Small} disabled={true} class='mr-m' hook={buttonHook2} onClick={onButtonClick} />
+        <Button
+          text='Test 1'
+          size={ButtonSize.SmallLarge}
+          disabled={true}
+          class='mr-m'
+          onClick={onButtonClick}
+          hook={buttonHook1}
+        />
+        <Button
+          text='Test 2'
+          size={ButtonSize.Small}
+          disabled={true}
+          class='mr-m'
+          hook={buttonHook2}
+          onClick={onButtonClick}
+        />
         <Button text='Click Me' size={ButtonSize.Medium} class='mr-m' css={{ color: 'red' }} onClick={onButtonClick} />
         <Button text='Button' size={ButtonSize.Large} class='mr-m' onClick={onButtonClick} />
         <Button text='Button' size={ButtonSize.LargeLarge} class='mr-m' onClick={onButtonClick} />

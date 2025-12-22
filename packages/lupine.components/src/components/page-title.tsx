@@ -1,4 +1,4 @@
-import { setPageTitle } from "lupine.web";
+import { setPageTitle } from 'lupine.web';
 
 export const PageTitle = ({ children }: { children: string }) => {
   setPageTitle(children);

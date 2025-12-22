@@ -24,7 +24,7 @@ export class AdminTokens implements IApiBase {
   }
 
   async list(req: ServerRequest, res: ServerResponse) {
-    const pageLimit = await apiStorage.getWeb('pageLimit') || '15';
+    const pageLimit = (await apiStorage.getWeb('pageLimit')) || '15';
     const data = req.locals.json() as any;
     const search = data['q'];
     const list = await adminTokenHelper.list(search);
@@ -42,7 +42,7 @@ export class AdminTokens implements IApiBase {
     const data = req.locals.json() as any;
     const token = data['token'];
     const description = data['description'];
-    token && (await adminTokenHelper.add({token, description}));
+    token && (await adminTokenHelper.add({ token, description }));
     const response = {
       status: 'ok',
       message: 'Added token.',
@@ -66,7 +66,7 @@ export class AdminTokens implements IApiBase {
     const data = req.locals.json() as any;
     const token = data['token'];
     const description = data['description'];
-    token && (await adminTokenHelper.update({token, description}));
+    token && (await adminTokenHelper.update({ token, description }));
     const response = {
       status: 'ok',
       message: 'Updated token.',

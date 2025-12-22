@@ -65,7 +65,7 @@ export async function processRefreshCache(req: ServerRequest) {
   }
 }
 
-export async function processRestartApp(req: ServerRequest) {
+export async function processRestartApp() {
   // if this is a child process, we need to notice parent process to broadcast to all clients
   if (!cluster.isPrimary && process.send) {
     // send message to Primary to handle it

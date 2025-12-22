@@ -2,7 +2,15 @@ import { DbConfig, DbHelper, HostToPathProps, IApiBase, loadEnv, ServerRequest }
 import { ServerResponse } from 'http';
 import path from 'path';
 import { apiCache, asyncLocalStorage, bindRenderPageFunctions } from '.';
-import { AppCacheGlobal, AppCacheKeys, AsyncStorageProps, IApiModule, IAppCache, IAppSharedStorage, setAppCache } from '../models';
+import {
+  AppCacheGlobal,
+  AppCacheKeys,
+  AsyncStorageProps,
+  IApiModule,
+  IAppCache,
+  IAppSharedStorage,
+  setAppCache,
+} from '../models';
 import { apiStorage } from './api-shared-storage';
 
 export class ApiModule implements IApiModule {
@@ -24,7 +32,6 @@ export class ApiModule implements IApiModule {
 
   // appCache is from app-helper (parent scope), not the same in current scope
   public async initApi(appConfig: HostToPathProps, appCacheFromApp: IAppCache, appStorageFromApp: IAppSharedStorage) {
-
     // const evnFile = appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.APP_ENV_FILE);
     // if (evnFile) {
     //   await loadEnv(evnFile);

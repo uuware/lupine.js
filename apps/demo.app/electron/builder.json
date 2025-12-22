@@ -1,0 +1,94 @@
+{
+  "appId": "com.uuware.xiaotiqinpu.com",
+  "productName": "xiaotiqinpu.com",
+  // "asar": true,
+  "files": [
+    "!**/*",
+    "apps/xiaotiqinpu.com/electron/preload.js",
+    "apps/xiaotiqinpu.com/electron/renderer.js",
+    // "node_modules/electron-log/",
+    // "node_modules/electron-serve/",
+    // "node_modules/electron-updater/",
+    "node_modules/electron-window-state/",
+    "apps/xiaotiqinpu.com/electron/main.js",
+    "apps/xiaotiqinpu.com/electron/utils.js",
+    // "dist/server_root/xiaotiqinpu.com_data/cfg-files/*",
+    "dist/server_root/xiaotiqinpu.com_web/**/*"
+  ],
+  "extraMetadata": {
+    "main": "apps/xiaotiqinpu.com/electron/main.js"
+  },
+  "copyright": "Copyright © 2020-2025 info@xiaotiqinpu.com",
+  "artifactName": "${name}-${os}-${arch}-${version}.${ext}",
+  "afterPack": "apps/xiaotiqinpu.com/electron/after-pack.js",
+  "win": {
+    "target": [
+      "nsis:x64",
+      // "portable:x64",
+      // "msi:x64",
+      // // "appx", "nsis:ia32", "msi:ia32", "portable:ia32", "7z:ia32", "zip:ia32", zZ
+      // "zip:x64",
+      "7z:x64"
+    ],
+    "icon": "apps/xiaotiqinpu.com/electron/windows/icon.ico"
+  },
+  "portable": {
+    "artifactName": "${productName}-Portable-${version}.${ext}"
+  },
+  "msi": {
+    "oneClick": false,
+    "warningsAsErrors": false
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowElevation": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    // "license": "LICENSE.md",
+    // "include": "apps/xiaotiqinpu.com/electron/windows/installer.nsh",
+    "differentialPackage": false,
+    "artifactName": "${productName}-Installer-${version}.${ext}",
+    "allowToChangeInstallationDirectory": true
+  },
+  "mac": {
+    "target": ["zip", "mas", "dmg"],
+    "icon": "apps/xiaotiqinpu.com/electron/osx/icon.icns",
+    "category": "public.app-category.lifestyle",
+    "darkModeSupport": true,
+    "entitlements": "apps/xiaotiqinpu.com/electron/osx/entitlements.mac.plist",
+    "entitlementsInherit": "apps/xiaotiqinpu.com/electron/osx/entitlements.mac.plist",
+    "hardenedRuntime": true
+  },
+  "mas": {
+    "entitlements": "apps/xiaotiqinpu.com/electron/osx/entitlements.mas.plist",
+    "entitlementsInherit": "apps/xiaotiqinpu.com/electron/osx/entitlements.mas.inherit.plist",
+    "hardenedRuntime": false
+  },
+  "linux": {
+    // rpm needs yum install rpm
+    // "deb", "rpm", "snap",
+    "target": ["tar.gz", "appImage"],
+    "category": "Utility",
+    "icon": "apps/xiaotiqinpu.com/electron/osx/icon.icns"
+  },
+  "dmg": {
+    // "differentialPackage": false,
+    "icon": "apps/xiaotiqinpu.com/electron/osx/icon.icns"
+  },
+  "appx": {
+    "publisherDisplayName": "Icons Font Desktop"
+  },
+  "directories": {
+    "buildResources": "apps/xiaotiqinpu.com/electron",
+    "output": "dist/build"
+  },
+  // for electron-updater
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "uuware.com",
+      "repo": "xiaotiqinpu.com",
+      "releaseType": "draft"
+    }
+  ]
+}

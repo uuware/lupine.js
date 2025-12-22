@@ -1,7 +1,7 @@
 export const blobToBase64 = (blob: Blob, removeMeta?: boolean): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(removeMeta ? (reader.result as string).split(',')[1] : reader.result as string); // data:audio/mpeg;base64,...
+    reader.onloadend = () => resolve(removeMeta ? (reader.result as string).split(',')[1] : (reader.result as string)); // data:audio/mpeg;base64,...
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });

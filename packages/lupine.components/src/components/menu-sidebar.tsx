@@ -220,36 +220,38 @@ export const MenuSidebar = ({
   const renderItems = (items: NestMenuItemProps[], className: string) => {
     return (
       <div class={className}>
-        {items.filter((item) => isDevAdmin || !item.devAdmin).map((item) => {
-          if (item.hide === true) {
-            return null;
-          }
-          let ref: RefProps = {};
-          return item.items ? (
-            <div ref={ref} class='menu-sidebar-sub-box' onClick={() => onItemToggleClick(ref)}>
-              <div class='menu-sidebar-item'>{item.text}</div>
-              {renderItems(item.items, 'menu-sidebar-sub')}
-            </div>
-          ) : item.js ? (
-            <a
-              class='menu-sidebar-item'
-              href='javascript:void(0)'
-              alt={item.alt || item.text}
-              onClick={(event) => {
-                stopPropagation(event);
-                // hide menu
-                onToggleClick(event);
-                item.js && item.js();
-              }}
-            >
-              {item.text}
-            </a>
-          ) : (
-            <a class='menu-sidebar-item' href={item.url} alt={item.alt || item.text} target='_blank'>
-              {item.text}
-            </a>
-          );
-        })}
+        {items
+          .filter((item) => isDevAdmin || !item.devAdmin)
+          .map((item) => {
+            if (item.hide === true) {
+              return null;
+            }
+            let ref: RefProps = {};
+            return item.items ? (
+              <div ref={ref} class='menu-sidebar-sub-box' onClick={() => onItemToggleClick(ref)}>
+                <div class='menu-sidebar-item'>{item.text}</div>
+                {renderItems(item.items, 'menu-sidebar-sub')}
+              </div>
+            ) : item.js ? (
+              <a
+                class='menu-sidebar-item'
+                href='javascript:void(0)'
+                alt={item.alt || item.text}
+                onClick={(event) => {
+                  stopPropagation(event);
+                  // hide menu
+                  onToggleClick(event);
+                  item.js && item.js();
+                }}
+              >
+                {item.text}
+              </a>
+            ) : (
+              <a class='menu-sidebar-item' href={item.url} alt={item.alt || item.text} target='_blank'>
+                {item.text}
+              </a>
+            );
+          })}
       </div>
     );
   };
@@ -291,13 +293,13 @@ export const MenuSidebar = ({
   const newCss: CssProps =
     (!desktopMenu && !mobileMenu) || (desktopMenu && mobileMenu)
       ? {
-        ['@media only screen and (max-width: ' + maxWidthMobileMenu + ')']: {
-          display: 'block',
-          '.menu-sidebar-top': {
+          ['@media only screen and (max-width: ' + maxWidthMobileMenu + ')']: {
             display: 'block',
+            '.menu-sidebar-top': {
+              display: 'block',
+            },
           },
-        },
-      }
+        }
       : {};
   const onMaskClick = (event: MouseEvent) => {
     if (ref.current.classList.contains('open')) {
@@ -305,7 +307,12 @@ export const MenuSidebar = ({
     }
   };
   return (
-    <div css={newCss} ref={ref} class={['menu-sidebar-box', className, mobileMenu ? 'mobile' : ''].join(' ')} onClick={onMaskClick}>
+    <div
+      css={newCss}
+      ref={ref}
+      class={['menu-sidebar-box', className, mobileMenu ? 'mobile' : ''].join(' ')}
+      onClick={onMaskClick}
+    >
       <div class='menu-sidebar-mobile'>
         <div class='menu-sidebar-toggle' onClick={onToggleClick}>
           <span></span>

@@ -139,7 +139,7 @@ export class AdminRelease implements IApiBase {
     const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
     const jsonData = req.locals.json();
     if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
-      await processRestartApp(req);
+      await processRestartApp();
       const response = {
         status: 'ok',
         message: 'Restart app successfully.',
@@ -533,12 +533,14 @@ export class AdminRelease implements IApiBase {
         body: JSON.stringify({ ...data, chkOption, index: cnt, size: fileContent.length }) + '\n\n' + chunk,
       };
       this.logger.info(
-        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${fileContent.length
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
+          fileContent.length
         }), f: ${sendFile}`
       );
       apiStorage.set(
         releaseProgress,
-        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${fileContent.length
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
+          fileContent.length
         }), f: ${sendFile}`
       );
       i > 0 && (await new Promise((resolve) => setTimeout(resolve, 1000)));
@@ -674,7 +676,7 @@ export class AdminRelease implements IApiBase {
     const data = await this.chkData(jsonData, req, res, true);
     if (!data) return true;
 
-    await processRestartApp(req);
+    await processRestartApp();
     const response = {
       status: 'ok',
       message: 'Restart app successfully.',

@@ -1,0 +1,29 @@
+{
+  "name": "demo.app",
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    },
+    {
+      "index": "web/src/admin_dev/index.tsx",
+      "html": "web/src/admin_dev/index.html",
+      "outdir": "/admin_dev"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "watchFiles": ["web/assets/styles/global.css", "web/icons-font.config.js"],
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    },
+    {
+      "type": "data",
+      "from": "api/resources",
+      "to": "resources"
+    }
+  ]
+}

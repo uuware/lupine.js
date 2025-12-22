@@ -298,7 +298,7 @@ export class AdminResources implements IApiBase {
 
     if (typeof data.resource === 'string' && data.newName) {
       const resPath = path.join(data.resource, data.newName);
-      if (!await FsUtils.pathExist(resPath)) {
+      if (!(await FsUtils.pathExist(resPath))) {
         await FsUtils.mkdir(resPath);
         const response = {
           status: 'ok',

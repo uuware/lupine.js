@@ -83,7 +83,6 @@ connection.end();
 
 */
 
-
 const logger = new Logger('db-mysql');
 
 export class DbMysql extends Db {
@@ -92,7 +91,7 @@ export class DbMysql extends Db {
 
   constructor(option: DbConfig) {
     super(option);
-    
+
     this.pool = createPool({
       host: option.host || 'localhost',
       user: option.user,
@@ -134,16 +133,16 @@ export class DbMysql extends Db {
 
   public async nativeQuery(sql: string, params?: any, isSelect: boolean = true): Promise<any> {
     let connection: PoolConnection | null = null;
-    
+
     try {
       connection = await this.pool.getConnection();
-      
+
       if (logger.isDebug()) {
         logger.debug('Executing query:', { sql, params });
       }
 
       let result: any;
-      
+
       if (isSelect) {
         const [rows] = await connection.execute<RowDataPacket[]>(sql, params);
         result = rows;
@@ -156,7 +155,7 @@ export class DbMysql extends Db {
       if (logger.isDebug()) {
         logger.debug('Query result:', { sql, rowCount: Array.isArray(result) ? result.length : 1 });
       }
-      
+
       return result;
     } catch (error) {
       logger.error('Error executing query:', { sql, params, error });
@@ -195,9 +194,9 @@ export class DbMysql extends Db {
       WHERE 
         TABLE_SCHEMA = DATABASE()
     `;
-    
+
     const result = await this.select(query);
-    
+
     if (result && addCount) {
       for (const table of result) {
         try {
@@ -208,7 +207,7 @@ export class DbMysql extends Db {
         }
       }
     }
-    
+
     return result || [];
   }
 
@@ -233,7 +232,7 @@ export class DbMysql extends Db {
       ORDER BY 
         ORDINAL_POSITION
     `;
-    
+
     return await this.select(query, [table]);
   }
 

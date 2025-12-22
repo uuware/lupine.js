@@ -2,6 +2,7 @@ import { ServerResponse } from 'http';
 import { Logger } from '../lib/logger';
 import { handler404 } from '../api';
 import { ApiRouterCallback, AppCacheKeys, AsyncStorageProps, getAppCache, ServerRequest } from '../models';
+import { processRestartApp } from './process-dev-requests';
 const logger = new Logger('web-processor');
 
 export class WebProcessor {
@@ -36,6 +37,10 @@ export class WebProcessor {
       logger.error(`url: ${store.locals.url}, appName: ${store.appName}, process api error: `, e.message);
     }
 
+    // rescue
+    if (req.locals.urlWithoutQuery.startsWith('/admin_dev')) {
+      await processRestartApp();
+    }
     handler404(res, `Request is not processed, url: ${req.locals.url}`);
     return true;
   }

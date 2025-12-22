@@ -1,4 +1,4 @@
-import { bindGlobalStyle, CssProps } from "lupine.web";
+import { bindGlobalStyle, CssProps } from 'lupine.web';
 
 export type TextLoadingProps = {
   text: string;

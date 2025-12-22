@@ -6,7 +6,7 @@
       "request": "launch",
       "type": "chrome",
       "url": "http://localhost:11080",
-      "webRoot": "${workspaceFolder}/dist/server_root/dev.local_web"
+      "webRoot": "${workspaceFolder}/dist/server_root/demo.app_web"
     },
     {
       "type": "node",
