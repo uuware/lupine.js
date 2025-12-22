@@ -5,7 +5,7 @@ export const InputWithTitle = (
   onInputChanged?: (option: string) => void,
   onInputInputed?: (option: string) => void,
   className = 'input-base',
-  width = '100%',
+  width = '100%'
 ) => {
   return (
     <div>

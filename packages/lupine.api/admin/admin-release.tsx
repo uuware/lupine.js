@@ -220,7 +220,8 @@ export const AdminReleasePage = () => {
     releaseUpdateBtn.disabled = false;
     if (!dataResponse || dataResponse.status !== 'ok') {
       NotificationMessage.sendMessage(
-        dataResponse.message || 'Failed to update release (timeout, possibly backend is runing, please wait and click Check!)',
+        dataResponse.message ||
+          'Failed to update release (timeout, possibly backend is runing, please wait and click Check!)',
         NotificationColor.Error
       );
       return;
@@ -309,6 +310,28 @@ export const AdminReleasePage = () => {
         return;
       }
     }
+
+    const index = await ActionSheetSelectPromise({
+      title: 'Restart App (users may get disconnected errors) ?',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (index !== 0) {
+      return;
+    }
+
+    const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/restart-app', {
+      ...data,
+      isLocal,
+    });
+    const dataResponse = await response.json;
+    console.log('restart-app', dataResponse);
+    if (!dataResponse || dataResponse.status !== 'ok') {
+      NotificationMessage.sendMessage(dataResponse.message || 'Failed to Restart App', NotificationColor.Error);
+      return;
+    }
+    domLog.value = <pre>{JSON.stringify(dataResponse, null, 2)}</pre>;
+    NotificationMessage.sendMessage('Restart App successfully', NotificationColor.Success);
   };
 
   const onShellLocal = async () => {
@@ -389,8 +412,8 @@ export const AdminReleasePage = () => {
         </button>
       </div>
       <div class='row-box mt-m mb-m'>
-        <input type='text' class='input-base w-50p release-cmd' placeholder='Command' />
-        <button onClick={onShellRemote} class='button-base color-red'>
+        <input type='text' class='input-base w-50p release-cmd mr-m' placeholder='Command' />
+        <button onClick={onShellRemote} class='button-base color-red mr-m'>
           Run Cmd (Remote)
         </button>
         <button onClick={onShellLocal} class='button-base'>

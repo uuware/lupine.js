@@ -24,7 +24,10 @@ export class AdminTokenHelper {
     const tokens = await apiStorage.getApi('access-tokens');
     const tokenJson = JSON.parse(tokens || '[]');
 
-    const searchTexts = (search || '').trim().split(' ').filter(item => !!item);
+    const searchTexts = (search || '')
+      .trim()
+      .split(' ')
+      .filter((item) => !!item);
     const results = tokenJson.filter((item: TokenProps) =>
       searchTexts.every((text) => item.description.toLowerCase().includes(text.toLowerCase()))
     );

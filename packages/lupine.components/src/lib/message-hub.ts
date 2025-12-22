@@ -79,7 +79,6 @@ export class MessageHub {
   }
 }
 
-
 // /*[TEST-START]*/
 // function TEST_sample() {
 //   var mHub = new MessageHub(true);

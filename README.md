@@ -17,6 +17,7 @@ npm i
 ```
 
 ## use the sample script in .env file to generate the keys for those variables:
+
 ```
 ADMIN_PASS=
 CRYPTO_KEY=
@@ -25,11 +26,11 @@ DEV_CRYPTO_KEY=
 ```
 
 ## follow the link in .env file to set gmail account to send email (if you use email registration)
+
 ```
 SEND_EMAIL_USER=
 SEND_EMAIL_PASS=
 ```
-
 
 3, run the development application
 
@@ -44,7 +45,7 @@ https://github.com/FiloSottile/mkcert
 1, download mkcert-v1.4.4-windows-amd64.exe
 2, open admin console, run: ./mkcert-v1.4.4-windows-amd64 -install
 3, for a new pc, needs to re-generate the certificate:
-mkcert example.com "*.example.com" localhost 127.0.0.1 ::1
+mkcert example.com "\*.example.com" localhost 127.0.0.1 ::1
 4, copy the generated certificate to /dev folder
 
 5, in .env file for local api calls with mkcert
@@ -68,6 +69,7 @@ On windows:
 "C:\Program Files\Git\usr\bin\openssl.exe"
 
 # How to add a new app?
+
 Lupine app can run multiple apps under the same port. For local development, you can add a new app by following these steps:
 
 1, Copy any apps under `/apps` to get a new app, change the folder name to the new app name, and the names in `apps\<your-app>\lupine.json`
@@ -78,9 +80,11 @@ Lupine app can run multiple apps under the same port. For local development, you
 Go to the `Add local virtual domain for local development on a same port` section.
 
 # Regarding FE global variables in SSR
+
 Because it's Server Side Rendering, so the global variables in the FE code are shared by all users.
 So the global variables should be used carefully.
 So the following code will cause problem that, once the cacheUser is created, it will be shared by all users.
+
 ```
 const cacheUser: { user: null | Promise<UserInfoType | null> } = { user: null };
 export const getUserInfo = (refresh?: boolean): Promise<UserInfoType | null> => {
@@ -92,8 +96,10 @@ export const getUserInfo = (refresh?: boolean): Promise<UserInfoType | null> => 
   return cacheUser.user;
 };
 ```
+
 The proper way to use global variables is to set the value in a onLoad event of a dom.
 As the onLoad event only happens in the FE.
+
 ```
 const cacheUser: { user: null | Promise<UserInfoType | null> } = { user: null };
 export const UserInfo = (props?: any) => {
@@ -110,9 +116,10 @@ export const UserInfo = (props?: any) => {
 };
 ```
 
-
 # Add github access for commit
+
 Once it's cloned, you may need to make some changes to `.git\config` files under the project's root folder. So that you can commit your code with correct permission and username.
+
 ## 1, Find your github access token from [Developer Settings / Personal access tokens (classic)](https://github.com/settings/tokens)
 
 ```
@@ -125,26 +132,30 @@ Once it's cloned, you may need to make some changes to `.git\config` files under
 ```
 
 # Add local virtual domain for local development on a same port
+
 In order to access multiple apps on a same port, you need to add virtual domains in the hosts file.
 For example if you want to access app1 from app1.sample-domain.com, you need to add this line to the hosts file:
 
 ```
 127.0.0.1 app1.sample-domain.com
 ```
+
 On Linux or macOS, the hosts file is located at:
 
 ```
 /etc/hosts
 ```
+
 On Windows OS, the hosts file is located at:
 
 ```
 C:\Windows\System32\Drivers\etc\hosts
 ```
+
 You may need proper permission to edit it.
 
-
 # How to make a sub-folder (app) ?
+
 Make a folder in apps's src folder, for example, `admin_dev`.
 
 ```
@@ -170,6 +181,7 @@ In `apps\[your-app-name]\lupine.json`, add the following code to `entryPoints`:
 ```
 
 # How to check Code frequency (steps)
+
 https://api.github.com/repos/uuware/lupine.js/languages
 Or
 Github -> Code -> Insights -> Code frequency

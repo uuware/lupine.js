@@ -110,7 +110,17 @@ export const HeaderWithBackFrame = ({
   const ref: RefProps = {};
   return (
     <div ref={ref} css={css} class='header-back-frame'>
-      {!noHeader && <MobileHeaderTitleIcon onBack={onBack} left={domLeft} title={domCenter} right={domRight} background={background} color={color} noShadow={noShadow} />}
+      {!noHeader && (
+        <MobileHeaderTitleIcon
+          onBack={onBack}
+          left={domLeft}
+          title={domCenter}
+          right={domRight}
+          background={background}
+          color={color}
+          noShadow={noShadow}
+        />
+      )}
       <div class='header-back-content'>{children}</div>
     </div>
   );

@@ -3,7 +3,7 @@ export * from './app-helper';
 export * from './app-message';
 export * from './app-shared-storage';
 export * from './app-start';
-export * from './cleanup-exit'
+export * from './cleanup-exit';
 export * from './host-to-path';
 export * from './process-dev-requests';
 export * from './web-listener';

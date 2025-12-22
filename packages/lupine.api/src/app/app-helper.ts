@@ -42,7 +42,7 @@ class AppHelper {
         await apiModule.initApi(appConfig, appCache, appStorage);
       }
     } catch (err: any) {
-      this.logger.error(`appName: ${appConfig.appName}, load api error: `, err);
+      this.logger.error(`appName: ${appConfig.appName}, load api error: `, err.message);
     }
   }
 

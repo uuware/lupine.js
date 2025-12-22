@@ -89,7 +89,10 @@ export class StaticServer {
         finalPath = path.join(realPath, 'index.html');
       } else {
         // it's a file, and if it's index.html and the same directory has index.js, it will jump to serverSideRenderPage
-        if (realPath.endsWith('/index.html') && (await fs.promises.lstat(path.join(path.dirname(realPath), 'index.js'))).isFile()) {
+        if (
+          realPath.endsWith('/index.html') &&
+          (await fs.promises.lstat(path.join(path.dirname(realPath), 'index.js'))).isFile()
+        ) {
           jumpToServerSideRender();
         }
         finalPath = realPath;
@@ -97,7 +100,7 @@ export class StaticServer {
 
       // now we need to send finalPath file. If finalPath doesn't exist, it will cause error and jump to serverSideRenderPage
       try {
-        const allowOrigin = (req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : '*';
+        const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';
         res.setHeader('Access-Control-Allow-Origin', allowOrigin);
 
         await this.sendFile(finalPath, urlSplit[0], res);

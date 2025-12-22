@@ -2,7 +2,7 @@ import { CssProps, RefProps, VNode, bindGlobalStyle } from 'lupine.components';
 
 export interface SlideTabProps {
   pages: { title: string; content: VNode<any> }[];
-};
+}
 export const SlideTabComponent = (props: SlideTabProps) => {
   const css: CssProps = {
     display: 'flex',
@@ -132,17 +132,12 @@ export const SlideTabComponent = (props: SlideTabProps) => {
               {page.title}
             </div>
           ))}
-
         </div>
       </div>
       <div class='slide-tab-c-list no-scrollbar-container' onScroll={drawerScroll}>
-
         {props.pages.map((page) => (
-          <div class='slide-tab-c-slide no-scrollbar-container'>
-            {page.content}
-          </div>
+          <div class='slide-tab-c-slide no-scrollbar-container'>{page.content}</div>
         ))}
-
       </div>
     </section>
   );

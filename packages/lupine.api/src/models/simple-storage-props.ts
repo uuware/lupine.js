@@ -1,4 +1,3 @@
-
 export type SimpleStorageDataProps = { [key: string]: string };
 
 // This class is used by both BE and FE (cookie for SSR).

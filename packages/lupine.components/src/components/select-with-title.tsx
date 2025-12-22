@@ -11,7 +11,7 @@ export const SelectWithTitle = (
   onOptionChanged: (option: string) => void,
   size?: number,
   className = 'input-base',
-  width = '100%',
+  width = '100%'
 ) => {
   const css: CssProps = {
     select: {

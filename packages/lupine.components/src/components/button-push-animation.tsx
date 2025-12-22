@@ -55,7 +55,8 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       borderRadius: 'inherit',
       transition: 'box-shadow 300ms ease',
       willChange: 'box-shadow',
-      boxShadow: '0 0.05em 0.05em -0.01em rgba(5, 5, 5, 1), 0 0.01em 0.01em -0.01em rgba(5, 5, 5, 0.5), 0.15em 0.3em 0.1em -0.01em rgba(5, 5, 5, 0.25)',
+      boxShadow:
+        '0 0.05em 0.05em -0.01em rgba(5, 5, 5, 1), 0 0.01em 0.01em -0.01em rgba(5, 5, 5, 0.5), 0.15em 0.3em 0.1em -0.01em rgba(5, 5, 5, 0.25)',
     },
     '.button-inner': {
       position: 'relative',
@@ -67,7 +68,8 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       willChange: 'box-shadow, background-image, transform',
       overflow: 'clip',
       // clipPath: 'inset(0 0 0 0 round 999vw)',
-      boxShadow: '0 0 0 0 inset rgba(5, 5, 5, 0.1), -0.05em -0.05em 0.05em 0 inset rgba(5, 5, 5, 0.25), 0 0 0 0 inset rgba(5, 5, 5, 0.1), 0 0 0.05em 0.2em inset rgba(255, 255, 255, 0.25), 0.025em 0.05em 0.1em 0 inset rgba(255, 255, 255, 1), 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25), -0.075em -0.25em 0.25em 0.1em inset rgba(5, 5, 5, 0.25)',
+      boxShadow:
+        '0 0 0 0 inset rgba(5, 5, 5, 0.1), -0.05em -0.05em 0.05em 0 inset rgba(5, 5, 5, 0.25), 0 0 0 0 inset rgba(5, 5, 5, 0.1), 0 0 0.05em 0.2em inset rgba(255, 255, 255, 0.25), 0.025em 0.05em 0.1em 0 inset rgba(255, 255, 255, 1), 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25), -0.075em -0.25em 0.25em 0.1em inset rgba(5, 5, 5, 0.25)',
     },
     '.button-inner span': {
       position: 'relative',
@@ -116,7 +118,8 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       boxShadow: '0 0 0 0 rgba(5, 5, 5, 1), 0 0 0 0 rgba(5, 5, 5, 0.5), 0 0 0 0 rgba(5, 5, 5, 0.25)',
     },
     '&:active .button-inner': {
-      boxShadow: '0.1em 0.15em 0.05em 0 inset rgba(5, 5, 5, 0.75), -0.025em -0.03em 0.05em 0.025em inset rgba(5, 5, 5, 0.5), 0.25em 0.25em 0.2em 0 inset rgba(5, 5, 5, 0.5), 0 0 0.05em 0.5em inset rgba(255, 255, 255, 0.15), 0 0 0 0 inset rgba(255, 255, 255, 1), 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25), -0.075em -0.12em 0.2em 0.1em inset rgba(5, 5, 5, 0.25)',
+      boxShadow:
+        '0.1em 0.15em 0.05em 0 inset rgba(5, 5, 5, 0.75), -0.025em -0.03em 0.05em 0.025em inset rgba(5, 5, 5, 0.5), 0.25em 0.25em 0.2em 0 inset rgba(5, 5, 5, 0.5), 0 0 0.05em 0.5em inset rgba(255, 255, 255, 0.15), 0 0 0 0 inset rgba(255, 255, 255, 1), 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25), -0.075em -0.12em 0.2em 0.1em inset rgba(5, 5, 5, 0.25)',
     },
     '&:hover .button-inner': {
       transform: 'scale(0.99)',
@@ -127,9 +130,15 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
     ...props.css,
   };
   return (
-    <button ref={ref} css={css} class={['button-push-animation', props.size, props.class].join(' ')} disabled={disabled} onClick={onClick}>
-      <div class="button-outer">
-        <div class="button-inner">
+    <button
+      ref={ref}
+      css={css}
+      class={['button-push-animation', props.size, props.class].join(' ')}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <div class='button-outer'>
+        <div class='button-inner'>
           <span>{props.text}</span>
         </div>
       </div>

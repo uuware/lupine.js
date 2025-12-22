@@ -1,4 +1,4 @@
-import { ThemeProps } from "lupine.web";
+import { ThemeProps } from 'lupine.web';
 
 export const sharedThemes: ThemeProps = {
   // z-index

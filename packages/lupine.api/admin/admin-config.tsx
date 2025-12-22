@@ -12,7 +12,10 @@ export const AdminConfigPage = () => {
       const json = JSON.parse(ref.$('.input-cfg').value);
       const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/config/save', { json });
       if (data.json && data.json.status === 'ok') {
-        NotificationMessage.sendMessage('Saved, and please refresh the page to load new configs', NotificationColor.Success);
+        NotificationMessage.sendMessage(
+          'Saved, and please refresh the page to load new configs',
+          NotificationColor.Success
+        );
       }
     } catch (e) {
       NotificationMessage.sendMessage('Config is not valid JSON', NotificationColor.Error);

@@ -86,7 +86,12 @@ adminHelper.setAppAdminHookSetCookie(appAdminHookSetCookie);
 adminHelper.setAppAdminHookCheckLogin(appAdminHookCheckLogin);
 */
 export type AppAdminHookSetCookieProps = (req: ServerRequest, res: ServerResponse, username: string) => Promise<any>;
-export type AppAdminHookCheckLoginProps = (req: ServerRequest, res: ServerResponse, username: string, password: string) => Promise<boolean>;
+export type AppAdminHookCheckLoginProps = (
+  req: ServerRequest,
+  res: ServerResponse,
+  username: string,
+  password: string
+) => Promise<boolean>;
 export type AppAdminHookLogoutProps = (req: ServerRequest, res: ServerResponse) => Promise<void>;
 
 export const DEV_ADMIN_TYPE = 'dev-admin';
