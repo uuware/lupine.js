@@ -1,4 +1,4 @@
-import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
+import { spawn, exec, ChildProcessWithoutNullStreams } from 'child_process';
 import os from 'os';
 import { MiniWebSocket } from './mini-web-socket';
 import { Duplex } from 'stream';
@@ -13,7 +13,7 @@ export class ShellService {
     this._socket = socket;
     this._miniWebSocket = miniWebSocket;
     try {
-      const shellCmd: string = this.getDefaultShell();
+      const shellCmd: string = ShellService.getDefaultShell();
       this._shell = spawn(shellCmd, [], {
         stdio: ['pipe', 'pipe', 'pipe'],
       });
@@ -35,7 +35,7 @@ export class ShellService {
     });
   }
 
-  getDefaultShell() {
+  static getDefaultShell() {
     const platform = os.platform();
     if (platform === 'win32') {
       return process.env.COMSPEC || 'cmd.exe';
@@ -62,5 +62,13 @@ export class ShellService {
     } else {
       this._miniWebSocket.sendMessage(this._socket!, 'Shell is not available.');
     }
+  }
+
+  public static async directCmd(cmd: string): Promise<string> {
+    return new Promise((resolve) => {
+      exec(cmd, { shell: this.getDefaultShell() }, (error, stdout, stderr) => {
+        resolve(stdout + stderr);
+      });
+    });
   }
 }

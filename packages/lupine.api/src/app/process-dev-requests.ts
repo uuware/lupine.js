@@ -6,6 +6,7 @@ import { appHelper } from './app-helper';
 import { DebugService } from '../api/debug-service';
 import { AppCacheGlobal, AppCacheKeys, getAppCache, ServerRequest } from '../models';
 import { cleanupAndExit } from './cleanup-exit';
+import { ShellService } from '../api/shell-service';
 const logger = new Logger('process-dev-requests');
 
 function deleteRequireCache(moduleName: string) {
@@ -74,6 +75,16 @@ export async function processRestartApp(req: ServerRequest) {
   else {
     sendRestartAppMsgToLoader();
   }
+}
+
+export async function processShell(req: ServerRequest) {
+  const data = req.locals.json();
+  if (!data || Array.isArray(data) || !data.cmd) {
+    return 'Wrong data.';
+  }
+  const cmd = data.cmd as string;
+  const shell = await ShellService.directCmd(cmd);
+  return shell;
 }
 
 // this is called from a request in debug mode

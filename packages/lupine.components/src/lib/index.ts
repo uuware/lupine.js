@@ -11,7 +11,7 @@ export * from './download-link';
 export * from './download-stream';
 export * from './drag-util';
 export * from './dynamical-load';
-export * from './escape-html';
+export * from './encode-html';
 export * from './find-parent-tag';
 export * from './format-bytes';
 export * from './lite-dom';

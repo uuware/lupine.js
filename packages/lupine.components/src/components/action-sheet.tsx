@@ -100,7 +100,7 @@ export class ActionSheet {
           borderRadius: '8px',
           backgroundColor: 'var(--cover-bg-color)', //'#fefefe',
           width: '100%',
-          maxWidth: contentMaxWidth ? contentMaxWidth : `clamp(200px, 70%, 800px)`,
+          maxWidth: contentMaxWidth ? contentMaxWidth : `clamp(200px, 90%, 600px)`,
           margin: '0 auto',
         },
         '.act-sheet-bottom-item, .act-sheet-item': {
@@ -109,7 +109,7 @@ export class ActionSheet {
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           width: '100%',
-          maxWidth: contentMaxWidth ? contentMaxWidth : `clamp(200px, 70%, 800px)`,
+          maxWidth: contentMaxWidth ? contentMaxWidth : `clamp(200px, 90%, 600px)`,
           borderTop: '1px solid var(--primary-border-color)',
         },
         '.act-sheet-bottom-item': {
