@@ -1,3 +1,7 @@
+// css order is important
+import './styles/global.css';
+import './styles/app.css';
+
 import {
   debugWatch,
   bindRenderPageFunctions,
@@ -47,6 +51,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
 }
 
+console.log(document.title);
 // addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);

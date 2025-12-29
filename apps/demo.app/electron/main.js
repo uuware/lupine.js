@@ -3,7 +3,11 @@ const path = require('node:path');
 const nodeUrl = require('node:url');
 const utils = require('./utils');
 
-utils.startLocalServer('resources/app.asar/dist/server_root/xiaotiqinpu.com_web/');
+app.commandLine.appendSwitch('no-proxy-server');
+const resourcesPath = app.isPackaged
+  ? 'resources/app.asar/dist/server_root/demo.app_web/'
+  : 'dist/server_root/demo.app_web/';
+utils.startLocalServer(resourcesPath);
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
   event.preventDefault();
   callback(true);

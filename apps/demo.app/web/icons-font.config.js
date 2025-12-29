@@ -92,7 +92,7 @@ var htmlTemplate = `
 
 module.exports = {
   fontName: 'i-font',
-  outputPath: path.join(__dirname, 'web/assets/icons-font/'),
+  outputPath: path.join(__dirname, 'assets/icons-font/'),
   outputName: 'i-font', // automatically add font extension to it
   startChar: 10000, // unicode start number
   svgicons2svgfont: {
