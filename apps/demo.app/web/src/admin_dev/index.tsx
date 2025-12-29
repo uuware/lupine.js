@@ -1,3 +1,7 @@
+// css order is important
+import '../styles/global.css';
+import '../styles/app.css';
+
 import { adminFrameHelper, devAdminPageRouter } from 'lupine.api/admin';
 import {
   bindGlobalStyle,

@@ -14,6 +14,17 @@
     "packages/*"
   ],
   "scripts": {
+    "app1:build-win": "electron-builder --win --config apps/demo.app/electron/builder.json",
+    "app1:build-linux": "electron-builder --linux --config apps/demo.app/electron/builder.json",
+    "app1:build-mac": "export CSC_IDENTITY_AUTO_DISCOVERY=true && electron-builder --mac --x64 --config apps/demo.app/electron/builder.json",
+    "app1:unpack-mac": "npx asar extract dist/build/mac-arm64-unpacked/demo.app.app/Contents/Resources/app.asar dist/build/mac-arm64-unpacked/demo.app.app/Contents/Resources/app.asar-unpack",
+    "app1:unpack-linux": "npx asar extract dist/build/linux-arm64-unpacked/resources/app.asar dist/build/linux-arm64-unpacked/resources/app.asar-unpack",
+    "app1:unpack-win": "npx asar extract dist/build/win-unpacked/resources/app.asar dist/build/win-unpacked/resources/app.asar-unpack",
+    "app1:desktop": "electron apps/demo.app/electron/main.js",
+    "app1:sync": "npm run sync --workspace=demo.app-web",
+    "app1:open-ios": "npm run open-ios --workspace=demo.app-web",
+    "app1:open-android": "npm run open-android --workspace=demo.app-web",
+    "app1:icons": "node ./apps/demo.app/web/icons-font.config.js",
     "dev": "node ./dev/dev-watch --env=.env.development --dev=1 --cmd=start-dev",
     "build": "node ./dev/dev-watch --env=.env.production --dev=0",
     "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1",
@@ -29,6 +40,9 @@
   "devDependencies": {
     "@types/node": "^22.10.5",
     "esbuild": "^0.24.2",
+    "electron": "^35.2.0",
+    "electron-builder": "^26.0.12",
+    "icons-font-command": "^1.2.0",
     "prettier": "^2.7.1",
     "typescript": "^5.7.2"
   }

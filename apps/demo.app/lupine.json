@@ -13,7 +13,7 @@
     }
   ],
   "apiEntryPoint": "api/src/index.ts",
-  "watchFiles": ["web/assets/styles/global.css", "web/icons-font.config.js"],
+  "watchFiles": ["web/icons-font.config.js"],
   "copyFiles": [
     {
       "type": "web",

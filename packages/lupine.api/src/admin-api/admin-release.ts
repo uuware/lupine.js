@@ -278,13 +278,14 @@ export class AdminRelease implements IApiBase {
     // local dirs under _web
     const webSub: string[] = [];
     for (let j = 0; j < apps.length; j++) {
-      const e = apps[j];
-      const p0 = path.join(appData.apiPath, '..');
-      const subFolders = await FsUtils.getDirsFullpath(path.join(p0, e + '_web'), 5);
+      const app = apps[j];
+      const appRoot = path.join(appData.apiPath, '..');
+      const subFolders = await FsUtils.getDirentFullpath(path.join(appRoot, app + '_web'), 5);
+      webSub.push(app + '_web/');
       webSub.push(
         ...subFolders
           .filter((i) => i.isDirectory())
-          .map((i) => path.join(i.parentPath.substring(p0.length + 1), i.name).replace(/\\/g, '/'))
+          .map((i) => path.join(i.parentPath.substring(appRoot.length + 1), i.name).replace(/\\/g, '/'))
       );
     }
     // const webSub = webSubFolders.filter(i => i.isDirectory()).map(i => path.join(i.parentPath.substring(appData.webPath.length + 1), i.name).replace(/\\/g, '/')).sort();
@@ -409,51 +410,51 @@ export class AdminRelease implements IApiBase {
         return true;
       }
     }
-    if (data.chkWeb) {
-      const result = await this.updateSendFile(data, 'web');
-      if (!result || result.status !== 'ok') {
-        ApiHelper.sendJson(req, res, result);
-        return true;
-      }
-      // if (data.webSub) {
-      //   const result2 = await this.updateSendFile(data, 'web-sub');
-      //   if (!result2 || result2.status !== 'ok') {
-      //     ApiHelper.sendJson(req, res, result2);
-      //     return true;
-      //   }
-      // }
+    // if (data.chkWeb) {
+    // const result = await this.updateSendFile(data, 'web');
+    // if (!result || result.status !== 'ok') {
+    //   ApiHelper.sendJson(req, res, result);
+    //   return true;
+    // }
+    // if (data.webSub) {
+    //   const result2 = await this.updateSendFile(data, 'web-sub');
+    //   if (!result2 || result2.status !== 'ok') {
+    //     ApiHelper.sendJson(req, res, result2);
+    //     return true;
+    //   }
+    // }
 
-      if (data.webSubs && data.webSubs.length > 0) {
-        const subTop = path.join(appData.apiPath, '..', data.fromList + '_web/');
-        for (let i = 0; i < data.webSubs.length; i++) {
-          if (!data.webSubs[i].startsWith(data.fromList + '_web/')) {
-            const response = {
-              status: 'error',
-              message: `Error: ${data.webSubs[i]} is not under ${data.fromList}`,
-            };
-            ApiHelper.sendJson(req, res, response);
-            return true;
+    if (data.webSubs && data.webSubs.length > 0) {
+      const subTop = path.join(appData.apiPath, '..', data.fromList + '_web/');
+      for (let i = 0; i < data.webSubs.length; i++) {
+        if (!data.webSubs[i].startsWith(data.fromList + '_web/')) {
+          const response = {
+            status: 'error',
+            message: `Error: ${data.webSubs[i]} is not under ${data.fromList}`,
+          };
+          ApiHelper.sendJson(req, res, response);
+          return true;
+        }
+        const subFolders = await FsUtils.getDirentFullpath(path.join(appData.apiPath, '..', data.webSubs[i]));
+        const subFiles = subFolders
+          .filter((e) => e.isFile())
+          .map((e) => path.join(e.parentPath.substring(subTop.length), e.name).replace(/\\/g, '/'))
+          .sort();
+        for (let j = 0; j < subFiles.length; j++) {
+          if (subFiles[j].endsWith('.js.map') || subFiles[j].endsWith('.css.map')) {
+            continue;
           }
-          const subFolders = await FsUtils.getDirsFullpath(path.join(appData.apiPath, '..', data.webSubs[i]));
-          const subFiles = subFolders
-            .filter((e) => e.isFile())
-            .map((e) => path.join(e.parentPath.substring(subTop.length), e.name).replace(/\\/g, '/'))
-            .sort();
-          for (let j = 0; j < subFiles.length; j++) {
-            if (subFiles[j].endsWith('.js.map')) {
-              continue;
-            }
-            data.webSub = subFiles[j];
-            this.logger.info(`update, webSubs: ${data.webSubs[i]}, subFiles: ${subFiles[j]})`);
-            const result2 = await this.updateSendFile(data, 'web-sub');
-            if (!result2 || result2.status !== 'ok') {
-              ApiHelper.sendJson(req, res, result2);
-              return true;
-            }
+          data.webSub = subFiles[j];
+          this.logger.info(`update, webSubs: ${data.webSubs[i]}, subFiles: ${subFiles[j]})`);
+          const result2 = await this.updateSendFile(data, 'web-sub');
+          if (!result2 || result2.status !== 'ok') {
+            ApiHelper.sendJson(req, res, result2);
+            return true;
           }
         }
       }
     }
+    // }
     if (data.chkApi) {
       const result = await this.updateSendFile(data, 'api');
       if (!result || result.status !== 'ok') {
@@ -498,8 +499,8 @@ export class AdminRelease implements IApiBase {
       sendFile = path.join(appData.apiPath, '..', 'server', 'app-loader.js');
     } else if (chkOption === 'api') {
       sendFile = path.join(appData.apiPath, '..', fromList + '_api', 'index.js');
-    } else if (chkOption === 'web') {
-      sendFile = path.join(appData.apiPath, '..', fromList + '_web', 'index.js');
+      // } else if (chkOption === 'web') {
+      //   sendFile = path.join(appData.apiPath, '..', fromList + '_web', 'index.js');
     } else if (chkOption === 'web-sub' && data.webSub) {
       // sendFile = path.join(appData.apiPath, '..', fromList + '_web', data.webSub, 'index.js');
       sendFile = path.join(appData.apiPath, '..', fromList + '_web', data.webSub);
@@ -585,7 +586,7 @@ export class AdminRelease implements IApiBase {
         (chkOption !== 'server' &&
           chkOption !== 'app-loader' &&
           chkOption !== 'api' &&
-          chkOption !== 'web' &&
+          // chkOption !== 'web' &&
           chkOption !== 'web-sub' &&
           !chkOption.startsWith('.env'))
       ) {
@@ -605,8 +606,8 @@ export class AdminRelease implements IApiBase {
         saveFile = path.join(appData.apiPath, '..', 'server', 'app-loader.js');
       } else if (chkOption === 'api') {
         saveFile = path.join(appData.apiPath, '..', toList + '_api', 'index.js');
-      } else if (chkOption === 'web') {
-        saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
+        // } else if (chkOption === 'web') {
+        //   saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
       } else if (chkOption === 'web-sub' && data.webSub) {
         const folder = path.join(appData.apiPath, '..', toList + '_web', path.basename(data.webSub));
         if (!(await FsUtils.pathExist(folder))) {

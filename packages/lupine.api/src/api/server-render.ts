@@ -114,7 +114,7 @@ export const serverSideRenderPage = async (
   req: ServerRequest,
   res: ServerResponse
 ) => {
-  console.log(`=========SSR, root: ${webRoot}, url: ${urlWithoutQuery}`);
+  // console.log(`=========SSR, root: ${webRoot}, url: ${urlWithoutQuery}`);
 
   // cache multiple folders
   const cachedHtml = getTemplateCache();
@@ -125,16 +125,21 @@ export const serverSideRenderPage = async (
   if (!cachedHtml[nearRoot]) {
     // the FE code needs to export _lupineJs
     // const lupinJs = await import(webRoot + '/index.js');
-    const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { _lupineJs: null });
-    // const lupinJs = require(path.join(nearRoot, 'index.js'));
-    if (!gThis || !gThis._lupineJs) {
-      throw new Error('_lupineJs is not defined');
+    // if error happens during the SSR, then send index.html
+    const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
+    let _lupineJs;
+    try {
+      const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { _lupineJs: null });
+      // const lupinJs = require(path.join(nearRoot, 'index.js'));
+      if (!gThis || !gThis._lupineJs) {
+        throw new Error('_lupineJs is not defined');
+      }
+      // console.log(`=========load lupine: `, gThis);
+      _lupineJs = gThis._lupineJs() as _LupineJs;
+    } catch (e: any) {
+      logger.error(e.message);
     }
 
-    console.log(`=========load lupine: `, gThis);
-    const _lupineJs = gThis._lupineJs() as _LupineJs;
-
-    const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
     const contentWithEnv = content.toString();
     cachedHtml[nearRoot] = {
       content: contentWithEnv,
@@ -165,7 +170,22 @@ export const serverSideRenderPage = async (
   // }
   // const webSetting = AppConfig.get(AppConfig.WEB_SETTINGS_KEY) || {};
   const clientDelivery = new ToClientDelivery(currentCache.webEnv, webSetting, req.locals.cookies());
-  const page = await _lupineJs.generatePage(props, clientDelivery);
+
+  let page = {
+    content: '',
+    title: '',
+    metaData: '',
+    themeName: '',
+    globalCss: '',
+  };
+  if (_lupineJs) {
+    try {
+      page = await _lupineJs.generatePage(props, clientDelivery);
+    } catch (e: any) {
+      logger.error(e.message);
+    }
+  }
+
   // console.log(`=========load lupin: `, content);
 
   const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';

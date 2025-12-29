@@ -64,12 +64,12 @@ const ReleaseList = (props: ReleaseListProps) => {
         <div class='mr-l'>
           <input type='checkbox' class='base-css chk-api' id='chk-api' />
         </div>
-        <label class='label mr-m' for='chk-web'>
+        {/* <label class='label mr-m' for='chk-web'>
           Web:
         </label>
         <div class='mr-l'>
           <input type='checkbox' class='base-css chk-web' id='chk-web' />
-        </div>
+        </div> */}
 
         <label class='label mr-m' for='chk-env'>
           Env:
@@ -96,7 +96,7 @@ const ReleaseList = (props: ReleaseListProps) => {
               </label>
             </div>
           ))}
-          <label class='label mr-m release-label'>(Skip *.js.map files)</label>
+          <label class='label mr-m release-label'>(Skip *.js.map, *.css.map files)</label>
         </div>
       </div>
       <LogList logs={props.result.logs} onLogClick={props.onLogClick} />
@@ -177,7 +177,7 @@ export const AdminReleasePage = () => {
     const toList = ref.$('.to-list').value;
     const chkServer = ref.$('.chk-server').checked;
     const chkApi = ref.$('.chk-api').checked;
-    const chkWeb = ref.$('.chk-web').checked;
+    const chkWeb = true; //ref.$('.chk-web').checked;
     // const webSub = ref.$('.input-web-sub').value;
     const webSubs = ref.$all('.chk-web-sub') as HTMLInputElement[];
     const webSubsChecked = Array.from(webSubs)
@@ -190,7 +190,7 @@ export const AdminReleasePage = () => {
     }
     const chkEnv = ref.$('.chk-env').checked;
     const chkBackup = ref.$('.chk-backup').checked;
-    if (!chkServer && !chkApi && !chkWeb && !chkEnv) {
+    if (!chkServer && !chkApi && webSubsChecked.length < 1 && !chkEnv) {
       NotificationMessage.sendMessage('Please select the release options', NotificationColor.Error);
       return;
     }

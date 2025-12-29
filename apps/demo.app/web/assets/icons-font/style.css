@@ -1,6 +1,7 @@
+
 @font-face {
   font-family: 'i-font';
-  src: url('i-font.woff2?t=623124') format('woff2');
+  src:url('i-font.woff2?t=207977') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
@@ -37,6 +38,28 @@
   margin: auto;
 }
 
+/*
+<div class='ifc-over-box'>
+  <i class='ifc-icon ma-refresh'></i>
+  <i class='ifc-icon ma-play ifc-over'></i>
+</div>
+*/
+.ifc-over-box {
+  display: flex;
+  position: relative;
+  width: min-content;
+}
+
+.ifc-over {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 60%;
+  z-index: 1;
+  color: red;
+  transform: translate(-50%, -50%);
+}
+
 /* Animation for spinners */
 .ifc-spin {
   animation: ifc-spin-f 2s infinite linear;
@@ -52,30 +75,20 @@
   }
 }
 
+
 /* Material Design, License: Pictogrammers Free, Link: https://github.com/Templarian/MaterialDesign/blob/master/LICENSE */
-.ma-theme-light-dark:before {
-  content: '\2711';
-}
+.ma-theme-light-dark:before { content: "\2711"; }
 
 /* Font Awesome Free, License: Font Awesome Free, Link: https://github.com/FortAwesome/Font-Awesome/blob/master/LICENSE.txt */
-.fa-apple:before {
-  content: '\2712';
-}
-.fa-android:before {
-  content: '\2713';
-}
+.fa-apple:before { content: "\2712"; }
+.fa-android:before { content: "\2713"; }
 
 /* carbon-icons, License: Apache-2.0, Link: https://github.com/carbon-design-system/carbon-icons/blob/master/LICENSE.md */
-.cb-app-services:before {
-  content: '\2714';
-}
+.cb-app-services:before { content: "\2714"; }
 
 /* Unicons, License: IconScout Simple License, Link: https://github.com/Iconscout/unicons/blob/master/LICENSE */
-.un-16-plus:before {
-  content: '\2715';
-}
+.un-16-plus:before { content: "\2715"; }
 
 /* ant-design-icons, License: MIT, Link: https://github.com/ant-design/ant-design-icons/blob/master/LICENSE */
-.at-drag:before {
-  content: '\2716';
-}
+.at-drag:before { content: "\2716"; }
+

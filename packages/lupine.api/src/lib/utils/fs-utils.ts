@@ -119,10 +119,10 @@ export class FsUtils {
   };
 
   // return with fullpath list of Dirent
-  static getDirsFullpath = async (dirPath: string, maxDepth = 1): Promise<Dirent[]> => {
-    return this.getDirsFullpathDepthSub(dirPath, 0, maxDepth);
+  static getDirentFullpath = async (dirPath: string, maxDepth = 1): Promise<Dirent[]> => {
+    return this.getDirentFullpathDepthSub(dirPath, 0, maxDepth);
   };
-  private static getDirsFullpathDepthSub = async (dirPath: string, depth = 0, maxDepth = 1): Promise<Dirent[]> => {
+  private static getDirentFullpathDepthSub = async (dirPath: string, depth = 0, maxDepth = 1): Promise<Dirent[]> => {
     try {
       const ret = [];
       const files = await fs.readdir(dirPath, {
@@ -134,7 +134,7 @@ export class FsUtils {
         for (const entry of files) {
           if (entry.isDirectory()) {
             const fullPath = path.join(dirPath, entry.name);
-            ret.push(...(await this.getDirsFullpathDepthSub(fullPath, depth + 1, maxDepth)));
+            ret.push(...(await this.getDirentFullpathDepthSub(fullPath, depth + 1, maxDepth)));
           }
         }
       }

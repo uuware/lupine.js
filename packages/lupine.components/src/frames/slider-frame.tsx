@@ -34,7 +34,7 @@ export const SliderFrame = (props: SliderFrameProps) => {
       ref.current?.classList.remove('d-none');
       setTimeout(() => {
         ref.current?.classList.add('show');
-      }, 1);
+      }, 100);
     };
     props.hook.close = (event: Event) => {
       stopPropagation(event);
