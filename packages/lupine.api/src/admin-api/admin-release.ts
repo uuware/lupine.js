@@ -609,9 +609,12 @@ export class AdminRelease implements IApiBase {
         // } else if (chkOption === 'web') {
         //   saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
       } else if (chkOption === 'web-sub' && data.webSub) {
-        const folder = path.join(appData.apiPath, '..', toList + '_web', path.basename(data.webSub));
-        if (!(await FsUtils.pathExist(folder))) {
-          await FsUtils.mkdir(folder);
+        const baseName = path.basename(data.webSub);
+        if (baseName !== data.webSub) {
+          const folder = path.join(appData.apiPath, '..', toList + '_web', baseName);
+          if (!(await FsUtils.pathExist(folder))) {
+            await FsUtils.mkdir(folder);
+          }
         }
         saveFile = path.join(appData.apiPath, '..', toList + '_web', data.webSub);
       } else if ((chkOption as string).startsWith('.env')) {
