@@ -106,7 +106,7 @@ class AppStart {
       console.error(err.stack);
     });
     // catches ctrl+c event and others
-    ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGINT', 'SIGBREAK'].forEach((evt) => process.on(evt, cleanupAndExit));
+    ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGBREAK'].forEach((evt) => process.on(evt, cleanupAndExit));
   }
 
   async initServer(config: InitStartProps) {

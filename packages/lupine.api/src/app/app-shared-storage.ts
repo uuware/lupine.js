@@ -151,19 +151,31 @@ export class AppSharedStorage implements IAppSharedStorage {
       return;
     }
 
+    const saveMap = async (map: { fPath: string; storage: SimpleStorage }) => {
+      if (map && map.fPath && map.storage.size() > 0 && map.storage.Dirty) {
+        const tempPath = map.fPath + '.tmp';
+        try {
+          await map.storage.saveContent(tempPath);
+          const stats = await fs.stat(tempPath);
+          if (stats.size > 0) {
+            await fs.rename(tempPath, map.fPath);
+            // console.log(`Saved config to ${map.fPath}`);
+          } else {
+            this.logger.error(`Saved temp config is empty, aborting save for ${map.fPath}`);
+          }
+        } catch (e: any) {
+          this.logger.error(`Failed to save config for ${map.fPath}`, e.message);
+        }
+      }
+    };
+
     console.log(`${process.pid} - AppStorage save, appName: ${appName}, exit: ${exit}`);
     if (appName) {
-      const map = this.configMap[appName];
-      if (map && map.fPath && map.storage.size() > 0 && map.storage.Dirty) {
-        await map.storage.saveContent(map.fPath);
-      }
+      await saveMap(this.configMap[appName]);
     } else {
       // save all data
       for (let appName in this.configMap) {
-        const map = this.configMap[appName];
-        if (map && map.fPath && map.storage.size() > 0 && map.storage.Dirty) {
-          await map.storage.saveContent(map.fPath);
-        }
+        await saveMap(this.configMap[appName]);
       }
     }
   }
