@@ -1,5 +1,8 @@
 export const encodeHtml = (str: string): string => {
-  return str.replace(
+  if (!str) {
+    return str;
+  }
+  return str.toString().replace(
     /[&<>'"]/g,
     (tag) =>
       ({
@@ -13,7 +16,10 @@ export const encodeHtml = (str: string): string => {
 };
 
 export const decodeHtml = (str: string): string => {
-  return str.replace(
+  if (!str) {
+    return str;
+  }
+  return str.toString().replace(
     /&(\D+);/gi,
     (tag) =>
       ({

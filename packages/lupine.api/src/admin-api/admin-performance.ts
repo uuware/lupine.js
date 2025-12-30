@@ -115,10 +115,16 @@ export class AdminPerformance implements IApiBase {
           times: c.times,
         })),
         process: {
-          ...(process as any),
-          mainModule: undefined,
-          moduleLoadList: undefined,
-          config: undefined,
+          // ...(process as any), // cause delay
+          pid: process.pid,
+          ppid: process.ppid,
+          title: process.title,
+          version: process.version,
+          versions: process.versions,
+          cwd: process.cwd(),
+          execPath: process.execPath,
+          argv: process.argv,
+          // config: process.config,
         },
       },
     };
