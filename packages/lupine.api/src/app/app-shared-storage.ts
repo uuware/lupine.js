@@ -154,6 +154,7 @@ export class AppSharedStorage implements IAppSharedStorage {
     const saveMap = async (map: { fPath: string; storage: SimpleStorage }) => {
       if (map && map.fPath && map.storage.size() > 0 && map.storage.Dirty) {
         const tempPath = map.fPath + '.tmp';
+        console.log(`${process.pid} - AppStorage save, appName: ${appName}, tempPath: ${tempPath}`);
         try {
           await map.storage.saveContent(tempPath);
           const stats = await fs.stat(tempPath);
@@ -169,7 +170,7 @@ export class AppSharedStorage implements IAppSharedStorage {
       }
     };
 
-    console.log(`${process.pid} - AppStorage save, appName: ${appName}, exit: ${exit}`);
+    // console.log(`${process.pid} - AppStorage save, appName: ${appName}, exit: ${exit}`);
     if (appName) {
       await saveMap(this.configMap[appName]);
     } else {

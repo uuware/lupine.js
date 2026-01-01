@@ -172,9 +172,6 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string,
   }
   const newType = (props._result && props._result.type) || type;
   const newProps = (props._result && props._result.props) || props;
-  if (newType === 'div' && newProps.class === 'answer-box') {
-    console.log('renderComponent', newType, newProps);
-  }
   if (typeof newType === 'string') {
     if (newProps._id) {
       console.warn('This component reference is used more than once and will have binding issues: ', newProps);

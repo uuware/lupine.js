@@ -48,7 +48,7 @@ export class AdminConfig implements IApiBase {
 
     let jsonCfg: any;
     try {
-      jsonCfg = JSON.parse(await fs.readFile(cfgPath, 'utf8'));
+      jsonCfg = JSON.parse((await fs.readFile(cfgPath, 'utf8')) || '{}');
     } catch (e) {
       const response = {
         status: 'error',
