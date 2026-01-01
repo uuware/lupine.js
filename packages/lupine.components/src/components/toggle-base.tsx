@@ -15,6 +15,9 @@ export type TogglePlayButtonProps = {
   checked?: boolean;
   onClick?: (checked: boolean) => void;
   hook?: ToggleBaseHookProps;
+  textColor?: string;
+  backgroundColor?: string;
+  noWave?: boolean;
 };
 export const TogglePlayButton = (props: TogglePlayButtonProps) => {
   const css: CssProps = {
@@ -25,12 +28,16 @@ export const TogglePlayButton = (props: TogglePlayButtonProps) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    transition: 'all 0.3s',
+    cursor: 'pointer',
+    '&:hover': {
+      opacity: 0.8,
+    },
     '.play-icon': {
       width: '50%',
       height: '50%',
       transition: 'all 0.2s ease-in-out',
       backgroundColor: '#fff',
-      cursor: 'pointer',
     },
     '&.toggle-off .play-icon': {
       clipPath: 'polygon(20% 0, 20% 100%, 90% 50%, 90% 50%, 90% 50%, 90% 50%, 90% 50%, 90% 50%, 90% 50%)',
@@ -46,16 +53,25 @@ export const TogglePlayButton = (props: TogglePlayButtonProps) => {
     },
   };
   bindGlobalStyle('toggle-play-button-component', css);
-  return (
+
+  const Btn = () => (
+    <div
+      class={`toggle-play-button-component toggle-placeholder ${props.checked ? 'toggle-on' : 'toggle-off'}${
+        props.disabled ? ' disabled' : ''
+      }`}
+      style={{ backgroundColor: props.backgroundColor }}
+    >
+      <div class='play-icon' style={{ backgroundColor: props.textColor }}></div>
+    </div>
+  );
+  return props.noWave ? (
+    <ToggleBase {...props}>
+      <Btn />
+    </ToggleBase>
+  ) : (
     <ToggleBase {...props}>
       <ToggleWaveFrame>
-        <div
-          class={`toggle-play-button-component toggle-placeholder ${props.checked ? 'toggle-on' : 'toggle-off'}${
-            props.disabled ? ' disabled' : ''
-          }`}
-        >
-          <div class='play-icon'></div>
-        </div>
+        <Btn />
       </ToggleWaveFrame>
     </ToggleBase>
   );
