@@ -33,16 +33,19 @@
     "format": "prettier --write \"**/*.{js,json,css,scss,md,html,yaml,ts,jsx,tsx}\""
   },
   "dependencies": {
-    "lupine.web": "file:packages/lupine.web",
+    "lupine.api": "file:packages/lupine.api",
     "lupine.components": "file:packages/lupine.components",
-    "lupine.api": "file:packages/lupine.api"
+    "lupine.web": "file:packages/lupine.web",
+    "lupine.press": "file:packages/lupine.press"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
-    "esbuild": "^0.24.2",
     "electron": "^35.2.0",
     "electron-builder": "^26.0.12",
+    "esbuild": "^0.24.2",
+    "gray-matter": "^4.0.3",
     "icons-font-command": "^1.2.0",
+    "marked": "^17.0.1",
     "prettier": "^2.7.1",
     "typescript": "^5.7.2"
   }

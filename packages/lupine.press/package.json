@@ -1,0 +1,18 @@
+{
+  "name": "lupine.press",
+  "version": "1.0.0",
+  "description": "A modern documentation generator for lupine.js",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "scripts": {
+    "note": "echo 'build is not needed as the typescript code is supposed to be referred directly from other projects'",
+    "npm-publish": "npm publish --access public"
+  },
+  "dependencies": {
+    "lupine.web": "^1.0.0",
+    "lupine.components": "^1.0.0",
+    "lupine.api": "^1.0.0",
+    "marked": "^15.0.0",
+    "gray-matter": "^4.0.3"
+  }
+}
