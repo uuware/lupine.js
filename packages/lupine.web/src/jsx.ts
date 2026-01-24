@@ -676,6 +676,7 @@ export namespace JSXInternal {
   export interface HTMLAttributes<RefProps extends EventTarget = EventTarget>
     extends ClassAttributes<RefProps>,
       DOMAttributes<RefProps> {
+    dangerouslySetInnerHTML?: string;
     // Standard HTML Attributes
     accept?: string;
     acceptCharset?: string;

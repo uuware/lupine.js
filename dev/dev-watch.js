@@ -12,6 +12,7 @@ const {
   pathExists,
   cpIndexHtml,
   pluginIfelse,
+  markdownProcessOnEnd,
 } = require('lupine.api/dev');
 
 const triggerHandle = {
@@ -166,7 +167,7 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     external: [],
     metafile: true,
     minify: !isDev,
-    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file' },
+    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
     assetNames: '/pub_assets/[name]-[hash]',
     publicPath: saved.outdirSub,
     jsxImportSource: 'lupine.web',
@@ -215,13 +216,39 @@ const watchApi = async (saved, isDev, entryPoints) => {
   isDev && console.log(`[dev-api:${saved.appName}] Watching...`);
 };
 
+const watchMarkdownPlugin = (saved) => {
+  return {
+    name: 'watchMarkdownPlugin',
+    setup(build) {
+      build.onEnd(async (res) => {
+        // console.log(`Build meta data: `, res);
+        console.log(`[dev-markdown:${saved.appName}] Build finished`);
+        await markdownProcessOnEnd(saved.markdownEntryPoints.indir, saved.markdownEntryPoints.outdir);
+      });
+    },
+  };
+};
+
+const watchMarkdown = async (saved, entryPoints) => {
+  const cmd = saved.isDev ? esbuild.context : esbuild.build;
+  const ctx = await cmd({
+    entryPoints: [`${entryPoints.indir}/**/*.md`],
+    outdir: entryPoints.outdir,
+    write: false,
+    loader: { '.md': 'empty' },
+    plugins: [watchMarkdownPlugin({ ...saved, markdownEntryPoints: entryPoints })],
+  });
+
+  saved.isDev && (await ctx.watch());
+};
+
 const watchAdditionalFiles = async (saved, entryPoints) => {
   const cmd = saved.isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
     entryPoints: entryPoints,
     outdir: 'dist/tmp',
     write: false,
-    loader: { '.html': 'empty', '.css': 'empty', '.js': 'empty' },
+    loader: { '.html': 'empty', '.css': 'empty', '.js': 'empty', '.md': 'empty' },
     plugins: [watchClientPlugin(saved)],
   });
 
@@ -314,6 +341,13 @@ const start = async () => {
     if (appCfg['apiEntryPoint']) {
       const entryPointApi = `${appDir}/${appCfg['apiEntryPoint']}`;
       watchApi(saved, isDev, [entryPointApi]);
+    }
+    if (appCfg['markdownEntryPoints']) {
+      const markdownEntryPoints = {
+        indir: `${appDir}/${appCfg['markdownEntryPoints'].indir}`,
+        outdir: `${appDir}/${appCfg['markdownEntryPoints'].outdir}`,
+      };
+      watchMarkdown(saved, markdownEntryPoints);
     }
     if (additionalFiles.length > 0) {
       // when some resources are changed, need to run command or refresh the server

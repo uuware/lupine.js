@@ -92,7 +92,7 @@ export const initializePage = async (newUrl?: string) => {
   const jsxNodes = await renderTargetPage(props, currentPageInitialized);
   if (jsxNodes === null) return;
   if (!jsxNodes || !jsxNodes.props) {
-    document.querySelector('.lupine-root')!.innerHTML = `Unexpected url: ${url}`;
+    document.querySelector('.lupine-root')!.innerHTML = `Error happened or unexpected url: ${url}`;
     return;
   }
 

@@ -11,6 +11,14 @@ export const Svg = ({
   height?: string;
   color?: string;
 }) => {
+  let content = children || '';
+  if (content.startsWith('data:image/svg+xml,')) {
+    content = decodeURIComponent(content.slice('data:image/svg+xml,'.length));
+  } else if (content.includes('%') && content.includes('<svg')) {
+    // Handle cases where it's encoded but prefix is missing
+    content = decodeURIComponent(content);
+  }
+
   const css: any = {
     svg: {
       maxWidth: '100%',
@@ -20,5 +28,5 @@ export const Svg = ({
       fill: color,
     },
   };
-  return <div css={css}>{children}</div>;
+  return <div css={css} dangerouslySetInnerHTML={content}></div>;
 };

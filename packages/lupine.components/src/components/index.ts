@@ -32,6 +32,7 @@ export * from './slide-tab-component';
 export * from './spinner';
 export * from './stars-component';
 export * from './svg';
+export * from './switch-option-component';
 export * from './tabs';
 export * from './text-glow';
 export * from './text-scale';

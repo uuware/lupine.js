@@ -14,7 +14,7 @@ export interface ResponsiveFrameProps {
   placeholderClassname: string;
   mainContent: VNode<any>;
   desktopHeaderTitle: string;
-  desktopFooterTitle: string;
+  desktopFooterTitle?: string;
   desktopTopMenu: IconMenuItemProps[];
   mobileBottomMenu: IconMenuItemProps[];
   mobileSideMenuContent: VNode<any>;
@@ -74,7 +74,7 @@ export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
         <MobileSideMenu>{props.mobileSideMenuContent}</MobileSideMenu>
         <div class={'content-block ' + props.placeholderClassname}>{props.mainContent}</div>
         <div class='frame-footer'>
-          <DesktopFooter title={props.desktopFooterTitle}></DesktopFooter>
+          {props.desktopFooterTitle && <DesktopFooter title={props.desktopFooterTitle}></DesktopFooter>}
           <MobileFooterMenu items={props.mobileBottomMenu}></MobileFooterMenu>
         </div>
       </div>

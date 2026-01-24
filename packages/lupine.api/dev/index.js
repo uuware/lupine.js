@@ -4,6 +4,7 @@ const fileUtils = require('./file-utils.js');
 const webEnv = require('../src/common-js/web-env.js');
 const { runCmd } = require('./run-cmd.js');
 const { sendRequest } = require('./send-request.js');
+const { markdownProcessOnEnd } = require('./markdown-build.js');
 module.exports = {
   copyFolder,
   cpIndexHtml,
@@ -15,4 +16,5 @@ module.exports = {
   loadEnv: webEnv.loadEnv,
   getWebConfig: webEnv.getWebConfig,
   pluginIfelse: require('./plugin-ifelse.js'),
+  markdownProcessOnEnd,
 };
