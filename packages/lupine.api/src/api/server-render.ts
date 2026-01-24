@@ -49,7 +49,9 @@ export const isServerSideRenderUrl = (urlWithoutQuery: string) => {
     ".htpasswd"                   -->   ""
     "name.with.many.dots.myext"   -->   "myext"
   */
-  const ext = urlWithoutQuery.slice(((urlWithoutQuery.lastIndexOf('.') - 1) >>> 0) + 2);
+  // get last section from /
+  const lastSection = urlWithoutQuery.split('/').pop() || '';
+  const ext = lastSection.slice(((lastSection.lastIndexOf('.') - 1) >>> 0) + 2);
   return ext === '' || ext === 'html';
 };
 

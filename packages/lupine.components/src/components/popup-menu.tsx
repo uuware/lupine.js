@@ -1,5 +1,6 @@
 import { CssProps, RefProps, VNode } from 'lupine.web';
 import { stopPropagation } from '../lib';
+import { MenuItemProps } from './menu-item-props';
 
 export type PopupMenuHookProps = {
   openMenu?: (event?: MouseEvent) => void;
@@ -43,9 +44,11 @@ export const PopupMenuWithIcon = (props: PopupMenuProps) => {
 };
 
 export type PopupMenuProps = {
-  list: string[];
+  list: (string | MenuItemProps)[];
   defaultValue: string;
+  icon?: VNode<any>;
   tips?: string;
+  width?: string;
   minWidth?: string;
   maxWidth?: string;
   maxHeight?: string;
@@ -124,7 +127,9 @@ export const PopupMenuWithLabel = (props: PopupMenuWithLabelProps) => {
 export const PopupMenu = ({
   list,
   defaultValue,
+  icon,
   tips = '',
+  width,
   minWidth,
   maxWidth,
   maxHeight,
@@ -172,7 +177,7 @@ export const PopupMenu = ({
         position: 'absolute',
         fontSize: 'var(--menu-font-size)',
         top: 0,
-        width: '100px',
+        width: width || '100px',
         color: 'var(--activatable-color-normal)',
         backgroundColor: 'var(--activatable-bg-color-normal)',
         zIndex: 'var(--layer-menu)',
@@ -197,6 +202,18 @@ export const PopupMenu = ({
           color: 'var(--activatable-color-hover)',
           backgroundColor: 'var(--activatable-bg-color-hover)',
           cursor: 'pointer',
+        },
+        '.item.indent1': {
+          paddingLeft: '19px',
+        },
+        '.item.indent1:hover': {
+          paddingLeft: '18px',
+        },
+        '.item.indent2': {
+          paddingLeft: '35px',
+        },
+        '.item.indent2:hover': {
+          paddingLeft: '34px',
         },
       },
       '.popup-menu-list.left-align': {
@@ -233,10 +250,12 @@ export const PopupMenu = ({
     hook.openMenu = openMenu;
     hook.getValue = () => selectedValue;
     hook.setLabel = (label: string) => {
-      ref.$('.popup-menu-item .popup-menu-text').innerText = label;
+      if (!icon && noUpdateLabel !== true) {
+        ref.$('.popup-menu-item .popup-menu-text').innerText = label;
+      }
     };
   }
-  const itemClick = (event: any) => {
+  const itemClick = (event: any, item: any) => {
     stopPropagation(event);
 
     // console.log('=======', event);
@@ -244,11 +263,11 @@ export const PopupMenu = ({
     ref.$('.popup-menu-list').classList.remove('open');
     if (event.target) {
       selectedValue = event.target.innerText;
-      if (noUpdateLabel !== true) {
+      if (!icon && noUpdateLabel !== true) {
         ref.$('.popup-menu-item .popup-menu-text').innerText = event.target.innerText;
       }
       if (handleSelected) {
-        handleSelected(event.target.innerText);
+        handleSelected(event.target.innerText, item);
       }
     }
     handleClosed && handleClosed();
@@ -264,19 +283,24 @@ export const PopupMenu = ({
   return (
     <div ref={ref} css={css} onClick={openMenu} title={tips}>
       <div class='popup-menu-item'>
-        <span class={'popup-menu-text' + (noTriangleIcon !== true ? ' triangle-icon' : '')}>
-          {defaultValue || '&nbsp;'}
-        </span>
+        {icon ? (
+          icon
+        ) : (
+          <span class={'popup-menu-text' + (noTriangleIcon !== true ? ' triangle-icon' : '')}>
+            {defaultValue || '&nbsp;'}
+          </span>
+        )}
       </div>
       <div class='popup-menu-bottom'>
         <div class='popup-menu-list'>
           <div>
             {list.map((item) => {
-              return item === '' ? (
-                <hr />
-              ) : (
-                <div class='item' onClick={itemClick}>
-                  {item}
+              if (item === '') return <hr />;
+              const text = typeof item === 'string' ? item : item.text;
+              const indent = typeof item === 'string' ? 0 : item.indent;
+              return (
+                <div class={'item' + (indent ? ' indent' + indent : '')} onClick={(e) => itemClick(e, item)}>
+                  {text}
                 </div>
               );
             })}

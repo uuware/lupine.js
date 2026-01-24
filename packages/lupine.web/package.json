@@ -41,6 +41,7 @@
   "scripts": {
     "note": "echo 'build is not needed as the typescript code is supposed to be referred directly from other projects'",
     "npm-publish": "npm publish --access public",
+    "build-min": "tsc && npx esbuild ./dist/build.js --minify --outfile=./dist/build.min.js",
     "build": "tsc"
   },
   "peerDependencies": {

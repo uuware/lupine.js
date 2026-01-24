@@ -1,11 +1,13 @@
-import { CssProps, getCurrentTheme, updateTheme } from 'lupine.web';
+import { CssProps, getCurrentTheme, updateTheme, VNode } from 'lupine.web';
 import { PopupMenu } from './popup-menu';
 
 export type ThemeSelectorProps = {
   className?: string;
+  icon?: VNode<any>;
+  noUpdateLabel?: boolean;
 };
 
-export const ThemeSelector = ({ className }: ThemeSelectorProps) => {
+export const ThemeSelector = ({ className, icon, noUpdateLabel }: ThemeSelectorProps) => {
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -22,7 +24,13 @@ export const ThemeSelector = ({ className }: ThemeSelectorProps) => {
   }
   return (
     <div css={css} class={['theme-switch', className].join(' ')} title='Select theme'>
-      <PopupMenu list={list} defaultValue={currentTheme.themeName} handleSelected={handleSelected}></PopupMenu>
+      <PopupMenu
+        list={list}
+        defaultValue={currentTheme.themeName}
+        handleSelected={handleSelected}
+        icon={icon}
+        noUpdateLabel={noUpdateLabel}
+      ></PopupMenu>
     </div>
   );
 };

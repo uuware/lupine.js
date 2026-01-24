@@ -6,6 +6,7 @@ export type MenuItemProps = {
   alt?: string;
   hide?: boolean;
   devAdmin?: boolean;
+  indent?: number;
 };
 
 export type NestMenuItemProps = MenuItemProps & {
