@@ -1,0 +1,10 @@
+<h1 id="editablelabel-可编辑标签"><a class="header-anchor" href="#editablelabel-可编辑标签">#</a>EditableLabel (可编辑标签)</h1><p>双击可编辑的标签，光标移出（失焦）时触发保存事件。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { EditableLabel } from &#39;lupine.components&#39;;
+
+&lt;EditableLabel
+  value=&#39;点击我试试&#39;
+  onSave={(newValue) =&gt; {
+    console.log(&#39;保存新内容:&#39;, newValue);
+  }}
+/&gt;;
+</code></pre>

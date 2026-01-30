@@ -1,0 +1,12 @@
+<h1 id="dragfresh-拖动刷新"><a class="header-anchor" href="#dragfresh-拖动刷新">#</a>DragFresh (拖动刷新)</h1><p>拖动刷新组件，常用于移动端列表顶部。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { DragFresh } from &#39;lupine.components&#39;;
+
+&lt;DragFresh
+  onRefresh={async () =&gt; {
+    // 执行刷新逻辑
+    await fetchData();
+  }}
+&gt;
+  &lt;ListContent /&gt;
+&lt;/DragFresh&gt;;
+</code></pre>

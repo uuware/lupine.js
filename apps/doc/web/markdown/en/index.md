@@ -1,0 +1,48 @@
+---
+layout: home
+title: LupineJS Doc
+sidemenu-width: 260px
+github-title: View on GitHub
+github-link: https://github.com/uuware/lupine.js
+
+lang:
+  title: English
+  id: en
+
+hero:
+  name: LupineJS
+  text: Approachable, Fast, Full-stack
+  tagline: A full-featured web application framework includes both Front-End and Back-End services.
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /en/guide/started
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/uuware/lupine.js
+
+nav:
+  - text: Guide
+    link: /en/guide/started
+  - text: API
+    link: /en/essentials/api
+
+sidebar:
+  - submenu: /en/guide
+  - text: Core Essentials
+    items:
+      - /en/essentials/api
+  - submenu: /en/lupine.web
+  - submenu: /en/lupine.components
+  - submenu: /en/lupine.components-libs
+  - submenu: /en/lupine.api
+  - submenu: /en/lupine.press
+
+features:
+  - title: Front-End (lupine.web)
+    details: Extremely lightweight framework (approx 10kb) using React TSX syntax. No heavy runtime.
+  - title: Back-End (lupine.api)
+    details: Efficient and simplified framework similar to Express. Optimized for SSR.
+  - title: Zero-dependency
+    details: Minimal dependency tree ensuring fast build times and reliable deployments.
+---

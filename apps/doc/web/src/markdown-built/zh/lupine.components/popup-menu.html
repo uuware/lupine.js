@@ -1,0 +1,7 @@
+<h1 id="popupmenu-弹出菜单"><a class="header-anchor" href="#popupmenu-弹出菜单">#</a>PopupMenu (弹出菜单)</h1><p>弹出式菜单，点击或悬停触发。用于显示选项。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { PopupMenuWithButton } from &#39;lupine.components&#39;;
+
+const list = [&#39;个人设置&#39;, &#39;消息中心&#39;, &#39;退出登录&#39;];
+
+&lt;PopupMenuWithButton label=&#39;我的账户&#39; list={list} handleSelected={(value) =&gt; console.log(&#39;选择了:&#39;, value)} /&gt;;
+</code></pre>

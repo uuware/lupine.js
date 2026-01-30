@@ -1,0 +1,10 @@
+<h1 id="slidetab-滑动选项卡"><a class="header-anchor" href="#slidetab-滑动选项卡">#</a>SlideTab (滑动选项卡)</h1><p>自动切换的 Tab 页面的组件，支持滑动效果。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { SlideTab } from &#39;lupine.components&#39;;
+
+const items = [
+  { title: &#39;Slide 1&#39;, children: &lt;div&gt;内容 1&lt;/div&gt; },
+  { title: &#39;Slide 2&#39;, children: &lt;div&gt;内容 2&lt;/div&gt; },
+];
+
+&lt;SlideTab items={items} autoPlay={true} interval={3000} /&gt;;
+</code></pre>

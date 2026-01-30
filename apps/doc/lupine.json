@@ -1,0 +1,23 @@
+{
+  "name": "doc",
+  "markdownEntryPoints": {
+    "indir": "web/markdown",
+    "outdir": "web/src/markdown-built"
+  },
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "watchFiles": ["web/markdown/**/*.md"],
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    }
+  ]
+}

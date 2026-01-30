@@ -1,0 +1,7 @@
+<h1 id="formatbytes"><a class="header-anchor" href="#formatbytes">#</a>formatBytes</h1><p>Format file size in bytes into human-readable strings (KB, MB, GB, etc.).</p>
+<p><strong>Usage Example (from <code>admin-resources.tsx</code>):</strong></p>
+<pre><code class="language-typescript">import { formatBytes } from &#39;lupine.components&#39;;
+
+const sizeStr = formatBytes(1024 * 1024 * 5); // &quot;5 MB&quot;
+const sizeStr2 = formatBytes(123456); // &quot;120.56 KB&quot;
+</code></pre>

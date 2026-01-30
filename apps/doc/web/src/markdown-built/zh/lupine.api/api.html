@@ -1,0 +1,35 @@
+<h1 id="api-module-src-api"><a class="header-anchor" href="#api-module-src-api">#</a>API Module (`src/api`)</h1><p>API 模块提供了编写应用程序业务逻辑的框架。它的作用类似于 Express.js，但针对 lupine 生态系统进行了优化。</p>
+<h2 id="主要特性-key-features"><a class="header-anchor" href="#主要特性-key-features">#</a>主要特性 (Key Features)</h2><ul>
+<li><strong>ApiRouter</strong>: 一个灵活的路由器，支持 GET、POST 请求以及类似中间件的过滤器。</li>
+<li><strong>上下文隔离 (Context Isolation)</strong>: 使用 <code>AsyncStorage</code> 在异步操作中安全地管理请求范围的数据（如会话或数据库事务）。</li>
+<li><strong>数据库集成 (Database Integration)</strong>: 内置的数据库连接助手（例如，通过 <code>better-sqlite3</code> 连接 SQLite）。</li>
+</ul>
+<h2 id="使用示例-usage-example"><a class="header-anchor" href="#使用示例-usage-example">#</a>使用示例 (Usage Example)</h2><p>应用程序的 API 入口点（例如 <code>apps/demo.app/api/src/index.ts</code>）通常导出 <code>ApiModule</code> 的一个实例。</p>
+<p><strong>1. 入口点 (<code>index.ts</code>):</strong></p>
+<pre><code class="language-typescript">import { ApiModule } from &#39;lupine.api&#39;;
+import { RootApi } from &#39;./service/root-api&#39;;
+
+// 导出 apiModule 以便服务器动态加载
+export const apiModule = new ApiModule(new RootApi());
+</code></pre>
+<p><strong>2. 根 API 服务 (<code>service/root-api.ts</code>):</strong></p>
+<pre><code class="language-typescript">import { ApiRouter, IApiBase, IApiRouter } from &#39;lupine.api&#39;;
+
+export class RootApi implements IApiBase {
+  getRouter(): IApiRouter {
+    const router = new ApiRouter();
+
+    // 定义路由
+    router.get(&#39;/hello&#39;, async (req, res) =&gt; {
+      res.write(JSON.stringify({ message: &#39;Hello World&#39; }));
+      res.end();
+      return true; // 返回 true 表示请求已被处理
+    });
+
+    // 可以挂载子路由器
+    // router.use(&#39;/users&#39;, new UserApi().getRouter());
+
+    return router;
+  }
+}
+</code></pre>

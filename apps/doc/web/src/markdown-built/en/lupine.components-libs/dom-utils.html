@@ -1,0 +1,11 @@
+<h1 id="domutils"><a class="header-anchor" href="#domutils">#</a>DomUtils</h1><p>Helper functions for common DOM operations, mostly shorthand for <code>querySelector</code>.</p>
+<p><strong>Usage Example (from <code>admin-resources.tsx</code>):</strong></p>
+<pre><code class="language-typescript">import { DomUtils } from &#39;lupine.components&#39;;
+
+// Get input value
+const value = DomUtils.getValue(&#39;#my-input&#39;);
+
+// Trigger click on a hidden file input
+const fDom = DomUtils.bySelector(&#39;.up-file&#39;) as HTMLInputElement;
+fDom.click();
+</code></pre>

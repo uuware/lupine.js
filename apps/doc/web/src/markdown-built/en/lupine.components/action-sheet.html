@@ -1,0 +1,12 @@
+<h1 id="action-sheet"><a class="header-anchor" href="#action-sheet">#</a>Action Sheet</h1><p>A sliding window from the bottom on mobile devices, used for displaying new pages or setting options.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { ActionSheetSelect, NotificationMessage, NotificationColor } from &#39;lupine.components&#39;;
+
+ActionSheetSelect.show({
+  title: &#39;Select Action&#39;,
+  options: [&#39;Option A&#39;, &#39;Option B&#39;, &#39;Option C&#39;],
+  handleClicked: (index, close) =&gt; {
+    NotificationMessage.sendMessage(&#39;Selected index: &#39; + index, NotificationColor.Success);
+    close();
+  },
+});
+</code></pre>

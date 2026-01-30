@@ -1,0 +1,15 @@
+<h1 id="dragutil"><a class="header-anchor" href="#dragutil">#</a>DragUtil</h1><p>Helper for implementing drag-and-drop or touch-move functionality.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-typescript">import { createDragUtil } from &#39;lupine.components&#39;;
+
+const dragUtil = createDragUtil();
+dragUtil.setOnMoveCallback((clientX, clientY, movedX, movedY) =&gt; {
+  console.log(`Moved by ${movedX}, ${movedY}`);
+  // Update element position here
+});
+
+// Bind to events
+&lt;div onMouseDown={dragUtil.onMouseDown} onMouseMove={dragUtil.onMouseMove} onMouseUp={dragUtil.onMouseUp}&gt;
+  Drag Me
+&lt;/div&gt;;
+</code></pre>

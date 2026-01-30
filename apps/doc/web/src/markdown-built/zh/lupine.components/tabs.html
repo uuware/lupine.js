@@ -1,0 +1,10 @@
+<h1 id="tabs-选项卡"><a class="header-anchor" href="#tabs-选项卡">#</a>Tabs (选项卡)</h1><p>标准的选项卡组件，用于在同一区域切换不同内容。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { Tabs, TabsPageProps } from &#39;lupine.components&#39;;
+
+const pages: TabsPageProps[] = [
+  { title: &#39;概览&#39;, children: &lt;Overview /&gt; },
+  { title: &#39;详情&#39;, children: &lt;Details /&gt; },
+];
+
+&lt;Tabs pages={pages} pagePadding=&#39;16px&#39; /&gt;;
+</code></pre>

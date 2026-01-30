@@ -1,0 +1,17 @@
+<h1 id="menusidebar-侧边导航栏"><a class="header-anchor" href="#menusidebar-侧边导航栏">#</a>MenuSidebar (侧边导航栏)</h1><p>纵向导航菜单，支持多级目录，适配桌面与移动端。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { MenuSidebar } from &#39;lupine.components&#39;;
+
+const adminMenu = [
+  { text: &#39;仪表盘&#39;, icon: &#39;dashboard&#39;, onClick: () =&gt; navigate(&#39;/admin&#39;) },
+  { text: &#39;内容管理&#39;, icon: &#39;content&#39;, children: [
+      { text: &#39;文章列表&#39;, onClick: () =&gt; navigate(&#39;/articles&#39;) },
+      { text: &#39;分类管理&#39;, onClick: () =&gt; navigate(&#39;/categories&#39;) }
+  ]}
+];
+
+// 移动端菜单
+&lt;MenuSidebar items={adminMenu} mobileMenu={true} /&gt;
+
+// 桌面端左侧菜单
+&lt;MenuSidebar items={adminMenu} desktopMenu={true} /&gt;
+</code></pre>

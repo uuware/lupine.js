@@ -1,0 +1,15 @@
+<h1 id="observable"><a class="header-anchor" href="#observable">#</a>Observable</h1><p>Implementation of the Observable pattern, inspired by RxJS.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-typescript">import { Subject } from &#39;lupine.components&#39;;
+
+const subject = new Subject&lt;string&gt;();
+
+const subscription = subject.subscribe((value) =&gt; {
+  console.log(&#39;Observer A received:&#39;, value);
+});
+
+subject.next(&#39;Hello&#39;);
+subject.next(&#39;World&#39;);
+
+subscription.unsubscribe();
+</code></pre>

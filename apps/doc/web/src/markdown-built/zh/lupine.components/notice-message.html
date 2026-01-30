@@ -1,0 +1,9 @@
+<h1 id="noticemessage-通知消息"><a class="header-anchor" href="#noticemessage-通知消息">#</a>NoticeMessage (通知消息)</h1><p>一个很常用的核心组件，用于在页面顶部显示全局通知消息。支持多种颜色等级。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { NotificationMessage, NotificationColor } from &#39;lupine.components&#39;;
+
+// 成功通知
+NotificationMessage.sendMessage(&#39;数据已保存&#39;, NotificationColor.Success);
+
+// 错误通知 (永久显示)
+NotificationMessage.sendMessage(&#39;网络异常，请检查&#39;, NotificationColor.Error, true);
+</code></pre>

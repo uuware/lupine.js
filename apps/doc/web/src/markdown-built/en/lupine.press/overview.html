@@ -1,0 +1,83 @@
+<h1 id="lupine-press"><a class="header-anchor" href="#lupine-press">#</a>lupine.press</h1><p><code>lupine.press</code> is a lightweight, high-performance documentation site framework built on top of <code>lupine.web</code>. It provides a complete solution for rendering Markdown-based documentation websites with a responsive layout, sidebar navigation, and theming support.</p>
+<p>It is designed to work seamlessly with the <code>lupine</code> ecosystem, powering documentation sites like the official LupineJS documentation.</p>
+<h2 id="features"><a class="header-anchor" href="#features">#</a>Features</h2><ul>
+<li><strong>Responsive Layout</strong>: Built-in <code>PressFrame</code> provides a standard documentation layout with a header, responsive sidebar, and content area.</li>
+<li><strong>Markdown Rendering</strong>: Optimized for rendering content generated from Markdown files, including syntax highlighting and standard typography.</li>
+<li><strong>Sidebar Navigation</strong>: Automatically generates a multi-level sidebar based on your configuration.</li>
+<li><strong>Theming</strong>: Built-in support for multiple themes (e.g., light/dark mode) via <code>lupine.components</code> theme system.</li>
+<li><strong>Routing</strong>: explicit integration with <code>PageRouter</code> for handling client-side navigation.</li>
+<li><strong>Multilingual Support</strong>: Automatically scans markdown files from multilingual directories and supports language switching.</li>
+</ul>
+<h2 id="usage-guide"><a class="header-anchor" href="#usage-guide">#</a>Usage Guide</h2><p>To use <code>lupine.press</code>, you typically set up a <code>lupine.web</code> application and configure it to use <code>PressPage</code> as the main route handler.</p>
+<h3 id="1-prerequisites"><a class="header-anchor" href="#1-prerequisites">#</a>1. Prerequisites</h3><p>Ensure you have <code>lupine.press</code> installed in your project.</p>
+<h3 id="2-basic-setup"><a class="header-anchor" href="#2-basic-setup">#</a>2. Basic Setup</h3><p>In your application entry point (e.g., <code>src/index.tsx</code>), you need to bind the necessary configurations and set up the router.</p>
+<pre><code class="language-typescript">import { bindRouter, PageRouter, bindTheme, bindLang, setDefaultPageTitle } from &#39;lupine.components&#39;;
+import { bindPressData, PressPage, pressThemes } from &#39;lupine.press&#39;;
+import { markdownConfig } from &#39;./markdown-config&#39;; // Your generated markdown data
+
+// 1. Initialize core settings
+bindLang(&#39;en&#39;, {}); // Set default language
+bindTheme(&#39;light&#39;, pressThemes); // Bind themes (includes specific styles for press)
+setDefaultPageTitle(&#39;My Documentation&#39;);
+
+// 2. Bind documentation data
+// markdownConfig is a dictionary containing HTML content and metadata generated from markdown files.
+bindPressData(markdownConfig);
+
+// 3. Configure Router
+const pageRouter = new PageRouter();
+// Route all requests to PressPage, which handles looking up content in markdownConfig
+pageRouter.use(&#39;*&#39;, PressPage);
+
+// 4. Start the application
+bindRouter(pageRouter);
+</code></pre>
+<h3 id="3-data-structure-markdownconfig"><a class="header-anchor" href="#3-data-structure-markdownconfig">#</a>3. Data Structure (`markdownConfig`)</h3><p>The <code>bindPressData</code> function expects a configuration object where keys are route paths (e.g., <code>/guide/started</code>) and values contain the content and metadata.</p>
+<p>Typically, this data is generated at build time from your Markdown files.</p>
+<pre><code class="language-typescript">export const markdownConfig = {
+  &#39;/en/guide/started&#39;: {
+    html: &#39;&lt;h1&gt;Getting Started&lt;/h1&gt;&lt;p&gt;...&lt;/p&gt;&#39;, // Pre-rendered HTML content
+    data: {
+      title: &#39;Getting Started&#39;,
+      sidebar: [
+        // Sidebar configuration for this page context
+        { type: &#39;group&#39;, text: &#39;Guide&#39;, level: 0 },
+        { type: &#39;link&#39;, text: &#39;Installation&#39;, link: &#39;/en/guide/install&#39;, level: 1 },
+      ],
+    },
+    headings: [{ level: 2, text: &#39;Prerequisites&#39;, id: &#39;prerequisites&#39; }],
+  },
+  // ... other pages
+};
+</code></pre>
+<h2 id="markdown-file-structure-association"><a class="header-anchor" href="#markdown-file-structure-association">#</a>Markdown File Structure & Association</h2><h3 id="top-level-configuration"><a class="header-anchor" href="#top-level-configuration">#</a>Top-level Configuration</h3><p>A <code>index.md</code> file must exist in the top-level directory of your Markdown files. This file uses the <code>lang</code> field to specify all supported languages for the site.</p>
+<pre><code class="language-yaml">---
+lang:
+  - title: English
+    id: en
+  - title: 简体中文
+    id: zh
+---
+</code></pre>
+<h3 id="multilingual-configuration"><a class="header-anchor" href="#multilingual-configuration">#</a>Multilingual Configuration</h3><p>Each language ID (e.g., <code>en</code>, <code>zh</code>) corresponds to a subdirectory, which must contain its own <code>index.md</code> file. This file configures global settings for that language version, such as layout, page title, and sidebar width. All Markdown content files for that language should be stored within this directory or its subdirectories.</p>
+<p>The <code>index.md</code> supports defining:</p>
+<ul>
+<li><strong>Hero &amp; Features</strong>: Homepage hero banner and feature introduction.</li>
+<li><strong>Nav</strong>: Top navigation links.</li>
+<li><strong>GitHub</strong>: Repository links.</li>
+<li><strong>Sidebar</strong>: Sidebar menu configuration (Core parameter).</li>
+</ul>
+<h3 id="sidebar-configuration"><a class="header-anchor" href="#sidebar-configuration">#</a>Sidebar Configuration</h3><p>The <code>sidebar</code> parameter is an array that supports three configuration patterns:</p>
+<ol>
+<li><strong>Submenu Pattern (<code>submenu</code>)</strong>:
+Points to a subdirectory. The system will automatically expand the <code>sidebar</code> configuration defined in that subdirectory&#39;s <code>index.md</code> and merge its content into the current level.</li>
+<li><strong>Group Pattern (<code>text</code> + <code>items</code>)</strong>:
+Defines a menu group. <code>text</code> is the group title, and <code>items</code> is the list of links under this group.</li>
+<li><strong>Flat Pattern (<code>items</code> only)</strong>:
+Defines <code>items</code> without <code>text</code>. In this case, all links in <code>items</code> will be displayed directly at the current level without grouping.</li>
+</ol>
+<h2 id="architecture"><a class="header-anchor" href="#architecture">#</a>Architecture</h2><ul>
+<li><strong><code>PressFrame</code></strong>: The main layout component. It handles the specific CSS and structure for a documentation site, ensuring the sidebar and content area scroll independently.</li>
+<li><strong><code>PressPage</code></strong>: The &quot;controller&quot; component. It looks up the current URL in the bound <code>markdownConfig</code>, retrieves the corresponding HTML and metadata, and renders the <code>PressFrame</code> with the correct sidebar and content.</li>
+<li><strong><code>pressLoad</code></strong>: A navigation utility to handle link clicks within the documentation, ensuring smooth client-side transitions.</li>
+</ul>

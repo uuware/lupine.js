@@ -1,0 +1,16 @@
+<h1 id="menubar"><a class="header-anchor" href="#menubar">#</a>Menubar</h1><p>Horizontal navigation bar with dropdown support.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { Menubar } from &#39;lupine.components&#39;;
+
+const menuItems = [
+  { text: &#39;Home&#39;, link: &#39;/&#39; },
+  {
+    text: &#39;Products&#39;,
+    children: [
+      { text: &#39;LupineJS&#39;, link: &#39;/lupine&#39; },
+      { text: &#39;Components&#39;, link: &#39;/components&#39; },
+    ],
+  },
+];
+
+&lt;Menubar items={menuItems} /&gt;;
+</code></pre>
