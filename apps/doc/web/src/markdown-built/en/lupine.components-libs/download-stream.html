@@ -1,0 +1,10 @@
+<h1 id="downloadstream"><a class="header-anchor" href="#downloadstream">#</a>downloadStream</h1><p>Download a <code>Blob</code> as a file by creating a temporary anchor tag.</p>
+<p><strong>Usage Example (from <code>admin-resources.tsx</code>):</strong></p>
+<pre><code class="language-typescript">import { downloadStream } from &#39;lupine.components&#39;;
+
+const onDownload = async (name: string) =&gt; {
+  const response = await fetch(&#39;/api/download?file=&#39; + name);
+  const blob = await response.blob();
+  downloadStream(blob, name);
+};
+</code></pre>

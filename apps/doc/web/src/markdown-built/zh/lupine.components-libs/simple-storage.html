@@ -1,0 +1,11 @@
+<h1 id="simplestorage"><a class="header-anchor" href="#simplestorage">#</a>SimpleStorage</h1><p>A wrapper for <code>localStorage</code> (or similar key-value storage) offering typed getters.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-typescript">import { SimpleStorage } from &#39;lupine.components&#39;;
+
+// Assuming initialized with some storage object like localStorage
+const storage = new SimpleStorage(localStorage as any);
+
+storage.set(&#39;theme&#39;, &#39;dark&#39;);
+const theme = storage.get(&#39;theme&#39;, &#39;light&#39;); // returns &#39;dark&#39;
+const isDebug = storage.getBoolean(&#39;debug&#39;, false);
+</code></pre>

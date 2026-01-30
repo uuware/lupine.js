@@ -1,0 +1,19 @@
+<h1 id="api-参考"><a class="header-anchor" href="#api-参考">#</a>API 参考</h1><p>LupineJS 为 Web 和服务器开发提供了一套极简的 API。</p>
+<h2 id="lupine-web-前端"><a class="header-anchor" href="#lupine-web-前端">#</a>Lupine.web (前端)</h2><h3 id="bindrouter"><a class="header-anchor" href="#bindrouter">#</a>`bindRouter`</h3><p>将页面路由绑定到应用程序。</p>
+<pre><code class="language-typescript">import { bindRouter, PageRouter } from &#39;lupine.components&#39;;
+const pageRouter = new PageRouter();
+pageRouter.use(&#39;/&#39;, HomePage);
+bindRouter(pageRouter);
+</code></pre>
+<h3 id="bindtheme"><a class="header-anchor" href="#bindtheme">#</a>`bindTheme`</h3><p>绑定主题配置。</p>
+<pre><code class="language-typescript">import { bindTheme } from &#39;lupine.components&#39;;
+bindTheme(&#39;light&#39;, themes);
+</code></pre>
+<h3 id="bindlang"><a class="header-anchor" href="#bindlang">#</a>`bindLang`</h3><p>绑定多语言支持。</p>
+<pre><code class="language-typescript">import { bindLang } from &#39;lupine.components&#39;;
+bindLang(&#39;en&#39;, { en, zh });
+</code></pre>
+<h2 id="lupine-api-后端"><a class="header-anchor" href="#lupine-api-后端">#</a>Lupine.api (后端)</h2><h3 id="apimodule"><a class="header-anchor" href="#apimodule">#</a>`ApiModule`</h3><p>后端服务的主模块。</p>
+<pre><code class="language-typescript">import { ApiModule } from &#39;lupine.api&#39;;
+export const apiModule = new ApiModule(new RootApi());
+</code></pre>

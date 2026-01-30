@@ -1,0 +1,14 @@
+<h1 id="floatwindow"><a class="header-anchor" href="#floatwindow">#</a>FloatWindow</h1><p>A draggable popup window. Supports modal and non-modal modes.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { FloatWindow } from &#39;lupine.components&#39;;
+
+// Show a non-modal window
+FloatWindow.show({
+  title: &#39;Toolbox&#39;,
+  buttons: [&#39;OK&#39;],
+  handleClicked: (index, close) =&gt; {
+    close();
+  },
+  children: &lt;div&gt;This is the content of a non-modal float window.&lt;/div&gt;,
+  noModal: true,
+});
+</code></pre>

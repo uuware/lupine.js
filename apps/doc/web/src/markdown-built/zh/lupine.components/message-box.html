@@ -1,0 +1,17 @@
+<h1 id="messagebox-消息框"><a class="header-anchor" href="#messagebox-消息框">#</a>MessageBox (消息框)</h1><p>预定义的对话框（如 Yes/No, Ok/Cancel），用于快速提示。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { MessageBox, MessageBoxButtonProps } from &#39;lupine.components&#39;;
+
+MessageBox.show({
+  title: &#39;删除确认&#39;,
+  buttonType: MessageBoxButtonProps.YesNo,
+  contentMinWidth: &#39;200px&#39;,
+  handleClicked: (index, close) =&gt; {
+    if (index === 0) {
+      // Yes
+      console.log(&#39;用户选择了确认&#39;);
+    }
+    close();
+  },
+  children: &lt;div&gt;您确定要删除此项吗？&lt;/div&gt;,
+});
+</code></pre>

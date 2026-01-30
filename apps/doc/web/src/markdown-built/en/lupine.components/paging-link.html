@@ -1,0 +1,10 @@
+<h1 id="paginglink"><a class="header-anchor" href="#paginglink">#</a>PagingLink</h1><p>Pagination component for displaying and navigating to different page numbers.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { PagingLink } from &#39;lupine.components&#39;;
+
+&lt;PagingLink
+  totalCount={100}
+  pageSize={10}
+  currentPage={1}
+  onPageChange={(page) =&gt; console.log(&#39;Navigate to page:&#39;, page)}
+/&gt;;
+</code></pre>

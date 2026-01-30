@@ -1,0 +1,14 @@
+<h1 id="messagehub"><a class="header-anchor" href="#messagehub">#</a>MessageHub</h1><p>A publish-subscribe event bus for communication between components.</p>
+<p><strong>Usage Example (from <code>admin-test-animations.tsx</code>):</strong></p>
+<pre><code class="language-typescript">import { MessageHub, MessageHubData } from &#39;lupine.components&#39;;
+
+const hub = new MessageHub();
+
+// Subscribe to messages
+hub.subscribe(&#39;test-event&#39;, (data: any) =&gt; {
+  console.log(&#39;Received:&#39;, data);
+});
+
+// Send message
+hub.send(&#39;test-event&#39;, { text: &#39;Hello&#39; });
+</code></pre>

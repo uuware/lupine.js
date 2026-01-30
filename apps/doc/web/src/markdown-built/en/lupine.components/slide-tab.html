@@ -1,0 +1,10 @@
+<h1 id="slidetab"><a class="header-anchor" href="#slidetab">#</a>SlideTab</h1><p>Auto-switching tab component with sliding support.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { SlideTab } from &#39;lupine.components&#39;;
+
+const items = [
+  { title: &#39;Slide 1&#39;, children: &lt;div&gt;Content 1&lt;/div&gt; },
+  { title: &#39;Slide 2&#39;, children: &lt;div&gt;Content 2&lt;/div&gt; },
+];
+
+&lt;SlideTab items={items} autoPlay={true} interval={3000} /&gt;;
+</code></pre>

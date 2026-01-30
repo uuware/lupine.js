@@ -1,0 +1,12 @@
+<h1 id="selectwithtitle"><a class="header-anchor" href="#selectwithtitle">#</a>SelectWithTitle</h1><p>Dropdown select list combined with a title.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { SelectWithTitle } from &#39;lupine.components&#39;;
+
+const options = [
+  { option: &#39;Option 1&#39;, value: &#39;1&#39; },
+  { option: &#39;Option 2&#39;, value: &#39;2&#39;, selected: true },
+];
+
+const select = SelectWithTitle(&#39;Select Level&#39;, options, (value) =&gt; {
+  console.log(&#39;Selected value:&#39;, value);
+});
+</code></pre>

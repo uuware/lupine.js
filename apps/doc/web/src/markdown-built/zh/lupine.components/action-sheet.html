@@ -1,0 +1,12 @@
+<h1 id="action-sheet-动作列表"><a class="header-anchor" href="#action-sheet-动作列表">#</a>Action Sheet (动作列表)</h1><p>手机端弹出的滑动窗口，用于显示一个新页或设定选项等。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { ActionSheetSelect, NotificationMessage, NotificationColor } from &#39;lupine.components&#39;;
+
+ActionSheetSelect.show({
+  title: &#39;选择操作&#39;,
+  options: [&#39;选项 A&#39;, &#39;选项 B&#39;, &#39;选项 C&#39;],
+  handleClicked: (index, close) =&gt; {
+    NotificationMessage.sendMessage(&#39;您选择了: &#39; + index, NotificationColor.Success);
+    close();
+  },
+});
+</code></pre>

@@ -1,0 +1,10 @@
+<h1 id="tabs"><a class="header-anchor" href="#tabs">#</a>Tabs</h1><p>Standard tab component for switching between different content in the same area.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { Tabs, TabsPageProps } from &#39;lupine.components&#39;;
+
+const pages: TabsPageProps[] = [
+  { title: &#39;Overview&#39;, children: &lt;Overview /&gt; },
+  { title: &#39;Details&#39;, children: &lt;Details /&gt; },
+];
+
+&lt;Tabs pages={pages} pagePadding=&#39;16px&#39; /&gt;;
+</code></pre>

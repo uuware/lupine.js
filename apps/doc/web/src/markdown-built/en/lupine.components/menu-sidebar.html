@@ -1,0 +1,17 @@
+<h1 id="menusidebar"><a class="header-anchor" href="#menusidebar">#</a>MenuSidebar</h1><p>Vertical sidebar menu with multi-level support, desktop and mobile adaptive.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { MenuSidebar } from &#39;lupine.components&#39;;
+
+const myMenu = [
+  { text: &#39;Dashboard&#39;, icon: &#39;dashboard&#39;, onClick: () =&gt; navigate(&#39;/admin&#39;) },
+  {
+    text: &#39;Settings&#39;,
+    icon: &#39;settings&#39;,
+    children: [
+      { text: &#39;Profile&#39;, onClick: () =&gt; navigate(&#39;/profile&#39;) },
+      { text: &#39;Security&#39;, onClick: () =&gt; navigate(&#39;/security&#39;) },
+    ],
+  },
+];
+
+&lt;MenuSidebar items={myMenu} desktopMenu={true} /&gt;;
+</code></pre>

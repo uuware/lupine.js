@@ -1,0 +1,35 @@
+<h1 id="api-module-src-api"><a class="header-anchor" href="#api-module-src-api">#</a>API Module (`src/api`)</h1><p>The API Module provides the framework for writing the business logic of your application. It acts similarly to Express.js but is optimized for the lupine ecosystem.</p>
+<h2 id="key-features"><a class="header-anchor" href="#key-features">#</a>Key Features</h2><ul>
+<li><strong>ApiRouter</strong>: A flexible router supporting GET, POST, and middleware-like filters.</li>
+<li><strong>Context Isolation</strong>: Uses <code>AsyncStorage</code> to safely manage request-scoped data (like sessions or database transactions) across async operations.</li>
+<li><strong>Database Integration</strong>: Built-in helpers for database connections (e.g., SQLite via <code>better-sqlite3</code>).</li>
+</ul>
+<h2 id="usage-example"><a class="header-anchor" href="#usage-example">#</a>Usage Example</h2><p>An application&#39;s API entry point (e.g., <code>apps/demo.app/api/src/index.ts</code>) typically exports an instance of <code>ApiModule</code>.</p>
+<p><strong>1. Entry Point (<code>index.ts</code>):</strong></p>
+<pre><code class="language-typescript">import { ApiModule } from &#39;lupine.api&#39;;
+import { RootApi } from &#39;./service/root-api&#39;;
+
+// Export apiModule so the server can load it dynamically
+export const apiModule = new ApiModule(new RootApi());
+</code></pre>
+<p><strong>2. Root API Service (<code>service/root-api.ts</code>):</strong></p>
+<pre><code class="language-typescript">import { ApiRouter, IApiBase, IApiRouter } from &#39;lupine.api&#39;;
+
+export class RootApi implements IApiBase {
+  getRouter(): IApiRouter {
+    const router = new ApiRouter();
+
+    // Define routes
+    router.get(&#39;/hello&#39;, async (req, res) =&gt; {
+      res.write(JSON.stringify({ message: &#39;Hello World&#39; }));
+      res.end();
+      return true; // Return true to indicate request was handled
+    });
+
+    // Sub-routers can be mounted
+    // router.use(&#39;/users&#39;, new UserApi().getRouter());
+
+    return router;
+  }
+}
+</code></pre>

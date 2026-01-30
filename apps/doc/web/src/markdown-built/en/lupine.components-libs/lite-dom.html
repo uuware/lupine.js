@@ -1,0 +1,11 @@
+<h1 id="litedom"><a class="header-anchor" href="#litedom">#</a>LiteDom</h1><p>A lightweight, chainable DOM wrapper similar to jQuery.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-typescript">import { LiteDom } from &#39;lupine.components&#39;;
+
+const el = new LiteDom(&#39;#my-element&#39;);
+el.css(&#39;color&#39;, &#39;red&#39;)
+  .html(&#39;Hello World&#39;)
+  .on(&#39;click&#39;, () =&gt; {
+    console.log(&#39;Clicked!&#39;);
+  });
+</code></pre>

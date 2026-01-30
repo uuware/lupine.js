@@ -1,0 +1,9 @@
+<h1 id="dynamicalload"><a class="header-anchor" href="#dynamicalload">#</a>DynamicalLoad</h1><p>Dynamically load external Scripts or CSS files. Used for lazy loading third-party SDKs.</p>
+<p><strong>Usage Example (from <code>wx-share.ts</code>):</strong></p>
+<pre><code class="language-typescript">import { DynamicalLoad } from &#39;lupine.components&#39;;
+
+// Load WeChat JS-SDK dynamically
+if (typeof wx === &#39;undefined&#39;) {
+  await DynamicalLoad.loadScript(&#39;//res.wx.qq.com/open/js/jweixin-1.6.0.js&#39;, &#39;jweixin&#39;);
+}
+</code></pre>

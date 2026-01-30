@@ -1,0 +1,14 @@
+<h1 id="floatwindow-浮窗"><a class="header-anchor" href="#floatwindow-浮窗">#</a>FloatWindow (浮窗)</h1><p>一个可以拖动的弹出窗口。支持 Modal 和非 Modal 模式。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { FloatWindow } from &#39;lupine.components&#39;;
+
+// 显示一个非 Modal 窗口
+FloatWindow.show({
+  title: &#39;工具箱&#39;,
+  buttons: [&#39;OK&#39;],
+  handleClicked: (index, close) =&gt; {
+    close();
+  },
+  children: &lt;div&gt;这是一个非 Modal 的浮动窗口内容。&lt;/div&gt;,
+  noModal: true,
+});
+</code></pre>

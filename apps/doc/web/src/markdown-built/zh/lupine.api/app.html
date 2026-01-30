@@ -1,0 +1,48 @@
+<h1 id="server-src-app"><a class="header-anchor" href="#server-src-app">#</a>Server (`src/app`)</h1><p>服务器组件负责处理传入的网络请求，管理 SSL 证书，并根据域名配置将请求分发到相应的应用程序。它支持集群逻辑，以高效利用多核 CPU。</p>
+<h2 id="主要特性-key-features"><a class="header-anchor" href="#主要特性-key-features">#</a>主要特性 (Key Features)</h2><ul>
+<li><strong>多应用和多域名</strong>: 在单个服务器实例上托管多个独立的应用程序，根据域名路由流量。</li>
+<li><strong>集群支持</strong>: 自动 fork 工作进程以匹配 CPU 核心数，实现高性能。</li>
+<li><strong>SSL/TLS</strong>: 内置支持带有自定义证书路径的 HTTPS。</li>
+<li><strong>环境管理</strong>: 从 <code>.env</code> 文件加载配置。</li>
+</ul>
+<h2 id="使用示例-usage-example"><a class="header-anchor" href="#使用示例-usage-example">#</a>使用示例 (Usage Example)</h2><p>完整示例请参见 <code>apps/server/src/index.ts</code>。</p>
+<pre><code class="language-typescript">import { appStart, loadEnv, ServerEnvKeys } from &#39;lupine.api&#39;;
+import * as path from &#39;path&#39;;
+
+const initAndStartServer = async () =&gt; {
+  // 1. 加载环境变量
+  await loadEnv(&#39;.env&#39;);
+
+  // 2. 配置应用程序
+  const serverRootPath = path.resolve(process.env[ServerEnvKeys.SERVER_ROOT_PATH]!);
+  const webRootMap = [
+    {
+      appName: &#39;demo.app&#39;,
+      hosts: [&#39;localhost&#39;, &#39;example.com&#39;],
+      // lupine.api 期望的标准目录结构
+      webPath: path.join(serverRootPath, &#39;demo.app_web&#39;),
+      dataPath: path.join(serverRootPath, &#39;demo.app_data&#39;),
+      apiPath: path.join(serverRootPath, &#39;demo.app_api&#39;),
+      dbType: &#39;sqlite&#39;,
+      dbConfig: { filename: &#39;sqlite3.db&#39; },
+    },
+  ];
+
+  // 3. 启动服务器
+  await appStart.start({
+    debug: process.env.NODE_ENV === &#39;development&#39;,
+    apiConfig: {
+      serverRoot: serverRootPath,
+      webHostMap: webRootMap,
+    },
+    serverConfig: {
+      httpPort: 8080,
+      httpsPort: 8443,
+      // sslKeyPath: &#39;...&#39;,
+      // sslCrtPath: &#39;...&#39;,
+    },
+  });
+};
+
+initAndStartServer();
+</code></pre>

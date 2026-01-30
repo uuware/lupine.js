@@ -1,0 +1,12 @@
+<h1 id="selectwithtitle-带标题的下拉列表"><a class="header-anchor" href="#selectwithtitle-带标题的下拉列表">#</a>SelectWithTitle (带标题的下拉列表)</h1><p>带标题的下拉选择列表。</p>
+<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { SelectWithTitle } from &#39;lupine.components&#39;;
+
+const options = [
+  { option: &#39;选项 1&#39;, value: &#39;1&#39; },
+  { option: &#39;选项 2&#39;, value: &#39;2&#39;, selected: true },
+];
+
+const select = SelectWithTitle(&#39;请选择等级&#39;, options, (value) =&gt; {
+  console.log(&#39;选择了:&#39;, value);
+});
+</code></pre>

@@ -1,0 +1,10 @@
+<h1 id="editablelabel"><a class="header-anchor" href="#editablelabel">#</a>EditableLabel</h1><p>Label that becomes editable on double-click and triggers a save event on blur.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { EditableLabel } from &#39;lupine.components&#39;;
+
+&lt;EditableLabel
+  value=&#39;Click to edit me&#39;
+  onSave={(newValue) =&gt; {
+    console.log(&#39;Saved new value:&#39;, newValue);
+  }}
+/&gt;;
+</code></pre>

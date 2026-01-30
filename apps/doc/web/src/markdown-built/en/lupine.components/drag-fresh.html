@@ -1,0 +1,12 @@
+<h1 id="dragfresh"><a class="header-anchor" href="#dragfresh">#</a>DragFresh</h1><p>Drag-to-refresh component, commonly used at the top of mobile lists.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { DragFresh } from &#39;lupine.components&#39;;
+
+&lt;DragFresh
+  onRefresh={async () =&gt; {
+    // Perform refresh logic
+    await fetchData();
+  }}
+&gt;
+  &lt;ListContent /&gt;
+&lt;/DragFresh&gt;;
+</code></pre>

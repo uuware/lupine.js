@@ -1,0 +1,20 @@
+<h1 id="uploadfile"><a class="header-anchor" href="#uploadfile">#</a>uploadFile</h1><p>Handle file uploads with chunking support, progress tracking, and retries.</p>
+<p><strong>Usage Example (from <code>admin-resources.tsx</code>):</strong></p>
+<pre><code class="language-typescript">import { uploadFile } from &#39;lupine.components&#39;;
+
+const onUploadProgress = (percentage: number, chunkNumber: number, totalChunks: number) =&gt; {
+  console.log(`Progress: ${percentage * 100}%`);
+};
+
+const onFileChange = async (e: Event) =&gt; {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const result = await uploadFile(file, &#39;/api/upload?name=&#39; + file.name, onUploadProgress);
+
+  if (result === true) {
+    console.log(&#39;Upload success&#39;);
+  }
+};
+</code></pre>

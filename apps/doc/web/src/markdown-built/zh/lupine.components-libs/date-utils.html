@@ -1,0 +1,13 @@
+<h1 id="dateutils"><a class="header-anchor" href="#dateutils">#</a>DateUtils</h1><p>Comprehensive date manipulation utilities.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-typescript">import { DateUtils } from &#39;lupine.components&#39;;
+
+const now = DateUtils.now();
+const date = DateUtils.toDate(&#39;2023-01-01T12:00:00Z&#39;);
+const ymd = DateUtils.toYMD(date, &#39;/&#39;); // 2023/01/01
+const formatted = DateUtils.format(date, &#39;YYYY-MM-DD hh:mm:ss&#39;);
+
+// Difference between two dates
+const diff = DateUtils.diffString(new Date(), date);
+console.log(diff); // e.g., &quot;2 day(s), 4 hour(s)&quot;
+</code></pre>

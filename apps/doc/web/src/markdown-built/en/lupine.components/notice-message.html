@@ -1,0 +1,9 @@
+<h1 id="noticemessage"><a class="header-anchor" href="#noticemessage">#</a>NoticeMessage</h1><p>A core component used to display global notification messages at the top of the page. Supports multiple color levels.</p>
+<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { NotificationMessage, NotificationColor } from &#39;lupine.components&#39;;
+
+// Success notification
+NotificationMessage.sendMessage(&#39;Data saved successfully&#39;, NotificationColor.Success);
+
+// Error notification (Permanent)
+NotificationMessage.sendMessage(&#39;Network error, please check&#39;, NotificationColor.Error, true);
+</code></pre>

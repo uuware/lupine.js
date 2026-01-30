@@ -1,0 +1,19 @@
+<h1 id="api-reference"><a class="header-anchor" href="#api-reference">#</a>API Reference</h1><p>LupineJS provides a minimalist set of APIs for both web and server development.</p>
+<h2 id="lupine-web-frontend"><a class="header-anchor" href="#lupine-web-frontend">#</a>Lupine.web (Frontend)</h2><h3 id="bindrouter"><a class="header-anchor" href="#bindrouter">#</a>`bindRouter`</h3><p>Binds the page router to the application.</p>
+<pre><code class="language-typescript">import { bindRouter, PageRouter } from &#39;lupine.components&#39;;
+const pageRouter = new PageRouter();
+pageRouter.use(&#39;/&#39;, HomePage);
+bindRouter(pageRouter);
+</code></pre>
+<h3 id="bindtheme"><a class="header-anchor" href="#bindtheme">#</a>`bindTheme`</h3><p>Binds theme configurations.</p>
+<pre><code class="language-typescript">import { bindTheme } from &#39;lupine.components&#39;;
+bindTheme(&#39;light&#39;, themes);
+</code></pre>
+<h3 id="bindlang"><a class="header-anchor" href="#bindlang">#</a>`bindLang`</h3><p>Binds multi-language support.</p>
+<pre><code class="language-typescript">import { bindLang } from &#39;lupine.components&#39;;
+bindLang(&#39;en&#39;, { en, zh });
+</code></pre>
+<h2 id="lupine-api-backend"><a class="header-anchor" href="#lupine-api-backend">#</a>Lupine.api (Backend)</h2><h3 id="apimodule"><a class="header-anchor" href="#apimodule">#</a>`ApiModule`</h3><p>Main module for the backend service.</p>
+<pre><code class="language-typescript">import { ApiModule } from &#39;lupine.api&#39;;
+export const apiModule = new ApiModule(new RootApi());
+</code></pre>

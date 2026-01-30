@@ -1,0 +1,14 @@
+{
+  "name": "lupine-doc",
+  "version": "1.0.0",
+  "description": "Documentation for lupine.js built with lupine.press",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build-md": "node build.js",
+    "dev": "npm run build-md && npm run dev --workspace=@lupine/root"
+  },
+  "dependencies": {
+    "lupine.press": "file:../../packages/lupine.press"
+  }
+}
