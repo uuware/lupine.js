@@ -1,0 +1,77 @@
+<h1 id="server-side-rendering-ssr"><a class="header-anchor" href="#server-side-rendering-ssr">#</a>Server Side Rendering (SSR)</h1><p>Lupine.js was designed from scratch with <strong>Server-Side Rendering (SSR)</strong> as a first-class citizen. Unlike many SPA frameworks where SSR is an afterthought or requires complex meta-frameworks (like Next.js for React), Lupine integrates SSR directly into its core architecture (<code>lupine.api</code> and <code>lupine.web</code>).</p>
+<h2 id="1-how-it-works"><a class="header-anchor" href="#1-how-it-works">#</a>1. ⚙️ How it Works</h2><p>When a user requests a URL that doesn&#39;t map to a static file (like an image or JS file), the <code>serverSideRenderPage</code> function takes over.</p>
+<h3 id="the-flow"><a class="header-anchor" href="#the-flow">#</a>The Flow:</h3><ol>
+<li><strong>Request Interception</strong>: The server intercepts the HTTP request.</li>
+<li><strong>Environment Injection</strong>: It injects server-side environment variables (starting with <code>WEB.</code>) into the runtime.</li>
+<li><strong>Page Generation</strong>: It calls <code>_lupineJs.generatePage</code> to execute your frontend logic <strong>on the server</strong>.</li>
+<li><strong>HTML Construction</strong>: It stitches together the final HTML, including:<ul>
+<li><strong>Theme &amp; Styles</strong>: Critical CSS and current theme are injected directly, preventing &quot;Flash of Unstyled Content&quot; (FOUC).</li>
+<li><strong>Meta Data</strong>: SEO titles and descriptions are calculated and inserted.</li>
+<li><strong>State Hydration</strong>: After the page loads, the frontend automatically binds events.</li>
+</ul>
+</li>
+</ol>
+<h2 id="2-zero-configuration-seo"><a class="header-anchor" href="#2-zero-configuration-seo">#</a>2. 🔍 Zero-Configuration SEO</h2><p>One of the biggest benefits of Lupine&#39;s SSR is automatic SEO support. By using components like <code>MetaData</code>, your page tells search engines exactly what they need to know <strong>before</strong> any JavaScript runs on the client.</p>
+<h3 id="example-social-sharing-opengraph"><a class="header-anchor" href="#example-social-sharing-opengraph">#</a>Example: Social Sharing (OpenGraph)</h3><p>In <code>share-content.tsx</code>, you can dynamically set meta tags based on the content being viewed:</p>
+<pre><code class="language-tsx">export const ShareContentPage = async (props: PageProps) =&gt; {
+  // 1. Fetch data (works on server too!)
+  const record = await fetchRecord(props.urlParameters[&#39;id&#39;]);
+
+  // 2. Define SEO/Social Metadata
+  return (
+    &lt;div&gt;
+      &lt;MetaData property=&#39;og:title&#39; content={record.title} /&gt;
+      &lt;MetaData property=&#39;og:description&#39; content={record.description} /&gt;
+      &lt;MetaData property=&#39;og:image&#39; content={record.imageUrl} /&gt;
+      &lt;MetaData property=&#39;og:url&#39; content={props.url} /&gt;
+
+      &lt;h1&gt;{record.title}&lt;/h1&gt;
+      {/* ... content ... */}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="3-environment-variables"><a class="header-anchor" href="#3-environment-variables">#</a>3. 🛠️ Environment Variables</h2><p>Lupine automatically bridges your server environment to your frontend.</p>
+<h3 id="defining-variables"><a class="header-anchor" href="#defining-variables">#</a>Defining Variables</h3><p>In your <code>.env</code> file, variables starting with <code>WEB.</code> are marked for the frontend:</p>
+<pre><code class="language-ini"># .env
+WEB.API_BASE_URL=https://api.example.com
+WEB.SITE_NAME=My Awesome App
+SECRET_KEY=xxxx  &lt;-- This stays on the server!
+</code></pre>
+<h3 id="accessing-variables"><a class="header-anchor" href="#accessing-variables">#</a>Accessing Variables</h3><p>During SSR (and subsequently in the browser), these are available via <code>getWebEnv()</code>:</p>
+<pre><code class="language-typescript">// Any component
+import { getWebEnv } from &#39;lupine.web&#39;;
+
+const env = getWebEnv();
+console.log(env.API_BASE_URL); // &quot;https://api.example.com&quot;
+</code></pre>
+<h2 id="4-webconfig-dynamic-runtime-configuration"><a class="header-anchor" href="#4-webconfig-dynamic-runtime-configuration">#</a>4. ⚙️ WebConfig: Dynamic Runtime Configuration</h2><p>Sometimes you need configurations that can change at runtime (like Admin settings for &quot;Max Rows per Page&quot; or &quot;Maintenance Mode&quot;) without redeploying. Lupine provides <code>WebConfig</code> for this.</p>
+<p><strong>Mechanism:</strong></p>
+<ol>
+<li><strong>SSR Injection</strong>: On the first page load, the server fetches these configs and injects them into a <code>&lt;script id=&quot;web-setting&quot;&gt;</code> tag.</li>
+<li><strong>Hydration</strong>: <code>WebConfig.init()</code> (called automatically) reads this script tag effectively &quot;hydrating&quot; the config synchronously.</li>
+<li><strong>Async Fallback</strong>: If the app runs as a pure SPA (client-side only navigation), <code>WebConfig.get()</code> fetches from the API if cache is missing.</li>
+</ol>
+<h3 id="usage"><a class="header-anchor" href="#usage">#</a>Usage</h3><p><strong>Binding the API (Entry Point):</strong></p>
+<pre><code class="language-tsx">// src/index.tsx
+bindWebConfigApi(&#39;/api/admin/web-config&#39;);
+</code></pre>
+<p><strong>Using Configs (Component):</strong></p>
+<pre><code class="language-tsx">// admin-poster-page.tsx
+const PosterList = async () =&gt; {
+  // Async access ensures data is ready
+  const maxRows = await WebConfig.get(&#39;poster_max_rows&#39;, 10);
+  const category = await WebConfig.get(&#39;current_category&#39;, &#39;default&#39;);
+
+  // ... use config ...
+};
+</code></pre>
+<blockquote>
+<p>[!IMPORTANT]
+Since <code>WebConfig</code> might need to fetch data (on client-side navigation), it is designed as an <strong>Async API</strong>. Always use <code>await WebConfig.get(...)</code>.</p>
+</blockquote>
+<h2 id="5-intelligent-caching-performance"><a class="header-anchor" href="#5-intelligent-caching-performance">#</a>5. ⚡ Intelligent Caching &amp; Performance</h2><p>Lupine&#39;s SSR isn&#39;t just about rendering; it&#39;s about speed.</p>
+<ul>
+<li><strong>Template Caching</strong>: The server caches the structure of your <code>index.html</code> to minimize file system reads. It identifies &quot;slots&quot; for Title, Meta, CSS, and Content (<code>packages/lupine.api/src/api/server-render.ts</code>).</li>
+<li><strong>CSS &amp; Theme Injection</strong>: By calculating the critical CSS server-side (<code>generateAllGlobalStyles</code>), the browser receives a fully styled page instantly. Even if JavaScript is disabled or slow to load, the user sees a perfect UI.</li>
+</ul>

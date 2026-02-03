@@ -1,0 +1,85 @@
+<h1 id="高性能列表渲染与编辑"><a class="header-anchor" href="#高性能列表渲染与编辑">#</a>高性能列表渲染与编辑</h1><p>Lupine.js 采用了一种独特的 <strong>&quot;组件级渲染 (Component-Level Rendering)&quot;</strong> 策略，这与 React 或 Vue 等传统的虚拟 DOM 框架有显著不同。这种方法在处理大型列表和复杂数据表格（例如管理后台 Admin Panel）时特别强大。</p>
+<h2 id="1-为什么它很快"><a class="header-anchor" href="#1-为什么它很快">#</a>1. ⚡ 为什么它很快？</h2><p>在传统框架（如 React）中，当你更新列表中的某一项时：</p>
+<ol>
+<li>你调用 <code>setState</code>。</li>
+<li>框架重新渲染 <strong>整个列表组件 (List Component)</strong>。</li>
+<li>它运行“Diff 算法”，将包含 100 多个项目的新虚拟树与旧树进行对比。</li>
+<li>最后，它更新那一个发生变化的 DOM 元素。</li>
+</ol>
+<p><strong>在 Lupine.js 中，我们完全跳过了第 2 步和第 3 步。</strong></p>
+<p>因为 Lupine 使用 <strong>手动响应式 (HtmlVar<a href="javascript:lpPressLoad('/zh/lupine.components/html-var')">🔗</a>)</strong>，你可以直接通过 <code>dom.value = &lt;&gt;...&lt;/&gt;</code> 来更新特定的 DOM 元素，而无需触发自上而下的重渲染。这类似于在 React 中使用极其优化的 <code>React.memo</code> 组件，但在 Lupine.js 中，这是 <strong>默认行为</strong>，而非一种可选的优化手段。</p>
+<h2 id="2-点对点更新-spot-update-策略"><a class="header-anchor" href="#2-点对点更新-spot-update-策略">#</a>2. 🎯 &quot;点对点更新 (Spot-Update)&quot; 策略</h2><p>列表中的每一行都充当一个孤岛。它拥有自己的 <code>HtmlVar</code> 和 <code>ref</code>。当数据发生变化时，你只需在该特定行的变量上调用 <code>.value = ...</code>。页面的其余部分保持为静态的 HTML 字符串，维护成本为 <strong>零</strong>。</p>
+<h3 id="优势"><a class="header-anchor" href="#优势">#</a>优势</h3><ul>
+<li><strong>零 Diff 成本</strong>：改变一行的开销是 <code>O(1)</code>，而不是 <code>O(N)</code>（N 为列表大小）。</li>
+<li><strong>可预测的性能</strong>：没有“浪费的渲染 (wasted renders)”。</li>
+<li><strong>低内存占用</strong>：我们不需要为列表的静态部分在内存中维护一棵沉重的虚拟 DOM 树。</li>
+</ul>
+<hr>
+<h2 id="3-代码示例-可编辑列表"><a class="header-anchor" href="#3-代码示例-可编辑列表">#</a>3. 💻 代码示例：可编辑列表</h2><p>下面展示了如何实现一个高性能的可编辑列表。</p>
+<h3 id="第一步-列表容器-父组件"><a class="header-anchor" href="#第一步-列表容器-父组件">#</a>📦 第一步：列表容器（父组件）</h3><p>父组件负责初始化渲染列表，但当子项发生变化时，<strong>不需要</strong>重新渲染。</p>
+<pre><code class="language-tsx">// BookList.tsx
+export const BookList = () =&gt; {
+  // 1. 初始数据加载
+  let items = getSampleData();
+
+  // 2. 渲染静态列表
+  // 注意：如果我们只是编辑项目，我们不需要为整个列表维护 State！
+  return (
+    &lt;div class=&#39;list&#39;&gt;
+      {items.map((item) =&gt; (
+        &lt;BookShowItem key={item.id} item={item} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="第二步-优化后的行-子组件"><a class="header-anchor" href="#第二步-优化后的行-子组件">#</a>⚡ 第二步：优化后的行（子组件）</h3><p>子组件将内容包裹在 <code>HtmlVar</code> 中。这允许它独立地“重绘”自己。</p>
+<pre><code class="language-tsx">// BookShowItem.tsx
+import { HtmlVar, RefProps } from &#39;lupine.components&#39;;
+
+export const BookShowItem = (props: { item: SampleDataProps }) =&gt; {
+  const ref: RefProps = { id: &#39;&#39; };
+
+  // 1. 定义内部渲染逻辑
+  const makeDom = (item: SampleDataProps) =&gt; (
+    &lt;div class=&#39;row-box&#39;&gt;
+      &lt;div&gt;Name: {item.name}&lt;/div&gt;
+      &lt;button onClick={onEdit}&gt;编辑&lt;/button&gt;
+    &lt;/div&gt;
+  );
+
+  // 2. 为这一行创建一个 &quot;响应式盒子 (Reactive Box)&quot;
+  const dom = new HtmlVar(makeDom(props.item));
+
+  // 3. 更新逻辑：只更新这一个 DOM！
+  const update = (newItem: SampleDataProps) =&gt; {
+    // 手动触发仅针对此行的更新
+    dom.value = makeDom(newItem);
+  };
+
+  const onEdit = () =&gt; {
+    // 显示模态框，获取新数据，然后调用 update(newItem)
+    showEditModal(props.item, (newItem) =&gt; {
+      update(newItem);
+    });
+  };
+
+  return (
+    &lt;div ref={ref} class=&#39;sample-data-row&#39;&gt;
+      {dom.node} {/* 使用 dom.node 嵌入响应式插槽 */}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="第三步-行内编辑-进阶"><a class="header-anchor" href="#第三步-行内编辑-进阶">#</a>✏️ 第三步：行内编辑（进阶）</h3><p>你甚至可以完全为单行切换“查看模式”与“编辑模式”，而不影响其他行。</p>
+<pre><code class="language-tsx">// BookShowItem 内部
+const onToggleEdit = () =&gt; {
+  if (isEditing) {
+    dom.value = makeViewMode(item);
+  } else {
+    dom.value = makeEditMode(item);
+  }
+  isEditing = !isEditing;
+};
+</code></pre>
+<h2 id="总结"><a class="header-anchor" href="#总结">#</a>总结</h2><p>虽然这种方法需要编写稍微多一点的“显式”代码（定义 <code>HtmlVar</code> 和 <code>makeDom</code>），但它为你提供了在重数据应用中难以匹敌的 <strong>控制力</strong> 和 <strong>高性能</strong>。实际上，你就像是自己的“编译器”，精确地告诉浏览器在何时更新什么内容。</p>

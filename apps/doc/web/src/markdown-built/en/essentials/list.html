@@ -1,0 +1,85 @@
+<h1 id="high-performance-list-rendering-editing"><a class="header-anchor" href="#high-performance-list-rendering-editing">#</a>High Performance List Rendering &amp; Editing</h1><p>Lupine.js adopts a unique <strong>&quot;Component-Level Rendering&quot;</strong> strategy that differs significantly from traditional Virtual DOM frameworks like React or Vue. This approach is particularly powerful for handling large lists and complex data grids (e.g., in Admin Panels).</p>
+<h2 id="1-why-it-is-fast"><a class="header-anchor" href="#1-why-it-is-fast">#</a>1. ⚡ Why it is Fast?</h2><p>In traditional frameworks (like React), when you update an item in a list:</p>
+<ol>
+<li>You call <code>setState</code>.</li>
+<li>The framework re-renders the <strong>entire List component</strong>.</li>
+<li>It runs a &quot;Diffing Algorithm&quot; to compare the new virtual tree of 100+ items against the old one.</li>
+<li>Finally, it updates the DOM for the one changed item.</li>
+</ol>
+<p><strong>In Lupine.js, we skip steps 2 and 3 entirely.</strong></p>
+<p>Because Lupine uses <strong>Manual Reactivity (HtmlVar<a href="javascript:lpPressLoad('/en/lupine.components/html-var')">🔗</a>)</strong>, you can update a specific DOM element directly by setting <code>dom.value = &lt;&gt;...&lt;/&gt;</code>, without triggering a top-down re-render. This is similar to a highly optimized React component using <code>React.memo</code>, but it is the <strong>default behavior</strong> here, not an opt-in optimization.</p>
+<h2 id="2-the-spot-update-strategy"><a class="header-anchor" href="#2-the-spot-update-strategy">#</a>2. 🎯 The &quot;Spot-Update&quot; Strategy</h2><p>Each row in your list acts as an isolated island. It holds its own <code>HtmlVar</code> and <code>ref</code>. When data changes, you only call <code>.value = ...</code> on that specific row&#39;s variable. The rest of the page remains static string HTML, costing <strong>zero</strong> performance overhead to maintain.</p>
+<h3 id="benefits"><a class="header-anchor" href="#benefits">#</a>Benefits</h3><ul>
+<li><strong>Zero Diffing Cost</strong>: Changing one row costs <code>O(1)</code>, not <code>O(N)</code> where N is the list size.</li>
+<li><strong>Predictable Performance</strong>: No &quot;wasted renders&quot;.</li>
+<li><strong>Low Memory Footprint</strong>: We don&#39;t maintain a heavy Virtual DOM tree in memory for the static parts of your list.</li>
+</ul>
+<hr>
+<h2 id="3-code-example-editable-list"><a class="header-anchor" href="#3-code-example-editable-list">#</a>3. 💻 Code Example: Editable List</h2><p>Here is how you implement a high-performance editable list.</p>
+<h3 id="step-1-the-list-container-parent"><a class="header-anchor" href="#step-1-the-list-container-parent">#</a>📦 Step 1: The List Container (Parent)</h3><p>The parent component renders the list initially but does <em>not</em> need to re-render when a child changes.</p>
+<pre><code class="language-tsx">// BookList.tsx
+export const BookList = () =&gt; {
+  // 1. Initial Data Load
+  let items = getSampleData();
+
+  // 2. Render Static List
+  // Notice: We don&#39;t need a state for the whole list if we only edit items!
+  return (
+    &lt;div class=&#39;list&#39;&gt;
+      {items.map((item) =&gt; (
+        &lt;BookShowItem key={item.id} item={item} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="step-2-the-optimized-row-child"><a class="header-anchor" href="#step-2-the-optimized-row-child">#</a>⚡ Step 2: The Optimized Row (Child)</h3><p>The child component wraps its content in <code>HtmlVar</code>. This allows it to &quot;redraw itself&quot; independently.</p>
+<pre><code class="language-tsx">// BookShowItem.tsx
+import { HtmlVar, RefProps } from &#39;lupine.components&#39;;
+
+export const BookShowItem = (props: { item: SampleDataProps }) =&gt; {
+  const ref: RefProps = { id: &#39;&#39; };
+
+  // 1. Define the internal render logic
+  const makeDom = (item: SampleDataProps) =&gt; (
+    &lt;div class=&#39;row-box&#39;&gt;
+      &lt;div&gt;Name: {item.name}&lt;/div&gt;
+      &lt;button onClick={onEdit}&gt;Edit&lt;/button&gt;
+    &lt;/div&gt;
+  );
+
+  // 2. Create a &quot;Reactive Box&quot; for this row
+  const dom = new HtmlVar(makeDom(props.item));
+
+  // 3. Update Logic: Only updates this specific DOM!
+  const update = (newItem: SampleDataProps) =&gt; {
+    // Manually trigger the update for this row ONLY
+    dom.value = makeDom(newItem);
+  };
+
+  const onEdit = () =&gt; {
+    // Show modal, get new data, then call update(newItem)
+    showEditModal(props.item, (newItem) =&gt; {
+      update(newItem);
+    });
+  };
+
+  return (
+    &lt;div ref={ref} class=&#39;sample-data-row&#39;&gt;
+      {dom.node} {/* Using dom.node embeds the reactive slot */}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="step-3-inline-editing-advanced"><a class="header-anchor" href="#step-3-inline-editing-advanced">#</a>✏️ Step 3: Inline Editing (Advanced)</h3><p>You can even swap the &quot;View Mode&quot; with &quot;Edit Mode&quot; completely for a single row, without touching others.</p>
+<pre><code class="language-tsx">// Inside BookShowItem
+const onToggleEdit = () =&gt; {
+  if (isEditing) {
+    dom.value = makeViewMode(item);
+  } else {
+    dom.value = makeEditMode(item);
+  }
+  isEditing = !isEditing;
+};
+</code></pre>
+<h2 id="summary"><a class="header-anchor" href="#summary">#</a>Summary</h2><p>While this approach requires writing a bit more &quot;explicit&quot; code (defining <code>HtmlVar</code> and <code>makeDom</code>), it gives you <strong>control</strong> and <strong>performance</strong> that are hard to beat in heavy data applications. You are effectively acting as your own &quot;Compiler&quot;, telling the browser exactly what to update and when.</p>

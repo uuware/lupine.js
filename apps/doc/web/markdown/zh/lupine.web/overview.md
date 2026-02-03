@@ -12,7 +12,7 @@ title: 概览
 
 我们相信保持简单。`lupine.web` **没有外部依赖**，因此包体积极小，加载速度极快。它使用 TSX 语法，所以如果你熟悉 React，你会感到非常亲切。
 
-### 🎨 内置 CSS-in-JS (Built-in CSS-in-JS)
+### 🎨 内置 CSS-in-JS (Built-in CSS-in-JS) [🔗](../essentials/css-in-js)
 
 不用再设置复杂的 CSS 加载器或外部样式库了。`lupine.web` 自带了一个强大的内置 CSS-in-JS 解决方案。
 
@@ -35,7 +35,7 @@ const MyButton = (props) => (
 );
 ```
 
-### 🛣️ 强大的路由 (Powerful Router)
+### 🛣️ 强大的路由 (Powerful Router) [🔗](../essentials/page-route)
 
 我们的函数式路由专为灵活性和控制力而设计。
 
@@ -53,7 +53,7 @@ pageRouter.setFilter(async (props) => {
 pageRouter.use('/dashboard/*', DashboardRouter);
 ```
 
-### ⚡ 服务端渲染 (SSR) 优先 (Server-Side Rendering First)
+### ⚡ 服务端渲染 (SSR) 优先 (Server-Side Rendering First) [🔗](../essentials/ssr)
 
 视觉性能至关重要。`lupine.web` 从第一天起就是为 SSR 构建的。
 

@@ -2,32 +2,38 @@
 title: Getting Started
 ---
 
-# Getting Started
+# Introduction to Lupine.js
 
-Lupine.js is a full-featured web application that includes both frontend and backend.
+Lupine.js is a full-featured web application framework that includes both Front-End and Back-End services.
 
-## Prerequisites
+- **Front-End**: `lupine.web` is an extremely lightweight framework using React TSX syntax, allowing React developers to get started with zero learning curve.
+- **Back-End**: `lupine.api` is a highly efficient and simplified framework (similar to Express) that supports Server-Side Rendering (SSR) natively from scratch.
+- **Cross-Platform**: With Capacitor and Electron, you can maintain a single codebase to deploy Web, iOS, Android, and Desktop applications simultaneously.
 
-- Node.js >= 20
+## Core Essentials
 
-## Quick Start
+Lupine.js is designed for **Simplicity** and **High Performance**. Here are our core features:
 
-1. Clone the repository locally:
+### [⚡ Server-Side Rendering (SSR) First](../essentials/ssr)
 
-```bash
-git clone https://github.com/uuware/lupine.js.git
-```
+Lupine is built for SSR from day one. It automatically handles style injection, SEO metadata, and state hydration, ensuring your app has blazing fast initial load times and is search engine friendly.
 
-2. Install dependencies:
+### [🎨 Built-in CSS-in-JS](../essentials/css-in-js)
 
-```bash
-npm i
-```
+Say goodbye to complex CSS configurations. Lupine comes with a powerful built-in styling system supporting scoped styles, nested selectors, media queries, and dynamic styling—all with zero runtime overhead.
 
-3. Run the development application:
+### [🛣️ Powerful Page Router](../essentials/page-route)
 
-```bash
-npm run dev
-```
+A flexible functional routing system supporting nested routes, route guards, parameter parsing, and middleware, providing a solid foundation for complex Single Page Applications (SPA).
 
-4. Open `http://localhost:11080` to see the development application.
+### [🌗 Theme System](../essentials/theme)
+
+Out-of-the-box theme support (Light/Dark modes). Lupine ensures correct theme variables are injected during SSR, completely eliminating the "Flash of Unstyled Content" (FOUC) issue.
+
+### [📝 High-Performance List Rendering](../essentials/list)
+
+Our unique Spot-Update technology allows direct DOM updates when rendering and editing large lists, bypassing expensive React Virtual DOM re-calculations.
+
+### [📡 Full-Stack Development](../essentials/api)
+
+Integrated front-end and back-end design. `lupine.api` offers a minimalist way to define APIs that work seamlessly with the front-end, making full-stack development easier than ever.

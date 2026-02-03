@@ -15,7 +15,9 @@ marked.use({
   renderer: {
     heading({ text, depth, raw }) {
       const id = slugify(raw);
-      return `<h${depth} id="${id}"><a class="header-anchor" href="#${id}">#</a>${text}</h${depth}>`;
+      // text might contain markdown (e.g. links), so we must parse it inline
+      const content = marked.parseInline(text);
+      return `<h${depth} id="${id}"><a class="header-anchor" href="#${id}">#</a>${content}</h${depth}>`;
     },
   },
 });

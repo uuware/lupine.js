@@ -4,7 +4,7 @@ export const PageHeading = (props: { headings: any[] }) => {
   if (props.headings.length === 0) return null;
 
   const css: CssProps = {
-    '&-title': {
+    '.&-title': {
       fontWeight: 'bold',
       fontSize: '0.8rem',
       textTransform: 'uppercase',
@@ -12,13 +12,13 @@ export const PageHeading = (props: { headings: any[] }) => {
       color: 'var(--primary-color)',
       marginBottom: '0.8rem',
     },
-    '&-list': {
+    '.&-list': {
       listStyle: 'none',
       padding: 0,
       margin: 0,
       borderLeft: '1px solid var(--press-border-color)',
     },
-    '&-item': {
+    '.&-item': {
       padding: '0.2rem 0 0.2rem 1rem',
       fontSize: '0.85rem',
       '&.level-3': { paddingLeft: '2rem' },

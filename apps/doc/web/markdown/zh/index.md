@@ -28,10 +28,11 @@ nav:
     link: /zh/essentials/api
 
 sidebar:
-  - submenu: /zh/guide
-  - text: 核心要点
+  - text: 指南
     items:
-      - /zh/essentials/api
+      - /zh/guide/started
+      - /zh/guide/install
+  - submenu: /zh/essentials
   - submenu: /zh/lupine.web
   - submenu: /zh/lupine.components
   - submenu: /zh/lupine.components-libs

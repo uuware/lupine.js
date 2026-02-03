@@ -112,12 +112,12 @@ export class StaticServer {
     } catch (err: any) {
       // file doesn't exist
       if (err.code === 'ENOENT') {
-        if (isServerSideRenderUrl(urlSplit[0])) {
-          serverSideRenderPage(hostPath.appName, hostPath.webPath, urlSplit[0], urlSplit[1], req, res);
-        } else {
-          this.logger.error(`File not found: ${urlSplit[0]}`);
-          handler404(res, `File not found: ${urlSplit[0]}`);
-        }
+        // if (isServerSideRenderUrl(urlSplit[0])) {
+        serverSideRenderPage(hostPath.appName, hostPath.webPath, urlSplit[0], urlSplit[1], req, res);
+        // } else {
+        //   this.logger.error(`File not found: ${urlSplit[0]}`);
+        //   handler404(res, `File not found: ${urlSplit[0]}`);
+        // }
       } else {
         this.logger.error(`Error for: ${urlSplit[0]}`, err);
         handler500(res, `processRequest error: ${err.message}`);

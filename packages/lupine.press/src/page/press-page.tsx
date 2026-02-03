@@ -1,20 +1,32 @@
 import { isFrontEnd, PageProps } from 'lupine.components';
 import { PressLayout } from '../components';
-import { getPressData } from '../services/cache';
+import { getPressData, getPressSubDir, setPressLangs } from '../services/cache';
 
 export const PressPage = (props: PageProps) => {
   if (!isFrontEnd()) {
     return <div></div>;
   }
 
+  const subDir = getPressSubDir();
   const markdownConfig = getPressData();
   // Derive language from URL path first
-  const pathParts = window.location.pathname.split('/');
+  let p = window.location.pathname;
+  if (subDir && p.startsWith(subDir)) {
+    p = p.substring(subDir.length);
+  }
+  const pathParts = p.split('/');
   const pathLang = pathParts[1]; // /en/... or /zh/...
 
   // Get supported langs from global config
   const globalConfig = markdownConfig['/']?.data || {};
-  const supportedLangs = Array.isArray(globalConfig.lang) ? globalConfig.lang.map((l: any) => l.id) : ['en', 'zh'];
+  const langObj = Array.isArray(globalConfig.lang)
+    ? globalConfig.lang
+    : [
+        { title: 'English', id: 'en' },
+        { title: 'Chinese', id: 'zh' },
+      ];
+  setPressLangs(langObj);
+  const supportedLangs = langObj.map((l: any) => l.id);
 
   const langName = supportedLangs.includes(pathLang) ? pathLang : supportedLangs[0] || 'en';
 
@@ -26,7 +38,7 @@ export const PressPage = (props: PageProps) => {
   });
 
   // Get current path from router props or window.location
-  let currentPath = window.location.pathname;
+  let currentPath = p;
   if (currentPath === '' || currentPath === '/') {
     currentPath = `/${langName}/index`;
   } else {
@@ -46,12 +58,12 @@ export const PressPage = (props: PageProps) => {
   const siteTitle = rootIndex.title || 'LupineJS';
 
   // Collect langs from all supported language root index files
-  const langs = supportedLangs.map((l: string) => {
-    const data = markdownConfig[`/${l}/index`]?.data || {};
+  const langs = langObj.map((l: { title: string; id: string }) => {
+    const data = markdownConfig[`${l.id}/index`]?.data || {};
     const langData = Array.isArray(data.lang) ? data.lang[0] : data.lang || {};
     return {
-      text: langData.text || langData.title || langData.label || l.toUpperCase(),
-      id: l,
+      text: langData.text || langData.title || langData.label || l.title,
+      id: l.id,
     };
   });
 

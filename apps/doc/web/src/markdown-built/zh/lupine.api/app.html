@@ -1,4 +1,4 @@
-<h1 id="server-src-app"><a class="header-anchor" href="#server-src-app">#</a>Server (`src/app`)</h1><p>服务器组件负责处理传入的网络请求，管理 SSL 证书，并根据域名配置将请求分发到相应的应用程序。它支持集群逻辑，以高效利用多核 CPU。</p>
+<h1 id="server-src-app"><a class="header-anchor" href="#server-src-app">#</a>Server (<code>src/app</code>)</h1><p>服务器组件负责处理传入的网络请求，管理 SSL 证书，并根据域名配置将请求分发到相应的应用程序。它支持集群逻辑，以高效利用多核 CPU。</p>
 <h2 id="主要特性-key-features"><a class="header-anchor" href="#主要特性-key-features">#</a>主要特性 (Key Features)</h2><ul>
 <li><strong>多应用和多域名</strong>: 在单个服务器实例上托管多个独立的应用程序，根据域名路由流量。</li>
 <li><strong>集群支持</strong>: 自动 fork 工作进程以匹配 CPU 核心数，实现高性能。</li>

@@ -1,0 +1,131 @@
+<h1 id="css-in-js"><a class="header-anchor" href="#css-in-js">#</a>CSS-in-JS</h1><p>Lupine.js features a built-in, lightweight <strong>CSS-in-JS</strong> engine. It supports powerful features like nesting, pseudo-selectors, media queries, and scoped animations, all without needing external libraries like styled-components or emotion.</p>
+<h2 id="1-basic-usage"><a class="header-anchor" href="#1-basic-usage">#</a>1. 🐣 Basic Usage</h2><p>You can pass a CSS object directly to the <code>css</code> prop of any element. Lupine will automatically generate a unique class ID, preventing style conflicts.</p>
+<pre><code class="language-tsx">const MyComponent = () =&gt; {
+  const css: CssProps = {
+    // Basic properties use camelCase
+    backgroundColor: &#39;#f0f0f0&#39;,
+    padding: &#39;20px&#39;,
+    borderRadius: &#39;8px&#39;,
+
+    // Nested selectors
+    h1: {
+      color: &#39;blue&#39;,
+    },
+
+    // Pseudo-classes
+    &#39;&amp;:hover&#39;: {
+      backgroundColor: &#39;#e0e0e0&#39;,
+    },
+  };
+
+  return (
+    &lt;div css={css}&gt;
+      &lt;h1&gt;Hello&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="2-advanced-features"><a class="header-anchor" href="#2-advanced-features">#</a>2. 🚀 Advanced Features</h2><h3 id="2-1-nesting-parent-selector"><a class="header-anchor" href="#2-1-nesting-parent-selector">#</a>2.1 🎎 Nesting &amp; Parent Selector (<code>&amp;</code>)</h3><p>Similar to SCSS/Less, use <code>&amp;</code> to refer to the parent selector.</p>
+<pre><code class="language-tsx">const css: CssProps = {
+  color: &#39;black&#39;,
+
+  // Target children
+  &#39;.child&#39;: { fontWeight: &#39;bold&#39; },
+
+  // Self state
+  &#39;&amp;:hover&#39;: { color: &#39;red&#39; },
+
+  // Multiple selectors
+  &#39;&amp;:hover, &amp;.active&#39;: {
+    border: &#39;1px solid blue&#39;,
+  },
+};
+</code></pre>
+<h3 id="2-2-scoping-with-dynamic-component-id"><a class="header-anchor" href="#2-2-scoping-with-dynamic-component-id">#</a>2.2 🛡️ Scoping with <code>&amp;</code> (Dynamic Component ID)</h3><p>Lupine uses a clever substitution system for <code>&amp;</code> (or <code>$</code>).</p>
+<ol>
+<li><p><strong>Prefixing</strong>: If a selector starts with <code>&amp;</code> (e.g., <code>&amp;-item</code>), it is effectively treating the component&#39;s unique ID as a prefix.</p>
+<ul>
+<li><code>&amp;-item</code> -&gt; <code>.LUPINE_ID-item</code></li>
+<li>This is great for BEM-like naming without long manual names.</li>
+</ul>
+</li>
+<li><p><strong>Replacement</strong>: If <code>&amp;</code> is used elsewhere (e.g., <code>.parent &amp;</code>), it inserts the unique ID there.</p>
+</li>
+</ol>
+<pre><code class="language-tsx">// Using &quot;$-item&quot; or &quot;&amp;-item&quot; pattern for scoped classes
+const css = {
+  // Defines a scoped class like .L123-item
+  &#39;&amp;-item&#39;: {
+    color: &#39;gray&#39;,
+  },
+
+  // You can also reference it as .&amp;-item, meaning .L123 .L123-item (nested)
+  &#39;.&amp;-item&#39;: {
+    color: &#39;black&#39;, // stronger specificity if needed
+  },
+};
+
+return (
+  &lt;div css={css}&gt;
+    {/* Apply the scoped class */}
+    &lt;a class=&#39;&amp;-item&#39;&gt;Link&lt;/a&gt;
+  &lt;/div&gt;
+);
+</code></pre>
+<h3 id="2-3-one-line-multiple-definitions"><a class="header-anchor" href="#2-3-one-line-multiple-definitions">#</a>2.3 ⚡ One-Line Multiple Definitions</h3><p>You can define multiple properties in one line for simpler syntax in some cases, or handle multiple selectors in one key.</p>
+<pre><code class="language-tsx">const css = {
+  // Multiple selectors sharing styles
+  &#39;.header, .footer&#39;: {
+    background: &#39;#333&#39;,
+    color: &#39;white&#39;,
+  },
+};
+</code></pre>
+<h3 id="2-4-media-queries-media"><a class="header-anchor" href="#2-4-media-queries-media">#</a>2.4 📱 Media Queries (<code>@media</code>)</h3><p>Media queries can be nested <em>inside</em> the selector or used at the top level.</p>
+<pre><code class="language-tsx">const css = {
+  fontSize: &#39;16px&#39;,
+
+  // Nested inside component logic
+  &#39;@media (max-width: 600px)&#39;: {
+    fontSize: &#39;14px&#39;,
+    padding: &#39;10px&#39;,
+  },
+};
+// Or use helper constants like [MediaQueryRange.DesktopAbove]
+</code></pre>
+<h3 id="2-5-keyframes-keyframes"><a class="header-anchor" href="#2-5-keyframes-keyframes">#</a>2.5 🎬 Keyframes (<code>@keyframes</code>)</h3><p>Define animations locally within the component.</p>
+<pre><code class="language-tsx">const css = {
+  &#39;@keyframes slide-in&#39;: {
+    &#39;0%&#39;: { transform: &#39;translateX(-100%)&#39; },
+    &#39;100%&#39;: { transform: &#39;translateX(0)&#39; },
+  },
+  animation: &#39;slide-in 0.5s ease-out&#39;,
+};
+</code></pre>
+<h2 id="3-global-styles-bindglobalstyle"><a class="header-anchor" href="#3-global-styles-bindglobalstyle">#</a>3. 🌏 Global Styles (<code>bindGlobalStyle</code>)</h2><p>Sometimes you want styles that are <strong>reused</strong> or <strong>global</strong>, but you still want to define them in TypeScript/JS. <code>bindGlobalStyle</code> ensures the style is generated only once and injected into <code>&lt;head&gt;</code>, even if the component is used multiple times.</p>
+<blockquote>
+<p><strong>Ideal for:</strong> Animations, Utility classes, Reset CSS.</p>
+</blockquote>
+<pre><code class="language-tsx">import { bindGlobalStyle } from &#39;lupine.web&#39;;
+
+const TextWave = () =&gt; {
+  // 1. Define Style
+  const css = {
+    &#39;@keyframes wave&#39;: {
+      /* ... */
+    },
+    &#39;.wave-text&#39;: { animation: &#39;wave 1s infinite&#39; },
+  };
+
+  // 2. Bind it globally with a unique key &#39;text-wave-style&#39;
+  // This ensures it&#39;s only injected ONCE in the page
+  bindGlobalStyle(&#39;text-wave-style&#39;, css);
+
+  return (
+    // 3. Use the classes defined above
+    &lt;div class=&#39;text-wave-style&#39;&gt;
+      &lt;span class=&#39;wave-text&#39;&gt;Hello&lt;/span&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>

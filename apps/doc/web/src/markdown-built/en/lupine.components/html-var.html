@@ -1,6 +1,96 @@
-<h1 id="htmlvar"><a class="header-anchor" href="#htmlvar">#</a>HtmlVar</h1><p>A core component used to display or dynamically update HTML content via variables.</p>
-<h2 id="implementation-example"><a class="header-anchor" href="#implementation-example">#</a>Implementation Example</h2><pre><code class="language-typescript">import { HtmlVar } from &#39;lupine.components&#39;;
+<h1 id="htmlvar"><a class="header-anchor" href="#htmlvar">#</a>HtmlVar</h1><p><code>HtmlVar</code> is the core primitive for reactivity in Lupine.js. Unlike modern frameworks that attempt to automatically detect state changes, <code>HtmlVar</code> gives you a manual &quot;handle&quot; to a specific DOM slot that you can update at any time.</p>
+<h2 id="1-correct-usage"><a class="header-anchor" href="#1-correct-usage">#</a>1. Correct Usage</h2><p><code>HtmlVar</code> is not a Component you render (like <code>&lt;HtmlVar /&gt;</code>). It is a <strong>Class</strong> that you instantiate.</p>
+<ol>
+<li>Create an instance: <code>const dom = new HtmlVar(initialValue)</code>.</li>
+<li>Embed its node in your JSX: <code>{dom.node}</code>.</li>
+<li>Update it explicitly: <code>dom.value = newValue</code>.</li>
+</ol>
+<h3 id="example"><a class="header-anchor" href="#example">#</a>Example</h3><pre><code class="language-tsx">import { HtmlVar, RefProps } from &#39;lupine.components&#39;;
 
-// Simple HTML display
-&lt;HtmlVar html=&#39;&lt;p&gt;Hello &lt;b&gt;Lupine!&lt;/b&gt;&lt;/p&gt;&#39; /&gt;;
+const TestButton = () =&gt; {
+  // 1. Create the reactive variable
+  const dom = new HtmlVar(&#39;&#39;);
+
+  // 2. Define actions that update it
+  const onClick = async () =&gt; {
+    // This triggers a Spot Update on the DOM element below
+    dom.value = &#39;You clicked the button.&#39;;
+  };
+
+  const ref: RefProps = {
+    onLoad: async () =&gt; {
+      dom.value = &#39;This value is set in onLoad event.&#39;;
+    },
+  };
+
+  return (
+    &lt;div ref={ref} class=&#39;row-box pt-m&#39;&gt;
+      &lt;button onClick={onClick} class=&#39;button-base&#39;&gt;
+        Click me!
+      &lt;/button&gt;
+      {/* 3. Drop the &quot;Anchor&quot; here */}
+      &lt;div class=&#39;pl-m&#39;&gt;{dom.node}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
 </code></pre>
+<h2 id="2-comparison-with-modern-frameworks"><a class="header-anchor" href="#2-comparison-with-modern-frameworks">#</a>2. Comparison with Modern Frameworks</h2><p>If you come from React, Vue, or SolidJS, this might look verbose.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Framework</th>
+<th align="left">Mechanism</th>
+<th align="left">Code Syntax</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>React</strong></td>
+<td align="left">Virtual DOM Diffing</td>
+<td align="left"><code>const [val, setVal] = useState(0);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>SolidJS</strong></td>
+<td align="left">Fine-Grained Signals</td>
+<td align="left"><code>const [val, setVal] = createSignal(0);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Lupine.js</strong></td>
+<td align="left"><strong>Manual Spot Replacement</strong></td>
+<td align="left"><code>const val = new HtmlVar(0); val.value = 1;</code></td>
+</tr>
+</tbody></table>
+<p><strong>The Trade-off:</strong></p>
+<ul>
+<li><strong>Modern Frameworks</strong>: Focus on &quot;Developer Experience&quot;. You change state, the magic happens.</li>
+<li><strong>Lupine.js</strong>: Focuses on &quot;Explicit Performance&quot;. You tell the browser exactly <em>which</em> <code>&lt;div&gt;</code> to update. There is no guesswork or accidental re-renders.</li>
+</ul>
+<h2 id="3-recommended-helper-val-t"><a class="header-anchor" href="#3-recommended-helper-val-t">#</a>3. Recommended Helper: <code>val&lt;T&gt;</code></h2><p>If you prefer the modern syntax of &quot;Signals&quot;, you can use the <code>val</code> helper. It is functionally identical to <code>HtmlVar</code> but offers a syntactic sugar that feels like &quot;Automatic Updates&quot;.</p>
+<pre><code class="language-tsx">// 1. Define the helper (or import it from lib)
+export function val&lt;T&gt;(initial: T) {
+  const internal = new HtmlVar(initial);
+  // Getter
+  const signal = () =&gt; internal.value;
+  // Setter
+  signal.set = (v: T) =&gt; {
+    internal.value = v;
+  };
+  // Renderable Node
+  signal.jsx = () =&gt; internal.node;
+  return signal;
+}
+
+// 2. Usage
+const Counter = () =&gt; {
+  const count = val(0);
+
+  return (
+    &lt;div&gt;
+      &lt;button onclick={() =&gt; count.set(count() + 1)}&gt;Add&lt;/button&gt;
+
+      {/* Looks like a modern framework! */}
+      &lt;span&gt;{count.jsx()}&lt;/span&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<p>In fact, whether you use <code>HtmlVar</code> class directly or the <code>val()</code> wrapper, the underlying mechanism is the same: <strong>Surgical updates to DOM fragments without diffing.</strong></p>

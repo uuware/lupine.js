@@ -4,6 +4,8 @@ export * from './blob-utils';
 export * from './calculate-text-width';
 export * from './date-utils';
 export * from './deep-merge';
+export * from './disable-console';
+export * from './disable-debug';
 export * from './document-ready';
 export * from './dom-utils';
 export * from './download-file';

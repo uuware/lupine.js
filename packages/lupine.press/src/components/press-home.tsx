@@ -1,4 +1,5 @@
 import { CssProps } from 'lupine.components';
+import { pressProcessUrl } from '../services';
 
 export const LayoutHome = (props: { data: any }) => {
   const { hero, features } = props.data || {};
@@ -88,7 +89,7 @@ export const LayoutHome = (props: { data: any }) => {
         <p class='&-hero-tagline'>{hero.tagline}</p>
         <div class='&-hero-actions'>
           {hero.actions?.map((action: any) => (
-            <a href={action.link} class={`&-button ${action.theme}`}>
+            <a href={pressProcessUrl(action.link)} class={`&-button ${action.theme}`}>
               {action.text}
             </a>
           ))}
