@@ -12,7 +12,7 @@ title: Overview
 
 We believe in keeping things simple. `lupine.web` has **zero external dependencies**, resulting in a tiny bundle size and lightning-fast load times. It uses TSX syntax, so if you know React, you already feel at home.
 
-### 🎨 Built-in CSS-in-JS
+### 🎨 Built-in CSS-in-JS [🔗](../essentials/css-in-js)
 
 Forget about setting up complex CSS loaders or external styling libraries. `lupine.web` comes with a powerful, built-in CSS-in-JS solution.
 
@@ -35,7 +35,7 @@ const MyButton = (props) => (
 );
 ```
 
-### 🛣️ Powerful Router
+### 🛣️ Powerful Router [🔗](../essentials/page-route)
 
 Our functional router is designed for flexibility and control.
 
@@ -53,7 +53,7 @@ pageRouter.setFilter(async (props) => {
 pageRouter.use('/dashboard/*', DashboardRouter);
 ```
 
-### ⚡ Server-Side Rendering (SSR) First
+### ⚡ Server-Side Rendering (SSR) First [🔗](../essentials/ssr)
 
 Visual performance is critical. `lupine.web` is built with SSR in mind from day one.
 

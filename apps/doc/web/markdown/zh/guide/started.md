@@ -2,33 +2,38 @@
 title: 快速开始
 ---
 
-# 了解 Lupine.JS
+# 了解 Lupine.js
 
-lupine.js is a full-featured web application that includes both Front-End and Back-End services. The Front-End, lupine.web, is an extremely lightweight framework using React TSX syntax. The Back-End, lupine.api, is a highly efficient and simplified framework similar to Express. It supports server-side rendering from scratch.
-Lupine.js 是一个包含前后端的全功能 Web 应用程序。通过使用 Capacitor 和 Electron 从而实现一份代码，即可实现 Web、移动端和桌面端的应用程序。
+Lupine.js 是一个包含前后端服务的全功能 Web 应用程序框架。
 
-## 前提条件
+- **前端 (Front-End)**: `lupine.web` 是一个极其轻量级的框架，使用 React TSX 语法，让熟悉 React 的开发者零成本上手。
+- **后端 (Back-End)**: `lupine.api` 是一个高效且精简的框架（类似 Express），从底层原生支持服务端渲染 (SSR)。
+- **全平台**: 通过 Capacitor 和 Electron，仅需维护一份代码，即可同时发布 Web、iOS、Android 和桌面端应用程序。
 
-- Node.js >= 20
+## 核心特性 (Core Essentials)
 
-## 快速上手
+Lupine.js 的设计哲学是**简单**与**高性能**。以下是我们引以为傲的核心功能：
 
-1. 克隆仓库到本地：
+### [⚡ 服务端渲染 (SSR) 优先](../essentials/ssr)
 
-```bash
-git clone https://github.com/uuware/lupine.js.git
-```
+Lupine 从一开始就是为 SSR 设计的。它自动处理样式注入、SEO 元数据和状态注水，确保你的应用拥有极致的首屏加载速度和搜索引擎友好性。
 
-2. 安装依赖：
+### [🎨 内置 CSS-in-JS](../essentials/css-in-js)
 
-```bash
-npm i
-```
+告别复杂的 CSS 配置。Lupine 内置了强大的样式系统，支持作用域样式、嵌套选择器、媒体查询和动态样式，完全无运行时负担。
 
-3. 运行开发环境：
+### [🛣️ 强大的页面路由](../essentials/page-route)
 
-```bash
-npm run dev
-```
+一个灵活的函数式路由系统，支持嵌套路由、路由守卫、参数解析和中间件，为构建复杂的单页应用 (SPA) 提供了坚实基础。
 
-4. 打开 `http://localhost:11080` 即可查看开发中的应用程序。
+### [🌗 主题系统](../essentials/theme)
+
+开箱即用的主题支持（亮色/暗色模式）。Lupine 确保在 SSR 阶段就注入正确的主题变量，彻底消除了页面加载时的“样式闪烁” (FOUC) 问题。
+
+### [📝 高性能列表渲染](../essentials/list)
+
+独创的 Spot-Update 技术，使得在渲染和编辑大型列表时，能够直接更新 DOM 节点，而无需触发昂贵的 React 虚拟 DOM 重计算。
+
+### [📡 全栈开发体验](../essentials/api)
+
+前后端一体化设计。`lupine.api` 提供了极简的 API 定义方式，与前端配合无间，让全栈开发变得前所未有的简单。

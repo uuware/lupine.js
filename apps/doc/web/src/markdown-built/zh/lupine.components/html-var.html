@@ -1,6 +1,96 @@
-<h1 id="htmlvar-html-变量"><a class="header-anchor" href="#htmlvar-html-变量">#</a>HtmlVar (HTML 变量)</h1><p>一个常用核心组件，用于显示或通过变量动态更新 HTML 内容。</p>
-<h2 id="实装例子"><a class="header-anchor" href="#实装例子">#</a>实装例子</h2><pre><code class="language-typescript">import { HtmlVar } from &#39;lupine.components&#39;;
+<h1 id="htmlvar"><a class="header-anchor" href="#htmlvar">#</a>HtmlVar</h1><p><code>HtmlVar</code> 是 Lupine.js 响应式系统的核心原语。与试图自动检测状态变化的现代框架不同，<code>HtmlVar</code> 提供了一个手动的“句柄 (Handle)”，让你可以随时更新特定的 DOM 插槽。</p>
+<h2 id="1-正确用法"><a class="header-anchor" href="#1-正确用法">#</a>1. 正确用法</h2><p><code>HtmlVar</code> 并不是一个像 <code>&lt;HtmlVar /&gt;</code> 那样去渲染的组件，而是一个你需要实例化的 <strong>类 (Class)</strong>。</p>
+<ol>
+<li>创建一个实例：<code>const dom = new HtmlVar(initialValue)</code>。</li>
+<li>将其节点嵌入到 JSX 中：<code>{dom.node}</code>。</li>
+<li>显式地更新它：<code>dom.value = newValue</code>。</li>
+</ol>
+<h3 id="示例"><a class="header-anchor" href="#示例">#</a>示例</h3><pre><code class="language-tsx">import { HtmlVar, RefProps } from &#39;lupine.components&#39;;
 
-// 简单显示 HTML
-&lt;HtmlVar html=&#39;&lt;p&gt;Hello &lt;b&gt;Lupine!&lt;/b&gt;&lt;/p&gt;&#39; /&gt;;
+const TestButton = () =&gt; {
+  // 1. 创建响应式变量
+  const dom = new HtmlVar(&#39;&#39;);
+
+  // 2. 定义更新它的操作
+  const onClick = async () =&gt; {
+    // 这会对下方的 DOM 元素触发“点对点更新 (Spot Update)”
+    dom.value = &#39;你点击了按钮。&#39;;
+  };
+
+  const ref: RefProps = {
+    onLoad: async () =&gt; {
+      dom.value = &#39;这个值是在 onLoad 事件中设置的。&#39;;
+    },
+  };
+
+  return (
+    &lt;div ref={ref} class=&#39;row-box pt-m&#39;&gt;
+      &lt;button onClick={onClick} class=&#39;button-base&#39;&gt;
+        点我！
+      &lt;/button&gt;
+      {/* 3. 在这里放置 &quot;锚点&quot; */}
+      &lt;div class=&#39;pl-m&#39;&gt;{dom.node}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
 </code></pre>
+<h2 id="2-与现代框架的对比"><a class="header-anchor" href="#2-与现代框架的对比">#</a>2. 与现代框架的对比</h2><p>如果你来自 React、Vue 或 SolidJS 背景，这看起来可能稍微繁琐一些。</p>
+<table>
+<thead>
+<tr>
+<th align="left">框架</th>
+<th align="left">机制</th>
+<th align="left">代码语法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>React</strong></td>
+<td align="left">虚拟 DOM Diff (Virtual DOM Diffing)</td>
+<td align="left"><code>const [val, setVal] = useState(0);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>SolidJS</strong></td>
+<td align="left">细粒度信号 (Fine-Grained Signals)</td>
+<td align="left"><code>const [val, setVal] = createSignal(0);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Lupine.js</strong></td>
+<td align="left"><strong>手动定点替换 (Manual Spot Replacement)</strong></td>
+<td align="left"><code>const val = new HtmlVar(0); val.value = 1;</code></td>
+</tr>
+</tbody></table>
+<p><strong>权衡 (The Trade-off):</strong></p>
+<ul>
+<li><strong>现代框架</strong>：专注于“开发者体验 (DX)”。你改变状态，魔法自动发生。</li>
+<li><strong>Lupine.js</strong>：专注于“显式性能”。你明确告诉浏览器 <em>哪一个</em> <code>&lt;div&gt;</code> 需要更新。没有猜测，也不会有意外的重渲染。</li>
+</ul>
+<h2 id="3-推荐的辅助函数-val-t"><a class="header-anchor" href="#3-推荐的辅助函数-val-t">#</a>3. 推荐的辅助函数：<code>val&lt;T&gt;</code></h2><p>如果你更喜欢“信号 (Signals)”的现代语法，你可以使用 <code>val</code> 辅助函数。它在功能上与 <code>HtmlVar</code> 完全相同，但提供了一种让人感觉像“自动更新”的语法糖。</p>
+<pre><code class="language-tsx">// 1. 定义辅助函数（或从 lib 中导入）
+export function val&lt;T&gt;(initial: T) {
+  const internal = new HtmlVar(initial);
+  // Getter
+  const signal = () =&gt; internal.value;
+  // Setter
+  signal.set = (v: T) =&gt; {
+    internal.value = v;
+  };
+  // Renderable Node
+  signal.jsx = () =&gt; internal.node;
+  return signal;
+}
+
+// 2. 用法
+const Counter = () =&gt; {
+  const count = val(0);
+
+  return (
+    &lt;div&gt;
+      &lt;button onclick={() =&gt; count.set(count() + 1)}&gt;增加&lt;/button&gt;
+
+      {/* 看起来像现代框架！ */}
+      &lt;span&gt;{count.jsx()}&lt;/span&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<p>事实上，无论你直接使用 <code>HtmlVar</code> 类还是 <code>val()</code> 包装器，其底层机制都是一样的：<strong>对外科手术般精准的 DOM 片段进行更新，而无需 Diff。</strong></p>

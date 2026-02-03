@@ -1,22 +1,28 @@
-import { CssProps } from 'lupine.components';
-import { pressLoad } from '../services/press-load';
+import { CssProps, RefProps } from 'lupine.components';
+import { pressLoad, pressProcessUrl } from '../services/press-load';
 
 export const PressSidemenu = (props: { sidebar: any[] }) => {
+  const ref: RefProps = {};
   const css: CssProps = {
     width: '100%',
     padding: '0 8px 8px',
     height: 'max-content',
     // overflowY: 'auto',
-    '&-item': {
+    '.&-item': {
       marginBottom: '0.3rem',
       display: 'block',
       color: 'var(--text-color)',
       textDecoration: 'none',
       '&:hover': {
-        color: 'var(--primary-color)',
+        color: 'var(--primary-accent-color)',
       },
+      transition: 'color 0.2s',
     },
-    '&-group-title': {
+    '.&-item.active': {
+      color: 'var(--primary-accent-color)',
+      fontWeight: 'bold',
+    },
+    '.&-group-title': {
       fontWeight: 'bold',
       marginTop: '0.5rem',
       marginBottom: '0.5rem',
@@ -31,10 +37,25 @@ export const PressSidemenu = (props: { sidebar: any[] }) => {
         fontSize: '17px',
       },
     },
-    '&-active': {
-      color: 'var(--primary-color)',
-      fontWeight: 'bold',
-    },
+  };
+
+  const highlight = (targetLink?: string) => {
+    const link = targetLink || window.location.href;
+    const items = ref.$all('&-item');
+    if (items) {
+      items.forEach((el: Element) => {
+        el.classList.remove('active');
+        const dataLink = el.getAttribute('data-link');
+        if (dataLink && link.endsWith(dataLink)) {
+          el.classList.add('active');
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+  };
+
+  ref.onLoad = async () => {
+    highlight();
   };
 
   // Expecting props.sidebar to be already flattened by parent
@@ -42,7 +63,7 @@ export const PressSidemenu = (props: { sidebar: any[] }) => {
   const basePadding = 1; // rem
 
   return (
-    <aside css={css}>
+    <aside css={css} ref={ref}>
       {flatList.map((item, index) => {
         const style = { paddingLeft: `${item.level * basePadding}rem` };
 
@@ -53,13 +74,16 @@ export const PressSidemenu = (props: { sidebar: any[] }) => {
             </div>
           );
         } else {
+          const target = pressProcessUrl(item.link);
           return (
             <a
               class='&-item'
               style={style}
               href='javascript:void(0)'
+              data-link={target}
               onClick={() => {
-                pressLoad(item.link);
+                highlight(target);
+                pressLoad(target);
                 return false;
               }}
               key={index}

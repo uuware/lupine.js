@@ -1,0 +1,77 @@
+<h1 id="ssr-服务端渲染"><a class="header-anchor" href="#ssr-服务端渲染">#</a>SSR (服务端渲染)</h1><p>Lupine.js 从一开始就将 <strong>服务端渲染 (SSR)</strong> 视为一等公民。大多数 SPA 框架将 SSR 视为事后的补充，或者需要复杂的元框架（如 React 的 Next.js）支持，而 Lupine 则直接将 SSR 集成到其核心架构中（<code>lupine.api</code> 和 <code>lupine.web</code>）。</p>
+<h2 id="1-工作原理"><a class="header-anchor" href="#1-工作原理">#</a>1. ⚙️ 工作原理</h2><p>当用户请求一个不对应静态文件（如图片或 JS 文件）的 URL 时，<code>serverSideRenderPage</code> 函数就会接管处理。</p>
+<h3 id="流程"><a class="header-anchor" href="#流程">#</a>流程：</h3><ol>
+<li><strong>请求拦截</strong>: 服务端拦截 HTTP 请求。</li>
+<li><strong>环境注入</strong>: 它将服务端环境变量（以 <code>WEB.</code> 开头）注入到运行时。</li>
+<li><strong>页面生成</strong>: 它调用 <code>_lupineJs.generatePage</code> <strong>在服务端</strong> 执行你的前端逻辑。</li>
+<li><strong>HTML 构建</strong>: 它将最终的 HTML 拼接在一起，包括：<ul>
+<li><strong>主题与样式</strong>: 关键 CSS 和当前主题被直接注入，防止“内容无样式闪烁” (FOUC)。</li>
+<li><strong>元数据</strong>: 计算并插入 SEO 标题和描述。</li>
+<li><strong>状态注水 (Hydration)</strong>: 页面被加载之后，前端会自动绑定事件。</li>
+</ul>
+</li>
+</ol>
+<h2 id="2-零配置-seo"><a class="header-anchor" href="#2-零配置-seo">#</a>2. 🔍 零配置 SEO</h2><p>Lupine SSR 的最大好处之一是自动支持 SEO。通过使用 <code>MetaData</code> 等组件，你的页面在客户端运行任何 JavaScript <strong>之前</strong>，就已经告诉了搜索引擎它们需要知道的确切内容。</p>
+<h3 id="示例-社交分享-opengraph"><a class="header-anchor" href="#示例-社交分享-opengraph">#</a>示例：社交分享 (OpenGraph)</h3><p>在 <code>share-content.tsx</code> 中，你可以根据正在查看的内容动态设置 meta 标签：</p>
+<pre><code class="language-tsx">export const ShareContentPage = async (props: PageProps) =&gt; {
+  // 1. 获取数据 (在服务端也可行！)
+  const record = await fetchRecord(props.urlParameters[&#39;id&#39;]);
+
+  // 2. 定义 SEO/社交媒体元数据
+  return (
+    &lt;div&gt;
+      &lt;MetaData property=&#39;og:title&#39; content={record.title} /&gt;
+      &lt;MetaData property=&#39;og:description&#39; content={record.description} /&gt;
+      &lt;MetaData property=&#39;og:image&#39; content={record.imageUrl} /&gt;
+      &lt;MetaData property=&#39;og:url&#39; content={props.url} /&gt;
+
+      &lt;h1&gt;{record.title}&lt;/h1&gt;
+      {/* ... 内容 ... */}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="3-环境变量"><a class="header-anchor" href="#3-环境变量">#</a>3. 🛠️ 环境变量</h2><p>Lupine 自动将你的服务端环境桥接到前端。</p>
+<h3 id="定义变量"><a class="header-anchor" href="#定义变量">#</a>定义变量</h3><p>在 <code>.env</code> 文件中，以 <code>WEB.</code> 开头的变量被标记为前端可用：</p>
+<pre><code class="language-ini"># .env
+WEB.API_BASE_URL=https://api.example.com
+WEB.SITE_NAME=My Awesome App
+SECRET_KEY=xxxx  &lt;-- 这个保留在服务端！
+</code></pre>
+<h3 id="访问变量"><a class="header-anchor" href="#访问变量">#</a>访问变量</h3><p>在 SSR 期间（以及随后的浏览器中），可以通过 <code>getWebEnv()</code> 访问这些变量：</p>
+<pre><code class="language-typescript">// 任意组件
+import { getWebEnv } from &#39;lupine.web&#39;;
+
+const env = getWebEnv();
+console.log(env.API_BASE_URL); // &quot;https://api.example.com&quot;
+</code></pre>
+<h2 id="4-webconfig-动态运行时配置"><a class="header-anchor" href="#4-webconfig-动态运行时配置">#</a>4. ⚙️ WebConfig: 动态运行时配置</h2><p>有时你需要一些可以在运行时更改的配置（例如管理后台的“每页最大行数”或“维护模式”），而无需重新部署。Lupine 为此提供了 <code>WebConfig</code>。</p>
+<p><strong>机制：</strong></p>
+<ol>
+<li><strong>SSR 注入</strong>: 在首次加载页面时，服务端获取这些配置并将其注入到一个 <code>&lt;script id=&quot;web-setting&quot;&gt;</code> 标签中。</li>
+<li><strong>注水 (Hydration)</strong>: <code>WebConfig.init()</code> (自动调用) 读取此脚本标签，有效地同步“注水”配置。</li>
+<li><strong>异步回退</strong>: 如果应用作为纯 SPA 运行（仅客户端导航），且缓存缺失，<code>WebConfig.get()</code> 会从 API 获取配置。</li>
+</ol>
+<h3 id="用法"><a class="header-anchor" href="#用法">#</a>用法</h3><p><strong>绑定 API (入口点):</strong></p>
+<pre><code class="language-tsx">// src/index.tsx
+bindWebConfigApi(&#39;/api/admin/web-config&#39;);
+</code></pre>
+<p><strong>使用配置 (组件):</strong></p>
+<pre><code class="language-tsx">// admin-poster-page.tsx
+const PosterList = async () =&gt; {
+  // 异步访问确保数据已就绪
+  const maxRows = await WebConfig.get(&#39;poster_max_rows&#39;, 10);
+  const category = await WebConfig.get(&#39;current_category&#39;, &#39;default&#39;);
+
+  // ... 使用配置 ...
+};
+</code></pre>
+<blockquote>
+<p>[!IMPORTANT]
+由于 <code>WebConfig</code> 可能需要获取数据（在客户端导航时），它被设计为 <strong>异步 API</strong>。请始终使用 <code>await WebConfig.get(...)</code>。</p>
+</blockquote>
+<h2 id="5-智能缓存与性能"><a class="header-anchor" href="#5-智能缓存与性能">#</a>5. ⚡ 智能缓存与性能</h2><p>Lupine 的 SSR 不仅仅是为了渲染，更是为了速度。</p>
+<ul>
+<li><strong>模板缓存</strong>: 服务端缓存 <code>index.html</code> 的结构以减少文件系统读取。它识别标题、Meta、CSS 和内容的“插槽” (<code>packages/lupine.api/src/api/server-render.ts</code>)。</li>
+<li><strong>CSS 与主题注入</strong>: 通过在服务端计算关键 CSS (<code>generateAllGlobalStyles</code>)，浏览器可以立即接收到一个样式完整的页面。即使用户禁用了 JavaScript 或加载缓慢，他们也能看到完美的 UI。</li>
+</ul>

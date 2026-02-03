@@ -1,19 +1,71 @@
-<h1 id="api-参考"><a class="header-anchor" href="#api-参考">#</a>API 参考</h1><p>LupineJS 为 Web 和服务器开发提供了一套极简的 API。</p>
-<h2 id="lupine-web-前端"><a class="header-anchor" href="#lupine-web-前端">#</a>Lupine.web (前端)</h2><h3 id="bindrouter"><a class="header-anchor" href="#bindrouter">#</a>`bindRouter`</h3><p>将页面路由绑定到应用程序。</p>
-<pre><code class="language-typescript">import { bindRouter, PageRouter } from &#39;lupine.components&#39;;
-const pageRouter = new PageRouter();
-pageRouter.use(&#39;/&#39;, HomePage);
-bindRouter(pageRouter);
-</code></pre>
-<h3 id="bindtheme"><a class="header-anchor" href="#bindtheme">#</a>`bindTheme`</h3><p>绑定主题配置。</p>
-<pre><code class="language-typescript">import { bindTheme } from &#39;lupine.components&#39;;
-bindTheme(&#39;light&#39;, themes);
-</code></pre>
-<h3 id="bindlang"><a class="header-anchor" href="#bindlang">#</a>`bindLang`</h3><p>绑定多语言支持。</p>
-<pre><code class="language-typescript">import { bindLang } from &#39;lupine.components&#39;;
-bindLang(&#39;en&#39;, { en, zh });
-</code></pre>
-<h2 id="lupine-api-后端"><a class="header-anchor" href="#lupine-api-后端">#</a>Lupine.api (后端)</h2><h3 id="apimodule"><a class="header-anchor" href="#apimodule">#</a>`ApiModule`</h3><p>后端服务的主模块。</p>
+<h3 id="架构与工作流-architecture-workflow"><a class="header-anchor" href="#架构与工作流-architecture-workflow">#</a>🏗️ 架构与工作流 (Architecture &amp; Workflow)</h3><p>Lupine.js 运行一个单例服务器实例，可以同时服务多个域名和应用程序。</p>
+<p><strong>1. 应用定义 (App Definition)</strong>
+应用在 <code>.env</code> 文件中通过 <code>APPS</code> 变量定义（例如 <code>APPS=doc,demo.app</code>）。域名映射也在 <code>.env</code> 中配置（例如 <code>DOMAINS@demo.app=example.com</code>）。</p>
+<p><strong>2. 编译 (Compilation)</strong>
+在构建/开发期间，<code>dev-watch.js</code> 读取每个应用目录下的 <code>lupine.json</code> 以找到 <code>webEntryPoints</code> 并进行编译。</p>
+<p><strong>3. 请求流程 (Request Flow)</strong>
+当请求到达时：</p>
+<ol>
+<li><strong>应用解析</strong>: <code>AppHelper</code> 根据请求的主机名识别目标应用。</li>
+<li><strong>模块加载</strong>: 加载对应的 <code>ApiModule</code> (在 <code>api/src/index.ts</code> 中定义)。</li>
+<li><strong>路由</strong>: <code>RootApi</code> 尝试匹配 API 路由。如果未匹配，则回退到 <code>StaticServer</code>。</li>
+</ol>
+<p><strong>4. 静态服务与 SSR</strong>
+<code>StaticServer</code>:</p>
+<ul>
+<li>检查请求的静态文件是否存在。</li>
+<li>如果未找到，它将触发 <strong>SSR</strong> (<code>serverSideRenderPage</code>)。</li>
+</ul>
+<p>这确保了一个单一入口点可以无缝处理 API、静态资源和 SSR 页面生成。</p>
+<p>后端服务的主模块。每一个有后端的 App 都必须实装一个 <code>ApiModule</code>。</p>
 <pre><code class="language-typescript">import { ApiModule } from &#39;lupine.api&#39;;
+import { RootApi } from &#39;./service/root-api&#39;;
+
 export const apiModule = new ApiModule(new RootApi());
+</code></pre>
+<h3 id="rootapi-与-staticserver"><a class="header-anchor" href="#rootapi-与-staticserver">#</a>🌳 RootApi 与 StaticServer</h3><p><code>RootApi</code> 是应用程序逻辑的入口点。它通常挂载特定的 API 以及 <code>StaticServer</code> 来处理文件请求和 SSR 回退。</p>
+<pre><code class="language-typescript">// src/service/root-api.ts
+import { IApiBase, ApiRouter, StaticServer } from &#39;lupine.api&#39;;
+
+export class RootApi implements IApiBase {
+  protected router = new ApiRouter();
+
+  constructor() {
+    this.mountRoutes();
+  }
+
+  protected mountRoutes() {
+    // 1. 挂载你的 App API
+    this.router.use(&#39;/api&#39;, new Api().getRouter());
+
+    // 2. 挂载静态服务器 (Static Server) (处理静态文件 + SSR)
+    // 重要：必须放在最后以捕获非 API 请求
+    const staticServer = new StaticServer();
+    this.router.use(&#39;*&#39;, staticServer.processRequest.bind(staticServer));
+  }
+}
+</code></pre>
+<h3 id="健康检查示例-health-check"><a class="header-anchor" href="#健康检查示例-health-check">#</a>🏥 健康检查示例 (Health Check)</h3><p>这是一个简单的 API 端点示例（例如用于健康检查）。</p>
+<pre><code class="language-typescript">// src/service/api.ts
+import { IApiBase, ApiRouter, ServerRequest } from &#39;lupine.api&#39;;
+import { ServerResponse } from &#39;http&#39;;
+
+export class Api implements IApiBase {
+  protected router = new ApiRouter();
+
+  constructor() {
+    this.router.use(&#39;/health-check&#39;, this.healthCheck.bind(this));
+  }
+
+  async healthCheck(req: ServerRequest, res: ServerResponse) {
+    res.writeHead(200, { &#39;Content-Type&#39;: &#39;application/json&#39; });
+    res.write(JSON.stringify({ status: &#39;OK&#39;, uptime: process.uptime() }));
+    res.end();
+    return true; // 返回 true 表示请求已被处理
+  }
+
+  public getRouter() {
+    return this.router;
+  }
+}
 </code></pre>

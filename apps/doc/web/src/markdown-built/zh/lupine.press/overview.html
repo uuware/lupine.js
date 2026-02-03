@@ -32,7 +32,7 @@ pageRouter.use(&#39;*&#39;, PressPage);
 // 4. 启动应用程序
 bindRouter(pageRouter);
 </code></pre>
-<h3 id="3-数据结构-markdownconfig"><a class="header-anchor" href="#3-数据结构-markdownconfig">#</a>3. 数据结构 (`markdownConfig`)</h3><p><code>bindPressData</code> 函数期望一个配置对象，其中键是路由路径（例如 <code>/guide/started</code>），值包含内容和元数据。</p>
+<h3 id="3-数据结构-markdownconfig"><a class="header-anchor" href="#3-数据结构-markdownconfig">#</a>3. 数据结构 (<code>markdownConfig</code>)</h3><p><code>bindPressData</code> 函数期望一个配置对象，其中键是路由路径（例如 <code>/guide/started</code>），值包含内容和元数据。</p>
 <p>通常，此数据是在构建时从您的 Markdown 文件生成的。</p>
 <pre><code class="language-typescript">export const markdownConfig = {
   &#39;/en/guide/started&#39;: {
@@ -50,7 +50,7 @@ bindRouter(pageRouter);
   // ... 其他页面
 };
 </code></pre>
-<h2 id="markdown-文件结构与关联-markdown-file-structure-association"><a class="header-anchor" href="#markdown-文件结构与关联-markdown-file-structure-association">#</a>Markdown 文件结构与关联 (Markdown File Structure & Association)</h2><h3 id="顶层配置-top-level-configuration"><a class="header-anchor" href="#顶层配置-top-level-configuration">#</a>顶层配置 (Top-level Configuration)</h3><p>在 Markdown 文件的顶层目录（根目录），必须存在一个 <code>index.md</code> 文件。该文件使用 <code>lang</code> 字段来指定站点支持的所有语言。</p>
+<h2 id="markdown-文件结构与关联-markdown-file-structure-association"><a class="header-anchor" href="#markdown-文件结构与关联-markdown-file-structure-association">#</a>Markdown 文件结构与关联 (Markdown File Structure &amp; Association)</h2><h3 id="顶层配置-top-level-configuration"><a class="header-anchor" href="#顶层配置-top-level-configuration">#</a>顶层配置 (Top-level Configuration)</h3><p>在 Markdown 文件的顶层目录（根目录），必须存在一个 <code>index.md</code> 文件。该文件使用 <code>lang</code> 字段来指定站点支持的所有语言。</p>
 <pre><code class="language-yaml">---
 lang:
   - title: English

@@ -1,0 +1,99 @@
+<h1 id="page-router-页面路由"><a class="header-anchor" href="#page-router-页面路由">#</a>Page Router (页面路由)</h1><p><strong>Lupine.web</strong> 中的 <code>PageRouter</code> 是一个强大的客户端路由系统，其逻辑设计与后端的 <code>ApiRouter</code> (位于 <code>lupine.api</code> 中) 保持 <strong>同构</strong>。它支持嵌套路由、中间件过滤器、动态参数和布局框架 (Layout Frames)。</p>
+<h2 id="1-与其他框架的对比"><a class="header-anchor" href="#1-与其他框架的对比">#</a>1. ⚖️ 与其他框架的对比</h2><p>与通用的路由器（如 <code>react-router</code> 或 <code>vue-router</code>）相比：</p>
+<ul>
+<li><strong>逻辑一致性</strong>：它与后端的 <code>ApiRouter</code> 共享完全相同的路由哲学。如果你知道如何编写 Lupine 后端 API，你就知道如何编写前端路由。</li>
+<li><strong>真正的嵌套</strong>：你可以将一个完整的 <code>PageRouter</code> 实例挂载到另一个路由器的特定路径上（例如：<code>router.use(&#39;/user&#39;, userRouter)</code>），从而实现真正的模块化。</li>
+<li><strong>内置布局</strong>：<code>setFramePage</code> 将布局视为一等公民，能够将内容注入到特定的占位符类中。</li>
+</ul>
+<h2 id="2-基本用法"><a class="header-anchor" href="#2-基本用法">#</a>2. 🐣 基本用法</h2><p>最简单的开始方法是将路径映射到页面组件。</p>
+<pre><code class="language-tsx">import { PageRouter, bindRouter } from &#39;lupine.web&#39;;
+
+// 1. 创建 Router
+const pageRouter = new PageRouter();
+
+// 2. 定义路由
+pageRouter.use(&#39;/home&#39;, HomePage);
+pageRouter.use(&#39;/about&#39;, AboutPage);
+// 404 通配符
+pageRouter.use(&#39;*&#39;, NotFoundPage);
+
+// 3. 绑定到系统
+bindRouter(pageRouter);
+</code></pre>
+<h2 id="3-动态参数"><a class="header-anchor" href="#3-动态参数">#</a>3. 🔧 动态参数</h2><p>Lupine 直接在 URL 字符串中支持必选和可选参数。所有捕获的参数都可以在 <code>props.urlParameters</code> 中获取。</p>
+<h3 id="语法"><a class="header-anchor" href="#语法">#</a>语法</h3><ul>
+<li><code>/:id</code> : 必选参数。</li>
+<li><code>/?id</code> : 可选参数。（所有后续参数也必须是可选的）。</li>
+<li><code>?key=value</code> : 也支持标准的查询字符串（单独解析）。</li>
+</ul>
+<h3 id="示例"><a class="header-anchor" href="#示例">#</a>示例</h3><pre><code class="language-tsx">// 定义:
+pageRouter.use(&#39;/share/:type/:id/&#39;, ShareContentPage);
+
+// 在 ShareContentPage 中使用:
+export const ShareContentPage = (props: PageProps) =&gt; {
+  // 获取参数
+  const type = props.urlParameters[&#39;type&#39;];
+  const id = props.urlParameters[&#39;id&#39;];
+
+  return (
+    &lt;div&gt;
+      正在查看 {type}，ID为: {id}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="4-高级特性"><a class="header-anchor" href="#4-高级特性">#</a>4. 🚀 高级特性</h2><h3 id="4-1-嵌套路由-模块化"><a class="header-anchor" href="#4-1-嵌套路由-模块化">#</a>4.1 🎎 嵌套路由 (模块化)</h3><p>你可以将应用程序拆分为子模块。</p>
+<pre><code class="language-tsx">// 1. 为用户个人资料区域创建一个子路由器
+const userPageRouter = new PageRouter();
+userPageRouter.use(&#39;/profile&#39;, UserProfilePage);
+userPageRouter.use(&#39;/settings&#39;, UserSettingsPage);
+
+// 2. 将其挂载到主路由器下的 &#39;/user&#39; 路径
+const mainRouter = new PageRouter();
+mainRouter.use(&#39;/user&#39;, userPageRouter);
+
+// 现在的 URL 是: /user/profile, /user/settings
+</code></pre>
+<h3 id="4-2-中间件过滤器-鉴权"><a class="header-anchor" href="#4-2-中间件过滤器-鉴权">#</a>4.2 🛡️ 中间件过滤器 (鉴权)</h3><p>你可以附加一个“过滤器 (Filter)”函数，该函数会在 <em>任何</em> 路由解析之前运行。如果过滤器处理了请求（例如，重定向到登录）或返回了一个节点，路由将停止。如果它返回 <code>null</code>，路由将继续。</p>
+<pre><code class="language-tsx">// 全局过滤器
+pageRouter.setFilter(checkAgreement);
+
+// 特定路由过滤器 (中间件模式)
+const checkAuth = async (props) =&gt; {
+  if (!isLoggedIn()) {
+    // 渲染登录页面或重定向
+    return &lt;LoginPage /&gt;;
+  }
+  return null; // 继续执行下一个处理程序
+};
+
+// 用法: checkAuth 先运行，然后才是 UserMinePage
+userPageRouter.use(&#39;/mine&#39;, checkAuth, UserMinePage);
+</code></pre>
+<h3 id="4-3-框架页面-布局"><a class="header-anchor" href="#4-3-框架页面-布局">#</a>4.3 🖼️ 框架页面 (布局)</h3><p>与 React Router 嵌套 <code>&lt;Outlet /&gt;</code> 不同，Lupine 使用 <code>setFramePage</code> 方法为该 Router 内的所有路由定义一个“包装器”或“布局”。</p>
+<pre><code class="language-tsx">// 1. 定义框架
+const TopFrame = (placeholderClass, childNode) =&gt; {
+  return (
+    &lt;div class=&#39;app-container&#39;&gt;
+      &lt;Header /&gt;
+      &lt;Sidebar /&gt;
+      {/* 内容注入点 */}
+      &lt;div class={placeholderClass}&gt;{childNode}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+
+// 2. 应用到 Router
+const pageRouter = new PageRouter();
+pageRouter.setFramePage({
+  component: TopFrame,
+  placeholderClassname: &#39;app-content-area&#39;, // 匹配上面的 class
+});
+
+pageRouter.use(&#39;/dashboard&#39;, DashboardPage);
+// 结果: DashboardPage 被渲染在 TopFrame 的 &#39;app-content-area&#39; div 内部。
+</code></pre>
+<h3 id="4-4-子目录部署"><a class="header-anchor" href="#4-4-子目录部署">#</a>4.4 📂 子目录部署</h3><p>如果你的应用部署在 <code>example.com/my-app/</code>，你需要告诉路由器忽略 <code>/my-app</code> 前缀。</p>
+<pre><code class="language-typescript">// 如果物理路径存在，路由器需要知道要忽略它
+pageRouter.setSubDir(&#39;/my-app&#39;);
+</code></pre>

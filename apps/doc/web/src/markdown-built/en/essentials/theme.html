@@ -1,0 +1,50 @@
+<h1 id="theme"><a class="header-anchor" href="#theme">#</a>🌗 Theme</h1><p>Lupine.js provides built-in support for multiple themes (e.g., Light and Dark modes) with seamless SSR integration.</p>
+<h2 id="1-setup"><a class="header-anchor" href="#1-setup">#</a>1. 🏁 Setup</h2><p>You need to bind your themes at the application entry point (usually <code>index.tsx</code>).</p>
+<h3 id="bindtheme"><a class="header-anchor" href="#bindtheme">#</a><code>bindTheme</code></h3><p>Connects your theme definitions to the Lupine runtime.</p>
+<pre><code class="language-tsx">// src/index.tsx
+import { bindTheme } from &#39;lupine.web&#39;;
+import { lightThemes, darkThemes } from &#39;./themes&#39;;
+
+// Bind default theme and available themes
+bindTheme(&#39;light&#39;, {
+  light: lightThemes,
+  dark: darkThemes,
+});
+</code></pre>
+<ul>
+<li><strong>Why</strong>: This allows the system to know available themes and the default one.</li>
+<li><strong>Where</strong>: Call this before rendering your app.</li>
+</ul>
+<h2 id="2-usage"><a class="header-anchor" href="#2-usage">#</a>2. 🎮 Usage</h2><h3 id="accessing-updating"><a class="header-anchor" href="#accessing-updating">#</a>Accessing &amp; Updating</h3><p>You can get the current theme or switch themes using provided helpers.</p>
+<pre><code class="language-tsx">import { getCurrentTheme, updateTheme } from &#39;lupine.web&#39;;
+
+// Get current theme info
+const { themeName, themes } = getCurrentTheme();
+
+// Switch to dark mode
+const onSwitch = () =&gt; {
+  updateTheme(&#39;dark&#39;);
+};
+</code></pre>
+<h3 id="themeselector-component"><a class="header-anchor" href="#themeselector-component">#</a><code>ThemeSelector</code> Component</h3><p>Lupine provides a built-in <code>ThemeSelector</code> component for easy theme switching.</p>
+<pre><code class="language-tsx">import { ThemeSelector } from &#39;lupine.components&#39;;
+
+const Header = () =&gt; (
+  &lt;header&gt;
+    &lt;h1&gt;My App&lt;/h1&gt;
+    &lt;ThemeSelector /&gt;
+  &lt;/header&gt;
+);
+</code></pre>
+<h2 id="3-server-side-rendering-ssr"><a class="header-anchor" href="#3-server-side-rendering-ssr">#</a>3. ⚡ Server-Side Rendering (SSR)</h2><p>One of Lupine&#39;s strongest features is its <strong>FOUC-free</strong> (Flash of Unstyled Content) theme support during SSR.</p>
+<ul>
+<li><strong>Cookie Injection</strong>: The current theme is stored in a cookie.</li>
+<li><strong>Server Processing</strong>: During SSR, the server reads this cookie.</li>
+<li><strong>Style Injection</strong>: The server generates the CSS variables for the active theme and injects them directly into the HTML&#39;s <code>&lt;style&gt;</code> tag.</li>
+</ul>
+<p>This ensures that when the user loads the page, it is already styled correctly (e.g., dark background) before any JavaScript runs on the client.</p>
+<h2 id="4-admin-tools"><a class="header-anchor" href="#4-admin-tools">#</a>4. 🛠️ Admin Tools</h2><p>To visualize your themes and debugging colors, you can use the admin helper component.</p>
+<pre><code class="language-tsx">// Helper to list all theme colors for comparison
+import { TestThemes } from &#39;lupine.api/admin&#39;;
+</code></pre>
+<p>This component renders a grid showing how your defined colors look across different themes, helping you find the right keys and contrast.</p>

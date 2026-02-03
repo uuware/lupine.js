@@ -1,0 +1,131 @@
+<h1 id="css-in-js"><a class="header-anchor" href="#css-in-js">#</a>CSS-in-JS</h1><p>Lupine.js 内置或者说自带了一个轻量级的 <strong>CSS-in-JS</strong> 引擎。它支持嵌套、伪选择器、媒体查询和作用域动画等强大功能，且无需依赖 styled-components 或 emotion 等外部库。</p>
+<h2 id="1-基本用法"><a class="header-anchor" href="#1-基本用法">#</a>1. 🐣 基本用法</h2><p>你可以将 CSS 对象直接传给任何元素的 <code>css</code> 属性。Lupine 会自动生成一个唯一的 Class ID，防止样式冲突。</p>
+<pre><code class="language-tsx">const MyComponent = () =&gt; {
+  const css: CssProps = {
+    // 基本属性使用驼峰命名
+    backgroundColor: &#39;#f0f0f0&#39;,
+    padding: &#39;20px&#39;,
+    borderRadius: &#39;8px&#39;,
+
+    // 嵌套选择器
+    h1: {
+      color: &#39;blue&#39;,
+    },
+
+    // 伪类
+    &#39;&amp;:hover&#39;: {
+      backgroundColor: &#39;#e0e0e0&#39;,
+    },
+  };
+
+  return (
+    &lt;div css={css}&gt;
+      &lt;h1&gt;Hello&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="2-高级特性"><a class="header-anchor" href="#2-高级特性">#</a>2. 🚀 高级特性</h2><h3 id="2-1-嵌套与父选择器"><a class="header-anchor" href="#2-1-嵌套与父选择器">#</a>2.1 🎎 嵌套与父选择器 (<code>&amp;</code>)</h3><p>类似于 SCSS/Less，使用 <code>&amp;</code> 来引用父选择器。</p>
+<pre><code class="language-tsx">const css: CssProps = {
+  color: &#39;black&#39;,
+
+  // 目标子元素
+  &#39;.child&#39;: { fontWeight: &#39;bold&#39; },
+
+  // 自身状态
+  &#39;&amp;:hover&#39;: { color: &#39;red&#39; },
+
+  // 多个选择器
+  &#39;&amp;:hover, &amp;.active&#39;: {
+    border: &#39;1px solid blue&#39;,
+  },
+};
+</code></pre>
+<h3 id="2-2-使用-进行作用域管理-动态组件-id"><a class="header-anchor" href="#2-2-使用-进行作用域管理-动态组件-id">#</a>2.2 🛡️ 使用 <code>&amp;</code> 进行作用域管理 (动态组件 ID)</h3><p>Lupine 使用一种巧妙的替换系统来处理 <code>&amp;</code> (或 <code>$</code>)。</p>
+<ol>
+<li><p><strong>前缀化</strong>：如果选择器以 <code>&amp;</code> 开头（例如 <code>&amp;-item</code>），它会将组件的唯一 ID 视为前缀。</p>
+<ul>
+<li><code>&amp;-item</code> -&gt; <code>.LUPINE_ID-item</code></li>
+<li>这对于编写类似 BEM 命名规范的样式非常有用，而无需手动编写长名称。</li>
+</ul>
+</li>
+<li><p><strong>替换</strong>：如果 <code>&amp;</code> 在其他地方使用（例如 <code>.parent &amp;</code>），它会在该位置插入唯一 ID。</p>
+</li>
+</ol>
+<pre><code class="language-tsx">// 使用 &quot;$-item&quot; 或 &quot;&amp;-item&quot; 模式定义作用域 Class
+const css = {
+  // 定义一个作用域 Class，如 .L123-item
+  &#39;&amp;-item&#39;: {
+    color: &#39;gray&#39;,
+  },
+
+  // 你也可以引用为 .&amp;-item，意味着 .L123 .L123-item (嵌套)
+  &#39;.&amp;-item&#39;: {
+    color: &#39;black&#39;, // 如果需要更强的特异性
+  },
+};
+
+return (
+  &lt;div css={css}&gt;
+    {/* 应用作用域 Class */}
+    &lt;a class=&#39;&amp;-item&#39;&gt;Link&lt;/a&gt;
+  &lt;/div&gt;
+);
+</code></pre>
+<h3 id="2-3-单行多定义"><a class="header-anchor" href="#2-3-单行多定义">#</a>2.3 ⚡ 单行多定义</h3><p>你可以在一行中定义多个属性（逗号分隔的选择器），以简化语法。</p>
+<pre><code class="language-tsx">const css = {
+  // 多个选择器共享样式
+  &#39;.header, .footer&#39;: {
+    background: &#39;#333&#39;,
+    color: &#39;white&#39;,
+  },
+};
+</code></pre>
+<h3 id="2-4-媒体查询-media"><a class="header-anchor" href="#2-4-媒体查询-media">#</a>2.4 📱 媒体查询 (<code>@media</code>)</h3><p>媒体查询可以嵌套在选择器 <em>内部</em> 或在顶层使用。</p>
+<pre><code class="language-tsx">const css = {
+  fontSize: &#39;16px&#39;,
+
+  // 嵌套在组件逻辑内部
+  &#39;@media (max-width: 600px)&#39;: {
+    fontSize: &#39;14px&#39;,
+    padding: &#39;10px&#39;,
+  },
+};
+// 或者使用辅助常量，如 [MediaQueryRange.DesktopAbove]
+</code></pre>
+<h3 id="2-5-关键帧动画-keyframes"><a class="header-anchor" href="#2-5-关键帧动画-keyframes">#</a>2.5 🎬 关键帧动画 (<code>@keyframes</code>)</h3><p>在组件内局部定义动画。</p>
+<pre><code class="language-tsx">const css = {
+  &#39;@keyframes slide-in&#39;: {
+    &#39;0%&#39;: { transform: &#39;translateX(-100%)&#39; },
+    &#39;100%&#39;: { transform: &#39;translateX(0)&#39; },
+  },
+  animation: &#39;slide-in 0.5s ease-out&#39;,
+};
+</code></pre>
+<h2 id="3-全局样式-bindglobalstyle"><a class="header-anchor" href="#3-全局样式-bindglobalstyle">#</a>3. 🌏 全局样式 (<code>bindGlobalStyle</code>)</h2><p>有时你需要一些 <strong>可重用</strong> 或 <strong>全局</strong> 的样式，但你仍然希望在 TypeScript/JS 中定义它们。<code>bindGlobalStyle</code> 确保样式只生成一次并注入到 <code>&lt;head&gt;</code> 中，即使该组件被使用了多次。</p>
+<blockquote>
+<p><strong>适用场景：</strong> 动画定义、工具类、CSS 重置。</p>
+</blockquote>
+<pre><code class="language-tsx">import { bindGlobalStyle } from &#39;lupine.web&#39;;
+
+const TextWave = () =&gt; {
+  // 1. 定义样式
+  const css = {
+    &#39;@keyframes wave&#39;: {
+      /* ... */
+    },
+    &#39;.wave-text&#39;: { animation: &#39;wave 1s infinite&#39; },
+  };
+
+  // 2. 将其全局绑定，使用唯一键 &#39;text-wave-style&#39;
+  // 这确保了它在页面中只被注入一次
+  bindGlobalStyle(&#39;text-wave-style&#39;, css);
+
+  return (
+    // 3. 使用上面定义的 Class
+    &lt;div class=&#39;text-wave-style&#39;&gt;
+      &lt;span class=&#39;wave-text&#39;&gt;Hello&lt;/span&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>

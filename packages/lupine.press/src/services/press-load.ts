@@ -1,5 +1,5 @@
 import { getCurrentLang, initializePage } from 'lupine.components';
-import { setSidebarScroll } from './cache';
+import { getPressSubDir, getPressLangs, setSidebarScroll } from './cache';
 
 export const pressLoad = (url: string) => {
   const sidemenu = document.querySelector('.press-frame-sidemenu');
@@ -7,11 +7,19 @@ export const pressLoad = (url: string) => {
     setSidebarScroll(sidemenu.scrollTop);
   }
 
+  initializePage(pressProcessUrl(url));
+};
+
+export const pressProcessUrl = (url: string) => {
+  const langs = getPressLangs();
+  const subDir = getPressSubDir();
   let target = url;
-  if (target.startsWith('/') && !target.startsWith('/en/') && !target.startsWith('/zh/')) {
-    const { langName } = getCurrentLang();
-    target = `/${langName}${target}`;
+  if (subDir && !target.startsWith(subDir + '/')) {
+    if (target.startsWith('/') && !langs.some((l) => target.startsWith(`/${l.id}/`))) {
+      const { langName } = getCurrentLang();
+      target = `/${langName}${target}`;
+    }
+    target = `${subDir}${target}`;
   }
-  if (target.endsWith('/') && target.length > 1) target = target.substring(0, target.length - 1);
-  initializePage(target || '/');
+  return target || '/';
 };

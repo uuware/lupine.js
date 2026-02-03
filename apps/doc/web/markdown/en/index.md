@@ -28,10 +28,11 @@ nav:
     link: /en/essentials/api
 
 sidebar:
-  - submenu: /en/guide
-  - text: Core Essentials
+  - text: Guide
     items:
-      - /en/essentials/api
+      - /en/guide/started
+      - /en/guide/install
+  - submenu: /en/essentials
   - submenu: /en/lupine.web
   - submenu: /en/lupine.components
   - submenu: /en/lupine.components-libs

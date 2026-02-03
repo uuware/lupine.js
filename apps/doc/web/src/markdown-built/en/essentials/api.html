@@ -1,19 +1,71 @@
-<h1 id="api-reference"><a class="header-anchor" href="#api-reference">#</a>API Reference</h1><p>LupineJS provides a minimalist set of APIs for both web and server development.</p>
-<h2 id="lupine-web-frontend"><a class="header-anchor" href="#lupine-web-frontend">#</a>Lupine.web (Frontend)</h2><h3 id="bindrouter"><a class="header-anchor" href="#bindrouter">#</a>`bindRouter`</h3><p>Binds the page router to the application.</p>
-<pre><code class="language-typescript">import { bindRouter, PageRouter } from &#39;lupine.components&#39;;
-const pageRouter = new PageRouter();
-pageRouter.use(&#39;/&#39;, HomePage);
-bindRouter(pageRouter);
-</code></pre>
-<h3 id="bindtheme"><a class="header-anchor" href="#bindtheme">#</a>`bindTheme`</h3><p>Binds theme configurations.</p>
-<pre><code class="language-typescript">import { bindTheme } from &#39;lupine.components&#39;;
-bindTheme(&#39;light&#39;, themes);
-</code></pre>
-<h3 id="bindlang"><a class="header-anchor" href="#bindlang">#</a>`bindLang`</h3><p>Binds multi-language support.</p>
-<pre><code class="language-typescript">import { bindLang } from &#39;lupine.components&#39;;
-bindLang(&#39;en&#39;, { en, zh });
-</code></pre>
-<h2 id="lupine-api-backend"><a class="header-anchor" href="#lupine-api-backend">#</a>Lupine.api (Backend)</h2><h3 id="apimodule"><a class="header-anchor" href="#apimodule">#</a>`ApiModule`</h3><p>Main module for the backend service.</p>
+<h1 id="api-reference"><a class="header-anchor" href="#api-reference">#</a>API Reference</h1><h2 id="lupine-api-backend"><a class="header-anchor" href="#lupine-api-backend">#</a>Lupine.api (Backend)</h2><h3 id="architecture-workflow"><a class="header-anchor" href="#architecture-workflow">#</a>🏗️ Architecture &amp; Workflow</h3><p>Lupine.js runs a single server instance that can serve multiple domains and applications simultaneously.</p>
+<p><strong>1. App Definition</strong>
+Apps are defined in the <code>.env</code> file via the <code>APPS</code> variable (e.g., <code>APPS=doc,demo.app</code>). Domain mapping is also configured here (e.g., <code>DOMAINS@demo.app=example.com</code>).</p>
+<p><strong>2. Compilation</strong>
+During build/dev, <code>dev-watch.js</code> reads <code>lupine.json</code> in each app directory to find <code>webEntryPoints</code> and compiles them.</p>
+<p><strong>3. Request Flow</strong>
+When a request arrives:</p>
+<ol>
+<li><strong>App Resolution</strong>: <code>AppHelper</code> identifies the target App based on the request hostname.</li>
+<li><strong>Module Loading</strong>: It loads the corresponding <code>ApiModule</code> (defined in <code>api/src/index.ts</code>).</li>
+<li><strong>Routing</strong>: The <code>RootApi</code> tries to match API routes. If no match, it falls back to <code>StaticServer</code>.</li>
+</ol>
+<p><strong>4. Static Server &amp; SSR</strong>
+The <code>StaticServer</code>:</p>
+<ul>
+<li>Checks if a static file exists.</li>
+<li>If NOT found, it triggers <strong>SSR</strong> (<code>serverSideRenderPage</code>).</li>
+</ul>
+<p>This ensures a single entry point seamlessly handles APIs, Static Assets, and SSR.</p>
+<h3 id="apimodule"><a class="header-anchor" href="#apimodule">#</a>📡 ApiModule</h3><p>Main module for the backend service. Each app with a backend must implement an <code>ApiModule</code>.</p>
 <pre><code class="language-typescript">import { ApiModule } from &#39;lupine.api&#39;;
+import { RootApi } from &#39;./service/root-api&#39;;
+
 export const apiModule = new ApiModule(new RootApi());
+</code></pre>
+<h3 id="rootapi-staticserver"><a class="header-anchor" href="#rootapi-staticserver">#</a>🌳 RootApi &amp; StaticServer</h3><p>The <code>RootApi</code> is the entry point for your application&#39;s logic. It typically mounts your specific APIs and the <code>StaticServer</code> to handle file requests and SSR fallback.</p>
+<pre><code class="language-typescript">// src/service/root-api.ts
+import { IApiBase, ApiRouter, StaticServer } from &#39;lupine.api&#39;;
+
+export class RootApi implements IApiBase {
+  protected router = new ApiRouter();
+
+  constructor() {
+    this.mountRoutes();
+  }
+
+  protected mountRoutes() {
+    // 1. Mount your App API
+    this.router.use(&#39;/api&#39;, new Api().getRouter());
+
+    // 2. Mount Static Server (Handles static files + SSR)
+    // IMPORTANT: Must be last to catch non-API requests
+    const staticServer = new StaticServer();
+    this.router.use(&#39;*&#39;, staticServer.processRequest.bind(staticServer));
+  }
+}
+</code></pre>
+<h3 id="health-check-example"><a class="header-anchor" href="#health-check-example">#</a>🏥 Health Check Example</h3><p>Here is a simple example of an API endpoint (e.g., for health checks).</p>
+<pre><code class="language-typescript">// src/service/api.ts
+import { IApiBase, ApiRouter, ServerRequest } from &#39;lupine.api&#39;;
+import { ServerResponse } from &#39;http&#39;;
+
+export class Api implements IApiBase {
+  protected router = new ApiRouter();
+
+  constructor() {
+    this.router.use(&#39;/health-check&#39;, this.healthCheck.bind(this));
+  }
+
+  async healthCheck(req: ServerRequest, res: ServerResponse) {
+    res.writeHead(200, { &#39;Content-Type&#39;: &#39;application/json&#39; });
+    res.write(JSON.stringify({ status: &#39;OK&#39;, uptime: process.uptime() }));
+    res.end();
+    return true; // Return true to indicate request was handled
+  }
+
+  public getRouter() {
+    return this.router;
+  }
+}
 </code></pre>

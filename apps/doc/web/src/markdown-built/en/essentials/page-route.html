@@ -1,0 +1,99 @@
+<h1 id="page-router"><a class="header-anchor" href="#page-router">#</a>Page Router</h1><p>The <code>PageRouter</code> in <strong>Lupine.web</strong> is a powerful client-side routing system designed to be <strong>isomorphic</strong> in logic to the backend <code>ApiRouter</code> (in <code>lupine.api</code>). It supports nested routing, middleware filters, dynamic parameters, and layout frames.</p>
+<h2 id="1-versus-other-frameworks"><a class="header-anchor" href="#1-versus-other-frameworks">#</a>1. ⚖️ Versus Other Frameworks</h2><p>Compared to generic routers (like <code>react-router</code> or <code>vue-router</code>):</p>
+<ul>
+<li><strong>Logic Parity</strong>: It shares the exact same routing philosophy as the backend <code>ApiRouter</code>. If you know how to write a backend API in Lupine, you know how to write a frontend route.</li>
+<li><strong>True Nesting</strong>: You can mount a full <code>PageRouter</code> instance onto a specific path of another router (e.g., <code>router.use(&#39;/user&#39;, userRouter)</code>), enabling true modularity.</li>
+<li><strong>Built-in Layouts</strong>: <code>setFramePage</code> treats layouts as first-class citizens, injecting content into a specific placeholder class.</li>
+</ul>
+<h2 id="2-basic-usage"><a class="header-anchor" href="#2-basic-usage">#</a>2. 🐣 Basic Usage</h2><p>The simplest way to start is to map paths to Page Components.</p>
+<pre><code class="language-tsx">import { PageRouter, bindRouter } from &#39;lupine.web&#39;;
+
+// 1. Create Router
+const pageRouter = new PageRouter();
+
+// 2. Define Routes
+pageRouter.use(&#39;/home&#39;, HomePage);
+pageRouter.use(&#39;/about&#39;, AboutPage);
+// Wildcard for 404
+pageRouter.use(&#39;*&#39;, NotFoundPage);
+
+// 3. Bind to the System
+bindRouter(pageRouter);
+</code></pre>
+<h2 id="3-dynamic-parameters"><a class="header-anchor" href="#3-dynamic-parameters">#</a>3. 🔧 Dynamic Parameters</h2><p>Lupine supports both mandatory and optional parameters directly in the URL string. All captured parameters are available in <code>props.urlParameters</code>.</p>
+<h3 id="syntax"><a class="header-anchor" href="#syntax">#</a>Syntax</h3><ul>
+<li><code>/:id</code> : Mandatory parameter.</li>
+<li><code>/?id</code> : Optional parameter. (All subsequent parameters must also be optional).</li>
+<li><code>?key=value</code> : Standard query strings are also supported (parsed separately).</li>
+</ul>
+<h3 id="example"><a class="header-anchor" href="#example">#</a>Example</h3><pre><code class="language-tsx">// Define:
+pageRouter.use(&#39;/share/:type/:id/&#39;, ShareContentPage);
+
+// Usage inside ShareContentPage:
+export const ShareContentPage = (props: PageProps) =&gt; {
+  // Access parameters
+  const type = props.urlParameters[&#39;type&#39;];
+  const id = props.urlParameters[&#39;id&#39;];
+
+  return (
+    &lt;div&gt;
+      Viewing {type} with ID: {id}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="4-advanced-features"><a class="header-anchor" href="#4-advanced-features">#</a>4. 🚀 Advanced Features</h2><h3 id="4-1-nested-routers-modularity"><a class="header-anchor" href="#4-1-nested-routers-modularity">#</a>4.1 🎎 Nested Routers (Modularity)</h3><p>You can break your application into sub-modules.</p>
+<pre><code class="language-tsx">// 1. Create a sub-router for User Profile area
+const userPageRouter = new PageRouter();
+userPageRouter.use(&#39;/profile&#39;, UserProfilePage);
+userPageRouter.use(&#39;/settings&#39;, UserSettingsPage);
+
+// 2. Mount it to the main router under &#39;/user&#39;
+const mainRouter = new PageRouter();
+mainRouter.use(&#39;/user&#39;, userPageRouter);
+
+// Now URLs are: /user/profile, /user/settings
+</code></pre>
+<h3 id="4-2-middleware-filters-auth"><a class="header-anchor" href="#4-2-middleware-filters-auth">#</a>4.2 🛡️ Middleware Filters (Auth)</h3><p>You can attach a &quot;Filter&quot; function that runs before <em>any</em> route resolution. If the filter handles the request (e.g., redirects to login) or returns a node, routing stops. If it returns <code>null</code>, routing continues.</p>
+<pre><code class="language-tsx">// Global Filter
+pageRouter.setFilter(checkAgreement);
+
+// Route-Specific Filter (Middleware Pattern)
+const checkAuth = async (props) =&gt; {
+  if (!isLoggedIn()) {
+    // Render Login Page or Redirect
+    return &lt;LoginPage /&gt;;
+  }
+  return null; // Continue to next handler
+};
+
+// Usage: checkAuth runs first, then UserMinePage
+userPageRouter.use(&#39;/mine&#39;, checkAuth, UserMinePage);
+</code></pre>
+<h3 id="4-3-frame-pages-layouts"><a class="header-anchor" href="#4-3-frame-pages-layouts">#</a>4.3 🖼️ Frame Pages (Layouts)</h3><p>Unlike React Router where you nest <code>&lt;Outlet /&gt;</code>, Lupine uses a <code>setFramePage</code> method to define a &quot;Wrapper&quot; or &quot;Layout&quot; for all routes within that Router.</p>
+<pre><code class="language-tsx">// 1. Define the Frame
+const TopFrame = (placeholderClass, childNode) =&gt; {
+  return (
+    &lt;div class=&#39;app-container&#39;&gt;
+      &lt;Header /&gt;
+      &lt;Sidebar /&gt;
+      {/* Content injection point */}
+      &lt;div class={placeholderClass}&gt;{childNode}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+
+// 2. Apply to Router
+const pageRouter = new PageRouter();
+pageRouter.setFramePage({
+  component: TopFrame,
+  placeholderClassname: &#39;app-content-area&#39;, // matches class above
+});
+
+pageRouter.use(&#39;/dashboard&#39;, DashboardPage);
+// Result: DashboardPage is rendered INSIDE TopFrame&#39;s &#39;app-content-area&#39; div.
+</code></pre>
+<h3 id="4-4-sub-directory-deployment"><a class="header-anchor" href="#4-4-sub-directory-deployment">#</a>4.4 📂 Sub-Directory Deployment</h3><p>If your app is deployed to <code>example.com/my-app/</code>, you need to tell the router to ignore the <code>/my-app</code> prefix.</p>
+<pre><code class="language-typescript">// If physical path exists, router needs to know to ignore it
+pageRouter.setSubDir(&#39;/my-app&#39;);
+</code></pre>

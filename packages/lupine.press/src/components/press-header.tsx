@@ -2,6 +2,7 @@ import { CssProps, Svg, ThemeSelector } from 'lupine.components';
 import { LangSwitcher } from './lang-switcher';
 import githubIcon from '../styles/github.svg';
 import themeIcon from '../styles/theme.svg';
+import { pressProcessUrl } from '../services';
 
 export type PageHeaderProps = {
   title: string;
@@ -50,11 +51,11 @@ export const PageHeader = (props: PageHeaderProps) => {
     <header css={css} class='press-navbar'>
       <div class='press-navbar-left'>
         <div class='title'>
-          <a href='/'>{props.title}</a>
+          <a href={pressProcessUrl('/')}>{props.title}</a>
         </div>
         <nav class='nav'>
           {props.nav.map((item: any) => (
-            <a href={item.link}>{item.text}</a>
+            <a href={pressProcessUrl(item.link)}>{item.text}</a>
           ))}
         </nav>
       </div>

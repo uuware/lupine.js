@@ -1,0 +1,50 @@
+<h1 id="theme-主题"><a class="header-anchor" href="#theme-主题">#</a>🌗 Theme (主题)</h1><p>Lupine.js 内置了对多主题（如亮色/暗色模式）的支持，并完美集成了 SSR。</p>
+<h2 id="1-设置-setup"><a class="header-anchor" href="#1-设置-setup">#</a>1. 🏁 设置 (Setup)</h2><p>你需要在应用程序入口点（通常是 <code>index.tsx</code>）绑定你的主题。</p>
+<h3 id="bindtheme"><a class="header-anchor" href="#bindtheme">#</a><code>bindTheme</code></h3><p>将你的主题定义连接到 Lupine 运行时。</p>
+<pre><code class="language-tsx">// src/index.tsx
+import { bindTheme } from &#39;lupine.web&#39;;
+import { lightThemes, darkThemes } from &#39;./themes&#39;;
+
+// 绑定默认主题和可用主题
+bindTheme(&#39;light&#39;, {
+  light: lightThemes,
+  dark: darkThemes,
+});
+</code></pre>
+<ul>
+<li><strong>目的</strong>: 让系统知道有哪些可用主题以及默认主题是什么。</li>
+<li><strong>位置</strong>: 在渲染应用之前调用。</li>
+</ul>
+<h2 id="2-用法-usage"><a class="header-anchor" href="#2-用法-usage">#</a>2. 🎮 用法 (Usage)</h2><h3 id="访问与更新"><a class="header-anchor" href="#访问与更新">#</a>访问与更新</h3><p>你可以使用提供的辅助函数获取当前主题或切换主题。</p>
+<pre><code class="language-tsx">import { getCurrentTheme, updateTheme } from &#39;lupine.web&#39;;
+
+// 获取当前主题信息
+const { themeName, themes } = getCurrentTheme();
+
+// 切换到暗色模式
+const onSwitch = () =&gt; {
+  updateTheme(&#39;dark&#39;);
+};
+</code></pre>
+<h3 id="themeselector-组件"><a class="header-anchor" href="#themeselector-组件">#</a><code>ThemeSelector</code> 组件</h3><p>Lupine 提供了一个内置的 <code>ThemeSelector</code> 组件，用于方便地切换主题。</p>
+<pre><code class="language-tsx">import { ThemeSelector } from &#39;lupine.components&#39;;
+
+const Header = () =&gt; (
+  &lt;header&gt;
+    &lt;h1&gt;我的应用&lt;/h1&gt;
+    &lt;ThemeSelector /&gt;
+  &lt;/header&gt;
+);
+</code></pre>
+<h2 id="3-服务端渲染-ssr"><a class="header-anchor" href="#3-服务端渲染-ssr">#</a>3. ⚡ 服务端渲染 (SSR)</h2><p>Lupine 最强大的功能之一是在 SSR 期间支持 <strong>无闪烁 (FOUC-free)</strong> 主题。</p>
+<ul>
+<li><strong>Cookie 注入</strong>: 当前主题存储在 Cookie 中。</li>
+<li><strong>服务端处理</strong>: 在 SSR 期间，服务端读取此 Cookie。</li>
+<li><strong>样式注入</strong>: 服务端生成当前活动主题的 CSS 变量，并将其直接注入到 HTML 的 <code>&lt;style&gt;</code> 标签中。</li>
+</ul>
+<p>这确保了当用户加载页面时，在客户端运行任何 JavaScript 之前，页面就已经具有正确的样式（例如暗色背景）。</p>
+<h2 id="4-管理工具-admin-tools"><a class="header-anchor" href="#4-管理工具-admin-tools">#</a>4. 🛠️ 管理工具 (Admin Tools)</h2><p>为了可视化你的主题和调试颜色，你可以使用后台管理辅助组件。</p>
+<pre><code class="language-tsx">// 用于列出所有主题颜色以进行对比的辅助工具
+import { TestThemes } from &#39;lupine.api/admin&#39;;
+</code></pre>
+<p>此组件渲染一个网格，显示你定义的颜色在不同主题下的外观，帮助你找到正确的键值和对比度。</p>
