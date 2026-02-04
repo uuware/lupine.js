@@ -113,7 +113,8 @@ const clientProcessOnEnd = async (saved) => {
       saved.appName,
       saved.isMobile,
       saved.defaultThemeName,
-      saved.outdirData
+      saved.outdirData,
+      saved.outdirSub
     );
 
   const assets = saved['copyFiles'];
