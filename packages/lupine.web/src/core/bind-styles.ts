@@ -164,7 +164,7 @@ For example, it can be like this for all elements:
 
 For themes like [data-theme="dark" i], the topUniqueClassName should be empty
 */
-export const globalStyleUniqueId = uniqueIdGenerator('g'); // g means global style
+export const globalStyleUniqueId = /* @__PURE__ */ uniqueIdGenerator('g'); // g means global style
 const _globalStyleIds = new Map<CssProps, string>();
 export const getGlobalStylesId = (style: CssProps): string => {
   if (!_globalStyleIds.has(style)) {

@@ -1,6 +1,7 @@
 import { VNode } from '../jsx';
 import { PageRouter } from './page-router';
 import { IToClientDelivery, JsonObject } from '../models';
+import { initializeApp, initializePage, isFrontEnd } from 'lupine.components';
 
 export type RenderPageFunctionsType = {
   fetchData: (
@@ -40,24 +41,6 @@ export type _LupineJs = {
 // main instance to be used in the FE and the BE
 export const _lupineJs: _LupineJs = {} as _LupineJs;
 
-// for SSR, it exports _lupineJs function for the server to call
-// this should be loaded in a sandbox
-if (typeof globalThis !== 'undefined') {
-  const gThis = globalThis as any;
-  if (gThis._lupineJs === null) {
-    gThis._lupineJs = () => {
-      return _lupineJs;
-    };
-  }
-}
-// if (typeof exports !== 'undefined') {
-//   // ignore esbuild's warnings:
-//   // The CommonJS "exports" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
-//   exports._lupineJs = () => {
-//     return _lupineJs;
-//   };
-// }
-
 // this should be called by the FE and also by the server side to set fetchData and others for client and server side rendering.
 // And the RenderPageFunctionsType will be passed to call (generate) a page through PageProps
 export const bindRenderPageFunctions = (calls: RenderPageFunctionsType) => {
@@ -77,4 +60,7 @@ export const getRenderPageProps = (): PageProps => {
 
 export const bindRouter = (router: PageRouter | ((props: PageProps) => Promise<VNode<any>>)) => {
   _lupineJs.router = router;
+
+  // avoid tree shaking as bindRouter must be called
+  initializeApp();
 };
