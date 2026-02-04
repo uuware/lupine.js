@@ -29,7 +29,7 @@ const readWebConfig = async (outdirData) => {
 
 const metaTextStart = '<!--META-ENV-START-->';
 const metaTextEnd = '<!--META-ENV-END-->';
-exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThemeName, outdirData) => {
+exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThemeName, outdirData, outdirSub) => {
   const f1 = await fileSizeAndTime(htmlFile);
   const f2 = await fileSizeAndTime(outputFile);
 
@@ -40,7 +40,9 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
   // when it's isMobile, need to update env and configs => no configs as mobile app fetches it from api
   if (!f2 || f2.mtime.getTime() !== chgTime || isMobile) {
     const inHtml = await fs.readFile(htmlFile, 'utf-8');
-    let outStr = inHtml.replace(/{hash}/gi, new Date().getTime().toString(36));
+    let outStr = inHtml
+      .replace(/\{hash\}/gi, new Date().getTime().toString(36))
+      .replace(/\{SUBDIR\}/gi, outdirSub && outdirSub !== '/' ? outdirSub : '');
     if (isMobile) {
       // const outStr = inHtml.replace(/{hash}/gi, new Date().getTime().toString(36)).replace('\<\!--META-ENV--\>', JSON.stringify(envWeb));
       // env is replaced here for the mobile app. And the env is replaced again for the web app at each startup

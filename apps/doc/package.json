@@ -9,6 +9,6 @@
     "dev": "npm run build-md && npm run dev --workspace=@lupine/root"
   },
   "dependencies": {
-    "lupine.press": "file:../../packages/lupine.press"
+    "lupine.press": "^1.0.1"
   }
 }

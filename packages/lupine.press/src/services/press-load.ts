@@ -14,7 +14,7 @@ export const pressProcessUrl = (url: string) => {
   const langs = getPressLangs();
   const subDir = getPressSubDir();
   let target = url;
-  if (subDir && !target.startsWith(subDir + '/')) {
+  if (subDir && !target.startsWith(subDir + '/') && !target.includes('//')) {
     if (target.startsWith('/') && !langs.some((l) => target.startsWith(`/${l.id}/`))) {
       const { langName } = getCurrentLang();
       target = `/${langName}${target}`;

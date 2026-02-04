@@ -1,0 +1,28 @@
+{
+  "name": "doc-starter",
+  "markdownEntryPoints": {
+    "indir": "web/markdown",
+    "outdir": "web/src/markdown-built"
+  },
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    },
+    {
+      "index": "web/github-pj-name/index.tsx",
+      "html": "web/github-pj-name/index.html",
+      "outdir": "/github-pj-name"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "watchFiles": ["web/markdown/**/*.md"],
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    }
+  ]
+}
