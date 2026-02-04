@@ -7,6 +7,7 @@
 <li><strong>Theming</strong>: Built-in support for multiple themes (e.g., light/dark mode) via <code>lupine.components</code> theme system.</li>
 <li><strong>Routing</strong>: explicit integration with <code>PageRouter</code> for handling client-side navigation.</li>
 <li><strong>Multilingual Support</strong>: Automatically scans markdown files from multilingual directories and supports language switching.</li>
+<li><strong>Styles Support</strong>: You can set styles in markdown files.</li>
 </ul>
 <h2 id="usage-guide"><a class="header-anchor" href="#usage-guide">#</a>Usage Guide</h2><p>To use <code>lupine.press</code>, you typically set up a <code>lupine.web</code> application and configure it to use <code>PressPage</code> as the main route handler.</p>
 <h3 id="1-prerequisites"><a class="header-anchor" href="#1-prerequisites">#</a>1. Prerequisites</h3><p>Ensure you have <code>lupine.press</code> installed in your project.</p>
@@ -81,3 +82,8 @@ Defines <code>items</code> without <code>text</code>. In this case, all links in
 <li><strong><code>PressPage</code></strong>: The &quot;controller&quot; component. It looks up the current URL in the bound <code>markdownConfig</code>, retrieves the corresponding HTML and metadata, and renders the <code>PressFrame</code> with the correct sidebar and content.</li>
 <li><strong><code>pressLoad</code></strong>: A navigation utility to handle link clicks within the documentation, ensuring smooth client-side transitions.</li>
 </ul>
+<h2 id="styles"><a class="header-anchor" href="#styles">#</a>Styles</h2><p>styles can define font, color styles and will be applied to all pages.</p>
+<pre><code class="language-css">styles:
+  &#39;:root&#39;: { &#39;--primary-accent-color&#39;: &#39;#0ac92a&#39; }
+  body: { font-family: var(--font-family-base); }
+</code></pre>

@@ -21,7 +21,8 @@ export const sharedThemes: ThemeProps = {
 
   '--font-size-base': '16px',
   '--font-weight-base': '', //'400',
-  '--font-family-base': 'SimSun, "Microsoft YaHei", Helvetica, Arial, sans-serif',
+  '--font-family-base':
+    'system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
   '--line-height-base': '1.1',
 
   '--font-size-h1-l': '2.5rem', //40px

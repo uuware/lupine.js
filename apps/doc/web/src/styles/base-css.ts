@@ -9,7 +9,7 @@ export const baseCss = {
     color: 'var(--primary-color)',
     fontSize: 'var(--font-size-base)',
     lineHeight: 'var(--line-height-base)',
-    fontFamily: 'var(--font-family-base, SimSun, "Microsoft YaHei", Helvetica, Arial, sans-serif)',
+    fontFamily: 'var(--font-family-base)',
     fontWeight: 'var(--font-weight-base)',
   },
 };

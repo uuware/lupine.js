@@ -7,5 +7,6 @@ sidebar:
       - /zh/essentials/css-in-js
       - /zh/essentials/theme
       - /zh/essentials/list
+      - /zh/essentials/mobile-desktop
       - /zh/essentials/api
 ---

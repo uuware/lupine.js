@@ -39,6 +39,10 @@ sidebar:
   - submenu: /zh/lupine.api
   - submenu: /zh/lupine.press
 
+styles:
+  ':root': { '--primary-accent-color': '#0ac92a' }
+  # body: { font-family: var(--font-family-base); }
+
 features:
   - title: 前端 (lupine.web)
     details: 极其轻量级（约 10kb）的框架，使用 React TSX 语法。无臃肿运行时。

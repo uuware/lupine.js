@@ -39,6 +39,10 @@ sidebar:
   - submenu: /en/lupine.api
   - submenu: /en/lupine.press
 
+styles:
+  ':root': { '--primary-accent-color': '#0ac92a' }
+  # body: { font-family: var(--font-family-base); }
+
 features:
   - title: Front-End (lupine.web)
     details: Extremely lightweight framework (approx 10kb) using React TSX syntax. No heavy runtime.
