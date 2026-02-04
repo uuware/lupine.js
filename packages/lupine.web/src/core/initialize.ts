@@ -61,6 +61,7 @@ _lupineJs.generatePage = generatePage;
 
 const _initSaved = {
   pageInitialized: false,
+  appInitialized: false,
 };
 // this is called in the FE when the document is loaded
 // to avoid circular reference, bindLinks can't call initializePage directly
@@ -105,12 +106,37 @@ export const initializePage = async (newUrl?: string) => {
   const metaData = getMetaDataObject();
   // meta data?
 };
-if (isFrontEnd()) {
-  addEventListener('popstate', (event) => {
-    initializePage();
-  });
-  addEventListener('load', (event) => {
-    initializePage();
-  });
-}
 _lupineJs.initializePage = initializePage;
+
+export const initializeApp = () => {
+  if (_initSaved.appInitialized) return;
+  _initSaved.appInitialized = true;
+
+  // avoid tree shaking
+  if (isFrontEnd()) {
+    addEventListener('popstate', (event) => {
+      initializePage();
+    });
+    addEventListener('load', (event) => {
+      initializePage();
+    });
+  }
+
+  // for SSR, it exports _lupineJs function for the server to call
+  // this should be loaded in a sandbox
+  if (typeof globalThis !== 'undefined') {
+    const gThis = globalThis as any;
+    if (gThis._lupineJs === null) {
+      gThis._lupineJs = () => {
+        return _lupineJs;
+      };
+    }
+  }
+  // if (typeof exports !== 'undefined') {
+  //   // ignore esbuild's warnings:
+  //   // The CommonJS "exports" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
+  //   exports._lupineJs = () => {
+  //     return _lupineJs;
+  //   };
+  // }
+};
