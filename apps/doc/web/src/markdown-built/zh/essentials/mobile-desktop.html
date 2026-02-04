@@ -1,0 +1,143 @@
+<h1 id="移动端和桌面端适配-mobile-desktop"><a class="header-anchor" href="#移动端和桌面端适配-mobile-desktop">#</a>移动端和桌面端适配 (Mobile &amp; Desktop)</h1><p>Lupine.js 的核心设计理念之一是“一套代码，多端运行”。通过内置的响应式设计工具和组件，你可以轻松构建同时适应 Web、移动端（iOS/Android）和桌面端（Electron）的应用程序。</p>
+<h2 id="1-响应式布局-media-query"><a class="header-anchor" href="#1-响应式布局-media-query">#</a>1. 响应式布局 (Media Query)</h2><p><code>lupine.components</code> 提供了强大的媒体查询工具，帮助你根据屏幕宽度调整布局。</p>
+<h3 id="断点定义-breakpoints"><a class="header-anchor" href="#断点定义-breakpoints">#</a>断点定义 (Breakpoints)</h3><p>系统预定义了以下断点（可在 <code>MediaQueryMaxWidth</code> 中自定义）：</p>
+<ul>
+<li><strong>ExtraSmall</strong>: &lt; 480px</li>
+<li><strong>Mobile</strong>: &lt; 767px (Grid: col-1)</li>
+<li><strong>Tablet</strong>: &lt; 991px (Grid: col-1-md)</li>
+<li><strong>Desktop</strong>: &lt; 1399px (Grid: col-1-lg)</li>
+</ul>
+<h3 id="在-css-in-js-中使用"><a class="header-anchor" href="#在-css-in-js-中使用">#</a>在 CSS-in-JS 中使用</h3><p>你可以使用 <code>MediaQueryRange</code> 轻松编写响应式样式：</p>
+<pre><code class="language-tsx">import { MediaQueryRange, MediaQueryMaxWidth } from &#39;lupine.components&#39;;
+
+const css: CssProps = {
+  width: &#39;100%&#39;,
+  // 默认桌面端样式
+  maxWidth: MediaQueryMaxWidth.DesktopMax,
+
+  // 针对超小屏幕（手机竖屏）的调整
+  [MediaQueryRange.ExtraSmallBelow]: {
+    padding: &#39;10px&#39;,
+    fontSize: &#39;14px&#39;,
+  },
+
+  // 针对平板及以下
+  [MediaQueryRange.TabletBelow]: {
+    flexDirection: &#39;column&#39;,
+  },
+};
+</code></pre>
+<h2 id="2-自适应框架-adaptive-frames"><a class="header-anchor" href="#2-自适应框架-adaptive-frames">#</a>2. 自适应框架 (Adaptive Frames)</h2><p>Lupine 提供了专门用于构建响应式应用的框架组件。</p>
+<h3 id="responsiveframe"><a class="header-anchor" href="#responsiveframe">#</a>ResponsiveFrame</h3><p><code>ResponsiveFrame</code> 是处理混合布局的终极解决方案。它能自动根据设备类型切换 UI 结构：</p>
+<ul>
+<li><strong>桌面端</strong>: 显示顶部菜单 (<code>DesktopHeader</code>)、底部页脚 (<code>DesktopFooter</code>) 和侧边栏。</li>
+<li><strong>移动端</strong>: 自动切换为移动端布局，隐藏桌面端特有元素，启用移动端特定的导航 (<code>MobileBottomMenu</code>)。</li>
+</ul>
+<pre><code class="language-tsx">&lt;ResponsiveFrame
+  desktopHeaderTitle=&quot;我的应用&quot;
+  desktopTopMenu={[...]}
+  mobileBottomMenu={[...]}
+  mainContent={&lt;MyPageContent /&gt;}
+/&gt;
+</code></pre>
+<h3 id="sliderframe"><a class="header-anchor" href="#sliderframe">#</a>SliderFrame</h3><p><code>SliderFrame</code> 实现了移动端常见的“侧滑”交互体验。它通常用于从右侧滑出详细页面，或从底部滑出菜单。</p>
+<ul>
+<li>支持 <code>Right-to-Left</code> (右滑入) 和 <code>Bottom-to-Top</code> (上滑入) 动画。</li>
+<li>在桌面端可配置为侧边栏弹出模式。</li>
+</ul>
+<h2 id="3-移动端导航与交互"><a class="header-anchor" href="#3-移动端导航与交互">#</a>3. 移动端导航与交互</h2><h3 id="全局返回键处理-backactionhelper"><a class="header-anchor" href="#全局返回键处理-backactionhelper">#</a>全局返回键处理 (BackActionHelper)</h3><p>在移动应用（特别是 Android）中，处理物理返回键至关重要。<code>BackActionHelper</code> 提供了一个全局队列来管理返回行为，确保用户体验流畅。</p>
+<p><strong>使用示例</strong>:</p>
+<pre><code class="language-typescript">import { backActionHelper } from &#39;lupine.components&#39;;
+
+// 监听硬件返回键（通常在 index.ts 或 app-listeners.ts 中）
+App.addListener(&#39;backButton&#39;, async () =&gt; {
+  // 如果 helper 处理了返回动作（例如关闭了一个弹窗），则停止
+  if (await backActionHelper.processBackAction()) {
+    return;
+  }
+  // 否则执行退出应用或其他逻辑
+});
+</code></pre>
+<h3 id="actionsheet-动作面板"><a class="header-anchor" href="#actionsheet-动作面板">#</a>ActionSheet (动作面板)</h3><p><code>ActionSheet</code> 是移动端非常常用的底部弹窗组件，用于选项选择、信息提示或简单的输入。</p>
+<ul>
+<li><strong>ActionSheetSelect</strong>: 底部选项菜单。</li>
+<li><strong>ActionSheetInput</strong>: 底部输入框。</li>
+<li><strong>ActionSheetMessage</strong>: 底部消息提示。</li>
+</ul>
+<pre><code class="language-tsx">import { ActionSheetSelectPromise } from &#39;lupine.components&#39;;
+
+const handleSelect = async () =&gt; {
+  const index = await ActionSheetSelectPromise({
+    title: &#39;请选择操作&#39;,
+    options: [&#39;编辑&#39;, &#39;删除&#39;, &#39;分享&#39;],
+    cancelButtonText: &#39;取消&#39;,
+  });
+
+  if (index === 0) {
+    // 编辑逻辑
+  }
+};
+</code></pre>
+<h3 id="mobileheader-移动端标题栏"><a class="header-anchor" href="#mobileheader-移动端标题栏">#</a>MobileHeader (移动端标题栏)</h3><p><code>MobileHeaderComponent</code> 提供了灵活的头部定制功能。你可以随时通过 <code>MobileHeaderHelper</code> 或辅助组件更新标题栏的左、中、右区域。</p>
+<pre><code class="language-tsx">// 在页面组件中动态更新 Header
+&lt;MobileHeaderCenter&gt;
+  &lt;MobileHeaderTitleIcon title=&#39;用户设置&#39; left={&lt;BackIcon /&gt;} right={&lt;SaveIcon /&gt;} /&gt;
+&lt;/MobileHeaderCenter&gt;
+</code></pre>
+<h3 id="slidetabcomponent-滑动标签页"><a class="header-anchor" href="#slidetabcomponent-滑动标签页">#</a>SlideTabComponent (滑动标签页)</h3><p>支持手势左右滑动的 Tab 切换组件，提供接近原生应用的流畅体验。</p>
+<pre><code class="language-tsx">&lt;SlideTabComponent
+  pages={[
+    { title: &#39;热门&#39;, content: &lt;HotList /&gt; },
+    { title: &#39;最新&#39;, content: &lt;NewList /&gt; },
+  ]}
+/&gt;
+
+## 4. 移动端发布 (Mobile Deployment)
+
+Lupine.js 推荐使用 **Capacitor** 将 Web 应用打包为原生移动应用。
+
+### 移动端配置
+
+由于移动端应用通常是作为独立文件运行（`file://` 协议），API 请求不能像 Web 那样使用相对路径。你需要配置 `.env.mobile` 来指定绝对 API 地址。
+
+**构建命令**:
+```bash
+# 使用 .env.mobile 配置进行构建
+npm run build-mobile
+</code></pre>
+<p>此命令对应 <code>package.json</code> 中的脚本：
+<code>node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1</code></p>
+<h3 id="条件编译-conditional-compilation"><a class="header-anchor" href="#条件编译-conditional-compilation">#</a>条件编译 (Conditional Compilation)</h3><p>Lupine 提供了 <code>pluginIfelse</code> 插件，允许你编写针对特定平台的逻辑代码。这对于处理移动端特有的 API 端点或逻辑非常有用。</p>
+<p><strong>使用示例</strong>:</p>
+<pre><code class="language-javascript">// #if MOBILE
+const apiBase = &#39;https://api.myapp.com&#39;;
+// #else
+const apiBase = &#39;/api&#39;;
+// #endif
+
+// #if DEV
+console.log(&#39;Debug mode&#39;);
+// #endif
+</code></pre>
+<blockquote>
+<p>只有满足条件的代码块会被编译到最终产物中，从而减小包体积并避免运行时错误。</p>
+</blockquote>
+<h3 id="添加-ios-和-android"><a class="header-anchor" href="#添加-ios-和-android">#</a>添加 iOS 和 Android</h3><p>请参考 Capacitor 官方文档了解详细的添加平台步骤：
+<a href="https://capacitorjs.com/docs/getting-started">https://capacitorjs.com/docs/getting-started</a></p>
+<h2 id="5-桌面端发布-desktop-deployment"><a class="header-anchor" href="#5-桌面端发布-desktop-deployment">#</a>5. 桌面端发布 (Desktop Deployment)</h2><p>Lupine.js 使用 <strong>Electron</strong> 来构建跨平台桌面应用。</p>
+<h3 id="桌面端结构"><a class="header-anchor" href="#桌面端结构">#</a>桌面端结构</h3><p>当你创建一个新的 Lupine 项目时，它会自动包含一个 <code>electron</code> 目录（例如 <code>apps/your-app/electron</code>），其中包含了桌面端所需的主进程代码和资源。</p>
+<ul>
+<li>您的 Web 代码直接作为 Electron 的渲染进程运行。</li>
+<li><code>lupine.components</code> 能够自动检测运行环境，适配桌面端 UI（如隐藏不必要的移动端 Tab）。</li>
+</ul>
+<h3 id="构建命令"><a class="header-anchor" href="#构建命令">#</a>构建命令</h3><p><code>package.json</code> 提供了预置的构建脚本，用于编译不同平台的安装包：</p>
+<pre><code class="language-bash"># Windows
+npm run app1:build-win
+
+# Linux
+npm run app1:build-linux
+
+# macOS
+npm run app1:build-mac
+</code></pre>
+<p>您可以在 <code>package.json</code> 的 <code>scripts</code> 区域找到并自定义这些命令。</p>

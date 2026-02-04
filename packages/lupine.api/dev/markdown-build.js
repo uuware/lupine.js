@@ -9,7 +9,10 @@ const slugify = (text) =>
     .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-const cleanMarkdown = (text) => text.replace(/[`*?^]/g, '');
+const cleanMarkdown = (text) =>
+  text
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // remove links: [text](url) -> text
+    .replace(/[`*?^]/g, ''); // remove other markdown symbols
 
 marked.use({
   renderer: {
@@ -22,9 +25,7 @@ marked.use({
   },
 });
 
-const builtFiles = new Map(); // path -> { route, importPath, data, headings }
-
-function processFile(filePath, indir, outdir, relativePath) {
+function processFile(builtFiles, filePath, indir, outdir, relativePath) {
   if (builtFiles.has(filePath)) return builtFiles.get(filePath);
 
   // Mark as processing to handle potential cycles (though minimal risk with hierarchy)
@@ -32,8 +33,7 @@ function processFile(filePath, indir, outdir, relativePath) {
   builtFiles.set(filePath, null);
 
   if (!fs.existsSync(filePath)) {
-    console.warn(`File not found: ${filePath}`);
-    return null;
+    throw new Error(`File not found: ${filePath}`);
   }
 
   const contentRaw = fs.readFileSync(filePath, 'utf8');
@@ -90,7 +90,7 @@ function processFile(filePath, indir, outdir, relativePath) {
         const subAbs = path.join(indir, subRelative);
 
         // Recursively build the submenu index
-        const subFileInfo = processFile(subAbs, indir, outdir, subRelative);
+        const subFileInfo = processFile(builtFiles, subAbs, indir, outdir, subRelative);
 
         if (subFileInfo && subFileInfo.data && subFileInfo.data.sidebar) {
           if (subFileInfo.data.title) {
@@ -120,7 +120,7 @@ function processFile(filePath, indir, outdir, relativePath) {
           subRelative += '.md';
         }
 
-        processFile(subAbs, indir, outdir, subRelative);
+        processFile(builtFiles, subAbs, indir, outdir, subRelative);
         result.push(item);
       } else if (typeof item === 'object' && item.items) {
         item.items = expandSidebar(item.items);
@@ -164,6 +164,8 @@ const markdownProcessOnEnd = async (indir, outdir) => {
   try {
     if (!indir || !outdir) return;
 
+    // 重新变异的时候必须清除缓存，否则会读取到旧的缓存数据
+    matter.clearCache();
     const langPath = path.join(indir, 'index.md');
     if (!fs.existsSync(langPath)) {
       console.warn(`[dev-markdown] No index.md found in ${indir}`);
@@ -171,7 +173,7 @@ const markdownProcessOnEnd = async (indir, outdir) => {
     }
 
     const langContent = fs.readFileSync(langPath, 'utf8');
-    const { data, content: markdown } = matter(langContent);
+    const { data } = matter(langContent);
     const lang = data.lang;
     if (!lang || lang.length < 1 || !lang[0].id) {
       console.warn(`[dev-markdown] No lang found in ${langPath}`);
@@ -183,11 +185,11 @@ const markdownProcessOnEnd = async (indir, outdir) => {
       fs.mkdirSync(outdir, { recursive: true });
     }
 
-    builtFiles.clear();
+    const builtFiles = new Map();
 
     // Process root index.md to provide global config (languages) at '/'
     if (fs.existsSync(langPath)) {
-      const rootInfo = processFile(langPath, indir, outdir, 'index.md');
+      const rootInfo = processFile(builtFiles, langPath, indir, outdir, 'index.md');
       if (rootInfo) {
         rootInfo.route = '/';
         // Re-key as '/' to ensure it's accessible as markdownConfig['/']
@@ -200,7 +202,7 @@ const markdownProcessOnEnd = async (indir, outdir) => {
       const fullPath = path.join(indir, entry.id, 'index.md');
       if (fs.existsSync(fullPath)) {
         const relativePath = path.join(entry.id, 'index.md');
-        processFile(fullPath, indir, outdir, relativePath);
+        processFile(builtFiles, fullPath, indir, outdir, relativePath);
       }
     });
 

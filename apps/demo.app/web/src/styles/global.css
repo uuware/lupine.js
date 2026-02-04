@@ -776,7 +776,7 @@ body {
   color: var(--primary-color);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  font-family: var(--font-family-base, SimSun, 'Microsoft YaHei', Helvetica, Arial, sans-serif);
+  font-family: var(--font-family-base);
   font-weight: var(--font-weight-base);
 }
 

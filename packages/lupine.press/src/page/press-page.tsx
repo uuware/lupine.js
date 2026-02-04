@@ -1,4 +1,4 @@
-import { isFrontEnd, PageProps } from 'lupine.components';
+import { bindGlobalStyle, isFrontEnd, PageProps } from 'lupine.components';
 import { PressLayout } from '../components';
 import { getPressData, getPressSubDir, setPressLangs } from '../services/cache';
 
@@ -56,6 +56,9 @@ export const PressPage = (props: PageProps) => {
   const rootNav = rootIndex.nav || [];
   const rootSidebar = rootIndex.sidebar || [];
   const siteTitle = rootIndex.title || 'LupineJS';
+  // siteStyles should be {body:{'font-family':'...'}}
+  const siteStyles = rootIndex.styles || {};
+  bindGlobalStyle('customer-css', siteStyles, false, true);
 
   // Collect langs from all supported language root index files
   const langs = langObj.map((l: { title: string; id: string }) => {

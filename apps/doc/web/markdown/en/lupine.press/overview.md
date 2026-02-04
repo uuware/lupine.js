@@ -16,6 +16,7 @@ It is designed to work seamlessly with the `lupine` ecosystem, powering document
 - **Theming**: Built-in support for multiple themes (e.g., light/dark mode) via `lupine.components` theme system.
 - **Routing**: explicit integration with `PageRouter` for handling client-side navigation.
 - **Multilingual Support**: Automatically scans markdown files from multilingual directories and supports language switching.
+- **Styles Support**: You can set styles in markdown files.
 
 ## Usage Guide
 
@@ -119,3 +120,13 @@ The `sidebar` parameter is an array that supports three configuration patterns:
 - **`PressFrame`**: The main layout component. It handles the specific CSS and structure for a documentation site, ensuring the sidebar and content area scroll independently.
 - **`PressPage`**: The "controller" component. It looks up the current URL in the bound `markdownConfig`, retrieves the corresponding HTML and metadata, and renders the `PressFrame` with the correct sidebar and content.
 - **`pressLoad`**: A navigation utility to handle link clicks within the documentation, ensuring smooth client-side transitions.
+
+## Styles
+
+styles can define font, color styles and will be applied to all pages.
+
+```css
+styles:
+  ':root': { '--primary-accent-color': '#0ac92a' }
+  body: { font-family: var(--font-family-base); }
+```

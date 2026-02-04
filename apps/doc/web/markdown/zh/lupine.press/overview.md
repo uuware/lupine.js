@@ -16,6 +16,7 @@ title: Press 文档系统概览
 - **主题支持 (Theming)**: 通过 `lupine.components` 主题系统内置支持多种主题（如亮色/暗色模式）。
 - **路由集成 (Routing)**: 与 `PageRouter` 显式集成，用于处理客户端导航。
 - **多语言支持 (Multilingual Support)**: 自动扫描多语言目录的 markdown 文件，多语言显示切换。
+- **式样设置支持 (Styles Support)**: 可以在 markdown 文件中设置式样。
 
 ## 使用指南 (Usage Guide)
 
@@ -119,3 +120,13 @@ lang:
 - **`PressFrame`**: 主要布局组件。它处理文档站点的特定 CSS 和结构，确保侧边栏和内容区域独立滚动。
 - **`PressPage`**: “控制器”组件。它在绑定的 `markdownConfig` 中查找当前 URL，检索相应的 HTML 和元数据，并使用正确的侧边栏和内容渲染 `PressFrame`。
 - **`pressLoad`**: 一个导航实用程序，用于处理文档内的链接点击，确保平滑的客户端转换。
+
+## 式样 (Styles)
+
+styles 可以定义一些字体，颜色等式样。这些式样将被应用于所有页面。
+
+```css
+styles:
+  ':root': { '--primary-accent-color': '#0ac92a' }
+  body: { font-family: var(--font-family-base); }
+```

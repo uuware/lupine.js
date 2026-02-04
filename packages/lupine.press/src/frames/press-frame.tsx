@@ -47,7 +47,7 @@ export const PressFrame = (props: PressFrameProps) => {
       transition: 'opacity 0.2s',
     },
     ol: {
-      listStyleType: 'decimal',
+      listStyleType: 'disc',
     },
     'li, p': {
       margin: '0.5em 0',

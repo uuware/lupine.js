@@ -1,0 +1,143 @@
+<h1 id="mobile-desktop-adaptation"><a class="header-anchor" href="#mobile-desktop-adaptation">#</a>Mobile &amp; Desktop Adaptation</h1><p>One of the core design philosophies of Lupine.js is &quot;One Codebase, Multiple Platforms.&quot; With built-in responsive design tools and components, you can easily build applications that adapt to Web, Mobile (iOS/Android), and Desktop (Electron).</p>
+<h2 id="1-responsive-layout-media-query"><a class="header-anchor" href="#1-responsive-layout-media-query">#</a>1. Responsive Layout (Media Query)</h2><p><code>lupine.components</code> provides powerful media query tools to help you adjust layouts based on screen width.</p>
+<h3 id="breakpoints"><a class="header-anchor" href="#breakpoints">#</a>Breakpoints</h3><p>The system predefines the following breakpoints (customizable in <code>MediaQueryMaxWidth</code>):</p>
+<ul>
+<li><strong>ExtraSmall</strong>: &lt; 480px</li>
+<li><strong>Mobile</strong>: &lt; 767px (Grid: col-1)</li>
+<li><strong>Tablet</strong>: &lt; 991px (Grid: col-1-md)</li>
+<li><strong>Desktop</strong>: &lt; 1399px (Grid: col-1-lg)</li>
+</ul>
+<h3 id="usage-in-css-in-js"><a class="header-anchor" href="#usage-in-css-in-js">#</a>Usage in CSS-in-JS</h3><p>You can use <code>MediaQueryRange</code> to write responsive styles easily:</p>
+<pre><code class="language-tsx">import { MediaQueryRange, MediaQueryMaxWidth } from &#39;lupine.components&#39;;
+
+const css: CssProps = {
+  width: &#39;100%&#39;,
+  // Default desktop style
+  maxWidth: MediaQueryMaxWidth.DesktopMax,
+
+  // Adjustments for ExtraSmall screens (Mobile Portrait)
+  [MediaQueryRange.ExtraSmallBelow]: {
+    padding: &#39;10px&#39;,
+    fontSize: &#39;14px&#39;,
+  },
+
+  // Adjustments for Tablet and below
+  [MediaQueryRange.TabletBelow]: {
+    flexDirection: &#39;column&#39;,
+  },
+};
+</code></pre>
+<h2 id="2-adaptive-frames"><a class="header-anchor" href="#2-adaptive-frames">#</a>2. Adaptive Frames</h2><p>Lupine provides frame components specifically designed for building responsive applications.</p>
+<h3 id="responsiveframe"><a class="header-anchor" href="#responsiveframe">#</a>ResponsiveFrame</h3><p><code>ResponsiveFrame</code> is the ultimate solution for handling hybrid layouts. It automatically switches UI structure based on the device type:</p>
+<ul>
+<li><strong>Desktop</strong>: Displays top menu (<code>DesktopHeader</code>), footer (<code>DesktopFooter</code>), and sidebar.</li>
+<li><strong>Mobile</strong>: Automatically switches to a mobile layout, hiding desktop-specific elements and enabling mobile-specific navigation (<code>MobileBottomMenu</code>).</li>
+</ul>
+<pre><code class="language-tsx">&lt;ResponsiveFrame
+  desktopHeaderTitle=&quot;My App&quot;
+  desktopTopMenu={[...]}
+  mobileBottomMenu={[...]}
+  mainContent={&lt;MyPageContent /&gt;}
+/&gt;
+</code></pre>
+<h3 id="sliderframe"><a class="header-anchor" href="#sliderframe">#</a>SliderFrame</h3><p><code>SliderFrame</code> implements the common &quot;slide-in&quot; interaction experience found in mobile apps. It is typically used for sliding in detail pages from the right or menus from the bottom.</p>
+<ul>
+<li>Supports <code>Right-to-Left</code> and <code>Bottom-to-Top</code> animations.</li>
+<li>Configurable as a slide-out panel on Desktop.</li>
+</ul>
+<h2 id="3-mobile-navigation-interaction"><a class="header-anchor" href="#3-mobile-navigation-interaction">#</a>3. Mobile Navigation &amp; Interaction</h2><h3 id="global-back-button-handling-backactionhelper"><a class="header-anchor" href="#global-back-button-handling-backactionhelper">#</a>Global Back Button Handling (BackActionHelper)</h3><p>Handling the physical back button is crucial in mobile apps (especially Android). <code>BackActionHelper</code> provides a global queue to manage back actions, ensuring a smooth user experience.</p>
+<p><strong>Usage Example</strong>:</p>
+<pre><code class="language-typescript">import { backActionHelper } from &#39;lupine.components&#39;;
+
+// Listen for hardware back button (usually in index.ts or app-listeners.ts)
+App.addListener(&#39;backButton&#39;, async () =&gt; {
+  // If helper handled the back action (e.g., closed a modal), return
+  if (await backActionHelper.processBackAction()) {
+    return;
+  }
+  // Otherwise, exit app or perform other logic
+});
+</code></pre>
+<h3 id="actionsheet"><a class="header-anchor" href="#actionsheet">#</a>ActionSheet</h3><p><code>ActionSheet</code> is a very common bottom modal component in mobile apps, used for option selection, information prompts, or simple inputs.</p>
+<ul>
+<li><strong>ActionSheetSelect</strong>: Bottom options menu.</li>
+<li><strong>ActionSheetInput</strong>: Bottom input box.</li>
+<li><strong>ActionSheetMessage</strong>: Bottom message prompt.</li>
+</ul>
+<pre><code class="language-tsx">import { ActionSheetSelectPromise } from &#39;lupine.components&#39;;
+
+const handleSelect = async () =&gt; {
+  const index = await ActionSheetSelectPromise({
+    title: &#39;Choose Action&#39;,
+    options: [&#39;Edit&#39;, &#39;Delete&#39;, &#39;Share&#39;],
+    cancelButtonText: &#39;Cancel&#39;,
+  });
+
+  if (index === 0) {
+    // Edit logic
+  }
+};
+</code></pre>
+<h3 id="mobileheader"><a class="header-anchor" href="#mobileheader">#</a>MobileHeader</h3><p><code>MobileHeaderComponent</code> provides flexible header customization. You can dynamically update the Left, Center, and Right areas of the header using <code>MobileHeaderHelper</code> or helper components.</p>
+<pre><code class="language-tsx">// Dynamically update Header inside a page component
+&lt;MobileHeaderCenter&gt;
+  &lt;MobileHeaderTitleIcon title=&#39;User Settings&#39; left={&lt;BackIcon /&gt;} right={&lt;SaveIcon /&gt;} /&gt;
+&lt;/MobileHeaderCenter&gt;
+</code></pre>
+<h3 id="slidetabcomponent"><a class="header-anchor" href="#slidetabcomponent">#</a>SlideTabComponent</h3><p>A tab switching component that supports gesture-based left/right sliding, providing a smooth experience close to native applications.</p>
+<pre><code class="language-tsx">&lt;SlideTabComponent
+  pages={[
+    { title: &#39;Hot&#39;, content: &lt;HotList /&gt; },
+    { title: &#39;New&#39;, content: &lt;NewList /&gt; },
+  ]}
+/&gt;
+
+## 4. Mobile Deployment
+
+Lupine.js recommends using **Capacitor** to wrap your web application as a native mobile app.
+
+### Mobile Configuration
+
+Since mobile apps typically run as standalone files (using the `file://` protocol), API requests cannot utilize relative paths like they do on the Web. You should configure `.env.mobile` to specify absolute API endpoints.
+
+**Build Command**:
+```bash
+# Build using .env.mobile configuration
+npm run build-mobile
+</code></pre>
+<p>This corresponds to the script in <code>package.json</code>:
+<code>node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1</code></p>
+<h3 id="conditional-compilation"><a class="header-anchor" href="#conditional-compilation">#</a>Conditional Compilation</h3><p>Lupine provides the <code>pluginIfelse</code> plugin, allowing you to write platform-specific logic. This is particularly useful for handling mobile-specific API endpoints or behaviors.</p>
+<p><strong>Usage Example</strong>:</p>
+<pre><code class="language-javascript">// #if MOBILE
+const apiBase = &#39;https://api.myapp.com&#39;;
+// #else
+const apiBase = &#39;/api&#39;;
+// #endif
+
+// #if DEV
+console.log(&#39;Debug mode&#39;);
+// #endif
+</code></pre>
+<blockquote>
+<p>Only code blocks matching the condition will be included in the final bundle, reducing bundle size and preventing runtime errors.</p>
+</blockquote>
+<h3 id="adding-ios-and-android"><a class="header-anchor" href="#adding-ios-and-android">#</a>Adding iOS and Android</h3><p>Please refer to the official Capacitor documentation for detailed steps on adding platforms:
+<a href="https://capacitorjs.com/docs/getting-started">https://capacitorjs.com/docs/getting-started</a></p>
+<h2 id="5-desktop-deployment"><a class="header-anchor" href="#5-desktop-deployment">#</a>5. Desktop Deployment</h2><p>Lupine.js uses <strong>Electron</strong> to build cross-platform desktop applications.</p>
+<h3 id="desktop-structure"><a class="header-anchor" href="#desktop-structure">#</a>Desktop Structure</h3><p>When you create a new Lupine project, it automatically includes an <code>electron</code> directory (e.g., <code>apps/your-app/electron</code>), which contains the necessary main process code and resources for the desktop app.</p>
+<ul>
+<li>Your Web code runs directly as the Electron renderer process.</li>
+<li><code>lupine.components</code> automatically detects the runtime environment and adapts the UI for desktop (e.g., hiding unnecessary mobile tabs).</li>
+</ul>
+<h3 id="build-commands"><a class="header-anchor" href="#build-commands">#</a>Build Commands</h3><p><code>package.json</code> provides preset build scripts for compiling installers for different platforms:</p>
+<pre><code class="language-bash"># Windows
+npm run app1:build-win
+
+# Linux
+npm run app1:build-linux
+
+# macOS
+npm run app1:build-mac
+</code></pre>
+<p>You can find and customize these commands in the <code>scripts</code> section of your <code>package.json</code>.</p>

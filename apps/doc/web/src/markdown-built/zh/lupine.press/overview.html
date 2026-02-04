@@ -7,6 +7,7 @@
 <li><strong>主题支持 (Theming)</strong>: 通过 <code>lupine.components</code> 主题系统内置支持多种主题（如亮色/暗色模式）。</li>
 <li><strong>路由集成 (Routing)</strong>: 与 <code>PageRouter</code> 显式集成，用于处理客户端导航。</li>
 <li><strong>多语言支持 (Multilingual Support)</strong>: 自动扫描多语言目录的 markdown 文件，多语言显示切换。</li>
+<li><strong>式样设置支持 (Styles Support)</strong>: 可以在 markdown 文件中设置式样。</li>
 </ul>
 <h2 id="使用指南-usage-guide"><a class="header-anchor" href="#使用指南-usage-guide">#</a>使用指南 (Usage Guide)</h2><p>要使用 <code>lupine.press</code>，您通常需要设置一个 <code>lupine.web</code> 应用程序，并将其配置为使用 <code>PressPage</code> 作为主路由处理程序。</p>
 <h3 id="1-前提条件-prerequisites"><a class="header-anchor" href="#1-前提条件-prerequisites">#</a>1. 前提条件 (Prerequisites)</h3><p>确保您的项目中已安装 <code>lupine.press</code>。</p>
@@ -81,3 +82,8 @@ lang:
 <li><strong><code>PressPage</code></strong>: “控制器”组件。它在绑定的 <code>markdownConfig</code> 中查找当前 URL，检索相应的 HTML 和元数据，并使用正确的侧边栏和内容渲染 <code>PressFrame</code>。</li>
 <li><strong><code>pressLoad</code></strong>: 一个导航实用程序，用于处理文档内的链接点击，确保平滑的客户端转换。</li>
 </ul>
+<h2 id="式样-styles"><a class="header-anchor" href="#式样-styles">#</a>式样 (Styles)</h2><p>styles 可以定义一些字体，颜色等式样。这些式样将被应用于所有页面。</p>
+<pre><code class="language-css">styles:
+  &#39;:root&#39;: { &#39;--primary-accent-color&#39;: &#39;#0ac92a&#39; }
+  body: { font-family: var(--font-family-base); }
+</code></pre>
