@@ -190,6 +190,8 @@ async function init() {
   const templateObj = TEMPLATES.find((t) => t.name === template);
   if (templateObj && templateObj.needsPress) {
     pkg.dependencies['lupine.press'] = '^1.0.1';
+    pkg.devDependencies['gray-matter'] = '^4.0.3';
+    pkg.devDependencies['marked'] = '^17.0.1';
   }
 
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(pkg, null, 2));

@@ -20,15 +20,21 @@ title: Press 文档系统概览
 
 ## 使用指南 (Usage Guide)
 
+### 1. 创建项目
+
 要使用 `lupine.press`，您通常需要设置一个 `lupine.web` 应用程序，并将其配置为使用 `PressPage` 作为主路由处理程序。
+最简单的方式就是使用 `create-lupine` 命令来创建一个新的 `lupine.press` 应用程序。
 
-### 1. 前提条件 (Prerequisites)
+```bash
+npx create-lupine@latest my-docs
+```
 
-确保您的项目中已安装 `lupine.press`。
+然后选择 `doc-starter` 模板。
 
 ### 2. 基本设置 (Basic Setup)
 
-在您的应用程序入口点（例如 `src/index.tsx`）中，您需要绑定必要的配置并设置路由器。
+在创建的程序中您可以看到这些配置。
+在应用程序入口点（ `src/index.tsx`）中，您能看到必要的绑定配置和路由器设置。
 
 ```typescript
 import { bindRouter, PageRouter, bindTheme, bindLang, setDefaultPageTitle } from 'lupine.components';

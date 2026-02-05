@@ -9,9 +9,13 @@
 <li><strong>多语言支持 (Multilingual Support)</strong>: 自动扫描多语言目录的 markdown 文件，多语言显示切换。</li>
 <li><strong>式样设置支持 (Styles Support)</strong>: 可以在 markdown 文件中设置式样。</li>
 </ul>
-<h2 id="使用指南-usage-guide"><a class="header-anchor" href="#使用指南-usage-guide">#</a>使用指南 (Usage Guide)</h2><p>要使用 <code>lupine.press</code>，您通常需要设置一个 <code>lupine.web</code> 应用程序，并将其配置为使用 <code>PressPage</code> 作为主路由处理程序。</p>
-<h3 id="1-前提条件-prerequisites"><a class="header-anchor" href="#1-前提条件-prerequisites">#</a>1. 前提条件 (Prerequisites)</h3><p>确保您的项目中已安装 <code>lupine.press</code>。</p>
-<h3 id="2-基本设置-basic-setup"><a class="header-anchor" href="#2-基本设置-basic-setup">#</a>2. 基本设置 (Basic Setup)</h3><p>在您的应用程序入口点（例如 <code>src/index.tsx</code>）中，您需要绑定必要的配置并设置路由器。</p>
+<h2 id="使用指南-usage-guide"><a class="header-anchor" href="#使用指南-usage-guide">#</a>使用指南 (Usage Guide)</h2><h3 id="1-创建项目"><a class="header-anchor" href="#1-创建项目">#</a>1. 创建项目</h3><p>要使用 <code>lupine.press</code>，您通常需要设置一个 <code>lupine.web</code> 应用程序，并将其配置为使用 <code>PressPage</code> 作为主路由处理程序。
+最简单的方式就是使用 <code>create-lupine</code> 命令来创建一个新的 <code>lupine.press</code> 应用程序。</p>
+<pre><code class="language-bash">npx create-lupine@latest my-docs
+</code></pre>
+<p>然后选择 <code>doc-starter</code> 模板。</p>
+<h3 id="2-基本设置-basic-setup"><a class="header-anchor" href="#2-基本设置-basic-setup">#</a>2. 基本设置 (Basic Setup)</h3><p>在创建的程序中您可以看到这些配置。
+在应用程序入口点（ <code>src/index.tsx</code>）中，您能看到必要的绑定配置和路由器设置。</p>
 <pre><code class="language-typescript">import { bindRouter, PageRouter, bindTheme, bindLang, setDefaultPageTitle } from &#39;lupine.components&#39;;
 import { bindPressData, PressPage, pressThemes } from &#39;lupine.press&#39;;
 import { markdownConfig } from &#39;./markdown-config&#39;; // 您生成的 markdown 数据

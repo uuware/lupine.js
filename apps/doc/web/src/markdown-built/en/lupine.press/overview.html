@@ -9,9 +9,13 @@
 <li><strong>Multilingual Support</strong>: Automatically scans markdown files from multilingual directories and supports language switching.</li>
 <li><strong>Styles Support</strong>: You can set styles in markdown files.</li>
 </ul>
-<h2 id="usage-guide"><a class="header-anchor" href="#usage-guide">#</a>Usage Guide</h2><p>To use <code>lupine.press</code>, you typically set up a <code>lupine.web</code> application and configure it to use <code>PressPage</code> as the main route handler.</p>
-<h3 id="1-prerequisites"><a class="header-anchor" href="#1-prerequisites">#</a>1. Prerequisites</h3><p>Ensure you have <code>lupine.press</code> installed in your project.</p>
-<h3 id="2-basic-setup"><a class="header-anchor" href="#2-basic-setup">#</a>2. Basic Setup</h3><p>In your application entry point (e.g., <code>src/index.tsx</code>), you need to bind the necessary configurations and set up the router.</p>
+<h2 id="usage-guide"><a class="header-anchor" href="#usage-guide">#</a>Usage Guide</h2><h3 id="1-create-a-project"><a class="header-anchor" href="#1-create-a-project">#</a>1. Create a Project</h3><p>To use <code>lupine.press</code>, you typically set up a <code>lupine.web</code> application and configure it to use <code>PressPage</code> as the main route handler.
+The easiest way is to use the <code>create-lupine</code> command to create a new <code>lupine.press</code> application.</p>
+<pre><code class="language-bash">npx create-lupine@latest my-docs
+</code></pre>
+<p>Then select <code>doc-starter</code> template.</p>
+<h3 id="2-basic-setup"><a class="header-anchor" href="#2-basic-setup">#</a>2. Basic Setup</h3><p>You can see these configurations in the created application.
+In your application entry point (e.g., <code>src/index.tsx</code>), you can see the necessary binding configurations and router settings.</p>
 <pre><code class="language-typescript">import { bindRouter, PageRouter, bindTheme, bindLang, setDefaultPageTitle } from &#39;lupine.components&#39;;
 import { bindPressData, PressPage, pressThemes } from &#39;lupine.press&#39;;
 import { markdownConfig } from &#39;./markdown-config&#39;; // Your generated markdown data

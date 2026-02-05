@@ -8,7 +8,15 @@ Lupine.js 是一个功能齐全的 Web 应用程序框架，包含前端和后�
 
 ## 快速开始
 
-### 1. 克隆仓库
+### 1. 创建项目
+
+最简单的方式就是使用 `create-lupine` 命令来创建一个新的应用程序。在创建的时候您可以选择模版。
+
+```bash
+npx create-lupine@latest my-app
+```
+
+如果您像更深入的了解 lupine.js，您可以从 github 上克隆仓库，这样更方便的本地查看核心代码。
 
 ```bash
 git clone https://github.com/uuware/lupine.js.git
@@ -22,9 +30,13 @@ npm install
 
 ### 3. 配置环境
 
+如果使用 `create-lupine` 创建的项目， `.env` 文件已经生成。
+
+如果使用 `git clone` 创建的项目，则需要配置环境。
+
 将 `.env.sample` 文件复制为名为 `.env` 的新文件。
 
-使用 `.env` 文件中的示例脚本为以下变量生成密钥：
+使用 `git clone` 创建的项目，还需要使用 `.env` 文件中的示例脚本为以下变量生成密钥：
 
 ```properties
 ADMIN_PASS=

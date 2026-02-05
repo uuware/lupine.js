@@ -1,10 +1,16 @@
-<h1 id="installation"><a class="header-anchor" href="#installation">#</a>Installation</h1><p>Lupine.js is a full-featured web application framework that includes both frontend and backend. The frontend, Lupine.web, is an extremely lightweight framework using React TSX syntax. The backend, Lupine.api, is a highly efficient and minimalistic framework similar to Express.</p>
-<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><h3 id="1-clone-the-repository"><a class="header-anchor" href="#1-clone-the-repository">#</a>1. Clone the repository</h3><pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
+<h1 id="installation2"><a class="header-anchor" href="#installation2">#</a>Installation2</h1><p>Lupine.js is a full-featured web application framework that includes both frontend and backend. The frontend, Lupine.web, is an extremely lightweight framework using React TSX syntax. The backend, Lupine.api, is a highly efficient and minimalistic framework similar to Express.</p>
+<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><h3 id="1-create-a-project"><a class="header-anchor" href="#1-create-a-project">#</a>1. Create a Project</h3><p>The simplest way is to use the <code>create-lupine</code> command to create a new application. You can choose a template during creation.</p>
+<pre><code class="language-bash">npx create-lupine@latest my-app
+</code></pre>
+<p>If you want to understand lupine.js more deeply, you can clone the repository from github, which makes it easier to view the core code locally.</p>
+<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
 </code></pre>
 <h3 id="2-install-dependencies"><a class="header-anchor" href="#2-install-dependencies">#</a>2. Install dependencies</h3><pre><code class="language-bash">npm install
 </code></pre>
-<h3 id="3-configure-environment"><a class="header-anchor" href="#3-configure-environment">#</a>3. Configure Environment</h3><p>Copy the <code>.env.sample</code> file to a new file named <code>.env</code>.</p>
-<p>Use the sample script in the <code>.env</code> file to generate keys for the following variables:</p>
+<h3 id="3-configure-environment"><a class="header-anchor" href="#3-configure-environment">#</a>3. Configure Environment</h3><p>If you created the project using <code>create-lupine</code>, the <code>.env</code> file is already generated.</p>
+<p>If you created the project using <code>git clone</code>, you need to configure the environment.</p>
+<p>Copy the <code>.env.sample</code> file to a new file named <code>.env</code>.</p>
+<p>For projects created using <code>git clone</code>, you also need to use the sample script in the <code>.env</code> file to generate keys for the following variables:</p>
 <pre><code class="language-properties">ADMIN_PASS=
 CRYPTO_KEY=
 DEV_ADMIN_PASS=
