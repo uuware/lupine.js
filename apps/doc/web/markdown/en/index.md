@@ -45,7 +45,7 @@ styles:
 
 features:
   - title: Front-End (lupine.web)
-    details: Extremely lightweight framework (6kb for a hello-world project with all core features) using React TSX syntax. No heavy runtime.
+    details: Extremely lightweight framework (7kb gzipped for a hello-world project with all core features) using React TSX syntax. No heavy runtime.
   - title: Back-End (lupine.api)
     details: Efficient and simplified framework similar to Express. Optimized for SSR.
   - title: Zero-dependency

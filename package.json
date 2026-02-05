@@ -26,9 +26,10 @@
     "app1:open-android": "npm run open-android --workspace=demo.app-web",
     "app1:icons": "node ./apps/demo.app/web/icons-font.config.js",
     "dev": "node ./dev/dev-watch --env=.env.development --dev=1 --cmd=start-dev",
-    "build": "node ./dev/dev-watch --env=.env.production --dev=0",
-    "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1",
+    "build": "node ./dev/dev-watch --env=.env.production --dev=0 --obfuscate=0",
+    "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1 --obfuscate=0",
     "cp-docs": "node dev/cp-folder.js dist/server_root/doc_web/lupine.js docs",
+    "cp-temps": "node dev/cp-temps.js",
     "start-dev": "node dist/server_root/server/app-loader.js --env=.env.development",
     "start-production": "node dist/server_root/server/app-loader.js --env=.env.production",
     "format": "prettier --write \"**/*.{js,json,css,scss,md,html,yaml,ts,jsx,tsx}\""
@@ -47,6 +48,7 @@
     "gray-matter": "^4.0.3",
     "icons-font-command": "^1.2.0",
     "marked": "^17.0.1",
+    "javascript-obfuscator": "^5.1.0",
     "prettier": "^2.7.1",
     "typescript": "^5.7.2"
   }

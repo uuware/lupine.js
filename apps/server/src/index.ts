@@ -7,11 +7,14 @@ import {
   getDefaultDbConfig,
   getRenderPageFunctions,
   loadEnv,
+  setAccessControlAllowHost,
 } from 'lupine.api';
 import { fetchData } from './fetch-data';
 import { ServerEnvKeys } from './server-env-keys';
 
 const initAndStartServer = async () => {
+  setAccessControlAllowHost(['localhost', '127.0.0.1']);
+
   const envFile = process.argv.find((i) => i.startsWith('--env='))?.substring(6) || '.env';
   // it can use "#!import file_name" to import another env file
   await loadEnv(envFile);
@@ -22,10 +25,11 @@ const initAndStartServer = async () => {
   const apps = (process.env[ServerEnvKeys.APPS] || '').split(',');
   const webRootMap: HostToPathProps[] = [];
 
+  const domainCerts: Record<string, { key: string; cert: string }> = {};
   for (const app of apps) {
-    const appHosts = process.env[`${ServerEnvKeys.DOMAINS}@${app}`] || '';
+    const appHosts = process.env[`${ServerEnvKeys.DOMAINS}:${app}`] || '';
     const dbFilename =
-      process.env[`${ServerEnvKeys.DB_FILENAME}@${app}`] || process.env[`${ServerEnvKeys.DB_FILENAME}`] || 'sqlite3.db';
+      process.env[`${ServerEnvKeys.DB_FILENAME}:${app}`] || process.env[`${ServerEnvKeys.DB_FILENAME}`] || 'sqlite3.db';
     webRootMap.push({
       appName: app,
       hosts: appHosts ? appHosts.split(',') : [],
@@ -33,9 +37,17 @@ const initAndStartServer = async () => {
       webPath: path.join(serverRootPath, app + '_web'),
       dataPath: path.join(serverRootPath, app + '_data'),
       apiPath: path.join(serverRootPath, app + '_api'),
-      dbType: process.env[`${ServerEnvKeys.DB_TYPE}@${app}`] || process.env[`${ServerEnvKeys.DB_TYPE}`] || 'sqlite',
+      dbType: process.env[`${ServerEnvKeys.DB_TYPE}:${app}`] || process.env[`${ServerEnvKeys.DB_TYPE}`] || 'sqlite',
       dbConfig: { ...dbConfig, filename: dbFilename },
     });
+
+    const appDomains = appHosts.split(',');
+    for (const domain of appDomains) {
+      domainCerts[domain] = {
+        key: process.env[`${ServerEnvKeys.SSL_KEY_PATH}:${app}`] || '',
+        cert: process.env[`${ServerEnvKeys.SSL_CRT_PATH}:${app}`] || '',
+      };
+    }
   }
 
   const bindIp = process.env[ServerEnvKeys.BIND_IP] || '::';
@@ -60,6 +72,7 @@ const initAndStartServer = async () => {
       httpsPort,
       sslKeyPath,
       sslCrtPath,
+      domainCerts,
     },
   });
 };

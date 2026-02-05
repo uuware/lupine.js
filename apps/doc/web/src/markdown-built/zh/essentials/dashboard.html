@@ -1,0 +1,53 @@
+<h1 id="dashboard"><a class="header-anchor" href="#dashboard">#</a>Dashboard</h1><p>lupine.api 自带一个可以扩充的 dashboard，用于管理 api 服务。dashboard 左边是众多管理菜单，右边是多页面的 tab 内容页面。</p>
+<h2 id="功能特性-features"><a class="header-anchor" href="#功能特性-features">#</a>功能特性 (Features)</h2><p>Dashboard 提供了全面的后台管理功能，按功能模块分类如下：</p>
+<h3 id="1-数据库管理-db"><a class="header-anchor" href="#1-数据库管理-db">#</a>1. 数据库管理 (DB)</h3><p>提供直接操作数据库的工具，方便调试和维护。</p>
+<ul>
+<li><strong>Table List (表列表)</strong>: 浏览数据库中的表，支持查看表数据。</li>
+<li><strong>Create Tables (创建表)</strong>: 运行预设脚本初始化或修复数据库表结构。</li>
+<li><strong>Run SQL (运行 SQL)</strong>: 提供一个 SQL 执行窗口，可以运行任意 SQL 语句并直接查看 JSON 格式的返回结果。</li>
+</ul>
+<h3 id="2-运维与服务器管理-access-server-info"><a class="header-anchor" href="#2-运维与服务器管理-access-server-info">#</a>2. 运维与服务器管理 (Access &amp; Server Info)</h3><p>核心的运维工具集，支持远程管理和监控。</p>
+<h4 id="release-发布管理"><a class="header-anchor" href="#release-发布管理">#</a>Release (发布管理)</h4><p>强大的发布工具，支持多节点/多环境管理。</p>
+<ul>
+<li><strong>版本同步</strong>: 支持将代码或资源从源环境 (From) 同步到目标环境 (To)。</li>
+<li><strong>全栈更新</strong>: 可选择更新 Server (核心服务), Api (业务逻辑), Env (环境变量) 等。</li>
+<li><strong>Web 更新</strong>: 支持按子目录 (Web Sub-folder) 独立更新前端资源。</li>
+<li><strong>操作控制</strong>:<ul>
+<li><strong>Check</strong>: 检查更新状态。</li>
+<li><strong>Refresh Cache</strong>: 刷新服务器缓存 (支持远程/本地)。</li>
+<li><strong>Restart App</strong>: 重启应用程序 (支持远程/本地)。</li>
+<li><strong>Run Cmd</strong>: 直接在服务器执行 Shell 命令。</li>
+</ul>
+</li>
+<li><strong>日志</strong>: 查看和下载发布操作的历史日志。</li>
+</ul>
+<h4 id="utilities-工具"><a class="header-anchor" href="#utilities-工具">#</a>Utilities (工具)</h4><ul>
+<li><strong>Tokens (令牌管理)</strong>: 管理 API 访问令牌。</li>
+<li><strong>Shell (在线终端)</strong>: 基于 WebSocket 的在线终端，可实时与服务器交互，执行通过验证的命令。</li>
+<li><strong>Resources (资源管理)</strong>: 浏览、上传、下载服务器文件系统中的资源文件。</li>
+<li><strong>Config (配置管理)</strong>: 查看和热修改系统运行时配置。</li>
+<li><strong>Performance (性能监控)</strong>: 监控服务器的内存、CPU 等性能指标。</li>
+</ul>
+<h3 id="3-开发与测试-test"><a class="header-anchor" href="#3-开发与测试-test">#</a>3. 开发与测试 (Test)</h3><p>用于开发阶段调试组件和 UI。</p>
+<ul>
+<li><strong>Test Themes</strong>: 预览和测试不同的 UI 主题配置。</li>
+<li><strong>Test Component</strong>: 测试通用 UI 组件的交互和渲染。</li>
+<li><strong>Test Animations</strong>: 演示和调试 CSS/JS 动画效果。</li>
+<li><strong>Test Edit</strong>: 测试富文本编辑器或表单编辑功能。</li>
+</ul>
+<hr>
+<h2 id="扩展开发"><a class="header-anchor" href="#扩展开发">#</a>扩展开发</h2><p>Dashboard 是高度可扩展的。核心逻辑位于 <code>packages/lupine.api/admin</code> 目录下。</p>
+<h3 id="菜单配置"><a class="header-anchor" href="#菜单配置">#</a>菜单配置</h3><p>菜单通过 <code>admin-frame-helper.tsx</code> 中的 <code>adminTopMenu</code> 数组进行配置。你可以轻松添加新的菜单项：</p>
+<pre><code class="language-typescript">const myMenu = {
+  id: &#39;my-feature&#39;,
+  text: &#39;My Feature&#39;,
+  items: [
+    {
+      id: &#39;my-page&#39;,
+      text: &#39;My Page&#39;,
+      js: () =&gt; this.addPanel(&#39;My Page&#39;, &lt;MyComponent /&gt;),
+    },
+  ],
+};
+</code></pre>
+<h3 id="页面开发"><a class="header-anchor" href="#页面开发">#</a>页面开发</h3><p>每个管理页面都是一个标准的 <code>lupine.components</code> 组件。使用 <code>AdminPanel</code> 和 <code>Tabs</code> 组件来管理多标签页体验。</p>

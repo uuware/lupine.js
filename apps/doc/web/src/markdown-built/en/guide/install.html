@@ -1,18 +1,104 @@
-<h1 id="installation"><a class="header-anchor" href="#installation">#</a>Installation</h1><p>LupineJS can be installed by cloning the main repository.</p>
-<h2 id="development-environment"><a class="header-anchor" href="#development-environment">#</a>Development Environment</h2><ol>
-<li><p><strong>Clone Repo</strong>:</p>
-<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
+<h1 id="installation"><a class="header-anchor" href="#installation">#</a>Installation</h1><p>Lupine.js is a full-featured web application framework that includes both frontend and backend. The frontend, Lupine.web, is an extremely lightweight framework using React TSX syntax. The backend, Lupine.api, is a highly efficient and minimalistic framework similar to Express.</p>
+<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><h3 id="1-clone-the-repository"><a class="header-anchor" href="#1-clone-the-repository">#</a>1. Clone the repository</h3><pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
+</code></pre>
+<h3 id="2-install-dependencies"><a class="header-anchor" href="#2-install-dependencies">#</a>2. Install dependencies</h3><pre><code class="language-bash">npm install
+</code></pre>
+<h3 id="3-configure-environment"><a class="header-anchor" href="#3-configure-environment">#</a>3. Configure Environment</h3><p>Copy the <code>.env.sample</code> file to a new file named <code>.env</code>.</p>
+<p>Use the sample script in the <code>.env</code> file to generate keys for the following variables:</p>
+<pre><code class="language-properties">ADMIN_PASS=
+CRYPTO_KEY=
+DEV_ADMIN_PASS=
+DEV_CRYPTO_KEY=
+</code></pre>
+<h3 id="4-run-the-development-application"><a class="header-anchor" href="#4-run-the-development-application">#</a>4. Run the development application</h3><pre><code class="language-bash">npm run dev
+</code></pre>
+<p>You can now verify the development application at <a href="http://localhost:11080">http://localhost:11080</a>.</p>
+<hr>
+<h2 id="local-https-setup"><a class="header-anchor" href="#local-https-setup">#</a>Local HTTPS Setup</h2><p>For local HTTPS support, we recommend using <a href="https://github.com/FiloSottile/mkcert">mkcert</a>.</p>
+<ol>
+<li>Download <code>mkcert</code> (e.g., <code>mkcert-v1.4.4-windows-amd64.exe</code>).</li>
+<li>Open an admin console and run:<pre><code class="language-bash">./mkcert-v1.4.4-windows-amd64 -install
 </code></pre>
 </li>
-<li><p><strong>Dependencies</strong>:</p>
-<pre><code class="language-bash">npm install
+<li>Generate the certificate (for new setups):<pre><code class="language-bash">mkcert example.com &quot;*.example.com&quot; localhost 127.0.0.1 ::1
 </code></pre>
 </li>
-<li><p><strong>Environment Setup</strong>:
-Copy <code>.env.sample</code> to <code>.env</code> and configure accordingly.</p>
+<li>Copy the generated certificate files to the <code>/dev</code> folder.</li>
+<li>Update your <code>.env</code> file to allow local API calls with self-signed certificates:<pre><code class="language-properties">NODE_TLS_REJECT_UNAUTHORIZED=0
+</code></pre>
 </li>
 </ol>
-<h2 id="production-build"><a class="header-anchor" href="#production-build">#</a>Production Build</h2><p>To build for production:</p>
-<pre><code class="language-bash">npm run build
+<h3 id="alternative-self-signed-certificate-via-openssl"><a class="header-anchor" href="#alternative-self-signed-certificate-via-openssl">#</a>Alternative: Self-Signed Certificate via OpenSSL</h3><p>If you prefer OpenSSL:</p>
+<pre><code class="language-bash">openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout cert.key -out cert.pem -sha256
 </code></pre>
-<p>The build output will be in the <code>dist/server_root</code> directory.</p>
+<p>On Windows, you might use:
+<code>&quot;C:\Program Files\Git\usr\bin\openssl.exe&quot;</code></p>
+<hr>
+<h2 id="debugging"><a class="header-anchor" href="#debugging">#</a>Debugging</h2><h3 id="debug-backend-only"><a class="header-anchor" href="#debug-backend-only">#</a>Debug Backend Only</h3><p>Open a <strong>Javascript Debug Terminal</strong> in VS Code and run:</p>
+<pre><code class="language-bash">npm run dev
+</code></pre>
+<h3 id="debug-frontend-backend"><a class="header-anchor" href="#debug-frontend-backend">#</a>Debug Frontend &amp; Backend</h3><ol>
+<li>Go to the <strong>Run and Debug</strong> sidebar in VS Code.</li>
+<li>Select <strong>&quot;LupineJS: Frontend &amp; Backend&quot;</strong> from the dropdown.</li>
+<li>Set breakpoints in your FE or BE code and start debugging.</li>
+</ol>
+<hr>
+<h2 id="adding-a-new-app"><a class="header-anchor" href="#adding-a-new-app">#</a>Adding a New App</h2><p>Lupine can run multiple apps under the same port. To add a new app locally:</p>
+<ol>
+<li><strong>Copy</strong>: Duplicate any app folder under <code>/apps</code> and rename it.</li>
+<li><strong>Update Config</strong>: Update the <code>apps\&lt;your-app&gt;\lupine.json</code> file with the new app name.</li>
+<li><strong>Register App</strong>: Add the new app name to <code>APPS=</code> in your <code>.env</code> file.</li>
+<li><strong>Virtual Domain</strong>: Add a virtual domain for the app in <code>DOMAINS@[APP-NAME]=</code> in your <code>.env</code> file.</li>
+<li><strong>Build</strong>: The new app&#39;s source will be built to <code>dist\server_root</code>.</li>
+</ol>
+<h3 id="local-virtual-domain-setup"><a class="header-anchor" href="#local-virtual-domain-setup">#</a>Local Virtual Domain Setup</h3><p>To access multiple apps on the same port (e.g., <code>app1.sample-domain.com</code>), modify your hosts file:</p>
+<pre><code class="language-text">127.0.0.1 app1.sample-domain.com
+</code></pre>
+<p><strong>Hosts file location:</strong></p>
+<ul>
+<li><strong>Windows</strong>: <code>C:\Windows\System32\Drivers\etc\hosts</code></li>
+<li><strong>Linux/macOS</strong>: <code>/etc/hosts</code></li>
+</ul>
+<h3 id="creating-a-sub-folder-app"><a class="header-anchor" href="#creating-a-sub-folder-app">#</a>Creating a Sub-folder App</h3><p>To create a sub-application within an existing app (e.g., <code>admin_dev</code>):</p>
+<ol>
+<li>Create a folder: <code>apps\[your-app-name]\web\src\admin_dev</code></li>
+<li>Add <code>index.html</code> and <code>index.tsx</code>.</li>
+<li>Update <code>apps\[your-app-name]\lupine.json</code> entries:<pre><code class="language-json">{
+  &quot;index&quot;: &quot;web/src/admin_dev/index.tsx&quot;,
+  &quot;html&quot;: &quot;web/src/admin_dev/index.html&quot;,
+  &quot;outdir&quot;: &quot;/admin_dev&quot;
+}
+</code></pre>
+</li>
+</ol>
+<hr>
+<h2 id="important-global-variables-in-ssr"><a class="header-anchor" href="#important-global-variables-in-ssr">#</a>Important: Global Variables in SSR</h2><p>Since Lupine uses Server Side Rendering (SSR), global variables in frontend code are <strong>shared by all users</strong>. Use them with extreme caution.</p>
+<p><strong>Bad Practice:</strong>
+The following code is dangerous because <code>cacheUser</code> is shared:</p>
+<pre><code class="language-typescript">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
+export const getUserInfo = (refresh?: boolean): Promise&lt;UserInfoType | null&gt; =&gt; {
+  if (!cacheUser.user || refresh) {
+    cacheUser.user = new Promise(async (resolve, reject) =&gt; {
+      // ...
+    });
+  }
+  return cacheUser.user;
+};
+</code></pre>
+<p><strong>Good Practice:</strong>
+Initialize user-specific data within component lifecycle events (like <code>onLoad</code>) which only execute on the client-side.</p>
+<pre><code class="language-tsx">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
+export const UserInfo = (props?: any) =&gt; {
+  const ref: RefProps = {
+    onLoad: async () =&gt; {
+      // Safe to assign here for the client
+      cacheUser.user = ...
+    },
+  };
+  return (
+    &lt;div css={css} class=&#39;user-info-box&#39; ref={ref}&gt;
+      ...
+    &lt;/div&gt;
+  );
+};
+</code></pre>

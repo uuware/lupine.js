@@ -115,6 +115,7 @@ class AppStart {
     const httpsPort = config.httpsPort;
     const sslKeyPath = config.sslKeyPath || '';
     const sslCrtPath = config.sslCrtPath || '';
+    const domainCerts = config.domainCerts;
 
     console.log(`${process.pid} - Starting Web Server, httpPort: ${httpPort}, httpsPort: ${httpsPort}`);
     // for dev to refresh the FE or stop the server
@@ -123,7 +124,7 @@ class AppStart {
     }
 
     const httpServer = httpPort && this.webServer!.startHttp(httpPort, bindIp);
-    const heepsServer = httpsPort && this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath);
+    const heepsServer = httpsPort && this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath, domainCerts);
 
     process.on('SIGTERM', () => {
       console.log(`${process.pid} - Worker closing servers...`);

@@ -7,6 +7,7 @@ export type InitStartProps = {
   httpsPort: number;
   sslKeyPath: string;
   sslCrtPath: string;
+  domainCerts: Record<string, { key: string; cert: string }>;
 };
 
 export type AppStartProps = {
