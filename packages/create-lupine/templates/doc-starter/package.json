@@ -1,0 +1,13 @@
+{
+  "name": "doc-starter",
+  "version": "1.0.0",
+  "description": "Documentation starter demo project",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'run build at project root directory'"
+  },
+  "dependencies": {
+    "lupine.press": "^1.0.1"
+  }
+}

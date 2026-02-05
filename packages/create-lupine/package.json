@@ -1,0 +1,17 @@
+{
+  "name": "create-lupine",
+  "version": "1.0.0",
+  "description": "Scaffolding tool for Lupine.js projects",
+  "bin": {
+    "create-lupine": "index.js"
+  },
+  "files": [
+    "index.js",
+    "templates"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {},
+  "type": "module"
+}

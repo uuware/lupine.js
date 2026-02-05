@@ -1,0 +1,23 @@
+{
+  "name": "hello-world",
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    },
+    {
+      "type": "data",
+      "from": "api/resources",
+      "to": "resources"
+    }
+  ]
+}
