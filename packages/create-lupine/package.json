@@ -1,6 +1,6 @@
 {
   "name": "create-lupine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Scaffolding tool for Lupine.js projects",
   "bin": {
     "create-lupine": "index.js"

@@ -2,13 +2,21 @@
 title: Installation
 ---
 
-# Installation
+# Installation2
 
 Lupine.js is a full-featured web application framework that includes both frontend and backend. The frontend, Lupine.web, is an extremely lightweight framework using React TSX syntax. The backend, Lupine.api, is a highly efficient and minimalistic framework similar to Express.
 
 ## Quick Start
 
-### 1. Clone the repository
+### 1. Create a Project
+
+The simplest way is to use the `create-lupine` command to create a new application. You can choose a template during creation.
+
+```bash
+npx create-lupine@latest my-app
+```
+
+If you want to understand lupine.js more deeply, you can clone the repository from github, which makes it easier to view the core code locally.
 
 ```bash
 git clone https://github.com/uuware/lupine.js.git
@@ -22,9 +30,13 @@ npm install
 
 ### 3. Configure Environment
 
+If you created the project using `create-lupine`, the `.env` file is already generated.
+
+If you created the project using `git clone`, you need to configure the environment.
+
 Copy the `.env.sample` file to a new file named `.env`.
 
-Use the sample script in the `.env` file to generate keys for the following variables:
+For projects created using `git clone`, you also need to use the sample script in the `.env` file to generate keys for the following variables:
 
 ```properties
 ADMIN_PASS=

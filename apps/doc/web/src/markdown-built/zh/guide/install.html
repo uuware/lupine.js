@@ -1,10 +1,16 @@
 <h1 id="安装说明"><a class="header-anchor" href="#安装说明">#</a>安装说明</h1><p>Lupine.js 是一个功能齐全的 Web 应用程序框架，包含前端和后端。前端 Lupine.web 是一个极其轻量级的框架，使用 React TSX 语法。后端 Lupine.api 是一个类似 Express 的高效极简框架。</p>
-<h2 id="快速开始"><a class="header-anchor" href="#快速开始">#</a>快速开始</h2><h3 id="1-克隆仓库"><a class="header-anchor" href="#1-克隆仓库">#</a>1. 克隆仓库</h3><pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
+<h2 id="快速开始"><a class="header-anchor" href="#快速开始">#</a>快速开始</h2><h3 id="1-创建项目"><a class="header-anchor" href="#1-创建项目">#</a>1. 创建项目</h3><p>最简单的方式就是使用 <code>create-lupine</code> 命令来创建一个新的应用程序。在创建的时候您可以选择模版。</p>
+<pre><code class="language-bash">npx create-lupine@latest my-app
+</code></pre>
+<p>如果您像更深入的了解 lupine.js，您可以从 github 上克隆仓库，这样更方便的本地查看核心代码。</p>
+<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
 </code></pre>
 <h3 id="2-安装依赖"><a class="header-anchor" href="#2-安装依赖">#</a>2. 安装依赖</h3><pre><code class="language-bash">npm install
 </code></pre>
-<h3 id="3-配置环境"><a class="header-anchor" href="#3-配置环境">#</a>3. 配置环境</h3><p>将 <code>.env.sample</code> 文件复制为名为 <code>.env</code> 的新文件。</p>
-<p>使用 <code>.env</code> 文件中的示例脚本为以下变量生成密钥：</p>
+<h3 id="3-配置环境"><a class="header-anchor" href="#3-配置环境">#</a>3. 配置环境</h3><p>如果使用 <code>create-lupine</code> 创建的项目， <code>.env</code> 文件已经生成。</p>
+<p>如果使用 <code>git clone</code> 创建的项目，则需要配置环境。</p>
+<p>将 <code>.env.sample</code> 文件复制为名为 <code>.env</code> 的新文件。</p>
+<p>使用 <code>git clone</code> 创建的项目，还需要使用 <code>.env</code> 文件中的示例脚本为以下变量生成密钥：</p>
 <pre><code class="language-properties">ADMIN_PASS=
 CRYPTO_KEY=
 DEV_ADMIN_PASS=

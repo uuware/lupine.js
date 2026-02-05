@@ -20,15 +20,21 @@ It is designed to work seamlessly with the `lupine` ecosystem, powering document
 
 ## Usage Guide
 
+### 1. Create a Project
+
 To use `lupine.press`, you typically set up a `lupine.web` application and configure it to use `PressPage` as the main route handler.
+The easiest way is to use the `create-lupine` command to create a new `lupine.press` application.
 
-### 1. Prerequisites
+```bash
+npx create-lupine@latest my-docs
+```
 
-Ensure you have `lupine.press` installed in your project.
+Then select `doc-starter` template.
 
 ### 2. Basic Setup
 
-In your application entry point (e.g., `src/index.tsx`), you need to bind the necessary configurations and set up the router.
+You can see these configurations in the created application.
+In your application entry point (e.g., `src/index.tsx`), you can see the necessary binding configurations and router settings.
 
 ```typescript
 import { bindRouter, PageRouter, bindTheme, bindLang, setDefaultPageTitle } from 'lupine.components';
