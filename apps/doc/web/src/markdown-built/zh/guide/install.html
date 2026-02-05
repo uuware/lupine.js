@@ -1,18 +1,104 @@
-<h1 id="安装说明"><a class="header-anchor" href="#安装说明">#</a>安装说明</h1><p>可以通过克隆主仓库来安装 LupineJS。</p>
-<h2 id="开发环境"><a class="header-anchor" href="#开发环境">#</a>开发环境</h2><ol>
-<li><p><strong>克隆仓库</strong>:</p>
-<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
+<h1 id="安装说明"><a class="header-anchor" href="#安装说明">#</a>安装说明</h1><p>Lupine.js 是一个功能齐全的 Web 应用程序框架，包含前端和后端。前端 Lupine.web 是一个极其轻量级的框架，使用 React TSX 语法。后端 Lupine.api 是一个类似 Express 的高效极简框架。</p>
+<h2 id="快速开始"><a class="header-anchor" href="#快速开始">#</a>快速开始</h2><h3 id="1-克隆仓库"><a class="header-anchor" href="#1-克隆仓库">#</a>1. 克隆仓库</h3><pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
+</code></pre>
+<h3 id="2-安装依赖"><a class="header-anchor" href="#2-安装依赖">#</a>2. 安装依赖</h3><pre><code class="language-bash">npm install
+</code></pre>
+<h3 id="3-配置环境"><a class="header-anchor" href="#3-配置环境">#</a>3. 配置环境</h3><p>将 <code>.env.sample</code> 文件复制为名为 <code>.env</code> 的新文件。</p>
+<p>使用 <code>.env</code> 文件中的示例脚本为以下变量生成密钥：</p>
+<pre><code class="language-properties">ADMIN_PASS=
+CRYPTO_KEY=
+DEV_ADMIN_PASS=
+DEV_CRYPTO_KEY=
+</code></pre>
+<h3 id="4-运行开发应用程序"><a class="header-anchor" href="#4-运行开发应用程序">#</a>4. 运行开发应用程序</h3><pre><code class="language-bash">npm run dev
+</code></pre>
+<p>现在，您可以通过 <a href="http://localhost:11080">http://localhost:11080</a> 访问开发应用程序。</p>
+<hr>
+<h2 id="本地-https-设置"><a class="header-anchor" href="#本地-https-设置">#</a>本地 HTTPS 设置</h2><p>对于本地 HTTPS 支持，建议使用 <a href="https://github.com/FiloSottile/mkcert">mkcert</a>。</p>
+<ol>
+<li>下载 <code>mkcert</code> (例如 <code>mkcert-v1.4.4-windows-amd64.exe</code>)。</li>
+<li>打开管理员控制台并运行：<pre><code class="language-bash">./mkcert-v1.4.4-windows-amd64 -install
 </code></pre>
 </li>
-<li><p><strong>安装依赖</strong>:</p>
-<pre><code class="language-bash">npm install
+<li>生成证书（针对新设置）：<pre><code class="language-bash">mkcert example.com &quot;*.example.com&quot; localhost 127.0.0.1 ::1
 </code></pre>
 </li>
-<li><p><strong>环境配置</strong>:
-将 <code>.env.sample</code> 复制为 <code>.env</code> 并根据需要进行配置。</p>
+<li>将生成的证书文件复制到 <code>/dev</code> 文件夹。</li>
+<li>更新您的 <code>.env</code> 文件，以允许使用自签名证书进行本地 API 调用：<pre><code class="language-properties">NODE_TLS_REJECT_UNAUTHORIZED=0
+</code></pre>
 </li>
 </ol>
-<h2 id="生产环境构建"><a class="header-anchor" href="#生产环境构建">#</a>生产环境构建</h2><p>构建生产版本：</p>
-<pre><code class="language-bash">npm run build
+<h3 id="替代方案-通过-openssl-生成自签名证书"><a class="header-anchor" href="#替代方案-通过-openssl-生成自签名证书">#</a>替代方案：通过 OpenSSL 生成自签名证书</h3><p>如果您更喜欢 OpenSSL：</p>
+<pre><code class="language-bash">openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout cert.key -out cert.pem -sha256
 </code></pre>
-<p>构建结果将生成在 <code>dist/server_root</code> 目录下。</p>
+<p>在 Windows 上，您可能需要使用：
+<code>&quot;C:\Program Files\Git\usr\bin\openssl.exe&quot;</code></p>
+<hr>
+<h2 id="调试"><a class="header-anchor" href="#调试">#</a>调试</h2><h3 id="仅调试后端"><a class="header-anchor" href="#仅调试后端">#</a>仅调试后端</h3><p>在 VS Code 中打开 <strong>Javascript Debug Terminal</strong> 并运行：</p>
+<pre><code class="language-bash">npm run dev
+</code></pre>
+<h3 id="调试前端和后端"><a class="header-anchor" href="#调试前端和后端">#</a>调试前端和后端</h3><ol>
+<li>转到 VS Code 中的 <strong>Run and Debug</strong> 侧边栏。</li>
+<li>从下拉列表中选择 <strong>&quot;LupineJS: Frontend &amp; Backend&quot;</strong>。</li>
+<li>在您的前端或后端代码中设置断点并开始调试。</li>
+</ol>
+<hr>
+<h2 id="添加新应用"><a class="header-anchor" href="#添加新应用">#</a>添加新应用</h2><p>Lupine 可以在同一端口下运行多个应用程序。要在本地添加新应用：</p>
+<ol>
+<li><strong>复制</strong>：复制 <code>/apps</code> 下的任何应用文件夹并重命名。</li>
+<li><strong>更新配置</strong>：使用新应用名称更新 <code>apps\&lt;your-app&gt;\lupine.json</code> 文件。</li>
+<li><strong>注册应用</strong>：将新应用名称添加到 <code>.env</code> 文件中的 <code>APPS=</code>。</li>
+<li><strong>虚拟域名</strong>：在 <code>.env</code> 文件中的 <code>DOMAINS@[APP-NAME]=</code> 添加该应用的虚拟域名。</li>
+<li><strong>构建</strong>：新应用的源代码将构建到 <code>dist\server_root</code>。</li>
+</ol>
+<h3 id="本地虚拟域名设置"><a class="header-anchor" href="#本地虚拟域名设置">#</a>本地虚拟域名设置</h3><p>要在同一端口访问多个应用（例如 <code>app1.sample-domain.com</code>），请修改您的 hosts 文件：</p>
+<pre><code class="language-text">127.0.0.1 app1.sample-domain.com
+</code></pre>
+<p><strong>Hosts 文件位置：</strong></p>
+<ul>
+<li><strong>Windows</strong>: <code>C:\Windows\System32\Drivers\etc\hosts</code></li>
+<li><strong>Linux/macOS</strong>: <code>/etc/hosts</code></li>
+</ul>
+<h3 id="创建子文件夹应用"><a class="header-anchor" href="#创建子文件夹应用">#</a>创建子文件夹应用</h3><p>要在现有应用中创建子应用程序（例如 <code>admin_dev</code>）：</p>
+<ol>
+<li>创建文件夹：<code>apps\[your-app-name]\web\src\admin_dev</code></li>
+<li>添加 <code>index.html</code> 和 <code>index.tsx</code>。</li>
+<li>更新 <code>apps\[your-app-name]\lupine.json</code> 条目：<pre><code class="language-json">{
+  &quot;index&quot;: &quot;web/src/admin_dev/index.tsx&quot;,
+  &quot;html&quot;: &quot;web/src/admin_dev/index.html&quot;,
+  &quot;outdir&quot;: &quot;/admin_dev&quot;
+}
+</code></pre>
+</li>
+</ol>
+<hr>
+<h2 id="重要提示-ssr-中的全局变量"><a class="header-anchor" href="#重要提示-ssr-中的全局变量">#</a>重要提示：SSR 中的全局变量</h2><p>由于 Lupine 使用服务器端渲染 (SSR)，前端代码中的全局变量由<strong>所有用户共享</strong>。请极其谨慎地使用它们。</p>
+<p><strong>错误做法：</strong>
+以下代码很危险，因为 <code>cacheUser</code> 是共享的：</p>
+<pre><code class="language-typescript">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
+export const getUserInfo = (refresh?: boolean): Promise&lt;UserInfoType | null&gt; =&gt; {
+  if (!cacheUser.user || refresh) {
+    cacheUser.user = new Promise(async (resolve, reject) =&gt; {
+      // ...
+    });
+  }
+  return cacheUser.user;
+};
+</code></pre>
+<p><strong>正确做法：</strong>
+在组件生命周期事件（如 <code>onLoad</code>）中初始化特定于用户的数据，这些事件仅在客户端执行。</p>
+<pre><code class="language-tsx">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
+export const UserInfo = (props?: any) =&gt; {
+  const ref: RefProps = {
+    onLoad: async () =&gt; {
+      // 在此处赋值对于客户端是安全的
+      cacheUser.user = ...
+    },
+  };
+  return (
+    &lt;div css={css} class=&#39;user-info-box&#39; ref={ref}&gt;
+      ...
+    &lt;/div&gt;
+  );
+};
+</code></pre>

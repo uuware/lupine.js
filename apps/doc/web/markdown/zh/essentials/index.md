@@ -9,4 +9,6 @@ sidebar:
       - /zh/essentials/list
       - /zh/essentials/mobile-desktop
       - /zh/essentials/api
+      - /zh/essentials/dashboard
+      - /zh/essentials/icons
 ---

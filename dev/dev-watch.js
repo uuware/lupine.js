@@ -61,6 +61,60 @@ const watchServerPlugin = (isDev, npmCmd, httpPort) => {
   };
 };
 
+// javascript-obfuscator is needed
+const obfuscatePlugin = (isObfuscate, entryPoints = [], skipPaths = []) => {
+  if (!isObfuscate) return { name: 'obfuscatePlugin', setup() {} };
+
+  const JavaScriptObfuscator = require('javascript-obfuscator');
+  return {
+    name: 'obfuscatePlugin',
+    setup(build) {
+      build.onLoad({ filter: /\.(js|ts|tsx|jsx)$/ }, async (args) => {
+        if (args.path.includes('node_modules')) return null;
+        if (skipPaths.some((skipPath) => args.path.includes(skipPath))) {
+          console.log(`[dev-server] Skip obfuscate: ${args.path}`);
+          return null;
+        }
+
+        const ext = path.extname(args.path);
+        console.log(`[dev-server] Obfuscate: ${args.path}`);
+        let content = await fs.readFile(args.path, 'utf8');
+
+        // Transpile TS/JSX to JS first because obfuscator works on JS
+        if (['.ts', '.tsx', '.jsx'].includes(ext)) {
+          const result = await esbuild.transform(content, {
+            loader: ext.substring(1),
+            sourcefile: args.path,
+            jsx: 'automatic',
+            jsxImportSource: 'lupine.web',
+          });
+          content = result.code;
+        }
+
+        const obfuscationResult = JavaScriptObfuscator.obfuscate(content, {
+          compact: true,
+          controlFlowFlattening: true,
+          controlFlowFlatteningThreshold: 0.75,
+          deadCodeInjection: false,
+          deadCodeInjectionThreshold: 0,
+          // debugProtection: isEntryPoint, // this should be done in code: disableDebug('xxx');
+          debugProtectionInterval: 2000,
+          // disableConsoleOutput: isEntryPoint, // this should be done in code: disableConsole();
+          identifierNamesGenerator: 'hexadecimal',
+          stringArray: true,
+          stringArrayThreshold: 0.75,
+          ignoreImports: true,
+        });
+
+        return {
+          contents: obfuscationResult.getObfuscatedCode(),
+          loader: 'js',
+        };
+      });
+    },
+  };
+};
+
 // watch server code changes
 const watchAppLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
@@ -94,7 +148,7 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
     bundle: true,
     treeShaking: true,
     metafile: true,
-    external: ['better-sqlite3', 'nodemailer'],
+    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp'],
     minify: !isDev,
     plugins: [watchServerPlugin(isDev, npmCmd, httpPort)],
   });
@@ -174,7 +228,11 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     jsxImportSource: 'lupine.web',
     jsx: 'automatic',
     target: ['chrome87'],
-    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars)],
+    plugins: [
+      watchClientPlugin(saved),
+      pluginIfelse(ifPluginVars),
+      obfuscatePlugin(saved.isObfuscate, entryPoints, []),
+    ],
   });
 
   isDev && (await ctx.watch());
@@ -208,7 +266,7 @@ const watchApi = async (saved, isDev, entryPoints) => {
     bundle: true,
     treeShaking: true,
     metafile: true,
-    external: ['better-sqlite3', 'nodemailer'],
+    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp'],
     minify: !isDev,
     plugins: [watchApiPlugin(isDev, saved.httpPort)],
   });
@@ -280,6 +338,7 @@ const start = async () => {
   const npmCmd = process.argv.find((i) => i.startsWith('--cmd='))?.substring(6);
   const isDev = process.argv.find((i) => i === '--dev=1');
   const isMobile = process.argv.find((i) => i === '--mobile=1'); // when this changed, need to rebuild index.html
+  const isObfuscate = !isDev && process.argv.find((i) => i === '--obfuscate=1');
   // this is for esbuild conditional compile
   ifPluginVars.DEV = isDev ? '1' : '0';
   ifPluginVars.MOBILE = isMobile ? '1' : '0';
@@ -305,6 +364,7 @@ const start = async () => {
     const saved = {
       isDev,
       isMobile,
+      isObfuscate,
       defaultThemeName: 'light',
       appName,
       httpPort,

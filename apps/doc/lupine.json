@@ -23,6 +23,11 @@
       "type": "web",
       "from": "web/assets",
       "to": "assets"
+    },
+    {
+      "type": "data",
+      "from": "api/resources",
+      "to": "resources"
     }
   ]
 }

@@ -1,0 +1,53 @@
+<h1 id="dashboard"><a class="header-anchor" href="#dashboard">#</a>Dashboard</h1><p>lupine.api includes a built-in extensible dashboard for managing your API services. The dashboard features a management sidebar on the left and a multi-tab content area on the right.</p>
+<h2 id="features"><a class="header-anchor" href="#features">#</a>Features</h2><p>The dashboard provides comprehensive backend management capabilities, categorized as follows:</p>
+<h3 id="1-database-management-db"><a class="header-anchor" href="#1-database-management-db">#</a>1. Database Management (DB)</h3><p>Tools for direct database manipulation, useful for debugging and maintenance.</p>
+<ul>
+<li><strong>Table List</strong>: Browse database tables and view data.</li>
+<li><strong>Create Tables</strong>: Run preset scripts to initialize or repair database table structures.</li>
+<li><strong>Run SQL</strong>: execute arbitrary SQL statements and view results in JSON format.</li>
+</ul>
+<h3 id="2-operations-server-management-access-server-info"><a class="header-anchor" href="#2-operations-server-management-access-server-info">#</a>2. Operations &amp; Server Management (Access &amp; Server Info)</h3><p>Core operations toolkit for remote management and monitoring.</p>
+<h4 id="release-management"><a class="header-anchor" href="#release-management">#</a>Release Management</h4><p>Powerful tools for multi-node/multi-environment deployment.</p>
+<ul>
+<li><strong>Sync</strong>: Support synchronizing code or resources from a source environment (From) to a target environment (To).</li>
+<li><strong>Full Stack Update</strong>: Selectively update Server (core), Api (logic), Env (variables), etc.</li>
+<li><strong>Web Update</strong>: Independently update frontend resources by sub-folder.</li>
+<li><strong>Controls</strong>:<ul>
+<li><strong>Check</strong>: Verify update status.</li>
+<li><strong>Refresh Cache</strong>: Refresh server cache (Remote/Local).</li>
+<li><strong>Restart App</strong>: Restart the application (Remote/Local).</li>
+<li><strong>Run Cmd</strong>: Execute Shell commands directly on the server.</li>
+</ul>
+</li>
+<li><strong>Logs</strong>: View and download history logs of release operations.</li>
+</ul>
+<h4 id="utilities"><a class="header-anchor" href="#utilities">#</a>Utilities</h4><ul>
+<li><strong>Tokens</strong>: Manage API access tokens.</li>
+<li><strong>Shell</strong>: WebSocket-based online terminal for real-time server interaction.</li>
+<li><strong>Resources</strong>: Browse, upload, and download files from the server filesystem.</li>
+<li><strong>Config</strong>: View and hot-patch system runtime configurations.</li>
+<li><strong>Performance</strong>: Monitor server metrics like CPU and Memory usage.</li>
+</ul>
+<h3 id="3-development-testing-test"><a class="header-anchor" href="#3-development-testing-test">#</a>3. Development &amp; Testing (Test)</h3><p>Tools for debugging components and UI during development.</p>
+<ul>
+<li><strong>Test Themes</strong>: Preview and test different UI theme configurations.</li>
+<li><strong>Test Component</strong>: Test interaction and rendering of generic UI components.</li>
+<li><strong>Test Animations</strong>: Demo and debug CSS/JS animations.</li>
+<li><strong>Test Edit</strong>: Test rich text editor or form editing features.</li>
+</ul>
+<hr>
+<h2 id="extension-development"><a class="header-anchor" href="#extension-development">#</a>Extension Development</h2><p>The Dashboard is highly extensible. Core logic resides in the <code>packages/lupine.api/admin</code> directory.</p>
+<h3 id="menu-configuration"><a class="header-anchor" href="#menu-configuration">#</a>Menu Configuration</h3><p>Menus are configured via the <code>adminTopMenu</code> array in <code>admin-frame-helper.tsx</code>. You can easily add new menu items:</p>
+<pre><code class="language-typescript">const myMenu = {
+  id: &#39;my-feature&#39;,
+  text: &#39;My Feature&#39;,
+  items: [
+    {
+      id: &#39;my-page&#39;,
+      text: &#39;My Page&#39;,
+      js: () =&gt; this.addPanel(&#39;My Page&#39;, &lt;MyComponent /&gt;),
+    },
+  ],
+};
+</code></pre>
+<h3 id="page-development"><a class="header-anchor" href="#page-development">#</a>Page Development</h3><p>Each management page is a standard <code>lupine.components</code> component. Use <code>AdminPanel</code> and <code>Tabs</code> components to manage the multi-tab experience.</p>

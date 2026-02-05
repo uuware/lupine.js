@@ -45,7 +45,7 @@ styles:
 
 features:
   - title: 前端 (lupine.web)
-    details: 极其轻量级（包含所有核心功能的 hello-world 项目仅 6kb）的框架，使用 React TSX 语法。无臃肿运行时。
+    details: 极其轻量级（包含所有核心功能的 hello-world 项目 gzip 后仅 7kb）的框架，使用 React TSX 语法。无臃肿运行时。
   - title: 后端 (lupine.api)
     details: 高效且简化的框架，类似于 Express。为服务端渲染进行了优化。
   - title: 零依赖
