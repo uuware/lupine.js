@@ -32,10 +32,10 @@ sidebar:
     items:
       - /zh/guide/started
       - /zh/guide/install
-  - submenu: /zh/essentials
   - text: 文章汇集
     items:
       - /zh/articles/introduce-lupine.js
+  - submenu: /zh/essentials
   - submenu: /zh/lupine.web
   - submenu: /zh/lupine.components
   - submenu: /zh/lupine.components-libs
