@@ -37,3 +37,11 @@ Our unique Spot-Update technology allows direct DOM updates when rendering and e
 ### [📡 Full-Stack Development](../essentials/api)
 
 Integrated front-end and back-end design. `lupine.api` offers a minimalist way to define APIs that work seamlessly with the front-end, making full-stack development easier than ever.
+
+### 🤖 AI Assisted Development
+
+We provide a dedicated `AI_CONTEXT.md` file in the project root. When asking AI to write code for this project, please provide this file to the AI first. It contains critical rules (e.g., "No React Hooks") and design patterns unique to Lupine.js.
+
+#### Example Prompt
+
+> "Read `AI_CONTEXT.md` first. Create a 'User Profile' component that includes a standard settings list (Avatar, Name, Email) and a save button."

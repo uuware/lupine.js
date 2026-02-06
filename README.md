@@ -32,6 +32,18 @@ const HelloPage = () => {
 
 Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.github.io/lupine.js/zh/)
 
+# AI Assisted Development
+
+This project includes a specialized context file for AI coding assistants.
+
+- **File**: `AI_CONTEXT.md` (Project Root)
+- **Usage**: When asking an AI to write code for this project, always ask it to **"Read AI_CONTEXT.md first"** or copy-paste the relevant sections into your prompt.
+- **Purpose**: It contains critical rules (e.g., "No React Hooks", "Use HtmlVar") and design patterns unique to Lupine.js that standard AI models may not know.
+
+### Example Prompt
+
+> "Read `AI_CONTEXT.md` first. Create a 'User Profile' component that includes a standard settings list (Avatar, Name, Email) and a save button. Use the `SliderFrame` navigation pattern."
+
 # Check Code frequency (steps)
 
 https://api.github.com/repos/uuware/lupine.js/languages
