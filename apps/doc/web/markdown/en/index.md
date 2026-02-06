@@ -32,6 +32,9 @@ sidebar:
     items:
       - /en/guide/started
       - /en/guide/install
+  - text: Articles
+    items:
+      - /en/articles/introduce-lupine.js
   - submenu: /en/essentials
   - submenu: /en/lupine.web
   - submenu: /en/lupine.components

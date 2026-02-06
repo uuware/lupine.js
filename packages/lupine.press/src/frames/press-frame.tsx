@@ -61,6 +61,9 @@ export const PressFrame = (props: PressFrameProps) => {
     code: {
       fontFamily: 'var(--font-family-mono, monospace)',
     },
+    img: {
+      maxWidth: '100%',
+    },
   };
 
   const cssContainer: CssProps = {
