@@ -25,6 +25,11 @@
       "to": "assets"
     },
     {
+      "type": "web",
+      "from": "web/lupine.js/assets",
+      "to": "lupine.js/assets"
+    },
+    {
       "type": "data",
       "from": "api/resources",
       "to": "resources"
