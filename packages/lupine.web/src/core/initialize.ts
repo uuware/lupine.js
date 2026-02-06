@@ -118,7 +118,11 @@ export const initializeApp = () => {
       initializePage();
     });
     addEventListener('load', (event) => {
-      initializePage();
+      let redirect = new URLSearchParams(window.location.search).get('redirect');
+      if (!redirect) {
+        redirect = new URLSearchParams(window.location.hash.substring(1)).get('redirect');
+      }
+      initializePage(redirect || undefined);
     });
   }
 
