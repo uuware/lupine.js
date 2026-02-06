@@ -153,7 +153,7 @@ export const BookEditItem = (props: { item: SampleDataProps; update: SampleDataU
 
 // show one item
 export const BookShowItem = (props: { item: SampleDataProps }) => {
-  const ref: RefProps = { id: '' };
+  const ref: RefProps = {};
   const css: CssProps = {
     padding: '10px',
     border: 'solid 1px gray',
