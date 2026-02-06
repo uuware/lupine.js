@@ -1,3 +1,7 @@
+// css order is important
+import './styles/global.css';
+import './styles/app.css';
+
 import { bindRouter, CssProps, debugWatch, HtmlVar, isFrontEnd, PageRouter, webEnv } from 'lupine.components';
 
 const HelloPage = () => {
