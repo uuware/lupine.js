@@ -1,7 +1,28 @@
 const fs = require('fs');
 const path = require('path');
-const { marked } = require('marked');
-const matter = require('gray-matter');
+// const { marked } = require('marked');
+// const matter = require('gray-matter');
+
+let markdownLibs = null;
+const getMarkdownLibs = () => {
+  if (markdownLibs) return markdownLibs;
+  const { marked } = require('marked');
+  const matter = require('gray-matter');
+
+  marked.use({
+    renderer: {
+      heading({ text, depth, raw }) {
+        const id = slugify(raw);
+        // text might contain markdown (e.g. links), so we must parse it inline
+        const content = marked.parseInline(text);
+        return `<h${depth} id="${id}"><a class="header-anchor" href="#${id}">#</a>${content}</h${depth}>`;
+      },
+    },
+  });
+
+  markdownLibs = { marked, matter };
+  return markdownLibs;
+};
 
 const slugify = (text) =>
   text
@@ -14,18 +35,8 @@ const cleanMarkdown = (text) =>
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // remove links: [text](url) -> text
     .replace(/[`*?^]/g, ''); // remove other markdown symbols
 
-marked.use({
-  renderer: {
-    heading({ text, depth, raw }) {
-      const id = slugify(raw);
-      // text might contain markdown (e.g. links), so we must parse it inline
-      const content = marked.parseInline(text);
-      return `<h${depth} id="${id}"><a class="header-anchor" href="#${id}">#</a>${content}</h${depth}>`;
-    },
-  },
-});
-
 function processFile(builtFiles, filePath, indir, outdir, relativePath) {
+  const { marked, matter } = getMarkdownLibs();
   if (builtFiles.has(filePath)) return builtFiles.get(filePath);
 
   // Mark as processing to handle potential cycles (though minimal risk with hierarchy)
@@ -165,6 +176,7 @@ const markdownProcessOnEnd = async (indir, outdir) => {
     if (!indir || !outdir) return;
 
     // 重新变异的时候必须清除缓存，否则会读取到旧的缓存数据
+    const { matter } = getMarkdownLibs();
     matter.clearCache();
     const langPath = path.join(indir, 'index.md');
     if (!fs.existsSync(langPath)) {

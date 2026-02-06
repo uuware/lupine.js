@@ -1,0 +1,51 @@
+<h1 id="introducing-lupine-js-the-unreasonably-efficient-web-framework"><a class="header-anchor" href="#introducing-lupine-js-the-unreasonably-efficient-web-framework">#</a>Introducing Lupine.js: The &quot;Unreasonably&quot; Efficient Web Framework</h1><p>In a world dominated by massive meta-frameworks and complex build chains, <strong>Lupine.js</strong> asks a simple question: <em>What if we could have the power of a modern full-stack framework without the bloat?</em></p>
+<p>Lupine.js is a <strong>lightweight (7kb gzipped)</strong>, <strong>full-stack</strong> web framework that combines a React-like frontend with an Express-like backend. It is designed from scratch for speed, simplicity, and efficiency.</p>
+<p><img src="/lupine.js/assets/og-image.png" alt="Lupine.js"></p>
+<h2 id="why-lupine-js"><a class="header-anchor" href="#why-lupine-js">#</a>Why Lupine.js?</h2><h3 id="1-extremely-lightweight-frontend"><a class="header-anchor" href="#1-extremely-lightweight-frontend">#</a>1. 🪶 Extremely Lightweight Frontend</h3><p>The <code>lupine.web</code> frontend package is tiny—just <strong>7kb gzipped</strong>. Yet, it retains the developer experience you know and love: <strong>TSX syntax</strong> (React JSX), components, and hooks. There is no heavy runtime to download, meaning your pages load instantly even on slow connections.</p>
+<h3 id="2-built-in-server-side-rendering-ssr"><a class="header-anchor" href="#2-built-in-server-side-rendering-ssr">#</a>2. ⚡ Built-in Server-Side Rendering (SSR)</h3><p>Most frameworks treat SSR as an add-on. In Lupine, SSR is a <strong>first-class citizen</strong>. The <code>lupine.api</code> backend is optimized to render your frontend pages on the server automatically.</p>
+<ul>
+<li><strong>No FOUC</strong>: Critical CSS is injected server-side.</li>
+<li><strong>Zero-Config SEO</strong>: Meta tags (<code>og:image</code>, <code>description</code>) are calculated before the page leaves the server.</li>
+<li><strong>Sharing Ready</strong>: Your links look great on Twitter/Facebook out of the box.</li>
+</ul>
+<h3 id="3-native-css-in-js-engine"><a class="header-anchor" href="#3-native-css-in-js-engine">#</a>3. 🎨 Native CSS-in-JS Engine</h3><p>Say goodbye to configuring PostCSS, Tailwind, or styled-components. Lupine includes a powerful CSS-in-JS engine built right in.</p>
+<ul>
+<li><strong>Scoped Styles</strong>: Styles are automatically scoped to your component.</li>
+<li><strong>Nesting</strong>: Support for <code>.parent &amp;</code> syntax.</li>
+<li><strong>Performance</strong>: Styles are extracted and injected efficiently during SSR.</li>
+</ul>
+<pre><code class="language-tsx">const Button = () =&gt; {
+  const css = {
+    backgroundColor: &#39;#0ac92a&#39;,
+    &#39;&amp;:hover&#39;: {
+      backgroundColor: &#39;#08a823&#39;,
+    },
+  };
+  return &lt;button css={css}&gt;Click Me&lt;/button&gt;;
+};
+</code></pre>
+<h3 id="4-full-stack-in-one-place"><a class="header-anchor" href="#4-full-stack-in-one-place">#</a>4. 🚀 Full-Stack in One Place</h3><p>Lupine isn&#39;t just a frontend library; it&#39;s a complete app solution.</p>
+<ul>
+<li><strong>Backend (<code>lupine.api</code>)</strong>: An efficient, minimalist Node.js framework similar to Express.</li>
+<li><strong>Frontend (<code>lupine.web</code>)</strong>: A reactive UI library.</li>
+<li><strong>Dev Experience</strong>: Run <code>npm run dev</code> and debug both frontend and backend in a single VS Code session.</li>
+</ul>
+<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><p>Ready to give it a try? You can scaffold a new project in seconds.</p>
+<h3 id="step-1-create-a-project"><a class="header-anchor" href="#step-1-create-a-project">#</a>Step 1: Create a Project</h3><p>Use our CLI tool to create a new app.</p>
+<pre><code class="language-bash">npx create-lupine@latest my-awesome-app
+</code></pre>
+<h3 id="step-2-run-it"><a class="header-anchor" href="#step-2-run-it">#</a>Step 2: Run it</h3><p>Enter the directory and start the dev server.</p>
+<pre><code class="language-bash">cd my-awesome-app
+npm install
+npm run dev
+</code></pre>
+<p>Visit <code>http://localhost:11080</code> and you&#39;ll see your first Lupine app running!</p>
+<h2 id="code-frequency-activity"><a class="header-anchor" href="#code-frequency-activity">#</a>Code Frequency &amp; Activity</h2><p>Lupine is actively developed. You can check our code frequency and contributions directly on GitHub:
+👉 <a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a></p>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>Lupine.js is perfect for developers who want:</p>
+<ul>
+<li><strong>Control</strong>: Understand every part of your stack.</li>
+<li><strong>Speed</strong>: Deliver the fastest possible experience to users.</li>
+<li><strong>Simplicity</strong>: No hidden magic, just clean code.</li>
+</ul>
+<p>Give <strong>Lupine.js</strong> a star on GitHub and try it for your next project!</p>
