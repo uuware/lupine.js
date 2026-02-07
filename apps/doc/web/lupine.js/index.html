@@ -35,16 +35,11 @@
     <link rel="shortcut icon" href="{SUBDIR}/assets/favicon.ico?t={hash}" />
     <link rel="stylesheet" type="text/css" href="{SUBDIR}/index.css?t={hash}" />
     <script defer src="{SUBDIR}/index.js#t={hash}"></script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3GCCFNCC67"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', 'G-3GCCFNCC67');
-    </script>
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "84eea367f4d2497c99fd3a64a93eae93"}'
+    ></script>
   </head>
   <body>
     <div class="lupine-root"></div>
