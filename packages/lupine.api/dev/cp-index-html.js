@@ -44,11 +44,11 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
       .replace(/\{hash\}/gi, new Date().getTime().toString(36))
       .replace(/\{SUBDIR\}/gi, outdirSub && outdirSub !== '/' ? outdirSub : '');
     if (isMobile) {
-      // const outStr = inHtml.replace(/{hash}/gi, new Date().getTime().toString(36)).replace('\<\!--META-ENV--\>', JSON.stringify(envWeb));
+      // const outStr = outStr.replace(/{hash}/gi, new Date().getTime().toString(36)).replace('\<\!--META-ENV--\>', JSON.stringify(envWeb));
       // env is replaced here for the mobile app. And the env is replaced again for the web app at each startup
 
-      const metaIndexStart = inHtml.indexOf(metaTextStart);
-      const metaIndexEnd = inHtml.indexOf(metaTextEnd);
+      const metaIndexStart = outStr.indexOf(metaTextStart);
+      const metaIndexEnd = outStr.indexOf(metaTextEnd);
 
       // const webConfig = await readWebConfig(outdirData);
       const webEnvData = webEnv.getWebEnv(appName);
@@ -62,7 +62,6 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
         // JSON.stringify(webConfig) +
         // '</script>' +
         outStr.substring(metaIndexEnd + metaTextEnd.length);
-      // outStr = webEnv.replaceWebEnv(inHtml, appName, true);
     }
     await fs.mkdir(path.dirname(outputFile), { recursive: true });
     await fs.writeFile(outputFile, outStr);
