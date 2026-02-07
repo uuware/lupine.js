@@ -17,7 +17,7 @@ In traditional frameworks (like React), when you update an item in a list:
 
 **In Lupine.js, we skip steps 2 and 3 entirely.**
 
-Because Lupine uses **Manual Reactivity (HtmlVar[🔗](../lupine.components/html-var))**, you can update a specific DOM element directly by setting `dom.value = <>...</>`, without triggering a top-down re-render. This is similar to a highly optimized React component using `React.memo`, but it is the **default behavior** here, not an opt-in optimization.
+Because Lupine uses **Manual Reactivity ([HtmlVar](../lupine.components/html-var))**, you can update a specific DOM element directly by setting `dom.value = <>...</>`, without triggering a top-down re-render. This is similar to a highly optimized React component using `React.memo`, but it is the **default behavior** here, not an opt-in optimization.
 
 ## 2. 🎯 The "Spot-Update" Strategy
 

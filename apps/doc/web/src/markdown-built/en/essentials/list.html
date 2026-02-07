@@ -7,7 +7,7 @@
 <li>Finally, it updates the DOM for the one changed item.</li>
 </ol>
 <p><strong>In Lupine.js, we skip steps 2 and 3 entirely.</strong></p>
-<p>Because Lupine uses <strong>Manual Reactivity (HtmlVar<a href="javascript:lpPressLoad('/en/lupine.components/html-var')">🔗</a>)</strong>, you can update a specific DOM element directly by setting <code>dom.value = &lt;&gt;...&lt;/&gt;</code>, without triggering a top-down re-render. This is similar to a highly optimized React component using <code>React.memo</code>, but it is the <strong>default behavior</strong> here, not an opt-in optimization.</p>
+<p>Because Lupine uses <strong>Manual Reactivity (<a href="javascript:lpPressLoad('/en/lupine.components/html-var')">HtmlVar</a>)</strong>, you can update a specific DOM element directly by setting <code>dom.value = &lt;&gt;...&lt;/&gt;</code>, without triggering a top-down re-render. This is similar to a highly optimized React component using <code>React.memo</code>, but it is the <strong>default behavior</strong> here, not an opt-in optimization.</p>
 <h2 id="2-the-spot-update-strategy"><a class="header-anchor" href="#2-the-spot-update-strategy">#</a>2. 🎯 The &quot;Spot-Update&quot; Strategy</h2><p>Each row in your list acts as an isolated island. It holds its own <code>HtmlVar</code> and <code>ref</code>. When data changes, you only call <code>.value = ...</code> on that specific row&#39;s variable. The rest of the page remains static string HTML, costing <strong>zero</strong> performance overhead to maintain.</p>
 <h3 id="benefits"><a class="header-anchor" href="#benefits">#</a>Benefits</h3><ul>
 <li><strong>Zero Diffing Cost</strong>: Changing one row costs <code>O(1)</code>, not <code>O(N)</code> where N is the list size.</li>
