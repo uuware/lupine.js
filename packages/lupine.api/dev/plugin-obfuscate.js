@@ -1,4 +1,6 @@
 const esbuild = require('esbuild');
+const path = require('path');
+const fs = require('fs/promises');
 // javascript-obfuscator is needed
 const obfuscatePlugin = (isObfuscate, skipPaths = []) => {
   if (!isObfuscate) return { name: 'obfuscatePlugin', setup() {} };
