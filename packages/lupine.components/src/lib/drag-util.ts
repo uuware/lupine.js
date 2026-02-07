@@ -27,6 +27,7 @@ export const createDragUtil = () => {
   let initialY = 0;
   let draggingDom: HTMLDivElement | null = null;
   let onMoveCallback: (clientX: number, clientY: number, movedX: number, movedY: number) => void = () => {};
+  let onMoveEndCallback: () => void = () => {};
   let onScaleCallback: (scale: number) => void = () => {};
 
   let isZooming = false;
@@ -37,9 +38,18 @@ export const createDragUtil = () => {
     const dy = t2.clientY - t1.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   };
+  const onMoveEnd = () => {
+    onMoveEndCallback();
+    isDragging = false;
+    isZooming = false;
+    draggingDom = null;
+  };
   return {
     setOnMoveCallback: (callback: (clientX: number, clientY: number, movedX: number, movedY: number) => void) => {
       onMoveCallback = callback;
+    },
+    setOnMoveEndCallback: (callback: () => void) => {
+      onMoveEndCallback = callback;
     },
     setOnScaleCallback: (callback: (scale: number) => void) => {
       onScaleCallback = callback;
@@ -54,11 +64,15 @@ export const createDragUtil = () => {
         return;
       }
       isDragging = true;
+      isZooming = false;
       draggingDom = event.currentTarget as HTMLDivElement;
       initialX = event.clientX;
       initialY = event.clientY;
     },
     onMouseMove: (event: MouseEvent) => {
+      if (event.buttons === 0 && isDragging) {
+        onMoveEnd();
+      }
       if (event.buttons === 0 || !draggingDom) {
         isDragging = false;
         draggingDom = null;
@@ -66,20 +80,18 @@ export const createDragUtil = () => {
       }
       onMoveCallback(event.clientX, event.clientY, event.clientX - initialX, event.clientY - initialY);
     },
-    onMouseUp: () => {
-      isDragging = false;
-      isZooming = false;
-      draggingDom = null;
-    },
+    onMouseUp: onMoveEnd,
 
     onTouchStart: (event: TouchEvent) => {
       if (event.touches.length === 1) {
         isDragging = true;
+        isZooming = false;
         draggingDom = event.currentTarget as HTMLDivElement;
         initialX = event.touches[0].clientX;
         initialY = event.touches[0].clientY;
       } else if (event.touches.length === 2) {
         initialDistance = getDistance(event.touches[0], event.touches[1]);
+        isDragging = false;
         isZooming = true;
       } else {
         isDragging = false;
@@ -94,10 +106,15 @@ export const createDragUtil = () => {
           const delta = newDistance / initialDistance;
           //   const newScale = Math.min(Math.max(1, scale * delta), 4); // 限制缩放范围
           onScaleCallback(delta);
-          return;
+        } else {
+          onMoveEnd();
         }
+        return;
       }
-      if (!isDragging || event.touches.length === 0 || !draggingDom) {
+      if (event.touches.length === 0 && isDragging) {
+        onMoveEnd();
+      }
+      if (event.touches.length === 0 || !draggingDom) {
         isDragging = false;
         draggingDom = null;
         return;
@@ -109,10 +126,6 @@ export const createDragUtil = () => {
         event.touches[0].clientY - initialY
       );
     },
-    onTouchEnd: () => {
-      isDragging = false;
-      isZooming = false;
-      draggingDom = null;
-    },
+    onTouchEnd: onMoveEnd,
   };
 };

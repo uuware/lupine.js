@@ -2,15 +2,18 @@ import { CssProps, RefProps } from 'lupine.web';
 import { Spinner02, SpinnerSize } from './spinner';
 
 export type DragRefreshCloseProps = () => void;
+export type DragRefreshHookCheckProps = () => boolean;
+export type DragRefreshHookFreshProps = (close: DragRefreshCloseProps) => Promise<void>;
 
 export type DragRefreshHookProps = {
-  setEnable: (enable: boolean) => void;
-  updateOnDragRefresh: (onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>) => void;
+  setCheckEnabled?: (checkEnabled: DragRefreshHookCheckProps) => void;
+  setOnDragRefresh?: (onDragRefresh: DragRefreshHookFreshProps) => void;
 };
 
 export type DragRefreshProps = {
   container: string;
-  onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>;
+  checkEnabled?: DragRefreshHookCheckProps;
+  onDragRefresh?: DragRefreshHookFreshProps;
   hook?: DragRefreshHookProps;
 };
 
@@ -39,12 +42,12 @@ export const DragFresh = (props: DragRefreshProps) => {
     },
   };
 
-  let isEnabled = true;
+  let isEnabled = false;
   if (props.hook) {
-    props.hook.setEnable = (enable: boolean) => {
-      isEnabled = enable;
+    props.hook.setCheckEnabled = (checkEnabled: DragRefreshHookCheckProps) => {
+      props.checkEnabled = checkEnabled;
     };
-    props.hook.updateOnDragRefresh = (onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>) => {
+    props.hook.setOnDragRefresh = (onDragRefresh: (close: DragRefreshCloseProps) => Promise<void>) => {
       props.onDragRefresh = onDragRefresh;
     };
   }
@@ -69,6 +72,7 @@ export const DragFresh = (props: DragRefreshProps) => {
       let needRefresh = false;
       const maxHeight = 150;
       container.addEventListener('touchstart', (e: any) => {
+        isEnabled = props.checkEnabled && props.onDragRefresh ? props.checkEnabled() : false;
         if (!isEnabled) return;
         touchstartY = e.touches[0].clientY;
         touchstartX = e.touches[0].clientX;
@@ -110,7 +114,7 @@ export const DragFresh = (props: DragRefreshProps) => {
         if (!isEnabled) return;
         if (direction === 'Y') {
           if (needRefresh) {
-            props.onDragRefresh(closeSpin);
+            props.onDragRefresh?.(closeSpin);
           } else {
             closeSpin();
           }
