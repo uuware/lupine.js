@@ -1,0 +1,51 @@
+<h1 id="lupine-press-built-for-doc-speed"><a class="header-anchor" href="#lupine-press-built-for-doc-speed">#</a>Lupine.Press: Built for Doc Speed</h1><p>Writing documentation shouldn&#39;t be painful. But in the current ecosystem, we often have to choose between &quot;complex configuration&quot; and &quot;ugly default styles&quot;.</p>
+<p><strong>Lupine.Press</strong> is here to break this deadlock.</p>
+<p>It is a documentation framework built on <strong>Lupine.js</strong>, inheriting the latter&#39;s <strong>&quot;ultra-lightweight&quot;</strong> and <strong>&quot;high-performance&quot;</strong> DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.</p>
+<h2 id="why-choose-lupine-press"><a class="header-anchor" href="#why-choose-lupine-press">#</a>Why Choose Lupine.Press?</h2><h3 id="1-incredible-speed"><a class="header-anchor" href="#1-incredible-speed">#</a>1. ⚡ Incredible Speed</h3><p>Need I say more? Based on the Lupine.js core (only 7kb), your documentation site will load incredibly fast. No bloated hydration process, content appears instantly.</p>
+<h3 id="2-markdown-driven-just-works"><a class="header-anchor" href="#2-markdown-driven-just-works">#</a>2. 📝 Markdown-Driven Just Works</h3><p>In Lupine.Press, file structure is routing.</p>
+<ul>
+<li>Just drop a <code>guide.md</code> in the directory, and it automatically becomes the <code>/guide</code> page.</li>
+<li>Sidebar configuration? Write it directly in the Frontmatter of <code>index.md</code>.</li>
+<li>Multiple languages? Just create <code>en</code> and <code>zh</code> folders, and the framework automatically handles switching.</li>
+</ul>
+<h3 id="3-professional-design-out-of-the-box"><a class="header-anchor" href="#3-professional-design-out-of-the-box">#</a>3. 🎨 Professional Design Out-of-the-Box</h3><p>You don&#39;t need to know CSS to have a beautiful documentation site. The <code>PressFrame</code> component comes built-in with:</p>
+<ul>
+<li><strong>Responsive Sidebar</strong>: Automatically collapses on mobile.</li>
+<li><strong>Light/Dark Mode</strong>: Follows system preference or switch manually.</li>
+<li><strong>Syntax Highlighting</strong>: Built-in support.</li>
+</ul>
+<h3 id="4-flexible-extensibility"><a class="header-anchor" href="#4-flexible-extensibility">#</a>4. 🛠️ Flexible Extensibility</h3><p>Although it&#39;s lightweight, it&#39;s not &quot;rigid&quot;. Because fundamentally it is a Lupine.js application. You can always:</p>
+<ul>
+<li>Embed React-style components within Markdown.</li>
+<li>Use <code>bindGlobalStyle</code> to customize global styles.</li>
+<li>Write custom layouts.</li>
+</ul>
+<h2 id="deployment-hack-spa-on-github-pages"><a class="header-anchor" href="#deployment-hack-spa-on-github-pages">#</a>Deployment Hack: SPA on GitHub Pages?</h2><p>As we all know, static hosting services like GitHub Pages are not friendly to Single Page Applications (SPA). Because they don&#39;t know that <code>/guide/started</code> should actually point to <code>index.html</code>, they often return a <strong>404</strong> directly.</p>
+<p>Lupine.Press provides a clever solution.</p>
+<h3 id="the-smart-404-html"><a class="header-anchor" href="#the-smart-404-html">#</a>The Smart <code>404.html</code></h3><p>We have built-in magical code in <code>docs/404.html</code>:</p>
+<pre><code class="language-html">&lt;script type=&quot;text/javascript&quot;&gt;
+  // Single Page Apps for GitHub Pages
+  if (window.location.pathname.includes(&#39;/lupine.js/&#39;)) {
+    // Take the current path as a parameter and redirect back to the homepage
+    window.location.href = &#39;/lupine.js/?redirect=&#39; + window.location.pathname;
+  }
+&lt;/script&gt;
+</code></pre>
+<p>Combined with the frontend routing&#39;s automatic recovery logic, this means:</p>
+<ol>
+<li>User visits deep link <code>/guide/started</code>.</li>
+<li>GitHub Pages returns the 404 page.</li>
+<li>Script immediately redirects the page to <code>/?redirect=/guide/started</code>.</li>
+<li>Lupine.js app starts, reads the <code>redirect</code> parameter, and seamlessly restores the page the user wanted to see.</li>
+</ol>
+<p><strong>The result: You can host a perfectly experienced SPA documentation site on GitHub Pages for free!</strong></p>
+<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><p>Get your documentation site with just one command:</p>
+<pre><code class="language-bash">npx create-lupine@latest my-docs
+# Select &#39;doc-starter&#39; template
+</code></pre>
+<p>Start the project:</p>
+<pre><code class="language-bash">cd my-docs
+npm install
+npm run dev
+</code></pre>
+<p>Now, focus on writing!</p>

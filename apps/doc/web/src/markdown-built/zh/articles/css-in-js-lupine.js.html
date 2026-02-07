@@ -1,0 +1,164 @@
+<h1 id="零依赖-lupine-js-如何实现原生-css-in-js"><a class="header-anchor" href="#零依赖-lupine-js-如何实现原生-css-in-js">#</a>零依赖，Lupine.js 如何实现原生 CSS-in-JS？</h1><p>在现代前端开发中，我们常常面临一个两难的选择：是忍受 CSS 文件分离带来的维护痛苦，还是引入庞大的 CSS-in-JS 库（如 Styled-components 或 Emotion）导致包体积剧增？</p>
+<p><strong>Lupine.js 选择了一条不同的路。</strong></p>
+<p>它内置了一个超轻量级的 CSS-in-JS 引擎，<strong>无需任何额外依赖</strong>，即可让你在组件内部舒适地编写样式。它不仅支持嵌套、媒体查询、关键帧动画，还拥有极高的运行效率。</p>
+<p>让我们来看看它是如何工作的，以及如何在你的项目中优雅地使用它。</p>
+<h2 id="1-告别-classname-的烦恼"><a class="header-anchor" href="#1-告别-classname-的烦恼">#</a>1. 告别 className 的烦恼</h2><p>传统的 CSS 开发往往需要你在 <code>.css</code> 文件和 <code>.tsx</code> 文件之间反复横跳，还要挖空心思给 class 起名。而在 Lupine.js 中，一切都在组件内部解决。</p>
+<p>你只需要定义一个简单的对象，传递给 <code>css</code> 属性：</p>
+<pre><code class="language-tsx">const MyButton = () =&gt; {
+  const btnStyle = {
+    backgroundColor: &#39;#0070f3&#39;,
+    color: &#39;white&#39;,
+    padding: &#39;10px 20px&#39;,
+    borderRadius: &#39;5px&#39;,
+    border: &#39;none&#39;,
+    cursor: &#39;pointer&#39;,
+
+    // 像 SCSS 一样嵌套！
+    &#39;&amp;:hover&#39;: {
+      backgroundColor: &#39;#0051a2&#39;,
+    },
+
+    // 轻松搞定伪元素
+    &#39;&amp;::before&#39;: {
+      content: &#39;&quot;🚀 &quot;&#39;,
+    },
+  };
+
+  return &lt;button css={btnStyle}&gt;点击发射&lt;/button&gt;;
+};
+</code></pre>
+<p>Lupine 会自动为你生成一个唯一的 Class ID（类似于 <code>.L12345</code>），并将样式注入到页面中，你完全不用担心全局样式冲突。</p>
+<h2 id="2-像-scss-一样强大的嵌套功能"><a class="header-anchor" href="#2-像-scss-一样强大的嵌套功能">#</a>2. 像 SCSS 一样强大的嵌套功能</h2><p>Lupine 的样式引擎深受 SCSS/Less 的启发，支持强大的 <code>&amp;</code> 符号引用父级。</p>
+<h3 id="嵌套子元素"><a class="header-anchor" href="#嵌套子元素">#</a>嵌套子元素</h3><p>不要再写又臭又长的 <code>div &gt; span &gt; a</code> 了：</p>
+<pre><code class="language-tsx">const cardStyle = {
+  padding: &#39;20px&#39;,
+  boxShadow: &#39;0 4px 14px rgba(0,0,0,0.1)&#39;,
+
+  // 只有当 h3 在这个组件内时才生效
+  h3: {
+    marginTop: 0,
+    color: &#39;#333&#39;,
+  },
+
+  // 选中特定的 class
+  &#39;.description&#39;: {
+    color: &#39;#666&#39;,
+    fontSize: &#39;14px&#39;,
+  },
+};
+
+&lt;div css={cardStyle}&gt;
+  &lt;h3&gt;标题&lt;/h3&gt;
+  &lt;p class=&#39;description&#39;&gt;这是描述内容...&lt;/p&gt;
+&lt;/div&gt;;
+</code></pre>
+<h3 id="组合选择器"><a class="header-anchor" href="#组合选择器">#</a>组合选择器</h3><p>这在处理复杂的组件状态时非常有用：</p>
+<pre><code class="language-tsx">const itemStyle = {
+  color: &#39;#888&#39;,
+
+  // 当同时拥有 .active 类时
+  &#39;&amp;.active&#39;: {
+    color: &#39;#0070f3&#39;,
+    fontWeight: &#39;bold&#39;,
+  },
+};
+</code></pre>
+<h2 id="3-响应式设计-媒体查询从未如此简单"><a class="header-anchor" href="#3-响应式设计-媒体查询从未如此简单">#</a>3. 响应式设计：媒体查询从未如此简单</h2><p>在 Lupine 中，媒体查询不再是游离于组件之外的代码块。你可以将它们直接把它们写在需要生效的属性旁边。</p>
+<pre><code class="language-tsx">const responsiveBox = {
+  width: &#39;100%&#39;,
+  padding: &#39;20px&#39;,
+  backgroundColor: &#39;lightblue&#39;,
+
+  // 针对桌面端的样式
+  &#39;@media (min-width: 768px)&#39;: {
+    width: &#39;50%&#39;, // 在大屏上变为一半宽度
+    backgroundColor: &#39;lightgreen&#39;,
+
+    // 甚至可以在媒体查询里继续嵌套！
+    &#39;&amp;:hover&#39;: {
+      backgroundColor: &#39;green&#39;,
+    },
+  },
+};
+</code></pre>
+<p>这种写法让“组件在不同屏幕下的表现”这一逻辑高度内聚，维护起来非常舒服。</p>
+<h2 id="4-动画大师-内置-keyframes-支持"><a class="header-anchor" href="#4-动画大师-内置-keyframes-支持">#</a>4. 动画大师：内置 Keyframes 支持</h2><p>以前为了写个简单的动画，你可能得去全局 CSS 里定义 <code>@keyframes</code>。Lupine 让你直接在组件里定义关键帧：</p>
+<pre><code class="language-tsx">const spinnerStyle = {
+  width: &#39;40px&#39;,
+  height: &#39;40px&#39;,
+  border: &#39;4px solid #f3f3f3&#39;,
+  borderTop: &#39;4px solid #3498db&#39;,
+  borderRadius: &#39;50%&#39;,
+
+  // 直接定义 Keyframes
+  &#39;@keyframes spin&#39;: {
+    &#39;0%&#39;: { transform: &#39;rotate(0deg)&#39; },
+    &#39;100%&#39;: { transform: &#39;rotate(360deg)&#39; },
+  },
+
+  // 直接引用上面定义的名字
+  animation: &#39;spin 1s linear infinite&#39;,
+};
+</code></pre>
+<p>引擎会自动处理作用域，你的 <code>spin</code> 动画绝不会污染其他组件的同名动画。</p>
+<h2 id="5-动态样式更新"><a class="header-anchor" href="#5-动态样式更新">#</a>5. 动态样式更新</h2><p>既然是 CSS-in-JS，不仅要静态编译，还要能动态变化。Lupine 提供了一个底层的 <code>updateStyles</code> API，允许你根据逻辑动态修改样式。</p>
+<blockquote>
+<p><strong>注意</strong>：对于简单的动态变化（如开关、颜色切换），通常建议切换 <code>class</code> 或使用 <code>style={{ ... }}</code> 行内样式。但如果你需要动态修改<strong>伪类</strong>（如 hover 颜色）或<strong>媒体查询</strong>，<code>updateStyles</code> 就派上用场了。</p>
+</blockquote>
+<pre><code class="language-tsx">import { updateStyles, RefProps } from &#39;lupine.web&#39;;
+
+const DynamicComponent = () =&gt; {
+  // 定义初始样式对象
+  const css: any = {
+    color: &#39;blue&#39;,
+    &#39;&amp;:hover&#39;: { color: &#39;darkblue&#39; }, // ！！！动态修改 hover 颜色，行内样式做不到！！！
+  };
+
+  const ref: RefProps = {}; // 用来获取组件生成的唯一 ID
+
+  const toggleTheme = () =&gt; {
+    // 修改样式对象
+    css.color = &#39;red&#39;;
+    css[&#39;&amp;:hover&#39;].color = &#39;darkred&#39;;
+
+    // 应用更新
+    // ref.id 会拿到类似 L123 的 ID，updateStyles 会找到对应的 &lt;style&gt; 标签并更新它
+    updateStyles(`${ref.id}`, css);
+  };
+
+  return (
+    &lt;div ref={ref} css={css} onClick={toggleTheme}&gt;
+      点我改变主题色（包括 Hover 颜色！）
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h2 id="6-全局样式-bindglobalstyle"><a class="header-anchor" href="#6-全局样式-bindglobalstyle">#</a>6. 全局样式：bindGlobalStyle</h2><p>虽然组件化很好，但有时我们确实需要全局样式（比如 Reset CSS、全局字体定义等）。<code>bindGlobalStyle</code> 可以确保你的全局样式只被注入一次，哪怕组件被渲染了多次。</p>
+<pre><code class="language-tsx">import { bindGlobalStyle } from &#39;lupine.web&#39;;
+
+// 比如定义一个全局的工具类
+const globalUtils = {
+  &#39;.text-center&#39;: { textAlign: &#39;center&#39; },
+  &#39;.flex-center&#39;: { display: &#39;flex&#39;, justifyContent: &#39;center&#39; },
+};
+
+// 注入到 &lt;head&gt; 中，ID 为 &#39;global-utils&#39;
+bindGlobalStyle(&#39;global-utils&#39;, globalUtils);
+</code></pre>
+<h2 id="7-传统派-导入-css-文件"><a class="header-anchor" href="#7-传统派-导入-css-文件">#</a>7. 传统派：导入 .css 文件</h2><p>当然，Lupine.js 并没有忘记这一最基础的需求。如果你有一个庞大的旧项目需要迁移，或者就是喜欢写 <code>.css</code> 文件，完全没有问题。</p>
+<p>你可以在任何 <code>.tsx</code> 文件中直接导入 CSS 文件：</p>
+<pre><code class="language-tsx">// 在入口文件 index.tsx 中
+import &#39;./styles/global.css&#39;;
+import &#39;./styles/app.css&#39;;
+
+// 顺序很重要：global.css 的样式会先被加载
+</code></pre>
+<p>构建系统会自动将所有导入的 CSS 提取并压缩成一个文件。对于生产环境构建，Lupine 会自动在 <code>index.html</code> 中注入类似 <code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/index.css?t=...&quot; /&gt;</code> 的标签，确保你的样式被正确加载和缓存。</p>
+<h2 id="总结"><a class="header-anchor" href="#总结">#</a>总结</h2><p>Lupine.js 的 CSS-in-JS 引擎并不是为了取代所有 CSS 写法，而是提供了一种<strong>零负担、高性能且开发体验极佳</strong>的选择。</p>
+<ul>
+<li><strong>零依赖</strong>：不需要安装任何额外的包。</li>
+<li><strong>高性能</strong>：样式在 SSR 阶段即可生成，无运行时闪烁。</li>
+<li><strong>全功能</strong>：嵌套、媒体查询、动画一应俱全。</li>
+<li><strong>开发爽</strong>：强类型的 TypeScript 支持，写 CSS 也有代码提示。</li>
+</ul>
+<p>下次构建 UI 时，不妨试试直接在组件里 <code>const css = { ... }</code>，体验一下这种“原生”的流畅感吧！</p>

@@ -1,0 +1,51 @@
+<h1 id="lupine-press-为极速文档而生"><a class="header-anchor" href="#lupine-press-为极速文档而生">#</a>Lupine.Press：为极速文档而生</h1><p>写文档不应该是一件痛苦的事。但在现有的生态中，我们往往需要在“复杂的配置”和“丑陋的默认样式”之间做选择。</p>
+<p><strong>Lupine.Press</strong> 的出现，就是为了打破这个僵局。</p>
+<p>它是基于 <strong>Lupine.js</strong> 构建的文档框架，继承了后者 <strong>“极致轻量”</strong> 和 <strong>“高性能”</strong> 的基因。它能让你用最简单的 Markdown，构建出专业、响应式且支持多语言的文档网站。</p>
+<h2 id="为什么选择-lupine-press"><a class="header-anchor" href="#为什么选择-lupine-press">#</a>为什么选择 Lupine.Press？</h2><h3 id="1-难以置信的快"><a class="header-anchor" href="#1-难以置信的快">#</a>1. ⚡ 难以置信的快</h3><p>这就不用多说了。基于 Lupine.js 核心（仅 7kb），你的文档网站加载速度会快得惊人。没有臃肿的 hydration 过程，内容即刻呈现。</p>
+<h3 id="2-markdown-驱动的一切"><a class="header-anchor" href="#2-markdown-驱动的一切">#</a>2. 📝 Markdown 驱动的一切</h3><p>在 Lupine.Press 中，文件结构即路由。</p>
+<ul>
+<li>只要在目录下放一个 <code>guide.md</code>，它就会自动变成 <code>/guide</code> 页面。</li>
+<li>侧边栏配置？直接写在 <code>index.md</code> 的 Frontmatter 里。</li>
+<li>多语言？只需建立 <code>en</code> 和 <code>zh</code> 文件夹，框架自动处理切换。</li>
+</ul>
+<h3 id="3-开箱即用的专业设计"><a class="header-anchor" href="#3-开箱即用的专业设计">#</a>3. 🎨 开箱即用的专业设计</h3><p>你不需要懂 CSS 也能拥有漂亮的文档站。<code>PressFrame</code> 组件内置了：</p>
+<ul>
+<li><strong>响应式侧边栏</strong>：在移动端自动折叠。</li>
+<li><strong>亮色/暗色模式</strong>：自动跟随系统或手动切换。</li>
+<li><strong>代码高亮</strong>：内置支持。</li>
+</ul>
+<h3 id="4-灵活的扩展性"><a class="header-anchor" href="#4-灵活的扩展性">#</a>4. 🛠️ 灵活的扩展性</h3><p>虽然它很轻，但它不“死板”。因为本质上它就是一个 Lupine.js 应用。你可以随时：</p>
+<ul>
+<li>在 Markdown 里嵌入 React 风格的组件。</li>
+<li>使用 <code>bindGlobalStyle</code> 自定义全局样式。</li>
+<li>编写自定义的 Layout。</li>
+</ul>
+<h2 id="部署黑科技-github-pages-也能跑-spa"><a class="header-anchor" href="#部署黑科技-github-pages-也能跑-spa">#</a>部署黑科技：GitHub Pages 也能跑 SPA？</h2><p>众所周知，GitHub Pages 等静态托管服务对单页应用（SPA）的支持并不友好。因为它们不知道 <code>/guide/started</code> 其实应该指向 <code>index.html</code>，往往会直接返回 <strong>404</strong>。</p>
+<p>Lupine.Press 提供了一个聪明的解决方案。</p>
+<h3 id="聪明人都知道的-404-html"><a class="header-anchor" href="#聪明人都知道的-404-html">#</a>聪明人都知道的 <code>404.html</code></h3><p>我们在 <code>docs/404.html</code> 中内置了一段神奇的代码：</p>
+<pre><code class="language-html">&lt;script type=&quot;text/javascript&quot;&gt;
+  // Single Page Apps for GitHub Pages
+  if (window.location.pathname.includes(&#39;/lupine.js/&#39;)) {
+    // 将当前路径作为参数，重定向回首页
+    window.location.href = &#39;/lupine.js/?redirect=&#39; + window.location.pathname;
+  }
+&lt;/script&gt;
+</code></pre>
+<p>配合前端路由的自动恢复逻辑，这意味着：</p>
+<ol>
+<li>用户访问深层链接 <code>/guide/started</code>。</li>
+<li>GitHub Pages 返回 404 页面。</li>
+<li>脚本立刻将页面重定向为 <code>/?redirect=/guide/started</code>。</li>
+<li>Lupine.js 应用启动，读取 <code>redirect</code> 参数，无缝恢复到用户想看的页面。</li>
+</ol>
+<p><strong>结果就是：你可以免费使用 GitHub Pages 托管一个体验完美的 SPA 文档站！</strong></p>
+<h2 id="快速上手"><a class="header-anchor" href="#快速上手">#</a>快速上手</h2><p>只需一行命令，立刻拥有你的文档站：</p>
+<pre><code class="language-bash">npx create-lupine@latest my-docs
+# 选择 &#39;doc-starter&#39; 模板
+</code></pre>
+<p>启动项目：</p>
+<pre><code class="language-bash">cd my-docs
+npm install
+npm run dev
+</code></pre>
+<p>现在，开始专注于写作吧！</p>

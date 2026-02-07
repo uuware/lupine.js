@@ -35,6 +35,8 @@ sidebar:
   - text: 文章汇集
     items:
       - /zh/articles/introduce-lupine.js
+      - /zh/articles/css-in-js-lupine.js
+      - /zh/articles/introduce-lupine.press
   - submenu: /zh/essentials
   - submenu: /zh/lupine.web
   - submenu: /zh/lupine.components

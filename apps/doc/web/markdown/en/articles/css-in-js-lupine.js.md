@@ -1,0 +1,225 @@
+---
+title: 'Zero Dependencies, Native Power: Mastering CSS-in-JS in Lupine.js'
+description: 'A deep dive into built-in high-performance styling engine'
+---
+
+# Zero Dependencies, Native Power - Mastering CSS-in-JS in Lupine.js
+
+In modern frontend development, we often face a dilemma: suffer through the maintenance headache of separate CSS files, or import heavy CSS-in-JS libraries (like Styled-components or Emotion) that bloat your bundle size.
+
+**Lupine.js takes a different path.**
+
+It comes with an ultra-lightweight CSS-in-JS engine **built right in**. No extra dependencies required. It allows you to write styles comfortably within your components, supporting nesting, media queries, and keyframe animations—all with incredible runtime efficiency.
+
+Let's dive into how it works and how to use it elegantly in your projects.
+
+## 1. Say Goodbye to ClassName Hell
+
+Traditional CSS development often involves constant context switching between `.css` files and `.tsx` files, struggling to invent unique class names. In Lupine.js, everything stays within the component.
+
+Simply define a plain object and pass it to the `css` prop:
+
+```tsx
+const MyButton = () => {
+  const btnStyle = {
+    backgroundColor: '#0070f3',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+
+    // Nesting like SCSS!
+    '&:hover': {
+      backgroundColor: '#0051a2',
+    },
+
+    // Pseudo-elements? Easy.
+    '&::before': {
+      content: '"🚀 "',
+    },
+  };
+
+  return <button css={btnStyle}>Launch</button>;
+};
+```
+
+Lupine automatically generates a unique Class ID (like `.L12345`) for you and injects the styles. You never have to worry about global namespace collisions again.
+
+## 2. Powerful Nesting (Just like SCSS)
+
+Inspired by SCSS/Less, Lupine's style engine fully supports the powerful `&` parent selector.
+
+### Selecting Children
+
+Stop writing long, fragile selector chains like `div > span > a`:
+
+```tsx
+const cardStyle = {
+  padding: '20px',
+  boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
+
+  // Only applies to h3 tags INSIDE this component
+  h3: {
+    marginTop: 0,
+    color: '#333',
+  },
+
+  // Select specific classes
+  '.description': {
+    color: '#666',
+    fontSize: '14px',
+  },
+};
+
+<div css={cardStyle}>
+  <h3>Title</h3>
+  <p class='description'>This is the description...</p>
+</div>;
+```
+
+### Combined Selectors
+
+This is incredibly useful for handling complex component states:
+
+```tsx
+const itemStyle = {
+  color: '#888',
+
+  // When it also has the .active class
+  '&.active': {
+    color: '#0070f3',
+    fontWeight: 'bold',
+  },
+};
+```
+
+## 3. Responsive Design: Co-located Media Queries
+
+In Lupine, media queries aren't code blocks that live far away from your component logic. You can write them right next to the properties they affect.
+
+```tsx
+const responsiveBox = {
+  width: '100%',
+  padding: '20px',
+  backgroundColor: 'lightblue',
+
+  // Styles for desktop
+  '@media (min-width: 768px)': {
+    width: '50%', // Becomes half width on larger screens
+    backgroundColor: 'lightgreen',
+
+    // You can even nest inside media queries!
+    '&:hover': {
+      backgroundColor: 'green',
+    },
+  },
+};
+```
+
+This co-location makes the logic of "how this component behaves on different screens" highly cohesive and delightful to maintain.
+
+## 4. Animation Master: Built-in Keyframes
+
+Previously, defining a simple animation meant polluting your global CSS with `@keyframes`. Lupine lets you define them locally:
+
+```tsx
+const spinnerStyle = {
+  width: '40px',
+  height: '40px',
+  border: '4px solid #f3f3f3',
+  borderTop: '4px solid #3498db',
+  borderRadius: '50%',
+
+  // Define Keyframes directly
+  '@keyframes spin': {
+    '0%': { transform: 'rotate(0deg)' },
+    '100%': { transform: 'rotate(360deg)' },
+  },
+
+  // Reference the name defined above
+  animation: 'spin 1s linear infinite',
+};
+```
+
+The engine handles scoping automatically, so your `spin` animation will never clash with another component's animation of the same name.
+
+## 5. Dynamic Style Updates
+
+Since it's CSS-in-JS, it shouldn't just be static—it needs to handle dynamic changes. Lupine provides a low-level `updateStyles` API that allows you to modify styles programmatically.
+
+> **Note**: For simple dynamic changes (like toggles or theme switches), simply toggling a `class` or using inline `style={{ ... }}` is usually preferred. But when you need to dynamically update **pseudo-classes** (like hover colors) or **media queries**, `updateStyles` is your best friend.
+
+```tsx
+import { updateStyles, RefProps } from 'lupine.web';
+
+const DynamicComponent = () => {
+  // Define initial style object
+  const css: any = {
+    color: 'blue',
+    '&:hover': { color: 'darkblue' }, // !!! Dynamic hover color, impossible with inline styles !!!
+  };
+
+  const ref: RefProps = { id: '' }; // Used to capture the unique ID generated by Lupine
+
+  const toggleTheme = () => {
+    // Modify the style object
+    css.color = 'red';
+    css['&:hover'].color = 'darkred';
+
+    // Apply updates
+    // ref.id gets the ID (e.g., L123), updateStyles finds the <style> tag and updates it
+    updateStyles(`${ref.id}`, css);
+  };
+
+  return (
+    <div ref={ref} css={css} onClick={toggleTheme}>
+      Click me to change theme (including hover!)
+    </div>
+  );
+};
+```
+
+## 6. Global Styles: bindGlobalStyle
+
+While component-scoping is great, sometimes you really do need global styles (like Reset CSS or global font definitions). `bindGlobalStyle` ensures your global styles are injected only once, even if the component is rendered multiple times.
+
+```tsx
+import { bindGlobalStyle } from 'lupine.web';
+
+// Define global utility classes
+const globalUtils = {
+  '.text-center': { textAlign: 'center' },
+  '.flex-center': { display: 'flex', justifyContent: 'center' },
+};
+
+// Inject into <head> with ID 'global-utils'
+bindGlobalStyle('global-utils', globalUtils);
+```
+
+## 7. The Traditionalist: Importing .css Files
+
+Of course, Lupine.js hasn't forgotten the most basic need. If you have a massive legacy project to migrate, or you simply prefer writing standard `.css` files, that's completely fine.
+
+You can import CSS files directly in any `.tsx` file:
+
+```tsx
+// In your entry file, like index.tsx
+import './styles/global.css';
+import './styles/app.css';
+
+// Order matters: styles in global.css will be loaded first
+```
+
+The build system automatically extracts all imported CSS and bundles them into a single file. For production builds, Lupine automatically injects a tag like `<link rel="stylesheet" href="/index.css?t=..." />` into your `index.html`, ensuring your styles are correctly loaded and cached.
+
+## Conclusion
+
+Lupine.js's CSS-in-JS engine isn't trying to replace every way of writing CSS. Instead, it offers a choice that is **burden-free, high-performance, and developer-friendly**.
+
+- **Zero Dependencies**: No need to install anything extra.
+- **High Performance**: Styles can be generated during SSR, eliminating FOUC.
+- **Full Featured**: Nesting, media queries, and animations are all there.
+- **Dev Experience**: Strong TypeScript support means you get autocomplete for your CSS.
+
+Next time you build a UI, try defining `const css = { ... }` directly in your component and experience the fluid, "native" feel of Lupine.js!

@@ -75,6 +75,9 @@ export const PressContent = (props: {
         display: 'none',
       },
       '.press-mobile-toc': { display: 'flex' },
+      '.press-content': {
+        padding: props.isHome ? '0' : '2rem 1rem',
+      },
     },
   };
   return (

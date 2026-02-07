@@ -35,6 +35,8 @@ sidebar:
   - text: Articles
     items:
       - /en/articles/introduce-lupine.js
+      - /en/articles/css-in-js-lupine.js
+      - /en/articles/introduce-lupine.press
   - submenu: /en/essentials
   - submenu: /en/lupine.web
   - submenu: /en/lupine.components
