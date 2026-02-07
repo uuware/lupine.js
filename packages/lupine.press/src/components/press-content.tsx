@@ -24,6 +24,9 @@ export const PressContent = (props: {
       // maxWidth: isHome ? '100%' : '800px',
       margin: props.isHome ? '0' : '0 auto',
       minWidth: 0,
+      a: {
+        textDecoration: 'underline',
+      },
     },
     '.page-heading-container': {
       width: '240px',
