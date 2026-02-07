@@ -18,7 +18,7 @@ export interface ResponsiveFrameProps {
   desktopTopMenu: IconMenuItemProps[];
   mobileBottomMenu: IconMenuItemProps[];
   mobileSideMenuContent: VNode<any>;
-  sliderFrameHook: SliderFrameHookProps;
+  sharedContents: VNode<any>;
 }
 export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
   const cssContainer: CssProps = {
@@ -65,7 +65,7 @@ export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
 
   return (
     <div css={cssContainer} class='responsive-frame'>
-      <SliderFrame hook={props.sliderFrameHook} />
+      {props.sharedContents}
       <div class='frame-top-menu'>
         <DesktopHeader title={props.desktopHeaderTitle} items={props.desktopTopMenu}></DesktopHeader>
         <MobileHeaderComponent></MobileHeaderComponent>

@@ -19,6 +19,7 @@ export type SliderFrameHookProps = {
   load?: (children: VNode<any>) => void;
   close?: (event: Event) => void;
   addClass?: (className: SliderFramePosition) => void;
+  isOpened?: () => boolean;
 };
 
 export type SliderFrameProps = {
@@ -49,6 +50,9 @@ export const SliderFrame = (props: SliderFrameProps) => {
     };
     props.hook.addClass = (className) => {
       ref.current?.classList.add(className);
+    };
+    props.hook.isOpened = () => {
+      return ref.current?.classList.contains('show');
     };
   }
   const dom = new HtmlVar(<div class='slider-frame-default'>{props.defaultContent || '(No Content)'}</div>);
