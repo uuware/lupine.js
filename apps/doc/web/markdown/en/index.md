@@ -1,6 +1,6 @@
 ---
 layout: home
-title: LupineJS Doc
+title: Lupine.js Doc
 sidemenu-width: 260px
 github-title: View on GitHub
 github-link: https://github.com/uuware/lupine.js
@@ -10,7 +10,7 @@ lang:
   id: en
 
 hero:
-  name: LupineJS
+  name: Lupine.js
   text: Approachable, Fast, Full-stack
   tagline: A full-featured web application framework includes both Front-End and Back-End services.
   actions:

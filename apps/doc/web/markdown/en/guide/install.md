@@ -100,7 +100,7 @@ npm run dev
 ### Debug Frontend & Backend
 
 1.  Go to the **Run and Debug** sidebar in VS Code.
-2.  Select **"LupineJS: Frontend & Backend"** from the dropdown.
+2.  Select **"Lupine.js: Frontend & Backend"** from the dropdown.
 3.  Set breakpoints in your FE or BE code and start debugging.
 
 ---

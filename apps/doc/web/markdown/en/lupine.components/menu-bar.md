@@ -16,7 +16,7 @@ const menuItems = [
   {
     text: 'Products',
     children: [
-      { text: 'LupineJS', link: '/lupine' },
+      { text: 'Lupine.js', link: '/lupine' },
       { text: 'Components', link: '/components' },
     ],
   },

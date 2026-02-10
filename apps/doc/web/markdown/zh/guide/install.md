@@ -100,7 +100,7 @@ npm run dev
 ### 调试前端和后端
 
 1.  转到 VS Code 中的 **Run and Debug** 侧边栏。
-2.  从下拉列表中选择 **"LupineJS: Frontend & Backend"**。
+2.  从下拉列表中选择 **"Lupine.js: Frontend & Backend"**。
 3.  在您的前端或后端代码中设置断点并开始调试。
 
 ---
