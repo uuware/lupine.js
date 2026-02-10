@@ -12,6 +12,7 @@ export type InitStartProps = {
 
 export type AppStartProps = {
   debug: boolean;
+  devToken: string;
   appEnvFile: string;
   apiConfig: AppLoaderProps;
   serverConfig: InitStartProps;

@@ -7,6 +7,7 @@ import { DebugService } from '../api/debug-service';
 import { AppCacheGlobal, AppCacheKeys, getAppCache, ServerRequest } from '../models';
 import { cleanupAndExit } from './cleanup-exit';
 import { ShellService } from '../api/shell-service';
+import { handler200 } from '../api';
 const logger = new Logger('process-dev-requests');
 
 function deleteRequireCache(moduleName: string) {
@@ -88,13 +89,37 @@ export async function processShell(req: ServerRequest) {
 }
 
 // this is called from a request in debug mode
-export async function processDevRequests(req: ServerRequest, res: ServerResponse, rootUrl?: string) {
-  res.end();
-  const address = req.socket.address() as AddressInfo;
-  if (address.address !== '127.0.0.1') {
-    console.log(`${process.pid} - [server] Ignore request from: `, req.url, address.address);
-    return true;
+export async function processDevRequests(
+  req: ServerRequest,
+  res: ServerResponse,
+  rootUrl: string,
+  debug: boolean,
+  devToken?: string
+) {
+  const token = req.locals.query.get('t');
+  if (devToken !== token) {
+    handler200(res, `Dev token is incorrect.`);
+    return;
   }
+
+  // in some cases, the server is not updated properly, so we need to restart to rescue it
+  if (req.url === '/debug/restart') {
+    await processRestartApp();
+    handler200(res, `Restarting app...`);
+    return;
+  }
+
+  if (!debug) {
+    handler200(res, `Unauthorized request.`);
+    return;
+  }
+
+  res.end();
+  // const address = req.socket.address() as AddressInfo;
+  // if (address.address !== '127.0.0.1') {
+  //   console.log(`${process.pid} - [server] Ignore request from: `, req.url, address.address);
+  //   return;
+  // }
   if (req.url === '/debug/shutdown') {
     console.log(`${process.pid} - [server] Received shutdown command.`);
     if (process.send) {
@@ -110,7 +135,7 @@ export async function processDevRequests(req: ServerRequest, res: ServerResponse
   }
   // else if (req.url === '/debug/client') {
   // }
-  return true;
+  return;
 }
 
 // this is called from a request and passes the restartApp message to loader

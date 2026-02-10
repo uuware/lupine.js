@@ -5,11 +5,12 @@ import { processMessageFromPrimary, processMessageFromWorker } from './app-messa
 import { WebServer } from './web-server';
 import { processDevRequests } from './process-dev-requests';
 import { appCache } from './app-cache';
-import { AppStartProps, InitStartProps, AppCacheGlobal, AppCacheKeys } from '../models';
+import { AppStartProps, InitStartProps, AppCacheGlobal, AppCacheKeys, ServerRequest } from '../models';
 import { appStorage } from './app-shared-storage';
 import { HostToPath } from './host-to-path';
 import { _exitApp, cleanupAndExit } from './cleanup-exit';
 import { receiveMessageFromLoader } from './app-message';
+import { ServerResponse } from 'http';
 
 // Don't use logger before set process message
 class AppStart {
@@ -60,7 +61,7 @@ class AppStart {
 
       HostToPath.setHostToPathList(props.apiConfig.webHostMap);
       appHelper.loadApi(props.apiConfig);
-      this.initServer(props.serverConfig);
+      this.initServer(props.serverConfig, props.devToken);
     } else if (cluster.isPrimary) {
       const numCPUs = props.debug ? 1 : require('os').cpus().length;
       console.log(`${process.pid} - Primary Process is trying to fork ${numCPUs} processes`);
@@ -109,7 +110,7 @@ class AppStart {
     ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGBREAK'].forEach((evt) => process.on(evt, cleanupAndExit));
   }
 
-  async initServer(config: InitStartProps) {
+  async initServer(config: InitStartProps, devToken: string) {
     const bindIp = config.bindIp || '::';
     const httpPort = config.httpPort;
     const httpsPort = config.httpsPort;
@@ -119,8 +120,11 @@ class AppStart {
 
     console.log(`${process.pid} - Starting Web Server, httpPort: ${httpPort}, httpsPort: ${httpsPort}`);
     // for dev to refresh the FE or stop the server
-    if (this.debug) {
-      WebProcessor.enableDebug('/debug', processDevRequests);
+    if (devToken) {
+      WebProcessor.enableDev('/debug', async (req: ServerRequest, res: ServerResponse, rootUrl?: string) => {
+        await processDevRequests(req, res, rootUrl || '', this.debug, devToken);
+        return true;
+      });
     }
 
     const httpServer = httpPort && this.webServer!.startHttp(httpPort, bindIp);

@@ -17,4 +17,5 @@ module.exports = {
   pluginIfelse: require('./plugin-ifelse.js'),
   markdownProcessOnEnd: require('./markdown-build.js').markdownProcessOnEnd,
   obfuscatePlugin: require('./plugin-obfuscate.js').obfuscatePlugin,
+  sha256: require('./sha256.js').sha256,
 };

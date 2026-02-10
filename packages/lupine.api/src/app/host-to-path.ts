@@ -21,7 +21,10 @@ export class HostToPath {
     for (let key in this.props) {
       for (let domain in this.props[key].hosts) {
         // if host is 'sub3.sub2.sub1.domain', it matches 'sub2.domain'
-        if (this.props[key].webPath && host.endsWith(this.props[key].hosts[domain])) {
+        if (
+          this.props[key].webPath &&
+          (host === this.props[key].hosts[domain] || host.endsWith('.' + this.props[key].hosts[domain]))
+        ) {
           logger.debug(`Found ${host} in `, this.props[key].hosts);
           return this.props[key];
         }
