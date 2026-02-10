@@ -56,8 +56,8 @@ console.log(document.title);
 bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyle('comm-css', baseCss, false, true);
-setDefaultPageTitle('Development Project for LupineJS');
-setDefaultMetaDescription('Development Project for LupineJS');
+setDefaultPageTitle('Development Project for Lupine.js');
+setDefaultMetaDescription('Development Project for Lupine.js');
 
 bindRenderPageFunctions({ fetchData, baseUrl });
 

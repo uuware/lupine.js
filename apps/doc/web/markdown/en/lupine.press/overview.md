@@ -6,7 +6,7 @@ title: Press Doc Overview
 
 `lupine.press` is a lightweight, high-performance documentation site framework built on top of `lupine.web`. It provides a complete solution for rendering Markdown-based documentation websites with a responsive layout, sidebar navigation, and theming support.
 
-It is designed to work seamlessly with the `lupine` ecosystem, powering documentation sites like the official LupineJS documentation.
+It is designed to work seamlessly with the `lupine` ecosystem, powering documentation sites like the official Lupine.js documentation.
 
 ## Features
 

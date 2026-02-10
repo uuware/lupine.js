@@ -6,7 +6,7 @@ title: Press 文档系统概览
 
 `lupine.press` 是一个基于 `lupine.web` 构建的轻量级、高性能的文档网站框架。它提供了一套完整的解决方案，用于渲染基于 Markdown 的文档网站，支持响应式布局、侧边栏导航和主题切换。
 
-它旨在与 `lupine` 生态系统无缝协作，为如 LupineJS 官方文档等站点提供支持。
+它旨在与 `lupine` 生态系统无缝协作，为如 Lupine.js 官方文档等站点提供支持。
 
 ## 主要特性 (Features)
 

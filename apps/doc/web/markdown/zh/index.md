@@ -1,6 +1,6 @@
 ---
 layout: home
-title: LupineJS 文档
+title: Lupine.js 文档
 sidemenu-width: 260px
 github-title: GitHub 仓库
 github-link: https://github.com/uuware/lupine.js
@@ -10,7 +10,7 @@ lang:
   id: zh
 
 hero:
-  name: LupineJS
+  name: Lupine.js
   text: 易用、快速、全栈
   tagline: 包含前后端服务的全功能 Web 应用程序框架。
   actions:

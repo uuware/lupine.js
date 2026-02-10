@@ -22,8 +22,8 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 bindLang('en', {});
 bindTheme('light', pressThemes);
 bindGlobalStyle('comm-css', baseCss, false, true);
-setDefaultPageTitle('LupineJS Doc');
-setDefaultMetaDescription('LupineJS Doc');
+setDefaultPageTitle('Lupine.js Doc');
+setDefaultMetaDescription('Lupine.js Doc');
 
 bindPressData(markdownConfig);
 
