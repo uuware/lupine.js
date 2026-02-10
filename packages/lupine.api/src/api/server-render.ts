@@ -7,9 +7,29 @@ import { ServerRequest } from '../models/locals-props';
 import { ToClientDelivery } from './to-client-delivery';
 import { IToClientDelivery } from '../models/to-client-delivery-props';
 import { JsonObject } from '../models/json-object';
-import { getTemplateCache } from './api-cache';
+import { getTemplateCache, apiCache } from './api-cache';
 import { apiStorage } from './api-shared-storage';
 import { RuntimeRequire } from '../lib/runtime-require';
+import { IRequestContextProps } from '../models';
+
+const getRequestContext = () => {
+  try {
+    const store = apiCache.getAsyncStore();
+    if (!store['requestContext']) {
+      store['requestContext'] = {
+        pageTitle: { value: '', defaultValue: '' },
+        metaDescription: { value: '', defaultValue: '' },
+        metaData: {},
+        theme: { defaultTheme: 'light', themes: {} },
+        globalStyles: new Map(),
+        devData: {}, // for secondary development
+      };
+    }
+    return store['requestContext'] as IRequestContextProps;
+  } catch (e) {
+    throw new Error('Not in ALS context (e.g. startup or outside request)');
+  }
+};
 
 const logger = new Logger('StaticServer');
 
@@ -171,7 +191,12 @@ export const serverSideRenderPage = async (
   //   webSettingShortKey[newItem] = webSetting[item];
   // }
   // const webSetting = AppConfig.get(AppConfig.WEB_SETTINGS_KEY) || {};
-  const clientDelivery = new ToClientDelivery(currentCache.webEnv, webSetting, req.locals.cookies());
+  const clientDelivery = new ToClientDelivery(
+    currentCache.webEnv,
+    webSetting,
+    req.locals.cookies(),
+    getRequestContext()
+  );
 
   let page = {
     content: '',

@@ -2,6 +2,7 @@ import { setCookie } from '../lib/cookie';
 import { ThemesProps } from '../models';
 import { isFrontEnd } from '../lib/is-frontend';
 import { getEitherCookie } from './server-cookie';
+import { getRequestContext } from './use-request-context';
 
 // theme doesn't need to reset, theme name is stored in cookie
 
@@ -11,22 +12,24 @@ export const updateThemeEventName = 'updateTheme';
 export const themeAttributeName = 'data-theme';
 const _themeCfg: { defaultTheme: string; themes: ThemesProps } = { defaultTheme: defaultThemeName, themes: {} };
 export const bindTheme = (defaultTheme: string, themes: ThemesProps) => {
-  _themeCfg.defaultTheme = defaultTheme;
-  _themeCfg.themes = themes;
+  const cfg = isFrontEnd() ? _themeCfg : getRequestContext().theme;
+  cfg.defaultTheme = defaultTheme;
+  cfg.themes = themes;
 
   // set to cookie
   getCurrentTheme();
 };
 
 export const getCurrentTheme = () => {
+  const cfg = isFrontEnd() ? _themeCfg : getRequestContext().theme;
   let themeName = getEitherCookie(themeCookieName) as string;
-  if (!themeName || !_themeCfg.themes[themeName]) {
-    themeName = _themeCfg.defaultTheme;
+  if (!themeName || !cfg.themes[themeName]) {
+    themeName = cfg.defaultTheme;
     if (isFrontEnd()) {
-      setCookie(themeCookieName, _themeCfg.defaultTheme);
+      setCookie(themeCookieName, cfg.defaultTheme);
     }
   }
-  return { themeName, themes: _themeCfg.themes };
+  return { themeName, themes: cfg.themes };
 };
 
 export const updateTheme = (themeName: string) => {

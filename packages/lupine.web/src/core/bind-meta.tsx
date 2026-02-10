@@ -1,33 +1,36 @@
 // import { bindPageResetEvent } from '../core/page-reset-events';
 
-let _pageTitle = { value: '', defaultValue: '' };
+import { getRequestContext } from './use-request-context';
+// import { bindPageResetEvent } from '../core/page-reset-events';
+
 export const setPageTitle = (title: string) => {
-  _pageTitle.value = title;
+  getRequestContext().pageTitle.value = title;
 };
 
 export const getPageTitle = () => {
+  const _pageTitle = getRequestContext().pageTitle;
   return _pageTitle.value || _pageTitle.defaultValue;
 };
 
 export const setDefaultPageTitle = (title: string) => {
-  _pageTitle.defaultValue = title;
+  getRequestContext().pageTitle.defaultValue = title;
 };
 
-let _description = { value: '', defaultValue: '' };
 export const setMetaDescription = (description: string) => {
-  _description.value = description;
+  getRequestContext().metaDescription.value = description;
 };
 
 export const getMetaDescription = () => {
+  const _description = getRequestContext().metaDescription;
   return _description.value || _description.defaultValue;
 };
 
 export const setDefaultMetaDescription = (description: string) => {
-  _description.defaultValue = description;
+  getRequestContext().metaDescription.defaultValue = description;
 };
 
-let _metaData: { [key: string]: string } = {};
 export const addMetaDataTags = (key: string, value: string) => {
+  const _metaData = getRequestContext().metaData;
   if (typeof value === 'undefined') {
     delete _metaData[key];
   } else {
@@ -41,6 +44,7 @@ export const getMetaDataTags = () => {
 
 export const getMetaDataObject = () => {
   const metaDescription = getMetaDescription();
+  const _metaData = getRequestContext().metaData;
   return metaDescription
     ? Object.assign(
         {

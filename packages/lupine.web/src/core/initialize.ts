@@ -2,6 +2,7 @@ import { Logger } from '../lib/logger';
 import { generateAllGlobalStyles } from './bind-styles';
 import { defaultThemeName, getCurrentTheme, updateTheme } from './bind-theme';
 import { mountInnerComponent } from './mount-component';
+import { renderComponentAsync } from './render-component';
 // import { callPageResetEvent } from './page-reset-events';
 import { PageRouter } from './page-router';
 import { callPageLoadedEvent } from './page-loaded-events';
@@ -12,6 +13,7 @@ import { initWebEnv } from '../lib/web-env';
 import { _lupineJs, PageProps, PageResultType, setRenderPageProps } from './export-lupine';
 import { isFrontEnd } from '../lib/is-frontend';
 import { WebConfig } from '../lib/web-config';
+import { initRequestContext } from 'lupine.components';
 
 const logger = new Logger('initialize');
 
@@ -26,6 +28,7 @@ const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
 const generatePage = async (props: PageProps, toClientDelivery: IToClientDelivery): Promise<PageResultType> => {
   setRenderPageProps(props);
 
+  initRequestContext(() => toClientDelivery.getRequestContext());
   initWebEnv(toClientDelivery.getWebEnv());
   WebConfig.initFromData(toClientDelivery.getWebSetting());
   // initWebSetting(toClientDelivery.getWebSetting());
@@ -44,7 +47,7 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
     };
   }
 
-  await mountInnerComponent(null, jsxNodes);
+  await renderComponentAsync(jsxNodes.type, jsxNodes.props);
   const currentTheme = getCurrentTheme();
   const cssText = generateAllGlobalStyles();
   const content = jsxNodes.props._html.join('');
