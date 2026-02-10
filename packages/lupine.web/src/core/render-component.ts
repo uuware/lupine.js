@@ -257,7 +257,7 @@ export const renderComponentAsync = async (type: any, props: any, uniqueClassNam
   _yieldCounter++;
   if (_yieldCounter >= YIELD_THRESHOLD) {
     _yieldCounter = 0;
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   if (Array.isArray(props)) {
