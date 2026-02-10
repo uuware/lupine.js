@@ -1,14 +1,14 @@
 import { bindAttributes } from './bind-attributes';
 import { bindLinks } from './bind-links';
-import { VNode } from '../jsx';
 // import { Logger } from '../lib/logger';
 // import { bindPageResetEvent } from './page-reset-events';
 import { callUnload, replaceInnerhtml } from './replace-innerhtml';
-import { renderComponent } from './render-component';
+import { renderComponentAsync } from './render-component';
+import { VNode } from 'lupine.components';
 
 // const logger = new Logger('mount-components');
 export const mountInnerComponent = async (selector: string | null | Element, jsxNodes: VNode<any>) => {
-  renderComponent(jsxNodes.type, jsxNodes.props);
+  await renderComponentAsync(jsxNodes.type, jsxNodes.props);
   const el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
   if (el) {
     // call unload before releace innerHTML
@@ -21,7 +21,7 @@ export const mountInnerComponent = async (selector: string | null | Element, jsx
 
 // suggest to use HtmlVar.
 export const mountOuterComponent = async (selector: string | Element, jsxNodes: VNode<any>) => {
-  renderComponent(jsxNodes.type, jsxNodes.props);
+  await renderComponentAsync(jsxNodes.type, jsxNodes.props);
   let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
   if (el) {
     // Can't do outerHTML directly because it will lose attributes
@@ -47,7 +47,7 @@ export const mountSiblingComponent = async (
   jsxNodes: VNode<any>,
   position: 'before' | 'after' = 'after'
 ) => {
-  renderComponent(jsxNodes.type, jsxNodes.props);
+  await renderComponentAsync(jsxNodes.type, jsxNodes.props);
   let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
   if (el) {
     // Can't do outerHTML directly because it will lose attributes
