@@ -55,7 +55,7 @@ export const PressPage = (props: PageProps) => {
   const rootIndex = markdownConfig[`/${langName}/index`]?.data || {};
   const rootNav = rootIndex.nav || [];
   const rootSidebar = rootIndex.sidebar || [];
-  const siteTitle = rootIndex.title || 'LupineJS';
+  const siteTitle = rootIndex.title || 'Lupine.js';
   // siteStyles should be {body:{'font-family':'...'}}
   const siteStyles = rootIndex.styles || {};
   bindGlobalStyle('customer-css', siteStyles, false, true);

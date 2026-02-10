@@ -19,7 +19,7 @@
   ],
   "compounds": [
     {
-      "name": "LupineJS: Frontend & Backend",
+      "name": "Lupine.js: Frontend & Backend",
       "configurations": ["Node: Backend", "JS: Frontend"]
     }
   ]
