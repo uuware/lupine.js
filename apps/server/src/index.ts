@@ -1,6 +1,7 @@
 // initApp should be called before any other logics, so need to avoid `export default new Class()`
 import * as path from 'path';
 import {
+  CryptoUtils,
   HostToPathProps,
   appStart,
   bindRenderPageFunctions,
@@ -60,6 +61,7 @@ const initAndStartServer = async () => {
   // Can't use log until initApp is called (after AppStart.start)
   await appStart.start({
     debug: process.env[ServerEnvKeys.NODE_ENV] === 'development',
+    devToken: CryptoUtils.sha256(process.env['DEV_TOKEN'] || ''),
     appEnvFile: envFile,
     renderPageFunctions: getRenderPageFunctions(),
     apiConfig: {

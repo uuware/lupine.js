@@ -2,24 +2,25 @@ import { ServerResponse } from 'http';
 import { Logger } from '../lib/logger';
 import { handler404 } from '../api';
 import { ApiRouterCallback, AppCacheKeys, AsyncStorageProps, getAppCache, ServerRequest } from '../models';
-import { processRestartApp } from './process-dev-requests';
 const logger = new Logger('web-processor');
 
 export class WebProcessor {
   static debugPath: string | undefined;
   static debugHandler: ApiRouterCallback | undefined;
 
-  static enableDebug(path: string, debugHandler: ApiRouterCallback) {
+  static enableDev(path: string, debugHandler: ApiRouterCallback) {
     WebProcessor.debugPath = path;
     WebProcessor.debugHandler = debugHandler;
   }
 
   async processRequest(store: AsyncStorageProps, req: ServerRequest, res: ServerResponse) {
-    if (WebProcessor.debugPath && req.locals.urlWithoutQuery.startsWith(WebProcessor.debugPath)) {
-      if (WebProcessor.debugHandler) {
-        await WebProcessor.debugHandler(req, res, req.locals.urlWithoutQuery);
-        return true;
-      }
+    if (
+      WebProcessor.debugHandler &&
+      WebProcessor.debugPath &&
+      req.locals.urlWithoutQuery.startsWith(WebProcessor.debugPath)
+    ) {
+      await WebProcessor.debugHandler(req, res, req.locals.urlWithoutQuery);
+      return true;
     }
 
     // check if the request is handled by the api
@@ -37,10 +38,6 @@ export class WebProcessor {
       logger.error(`url: ${store.locals.url}, appName: ${store.appName}, process api error: `, e.message);
     }
 
-    // rescue
-    if (req.locals.urlWithoutQuery.startsWith('/admin_dev')) {
-      await processRestartApp();
-    }
     handler404(res, `Request is not processed, url: ${req.locals.url}`);
     return true;
   }

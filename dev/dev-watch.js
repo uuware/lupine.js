@@ -14,6 +14,7 @@ const {
   pluginIfelse,
   markdownProcessOnEnd,
   obfuscatePlugin,
+  sha256,
 } = require('lupine.api/dev');
 
 const triggerHandle = {
@@ -27,7 +28,8 @@ const triggerReStartServer = async (isDev, npmCmd, httpPort) => {
     clearTimeout(triggerHandle.restart);
   }
   triggerHandle.restart = setTimeout(async () => {
-    const url = `http://127.0.0.1:${httpPort}/debug/shutdown`;
+    const token = sha256(process.env['DEV_TOKEN'] || '');
+    const url = `http://127.0.0.1:${httpPort}/debug/shutdown?t=${token}`;
     await sendRequest(url, isDev ? 2 : 0);
     console.log('[dev-server] ReStart Server: ', url);
     isDev && runCmd(npmCmd);
@@ -40,7 +42,8 @@ const triggerRefreshServer = async (isDev, httpPort) => {
     clearTimeout(triggerHandle.refresh);
   }
   triggerHandle.refresh = setTimeout(async () => {
-    const url = `http://127.0.0.1:${httpPort}/debug/refresh`;
+    const token = sha256(process.env['DEV_TOKEN'] || '');
+    const url = `http://127.0.0.1:${httpPort}/debug/refresh?t=${token}`;
     await sendRequest(url, isDev ? 2 : 0);
     console.log('[dev-server] Refresh Server: ', url);
   }, 500);
