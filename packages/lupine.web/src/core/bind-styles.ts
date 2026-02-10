@@ -174,7 +174,8 @@ export const getGlobalStylesId = (style: CssProps): string => {
   return _globalStyleIds.get(style)!;
 };
 
-const _globalStyle = new Map();
+import { getRequestContext } from './use-request-context';
+
 export const bindGlobalStyle = (
   topUniqueClassName: string,
   style: CssProps,
@@ -186,9 +187,12 @@ export const bindGlobalStyle = (
     if (forceUpdate || !cssDom) {
       updateCssDom(topUniqueClassName, processStyle(noTopClassName ? '' : topUniqueClassName, style).join(''), cssDom);
     }
-  } else if (!_globalStyle.has(topUniqueClassName) || forceUpdate) {
-    // don't overwrite it to have the same behavior as in the Browser
-    _globalStyle.set(topUniqueClassName, { topUniqueClassName, noTopClassName, style });
+  } else {
+    const _globalStyle = getRequestContext().globalStyles;
+    if (!_globalStyle.has(topUniqueClassName) || forceUpdate) {
+      // don't overwrite it to have the same behavior as in the Browser
+      _globalStyle.set(topUniqueClassName, { topUniqueClassName, noTopClassName, style });
+    }
   }
 };
 
@@ -220,7 +224,7 @@ if (typeof document !== 'undefined') {
 // can't clear global styles，because in index.tsx it is only loaded once, clear it it will be gone
 // const clearGlobalStyles = () => {
 //   // reset unique id
-//   _globalStyle.clear();
+//   getRequestContext().globalStyles.clear();
 // };
 // bindPageResetEvent(clearGlobalStyles);
 
@@ -229,7 +233,7 @@ export const generateAllGlobalStyles = () => {
 
   result.push(`<style id="sty-${themeCookieName}">${generateThemeStyles()}</style>`);
 
-  for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of _globalStyle) {
+  for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of getRequestContext().globalStyles) {
     const cssText = processStyle(noTopClassName ? '' : topUniqueClassName, style).join('');
     result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);
   }

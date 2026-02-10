@@ -11,27 +11,27 @@ export const domUniqueId = uniqueIdGenerator('l'); // l means label
 //   domUniqueId(true);
 // });
 
-function renderChildren(html: string[], children: any, uniqueClassName?: string, globalCssId?: string) {
-  if (typeof children === 'string') {
-    html.push(children);
-  } else if (children === false || children === null || typeof children === 'undefined') {
-    // add nothing
-  } else if (typeof children === 'number' || typeof children === 'boolean') {
-    // true will be added
-    html.push(children.toString());
-  } else if (Array.isArray(children)) {
-    for (let i = 0; i < children.length; i++) {
-      const item = children[i];
-      renderChildren(html, item, uniqueClassName, globalCssId);
-    }
-  } else if (children.type && children.props) {
-    renderComponent(children.type, children.props, uniqueClassName, globalCssId);
-    html.push(...children.props._html);
-    children.props._html.length = 0;
-  } else {
-    logger.warn('Unexpected', children);
-  }
-}
+// function renderChildren(html: string[], children: any, uniqueClassName?: string, globalCssId?: string) {
+//   if (typeof children === 'string') {
+//     html.push(children);
+//   } else if (children === false || children === null || typeof children === 'undefined') {
+//     // add nothing
+//   } else if (typeof children === 'number' || typeof children === 'boolean') {
+//     // true will be added
+//     html.push(children.toString());
+//   } else if (Array.isArray(children)) {
+//     for (let i = 0; i < children.length; i++) {
+//       const item = children[i];
+//       renderChildren(html, item, uniqueClassName, globalCssId);
+//     }
+//   } else if (children.type && children.props) {
+//     renderComponent(children.type, children.props, uniqueClassName, globalCssId);
+//     html.push(...children.props._html);
+//     children.props._html.length = 0;
+//   } else {
+//     logger.warn('Unexpected', children);
+//   }
+// }
 
 const selfClosingTags = [
   'area',
@@ -139,62 +139,178 @@ function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?:
 }
 
 // The result has only one element
-export const renderComponent = (type: any, props: any, uniqueClassName?: string, globalCssId?: string) => {
-  //   logger.log("==================renderComponent", type);
+// export const renderComponent = (type: any, props: any, uniqueClassName?: string, globalCssId?: string) => {
+//   //   logger.log("==================renderComponent", type);
+//   if (Array.isArray(props)) {
+//     const jsxNodes = { type: 'Fragment', props: { children: props } } as any;
+//     renderComponent(jsxNodes.type, jsxNodes.props, uniqueClassName, globalCssId);
+//     return;
+//   }
+
+//   props._html = [];
+//   if (typeof type === 'function') {
+//     props._result = type.call(null, props);
+//     if (props._result === null || props._result === undefined || props._result === false) {
+//       // placeholder for sub components
+//       props._result = { type: 'Fragment', props };
+//     }
+//     // if (props._fragment_ref && props._result && props._result.props) {
+//     //   // pass the ref to the sub Fragment tag
+//     //   props._result.props.ref = props._fragment_ref;
+//     //   props._result.props._id = genUniqueId(props._result.props);
+//     // }
+//     // logger.log('==========props._result', props._result);
+//     if (typeof props._result.type === 'function') {
+//       renderComponent(props._result.type, props._result.props, uniqueClassName, globalCssId);
+//       if (props._result.props._html) {
+//         props._html.push(...props._result.props._html);
+//         props._result.props._html.length = 0;
+//       }
+//       // function component doesn't have any attributes
+//       return;
+//     }
+//   }
+//   const newType = (props._result && props._result.type) || type;
+//   const newProps = (props._result && props._result.props) || props;
+//   if (typeof newType === 'string') {
+//     if (newProps._id) {
+//       console.warn('This component reference is used more than once and will have binding issues: ', newProps);
+//     }
+//     let newUniqueClassName = uniqueClassName;
+//     if (newProps['css'] || newProps['ref']) {
+//       newUniqueClassName = genUniqueId(newProps);
+//       if (!newProps['class'] && !newProps['className']) {
+//         newProps['class'] = newUniqueClassName;
+//       }
+//     }
+//     let newGlobalCssId = globalCssId;
+//     if (newProps['ref'] && newProps['ref'].globalCssId) {
+//       newGlobalCssId = newProps['ref'].globalCssId;
+//     }
+//     const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName, newGlobalCssId);
+//     if (selfClosingTags.includes(newType.toLowerCase())) {
+//       // for Fragment, only needs this tag when Ref is assigned
+//       if (newType !== 'Fragment' || newProps.ref) {
+//         props._html.push(`<${newType}${attrs ? ' ' : ''}${attrs} />`);
+//       }
+//       if (newProps['css']) {
+//         console.warn(`ClosingTag [${newType}] doesn't support 'css', please use 'style' instead.`);
+//       }
+//     } else {
+//       if (newType !== 'Fragment' || newProps.ref) {
+//         props._html.push(`<${newType}${attrs ? ' ' : ''}${attrs}>`);
+//       }
+
+//       if (newProps['css']) {
+//         const cssText = processStyle(newUniqueClassName!, newProps['css']).join('');
+//         props._html.push(`<style id="sty-${newUniqueClassName}">${cssText}</style>`); // sty means style, and updateStyles has the same name
+//       }
+
+//       if (newProps.children || newProps.children === 0) {
+//         // if (newProps._lb) {
+//         //     assignLabels(newProps._lb, newProps.children);
+//         // }
+
+//         renderChildren(props._html, newProps.children, newUniqueClassName, newGlobalCssId);
+//       } else if (newProps['dangerouslySetInnerHTML']) {
+//         props._html.push(newProps['dangerouslySetInnerHTML']);
+//       } else {
+//         // single element
+//       }
+
+//       if (newType !== 'Fragment' || newProps.ref) {
+//         props._html.push(`</${newType}>`);
+//       }
+//     }
+//   } else if (newType.name === 'Fragment') {
+//     renderChildren(props._html, newProps.children, uniqueClassName, globalCssId);
+//   } else {
+//     logger.warn('Unknown type: ', type, props, newType, newProps);
+//   }
+// };
+
+let _yieldCounter = 0;
+const YIELD_THRESHOLD = 50;
+
+async function renderChildrenAsync(html: string[], children: any, uniqueClassName?: string, globalCssId?: string) {
+  if (typeof children === 'string') {
+    html.push(children);
+  } else if (children === false || children === null || typeof children === 'undefined') {
+    // add nothing
+  } else if (typeof children === 'number' || typeof children === 'boolean') {
+    // true will be added
+    html.push(children.toString());
+  } else if (Array.isArray(children)) {
+    for (const item of children) {
+      await renderChildrenAsync(html, item, uniqueClassName, globalCssId);
+    }
+  } else if (children.type && children.props) {
+    await renderComponentAsync(children.type, children.props, uniqueClassName, globalCssId);
+    html.push(...children.props._html);
+    children.props._html.length = 0;
+  } else {
+    logger.warn('Unexpected', children);
+  }
+}
+
+export const renderComponentAsync = async (type: any, props: any, uniqueClassName?: string, globalCssId?: string) => {
+  _yieldCounter++;
+  if (_yieldCounter >= YIELD_THRESHOLD) {
+    _yieldCounter = 0;
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+
   if (Array.isArray(props)) {
     const jsxNodes = { type: 'Fragment', props: { children: props } } as any;
-    renderComponent(jsxNodes.type, jsxNodes.props, uniqueClassName, globalCssId);
+    await renderComponentAsync(jsxNodes.type, jsxNodes.props, uniqueClassName, globalCssId);
     return;
   }
 
   props._html = [];
   if (typeof type === 'function') {
+    // Note: Components themselves are still synchronous functions, just their traversal is async
     props._result = type.call(null, props);
+    if (props._result && typeof props._result.then === 'function') {
+      // If component returns a Promise (Async Component), await it
+      props._result = await props._result;
+    }
+
     if (props._result === null || props._result === undefined || props._result === false) {
-      // placeholder for sub components
       props._result = { type: 'Fragment', props };
     }
-    // if (props._fragment_ref && props._result && props._result.props) {
-    //   // pass the ref to the sub Fragment tag
-    //   props._result.props.ref = props._fragment_ref;
-    //   props._result.props._id = genUniqueId(props._result.props);
-    // }
-    // logger.log('==========props._result', props._result);
+
     if (typeof props._result.type === 'function') {
-      renderComponent(props._result.type, props._result.props, uniqueClassName, globalCssId);
+      await renderComponentAsync(props._result.type, props._result.props, uniqueClassName, globalCssId);
       if (props._result.props._html) {
         props._html.push(...props._result.props._html);
         props._result.props._html.length = 0;
       }
-      // function component doesn't have any attributes
       return;
     }
   }
+
   const newType = (props._result && props._result.type) || type;
   const newProps = (props._result && props._result.props) || props;
+
   if (typeof newType === 'string') {
     if (newProps._id) {
-      console.warn('This component reference is used more than once and will have binding issues: ', newProps);
+      // console.warn('This component reference is used more than once:', newProps);
     }
+
     let newUniqueClassName = uniqueClassName;
     if (newProps['css'] || newProps['ref']) {
       newUniqueClassName = genUniqueId(newProps);
-      if (!newProps['class'] && !newProps['className']) {
-        newProps['class'] = newUniqueClassName;
-      }
+      if (!newProps['class'] && !newProps['className']) newProps['class'] = newUniqueClassName;
     }
+
     let newGlobalCssId = globalCssId;
-    if (newProps['ref'] && newProps['ref'].globalCssId) {
-      newGlobalCssId = newProps['ref'].globalCssId;
-    }
+    if (newProps['ref'] && newProps['ref'].globalCssId) newGlobalCssId = newProps['ref'].globalCssId;
+
     const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName, newGlobalCssId);
+
     if (selfClosingTags.includes(newType.toLowerCase())) {
-      // for Fragment, only needs this tag when Ref is assigned
       if (newType !== 'Fragment' || newProps.ref) {
         props._html.push(`<${newType}${attrs ? ' ' : ''}${attrs} />`);
-      }
-      if (newProps['css']) {
-        console.warn(`ClosingTag [${newType}] doesn't support 'css', please use 'style' instead.`);
       }
     } else {
       if (newType !== 'Fragment' || newProps.ref) {
@@ -203,19 +319,13 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string,
 
       if (newProps['css']) {
         const cssText = processStyle(newUniqueClassName!, newProps['css']).join('');
-        props._html.push(`<style id="sty-${newUniqueClassName}">${cssText}</style>`); // sty means style, and updateStyles has the same name
+        props._html.push(`<style id="sty-${newUniqueClassName}">${cssText}</style>`);
       }
 
       if (newProps.children || newProps.children === 0) {
-        // if (newProps._lb) {
-        //     assignLabels(newProps._lb, newProps.children);
-        // }
-
-        renderChildren(props._html, newProps.children, newUniqueClassName, newGlobalCssId);
+        await renderChildrenAsync(props._html, newProps.children, newUniqueClassName, newGlobalCssId);
       } else if (newProps['dangerouslySetInnerHTML']) {
         props._html.push(newProps['dangerouslySetInnerHTML']);
-      } else {
-        // single element
       }
 
       if (newType !== 'Fragment' || newProps.ref) {
@@ -223,7 +333,7 @@ export const renderComponent = (type: any, props: any, uniqueClassName?: string,
       }
     }
   } else if (newType.name === 'Fragment') {
-    renderChildren(props._html, newProps.children, uniqueClassName, globalCssId);
+    await renderChildrenAsync(props._html, newProps.children, uniqueClassName, globalCssId);
   } else {
     logger.warn('Unknown type: ', type, props, newType, newProps);
   }

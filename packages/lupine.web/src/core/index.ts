@@ -13,5 +13,6 @@ export * from './page-router';
 export * from './render-component';
 export * from './replace-innerhtml';
 export * from './server-cookie';
+export * from './use-request-context';
 
 export * from './initialize';
