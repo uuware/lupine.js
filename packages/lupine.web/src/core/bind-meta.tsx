@@ -1,32 +1,18 @@
 // import { bindPageResetEvent } from '../core/page-reset-events';
 
-import { getRequestContext } from './use-request-context';
+import { appData, getRequestContext } from './use-request-context';
 // import { bindPageResetEvent } from '../core/page-reset-events';
 
 export const setPageTitle = (title: string) => {
-  getRequestContext().pageTitle.value = title;
+  getRequestContext().pageTitle = title;
 };
 
 export const getPageTitle = () => {
-  const _pageTitle = getRequestContext().pageTitle;
-  return _pageTitle.value || _pageTitle.defaultValue;
+  return getRequestContext().pageTitle || appData.defaultPageTitle;
 };
 
 export const setDefaultPageTitle = (title: string) => {
-  getRequestContext().pageTitle.defaultValue = title;
-};
-
-export const setMetaDescription = (description: string) => {
-  getRequestContext().metaDescription.value = description;
-};
-
-export const getMetaDescription = () => {
-  const _description = getRequestContext().metaDescription;
-  return _description.value || _description.defaultValue;
-};
-
-export const setDefaultMetaDescription = (description: string) => {
-  getRequestContext().metaDescription.defaultValue = description;
+  appData.defaultPageTitle = title;
 };
 
 export const addMetaDataTags = (key: string, value: string) => {
@@ -43,14 +29,5 @@ export const getMetaDataTags = () => {
 };
 
 export const getMetaDataObject = () => {
-  const metaDescription = getMetaDescription();
-  const _metaData = getRequestContext().metaData;
-  return metaDescription
-    ? Object.assign(
-        {
-          'name:description': `<meta name="description" content="${metaDescription}">`,
-        },
-        _metaData
-      )
-    : _metaData;
+  return getRequestContext().metaData;
 };

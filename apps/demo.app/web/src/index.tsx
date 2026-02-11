@@ -10,7 +10,6 @@ import {
   PageRouter,
   bindTheme,
   setDefaultPageTitle,
-  setDefaultMetaDescription,
   bindGlobalStyle,
   _LupineJs,
   _lupineJs,
@@ -51,13 +50,12 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));
 }
 
-console.log(document.title);
+// console.log(document.title);
 // addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Development Project for Lupine.js');
-setDefaultMetaDescription('Development Project for Lupine.js');
 
 bindRenderPageFunctions({ fetchData, baseUrl });
 

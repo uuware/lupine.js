@@ -3,7 +3,7 @@ import { CssProps } from '../jsx';
 import { getCurrentTheme, themeCookieName } from './bind-theme';
 import { camelToHyphens } from './camel-to-hyphens';
 // import { bindPageResetEvent } from './page-reset-events';
-import { bindPageLoadedEvent } from './page-loaded-events';
+import { bindPageLoadedEvent } from './page-loaded-event';
 
 const wrapCss = (className: string, cssText: string, mediaQuery?: string) => {
   // if (!className) {
@@ -165,13 +165,13 @@ For example, it can be like this for all elements:
 For themes like [data-theme="dark" i], the topUniqueClassName should be empty
 */
 export const globalStyleUniqueId = /* @__PURE__ */ uniqueIdGenerator('g'); // g means global style
-const _globalStyleIds = new Map<CssProps, string>();
+// const _globalStyleIds = new Map<CssProps, string>();
 export const getGlobalStylesId = (style: CssProps): string => {
-  if (!_globalStyleIds.has(style)) {
+  if (!getRequestContext().globalStyleIds.has(style)) {
     const id = globalStyleUniqueId();
-    _globalStyleIds.set(style, id);
+    getRequestContext().globalStyleIds.set(style, id);
   }
-  return _globalStyleIds.get(style)!;
+  return getRequestContext().globalStyleIds.get(style)!;
 };
 
 import { getRequestContext } from './use-request-context';

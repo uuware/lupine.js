@@ -7,7 +7,6 @@ import {
   isFrontEnd,
   debugWatch,
   webEnv,
-  setDefaultMetaDescription,
   bindGlobalStyle,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes } from 'lupine.press';
@@ -23,7 +22,6 @@ bindLang('en', {});
 bindTheme('light', pressThemes);
 bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Lupine.js Doc');
-setDefaultMetaDescription('Lupine.js Doc');
 
 bindPressData(markdownConfig);
 
