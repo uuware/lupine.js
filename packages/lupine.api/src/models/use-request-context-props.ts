@@ -1,10 +1,11 @@
-import { ThemesProps } from './theme-props';
-
+export type StylesProps = Map<string, { topUniqueClassName: string; noTopClassName: boolean; style: any }>;
 export interface IRequestContextProps {
-  pageTitle: { value: string; defaultValue: string };
-  metaDescription: { value: string; defaultValue: string };
+  pageTitle: string;
   metaData: { [key: string]: string };
-  theme: { defaultTheme: string; themes: ThemesProps };
-  globalStyles: Map<string, { topUniqueClassName: string; noTopClassName: boolean; style: any }>;
+  themeName: string;
+  langName: string;
+  globalStyles: StylesProps;
+  globalStyleIds: Map<any, string>;
+  coreData: { [key: string]: any }; // for core development
   devData: { [key: string]: any }; // for secondary development
 }
