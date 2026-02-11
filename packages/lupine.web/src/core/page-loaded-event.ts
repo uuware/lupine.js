@@ -13,7 +13,7 @@ export const callPageLoadedEvent = () => {
 
 // The fn is called when the page is first time loaded
 export const bindPageLoadedEvent = (fn: PageLoadedEventProps) => {
-  if (typeof document !== 'undefined') {
+  if (typeof document === 'undefined') {
     throw new Error('bindPageLoadedEvent can only be called in the browser');
   }
 
