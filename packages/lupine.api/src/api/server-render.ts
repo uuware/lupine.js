@@ -16,15 +16,17 @@ const getRequestContext = () => {
   try {
     const store = apiCache.getAsyncStore();
     if (!store['requestContext']) {
-      store['requestContext'] = {
-        pageTitle: { value: '', defaultValue: '' },
-        metaDescription: { value: '', defaultValue: '' },
+      const data: IRequestContextProps = {
+        pageTitle: '',
         metaData: {},
-        theme: { defaultTheme: 'light', themes: {} },
+        themeName: 'light',
+        langName: 'en',
         globalStyles: new Map(),
+        globalStyleIds: new Map(),
         coreData: {}, // for core development
         devData: {}, // for secondary development
       };
+      store['requestContext'] = data;
     }
     return store['requestContext'] as IRequestContextProps;
   } catch (e) {
