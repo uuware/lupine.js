@@ -22,6 +22,7 @@ const getRequestContext = () => {
         metaData: {},
         theme: { defaultTheme: 'light', themes: {} },
         globalStyles: new Map(),
+        coreData: {}, // for core development
         devData: {}, // for secondary development
       };
     }
@@ -31,7 +32,7 @@ const getRequestContext = () => {
   }
 };
 
-const logger = new Logger('StaticServer');
+const logger = new Logger('server-render');
 
 export type RenderPageFunctionsType = {
   fetchData: (url: string, postData: string | JsonObject) => Promise<any>;

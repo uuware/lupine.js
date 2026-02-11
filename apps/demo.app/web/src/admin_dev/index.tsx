@@ -14,7 +14,6 @@ import {
   PageProps,
   PageRouter,
   Redirect,
-  setDefaultMetaDescription,
   setDefaultPageTitle,
   webEnv,
 } from 'lupine.components';
@@ -56,7 +55,6 @@ bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Sample - Page Title');
-setDefaultMetaDescription('Sample - Page Description');
 
 bindRenderPageFunctions({ fetchData, baseUrl });
 

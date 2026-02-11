@@ -7,7 +7,6 @@ import {
   isFrontEnd,
   debugWatch,
   webEnv,
-  setDefaultMetaDescription,
   bindGlobalStyle,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes, setPressSubDir } from 'lupine.press';
@@ -23,7 +22,6 @@ bindLang('en', {});
 bindTheme('light', pressThemes);
 bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Doc Starter');
-setDefaultMetaDescription('Doc Starter Demo');
 
 bindPressData(markdownConfig);
 setPressSubDir('/github-pj-name');

@@ -1,5 +1,6 @@
 // import { bindPageResetEvent } from '../core/page-reset-events';
 import { addMetaDataTags } from 'lupine.web';
+import { encodeHtml } from '../lib';
 type NameMeta = { name: string; content: string };
 type PropertyMeta = { property: string; content: string };
 type HttpEquivMeta = { httpEquiv: string; content: string };
@@ -18,11 +19,17 @@ function isHttpEquivMeta(data: any): data is HttpEquivMeta {
 // should use description tag instead of meta tag ( <meta name="description" content="..."> )
 export const MetaData = (data: AllMeta) => {
   if (isNameMeta(data)) {
-    addMetaDataTags(`name:${data.name}`, `<meta name="${data.name}" content="${data.content}">`);
+    addMetaDataTags(`name:${data.name}`, `<meta name="${data.name}" content="${encodeHtml(data.content)}">`);
   } else if (isPropertyMeta(data)) {
-    addMetaDataTags(`property:${data.property}`, `<meta property="${data.property}" content="${data.content}">`);
+    addMetaDataTags(
+      `property:${data.property}`,
+      `<meta property="${data.property}" content="${encodeHtml(data.content)}">`
+    );
   } else if (isHttpEquivMeta(data)) {
-    addMetaDataTags(`http-equiv:${data.httpEquiv}`, `<meta http-equiv="${data.httpEquiv}" content="${data.content}">`);
+    addMetaDataTags(
+      `http-equiv:${data.httpEquiv}`,
+      `<meta http-equiv="${data.httpEquiv}" content="${encodeHtml(data.content)}">`
+    );
   } else if ((data as any).key && (data as any).string) {
     addMetaDataTags(`${(data as any).key}`, `${(data as any).string}`);
   } else {
