@@ -229,6 +229,7 @@ function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?:
 //   }
 // };
 
+// shared state, global throttle for requests but safe
 let _yieldCounter = 0;
 const YIELD_THRESHOLD = 50;
 

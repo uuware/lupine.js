@@ -2,39 +2,32 @@ import { setCookie } from '../lib/cookie';
 import { ThemesProps } from '../models';
 import { isFrontEnd } from '../lib/is-frontend';
 import { getEitherCookie } from './server-cookie';
-import { getRequestContext } from './use-request-context';
+import { appData, getRequestContext } from './use-request-context';
 
-// theme doesn't need to reset, theme name is stored in cookie
+// theme name is stored per session, themes & defaultTheme are global to all sessions
 
-export const defaultThemeName = 'light';
 export const themeCookieName = 'theme';
 export const updateThemeEventName = 'updateTheme';
 export const themeAttributeName = 'data-theme';
-const _themeCfg: { defaultTheme: string; themes: ThemesProps } = { defaultTheme: defaultThemeName, themes: {} };
 export const bindTheme = (defaultTheme: string, themes: ThemesProps) => {
-  const cfg = isFrontEnd() ? _themeCfg : getRequestContext().theme;
-  cfg.defaultTheme = defaultTheme;
-  cfg.themes = themes;
-
-  // set to cookie
-  getCurrentTheme();
+  appData.defaultTheme = defaultTheme;
+  appData.themes = themes;
 };
 
 export const getCurrentTheme = () => {
-  const cfg = isFrontEnd() ? _themeCfg : getRequestContext().theme;
   let themeName = getEitherCookie(themeCookieName) as string;
-  if (!themeName || !cfg.themes[themeName]) {
-    themeName = cfg.defaultTheme;
-    if (isFrontEnd()) {
-      setCookie(themeCookieName, cfg.defaultTheme);
+  if (!themeName || !appData.themes[themeName]) {
+    themeName = appData.defaultTheme;
+    // if getRequestContext().themeName is set but hasn't been saved, then put it into cookie
+    if (isFrontEnd() && getRequestContext().themeName && getRequestContext().themeName !== appData.defaultTheme) {
+      setCookie(themeCookieName, getRequestContext().themeName);
     }
   }
-  return { themeName, themes: cfg.themes };
+  return { themeName, themes: appData.themes };
 };
 
 export const updateTheme = (themeName: string) => {
-  // Theme is only updated in Browser
-  _themeCfg.defaultTheme = themeName;
+  getRequestContext().themeName = themeName;
   if (!isFrontEnd()) {
     return;
   }

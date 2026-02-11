@@ -1,19 +1,20 @@
 import { Logger } from '../lib/logger';
 import { generateAllGlobalStyles } from './bind-styles';
-import { defaultThemeName, getCurrentTheme, updateTheme } from './bind-theme';
+import { getCurrentTheme, updateTheme } from './bind-theme';
 import { mountInnerComponent } from './mount-component';
 import { renderComponentAsync } from './render-component';
 // import { callPageResetEvent } from './page-reset-events';
 import { PageRouter } from './page-router';
-import { callPageLoadedEvent } from './page-loaded-events';
+import { callPageLoadedEvent } from './page-loaded-event';
 import { initServerCookies } from './server-cookie';
-import { IToClientDelivery } from '../models';
+import { IRequestContextProps, IToClientDelivery } from '../models';
 import { getMetaDataObject, getMetaDataTags, getPageTitle } from './bind-meta';
 import { initWebEnv } from '../lib/web-env';
 import { _lupineJs, PageProps, PageResultType, setRenderPageProps } from './export-lupine';
 import { isFrontEnd } from '../lib/is-frontend';
 import { WebConfig } from '../lib/web-config';
-import { initRequestContext } from 'lupine.components';
+import { bindRequestContext } from './use-request-context';
+import { CssProps } from '../jsx';
 
 const logger = new Logger('initialize');
 
@@ -28,7 +29,7 @@ const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
 const generatePage = async (props: PageProps, toClientDelivery: IToClientDelivery): Promise<PageResultType> => {
   setRenderPageProps(props);
 
-  initRequestContext(() => toClientDelivery.getRequestContext());
+  bindRequestContext(() => toClientDelivery.getRequestContext());
   initWebEnv(toClientDelivery.getWebEnv());
   WebConfig.initFromData(toClientDelivery.getWebSetting());
   // initWebSetting(toClientDelivery.getWebSetting());
@@ -43,7 +44,7 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
       title: '',
       metaData: '',
       globalCss: '',
-      themeName: defaultThemeName,
+      themeName: getCurrentTheme().themeName,
     };
   }
 
@@ -69,6 +70,19 @@ const _initSaved = {
 // this is called in the FE when the document is loaded
 // to avoid circular reference, bindLinks can't call initializePage directly
 export const initializePage = async (newUrl?: string) => {
+  // Default context for Browser (singleton)
+  const defaultContext: IRequestContextProps = {
+    pageTitle: '',
+    metaData: {},
+    themeName: '',
+    langName: '',
+    globalStyles: new Map<string, { topUniqueClassName: string; noTopClassName: boolean; style: CssProps }>(),
+    globalStyleIds: new Map<CssProps, string>(),
+    coreData: {}, // for core development
+    devData: {}, // for secondary development
+  };
+  bindRequestContext(() => defaultContext);
+
   const currentPageInitialized = _initSaved.pageInitialized;
   _initSaved.pageInitialized = true;
   logger.log('initializePage: ', newUrl);
@@ -90,7 +104,7 @@ export const initializePage = async (newUrl?: string) => {
   };
 
   setRenderPageProps(props);
-  // !currentPageInitialized && callPageResetEvent();
+  // can only call callPageLoadedEvent once after page refreshed
   !currentPageInitialized && callPageLoadedEvent();
 
   const jsxNodes = await renderTargetPage(props, currentPageInitialized);
@@ -111,12 +125,12 @@ export const initializePage = async (newUrl?: string) => {
 };
 _lupineJs.initializePage = initializePage;
 
+// this is called in bindRouter to avoid tree shaking
 export const initializeApp = () => {
-  if (_initSaved.appInitialized) return;
-  _initSaved.appInitialized = true;
-
-  // avoid tree shaking
   if (isFrontEnd()) {
+    if (_initSaved.appInitialized) return;
+    _initSaved.appInitialized = true;
+
     addEventListener('popstate', (event) => {
       initializePage();
     });
