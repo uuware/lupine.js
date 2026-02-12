@@ -187,7 +187,7 @@ async function init() {
     pkg.dependencies['lupine.press'] = '^1.0.1';
     pkg.devDependencies['gray-matter'] = '^4.0.3';
     pkg.devDependencies['marked'] = '^17.0.1';
-    pkg.scripts['cp-docs'] = `node dev/cp-folder.js dist/server_root/${appName}_web/lupine.js docs`;
+    pkg.scripts['cp-docs'] = `node dev/cp-folder.js dist/server_root/${appName}_web/github-pj-name docs`;
   }
 
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(pkg, null, 2));
