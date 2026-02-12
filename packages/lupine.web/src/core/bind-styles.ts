@@ -1,5 +1,5 @@
-import { uniqueIdGenerator } from 'lupine.components';
 import { CssProps } from '../jsx';
+import { uniqueIdGenerator } from '../lib';
 import { getCurrentTheme, themeCookieName } from './bind-theme';
 import { camelToHyphens } from './camel-to-hyphens';
 // import { bindPageResetEvent } from './page-reset-events';
@@ -174,8 +174,30 @@ export const getGlobalStylesId = (style: CssProps): string => {
   return getRequestContext().globalStyleIds.get(style)!;
 };
 
-import { getRequestContext } from './use-request-context';
+import { appData, getRequestContext } from './use-request-context';
 
+// this is app common styles, for all sessions
+export const bindAppGlobalStyle = (
+  topUniqueClassName: string,
+  style: CssProps,
+  forceUpdate = false,
+  noTopClassName = false
+) => {
+  if (typeof document !== 'undefined') {
+    let cssDom = document.getElementById(`sty-${topUniqueClassName}`);
+    if (forceUpdate || !cssDom) {
+      updateCssDom(topUniqueClassName, processStyle(noTopClassName ? '' : topUniqueClassName, style).join(''), cssDom);
+    }
+  } else {
+    const _globalStyle = appData.appGlobalStyles;
+    if (!_globalStyle.has(topUniqueClassName) || forceUpdate) {
+      // don't overwrite it to have the same behavior as in the Browser
+      _globalStyle.set(topUniqueClassName, { topUniqueClassName, noTopClassName, style });
+    }
+  }
+};
+
+// this is for per session
 export const bindGlobalStyle = (
   topUniqueClassName: string,
   style: CssProps,
@@ -232,7 +254,12 @@ export const generateAllGlobalStyles = () => {
   const result = [];
 
   result.push(`<style id="sty-${themeCookieName}">${generateThemeStyles()}</style>`);
-
+  // app common styles first
+  for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of appData.appGlobalStyles) {
+    const cssText = processStyle(noTopClassName ? '' : topUniqueClassName, style).join('');
+    result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);
+  }
+  // per session styles
   for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of getRequestContext().globalStyles) {
     const cssText = processStyle(noTopClassName ? '' : topUniqueClassName, style).join('');
     result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);

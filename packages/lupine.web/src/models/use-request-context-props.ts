@@ -19,7 +19,7 @@ export type AppDataProps = {
   defaultTheme: string;
   themes: ThemesProps;
 
-  defaultStyles: StylesProps;
+  appGlobalStyles: StylesProps;
 
   // setDataEvent: SetDataEventProps | null;
 };

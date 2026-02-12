@@ -7,7 +7,7 @@ import {
   isFrontEnd,
   debugWatch,
   webEnv,
-  bindGlobalStyle,
+  bindAppGlobalStyle,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes } from 'lupine.press';
 import { markdownConfig } from './markdown-built/markdown-config';
@@ -20,7 +20,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 
 bindLang('en', {});
 bindTheme('light', pressThemes);
-bindGlobalStyle('comm-css', baseCss, false, true);
+bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Lupine.js Doc');
 
 bindPressData(markdownConfig);

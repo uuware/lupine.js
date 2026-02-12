@@ -24,6 +24,11 @@ export class RuntimeRequire {
     const code = await fs.readFile(path, 'utf-8');
     const context = {
       globalThis: globalThis || {},
+      console,
+      setTimeout,
+      clearTimeout,
+      URL,
+      URLSearchParams,
     };
     vm.createContext(context);
     // for debug in Javascript Debug Terminal

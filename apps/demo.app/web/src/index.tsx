@@ -10,7 +10,7 @@ import {
   PageRouter,
   bindTheme,
   setDefaultPageTitle,
-  bindGlobalStyle,
+  bindAppGlobalStyle,
   _LupineJs,
   _lupineJs,
   bindLang,
@@ -54,7 +54,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 // addWebVersion('20250409');
 bindLang('zh-cn', {});
 bindTheme('light', themes);
-bindGlobalStyle('comm-css', baseCss, false, true);
+bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Development Project for Lupine.js');
 
 bindRenderPageFunctions({ fetchData, baseUrl });
