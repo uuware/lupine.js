@@ -123,6 +123,8 @@ async function init() {
   console.log(`\nScaffolding project in ${root}...`);
 
   copyDir(commonDir, root);
+  fs.renameSync(path.join(root, '_gitignore'), path.join(root, '.gitignore'));
+  fs.renameSync(path.join(root, '_env'), path.join(root, '.env'));
 
   const appsDir = path.join(root, 'apps');
   if (!fs.existsSync(appsDir)) {
