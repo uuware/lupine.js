@@ -103,7 +103,8 @@ export async function processDevRequests(
   }
 
   // in some cases, the server is not updated properly, so we need to restart to rescue it
-  if (req.url === '/debug/restart') {
+  const urlWithQuery = req.locals.urlWithoutQuery;
+  if (urlWithQuery === '/debug/restart') {
     await processRestartApp();
     handler200(res, `Restarting app...`);
     return;
@@ -120,7 +121,7 @@ export async function processDevRequests(
   //   console.log(`${process.pid} - [server] Ignore request from: `, req.url, address.address);
   //   return;
   // }
-  if (req.url === '/debug/shutdown') {
+  if (urlWithQuery === '/debug/shutdown') {
     console.log(`${process.pid} - [server] Received shutdown command.`);
     if (process.send) {
       // send to parent process to kill all
@@ -130,7 +131,7 @@ export async function processDevRequests(
     else if (getAppCache().get(AppCacheGlobal, AppCacheKeys.APP_DEBUG) === true) {
       await processDebugMessage({ id: 'debug', message: 'shutdown' });
     }
-  } else if (req.url === '/debug/refresh') {
+  } else if (urlWithQuery === '/debug/refresh') {
     await processRefreshCache(req);
   }
   // else if (req.url === '/debug/client') {
