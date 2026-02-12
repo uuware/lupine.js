@@ -1,0 +1,101 @@
+<p>“一次编写，到处运行”的梦想往往伴随着巨大的妥协。沉重的框架、混乱的条件判断代码以及糟糕的性能，通常是跨平台开发的噩梦。</p>
+<p><strong>Lupine.js</strong> 改变了这一切。它从底层设计开始就是一个<strong>通用框架</strong>。通过利用 <strong>Capacitor</strong> (移动端) 和 <strong>Electron</strong> (桌面端)，你可以利用同一套 TypeScript 代码库，将应用发布到 Web、iOS、Android、Windows、macOS 和 Linux。</p>
+<p><img src="/lupine.js/assets/architecture_cross_platform.png" alt="Lupine.js 架构"></p>
+<p>在本指南中，我们将以即将真实上线的 <strong>Lupine 示例应用</strong> 应用为例，演示如何将一个标的 Lupine.js Web 应用扩展到移动端和桌面端。</p>
+<h2 id="1-核心-响应式-web-应用"><a class="header-anchor" href="#1-核心-响应式-web-应用">#</a>1. 核心：响应式 Web 应用</h2><p>在接触任何原生代码之前，我们需要一个响应式的 Web 应用。Lupine.js 通过内置的响应式工具和 CSS-in-JS 引擎，让这一切变得简单。</p>
+<h3 id="响应式样式"><a class="header-anchor" href="#响应式样式">#</a>响应式样式</h3><p>你不需要为移动端编写单独的 CSS 文件，而是直接在组件样式中使用 <code>MediaQueryRange</code>：</p>
+<pre><code class="language-tsx">import { MediaQueryRange, CssProps } from &#39;lupine.web&#39;;
+
+const css: CssProps = {
+  // 默认 (桌面) 样式
+  padding: &#39;50px&#39;,
+  fontSize: &#39;18px&#39;,
+
+  // 移动端覆盖样式
+  [MediaQueryRange.MobileBelow]: {
+    padding: &#39;10px&#39;,
+    fontSize: &#39;14px&#39;,
+    flexDirection: &#39;column&#39;,
+  },
+};
+</code></pre>
+<h3 id="自适应框架-layout"><a class="header-anchor" href="#自适应框架-layout">#</a>自适应框架 Layout</h3><p>对于导航，<code>ResponsiveFrame</code> 组件会根据设备自动在“桌面顶部菜单”和“移动端底部导航栏”之间切换。</p>
+<pre><code class="language-tsx">&lt;ResponsiveFrame
+  desktopHeaderTitle=&#39;我的应用&#39;
+  // ... 桌面菜单项
+  mobileBottomMenu={[
+    { title: &#39;首页&#39;, icon: &lt;HomeIcon /&gt;, link: &#39;/home&#39; },
+    { title: &#39;我的&#39;, icon: &lt;UserIcon /&gt;, link: &#39;/me&#39; },
+  ]}
+  mainContent={&lt;PageComponent /&gt;}
+/&gt;
+</code></pre>
+<h2 id="2-进军移动端-ios-android"><a class="header-anchor" href="#2-进军移动端-ios-android">#</a>2. 进军移动端 (iOS &amp; Android)</h2><p>Lupine.js 使用 <strong>Capacitor</strong> 将你的 Web 应用包装成原生 App。这让你既能访问原生功能（相机、文件系统），又能保持 Web 开发的流畅工作流。</p>
+<h3 id="步骤-2-1-安装-capacitor"><a class="header-anchor" href="#步骤-2-1-安装-capacitor">#</a>步骤 2.1: 安装 Capacitor</h3><p>在项目根目录，安装必要的依赖：</p>
+<pre><code class="language-bash"># Capacitor 核心库
+npm install @capacitor/cli@latest @capacitor/core@latest
+npm install @capacitor/android @capacitor/ios
+
+# 常用插件 (相机, 文件系统等)
+npm install @capacitor/camera @capacitor/filesystem @capacitor/share
+npm install @capacitor-community/keep-awake
+
+# 初始化
+npx cap init [MyAppName] [com.example.app]
+</code></pre>
+<h3 id="步骤-2-2-添加平台"><a class="header-anchor" href="#步骤-2-2-添加平台">#</a>步骤 2.2: 添加平台</h3><pre><code class="language-bash"># 添加 Android
+npx cap add android
+
+# 添加 iOS (需要 Mac 和 Xcode)
+npx cap add ios
+</code></pre>
+<h3 id="步骤-2-3-配置移动端环境"><a class="header-anchor" href="#步骤-2-3-配置移动端环境">#</a>步骤 2.3: 配置移动端环境</h3><p>移动端应用通常通过本地文件系统 (<code>file://</code>) 运行，因此无法像 Web 那样使用相对路径请求 API。你需要创建一个 <code>.env.mobile</code> 文件：</p>
+<pre><code class="language-ini"># .env.mobile
+WEB.API_BASE_URL=https://api.your-production-site.com
+</code></pre>
+<h3 id="步骤-2-4-构建与同步"><a class="header-anchor" href="#步骤-2-4-构建与同步">#</a>步骤 2.4: 构建与同步</h3><p>在 <code>package.json</code> 中添加构建脚本：</p>
+<pre><code class="language-json">&quot;scripts&quot;: {
+  &quot;build-mobile&quot;: &quot;node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1&quot;
+}
+</code></pre>
+<p>然后执行构建并同步到原生项目：</p>
+<pre><code class="language-bash">npm run build-mobile
+npx cap sync
+npx cap open android  # 打开 Android Studio
+</code></pre>
+<h3 id="步骤-2-5-原生逻辑-可选"><a class="header-anchor" href="#步骤-2-5-原生逻辑-可选">#</a>步骤 2.5: 原生逻辑 (可选)</h3><p>你可以使用 <code>#if MOBILE</code> 编译指令来编写平台特定代码，而且不会导致 Web 包体积膨胀：</p>
+<pre><code class="language-javascript">// #if MOBILE
+import { Camera } from &#39;@capacitor/camera&#39;;
+
+const takePhoto = async () =&gt; {
+  const image = await Camera.getPhoto({ ... });
+  // 处理图片...
+};
+// #else
+const takePhoto = async () =&gt; {
+  alert(&quot;相机仅在移动端 App 中可用！&quot;);
+};
+// #endif
+</code></pre>
+<h2 id="3-进军桌面端-windows-mac-linux"><a class="header-anchor" href="#3-进军桌面端-windows-mac-linux">#</a>3. 进军桌面端 (Windows, Mac, Linux)</h2><p>对于桌面端，Lupine.js 集成了 <strong>Electron</strong>。</p>
+<h3 id="结构"><a class="header-anchor" href="#结构">#</a>结构</h3><p>每个 Lupine 项目都自带一个 <code>electron</code> 目录，包含主进程逻辑：</p>
+<ul>
+<li><code>electron/main.js</code>: Electron 应用的入口点。</li>
+<li><code>electron/preload.js</code>: 渲染进程 (Web) 和 主进程 之间的安全通信桥梁。</li>
+</ul>
+<h3 id="构建桌面应用"><a class="header-anchor" href="#构建桌面应用">#</a>构建桌面应用</h3><p>Lupine 允许你使用 <code>electron-builder</code> 将应用打包为 <code>.exe</code>, <code>.dmg</code>, 或 <code>.snap</code> 安装包。</p>
+<p>运行 <code>package.json</code> 中预设的构建命令：</p>
+<pre><code class="language-bash"># 构建 Windows 版
+npm run app:build-win
+
+# 构建 Mac 版
+npm run app:build-mac
+</code></pre>
+<p>构建过程将会：</p>
+<ol>
+<li>将 Lupine.js Web 应用编译为静态文件。</li>
+<li>将这些文件与 Electron 运行时捆绑。</li>
+<li>输出独立的安装程序。</li>
+</ol>
+<h2 id="总结"><a class="header-anchor" href="#总结">#</a>总结</h2><p>使用 <strong>Lupine.js</strong>，你不需要为 Web、移动端和桌面端组建三个独立的团队。你可以维护<strong>一套</strong>代码库，使用<strong>一套</strong>组件，然后发布到所有平台。</p>
+<p>无论你是构建 SaaS 平台、消费者 App 还是内部工具，Lupine.js 都能让你同时拥有原生应用的触达率和 Web 开发的高效率。</p>

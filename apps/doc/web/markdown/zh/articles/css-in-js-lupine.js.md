@@ -13,6 +13,8 @@ description: '深入解析 Lupine.js 内置的高性能样式引擎'
 
 让我们来看看它是如何工作的，以及如何在你的项目中优雅地使用它。
 
+![Lupine.js CSS-in-JS](/lupine.js/assets/css-in-js.png)
+
 ## 1. 告别 className 的烦恼
 
 传统的 CSS 开发往往需要你在 `.css` 文件和 `.tsx` 文件之间反复横跳，还要挖空心思给 class 起名。而在 Lupine.js 中，一切都在组件内部解决。

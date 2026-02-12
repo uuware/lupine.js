@@ -1,0 +1,101 @@
+<p>The &quot;Write Once, Run Everywhere&quot; dream is often promised but rarely delivered without significant compromises. Heavy frameworks, conditional spaghetti code, and poor performance usually plague cross-platform attempts.</p>
+<p><strong>Lupine.js</strong> changes the game. It is designed from the ground up to be a <strong>Universal Framework</strong>. By leveraging <strong>Capacitor</strong> for Mobile and <strong>Electron</strong> for Desktop, you can deploy your application to the Web, iOS, Android, Windows, macOS, and Linux — all from a single TypeScript codebase.</p>
+<p><img src="/lupine.js/assets/architecture_cross_platform.png" alt="Lupine.js Architecture"></p>
+<p>In this guide, we will walk through how to take a standard Lupine.js web application and expand it to Mobile and Desktop, using a will be online soon real-world production app <strong>Lupine Sample App</strong> (Sample App) as a reference.</p>
+<h2 id="1-the-core-a-responsive-web-app"><a class="header-anchor" href="#1-the-core-a-responsive-web-app">#</a>1. The Core: A Responsive Web App</h2><p>Before we touch any native code, we need a responsive web application. Lupine.js makes this easy with built-in responsive tools working alongside its CSS-in-JS engine.</p>
+<h3 id="responsive-styling"><a class="header-anchor" href="#responsive-styling">#</a>Responsive Styling</h3><p>Instead of writing separate CSS files for mobile, use <code>MediaQueryRange</code> directly in your component styles:</p>
+<pre><code class="language-tsx">import { MediaQueryRange, CssProps } from &#39;lupine.web&#39;;
+
+const css: CssProps = {
+  // Default (Desktop) styles
+  padding: &#39;50px&#39;,
+  fontSize: &#39;18px&#39;,
+
+  // Mobile overrides
+  [MediaQueryRange.MobileBelow]: {
+    padding: &#39;10px&#39;,
+    fontSize: &#39;14px&#39;,
+    flexDirection: &#39;column&#39;,
+  },
+};
+</code></pre>
+<h3 id="adaptive-frames"><a class="header-anchor" href="#adaptive-frames">#</a>Adaptive Frames</h3><p>For navigation, the <code>ResponsiveFrame</code> component automatically switches between a Desktop Top-Menu and a Mobile Bottom-Bar based on the device.</p>
+<pre><code class="language-tsx">&lt;ResponsiveFrame
+  desktopHeaderTitle=&#39;My App&#39;
+  // ... desktop menu items
+  mobileBottomMenu={[
+    { title: &#39;Home&#39;, icon: &lt;HomeIcon /&gt;, link: &#39;/home&#39; },
+    { title: &#39;Me&#39;, icon: &lt;UserIcon /&gt;, link: &#39;/me&#39; },
+  ]}
+  mainContent={&lt;PageComponent /&gt;}
+/&gt;
+</code></pre>
+<h2 id="2-going-mobile-ios-android"><a class="header-anchor" href="#2-going-mobile-ios-android">#</a>2. Going Mobile (iOS &amp; Android)</h2><p>Lupine.js uses <strong>Capacitor</strong> to wrap your web app into a native mobile binary. This allows you to access native features (Camera, Filesystem) while keeping your web workflow.</p>
+<h3 id="step-2-1-setup-capacitor"><a class="header-anchor" href="#step-2-1-setup-capacitor">#</a>Step 2.1: Setup Capacitor</h3><p>In your project root, install the necessary dependencies:</p>
+<pre><code class="language-bash"># Core Capacitor libs
+npm install @capacitor/cli@latest @capacitor/core@latest
+npm install @capacitor/android @capacitor/ios
+
+# Useful plugins (Camera, Filesystem, etc.)
+npm install @capacitor/camera @capacitor/filesystem @capacitor/share
+npm install @capacitor-community/keep-awake
+
+# Initialize
+npx cap init [MyAppName] [com.example.app]
+</code></pre>
+<h3 id="step-2-2-add-platforms"><a class="header-anchor" href="#step-2-2-add-platforms">#</a>Step 2.2: Add Platforms</h3><pre><code class="language-bash"># Add Android
+npx cap add android
+
+# Add iOS (requires Xcode on Mac)
+npx cap add ios
+</code></pre>
+<h3 id="step-2-3-configure-mobile-environment"><a class="header-anchor" href="#step-2-3-configure-mobile-environment">#</a>Step 2.3: Configure Mobile Environment</h3><p>Mobile apps run from the local file system (<code>file://</code>), so they cannot use relative paths for API calls. create a <code>.env.mobile</code> file:</p>
+<pre><code class="language-ini"># .env.mobile
+WEB.API_BASE_URL=https://api.your-production-site.com
+</code></pre>
+<h3 id="step-2-4-build-sync"><a class="header-anchor" href="#step-2-4-build-sync">#</a>Step 2.4: Build &amp; Sync</h3><p>Add a script to your <code>package.json</code> to build for mobile:</p>
+<pre><code class="language-json">&quot;scripts&quot;: {
+  &quot;build-mobile&quot;: &quot;node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1&quot;
+}
+</code></pre>
+<p>Then build and sync to the native projects:</p>
+<pre><code class="language-bash">npm run build-mobile
+npx cap sync
+npx cap open android  # Opens Android Studio
+</code></pre>
+<h3 id="step-2-5-native-logic-optional"><a class="header-anchor" href="#step-2-5-native-logic-optional">#</a>Step 2.5: Native Logic (Optional)</h3><p>You can use the <code>#if MOBILE</code> compiler directive to write platform-specific code without bloating your web bundle:</p>
+<pre><code class="language-javascript">// #if MOBILE
+import { Camera } from &#39;@capacitor/camera&#39;;
+
+const takePhoto = async () =&gt; {
+  const image = await Camera.getPhoto({ ... });
+  // processing...
+};
+// #else
+const takePhoto = async () =&gt; {
+  alert(&quot;Camera not supported on Web!&quot;);
+};
+// #endif
+</code></pre>
+<h2 id="3-going-desktop-windows-mac-linux"><a class="header-anchor" href="#3-going-desktop-windows-mac-linux">#</a>3. Going Desktop (Windows, Mac, Linux)</h2><p>For desktop, Lupine.js integrates with <strong>Electron</strong>.</p>
+<h3 id="structure"><a class="header-anchor" href="#structure">#</a>Structure</h3><p>Every Lupine project comes with an <code>electron</code> folder containing the main process logic.</p>
+<ul>
+<li><code>electron/main.js</code>: The entry point for the Electron app.</li>
+<li><code>electron/preload.js</code>: Bridge for secure communication between Renderer (Web) and Main process.</li>
+</ul>
+<h3 id="building-for-desktop"><a class="header-anchor" href="#building-for-desktop">#</a>Building for Desktop</h3><p>Lupine allows you to package your app into an <code>.exe</code>, <code>.dmg</code>, or <code>.snap</code> file using <code>electron-builder</code>.</p>
+<p>Run the build commands provided in <code>package.json</code>:</p>
+<pre><code class="language-bash"># Build for Windows
+npm run app:build-win
+
+# Build for Mac
+npm run app:build-mac
+</code></pre>
+<p>The build process will:</p>
+<ol>
+<li>Compile your Lupine.js web app into static files.</li>
+<li>Bundle these files with the Electron runtime.</li>
+<li>Output a standalone installer.</li>
+</ol>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>With <strong>Lupine.js</strong>, you don&#39;t need three separate teams for Web, Mobile, and Desktop. You can maintain <strong>one</strong> codebase, use <strong>one</strong> set of components, and deploy everywhere.</p>
+<p>Whether you are building a SaaS platform, a consumer app, or an internal tool, Lupine.js gives you the reach of a native app with the speed of web development.</p>
