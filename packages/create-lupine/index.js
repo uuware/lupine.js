@@ -53,10 +53,6 @@ const TEMPLATES = [
   },
 ];
 
-const renameFiles = {
-  _gitignore: '.gitignore',
-};
-
 async function init() {
   let targetDir = argv._[0];
   let template = argv.template || argv.t;
@@ -138,12 +134,9 @@ async function init() {
 
   copyDir(templateDir, targetAppDir);
 
-  const lupineJsonPath = path.join(targetAppDir, 'lupine.json');
-  if (fs.existsSync(lupineJsonPath)) {
-    const lupineJson = JSON.parse(fs.readFileSync(lupineJsonPath, 'utf-8'));
-    lupineJson.name = appName;
-    fs.writeFileSync(lupineJsonPath, JSON.stringify(lupineJson, null, 2));
-  }
+  changePkgName(path.join(targetAppDir, 'lupine.json'), appName);
+  changePkgName(path.join(targetAppDir, 'api', 'package.json'), appName + '-api');
+  changePkgName(path.join(targetAppDir, 'web', 'package.json'), appName + '-web');
 
   const pkg = {
     name: appName,
@@ -162,7 +155,7 @@ async function init() {
       'app1:open-ios': `npm run open-ios --workspace=${appName}-web`,
       'app1:open-android': `npm run open-android --workspace=${appName}-web`,
       dev: 'node ./dev/dev-watch --env=.env.development --dev=1 --cmd=start-dev',
-      build: 'node ./dev/dev-watch --env=.env.production --dev=0',
+      build: 'node ./dev/dev-watch --env=.env.production --dev=0 --obfuscate=0',
       'build-mobile': 'node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1',
       'start-dev': 'node dist/server_root/server/app-loader.js --env=.env.development',
       'start-production': 'node dist/server_root/server/app-loader.js --env=.env.production',
@@ -192,14 +185,10 @@ async function init() {
     pkg.dependencies['lupine.press'] = '^1.0.1';
     pkg.devDependencies['gray-matter'] = '^4.0.3';
     pkg.devDependencies['marked'] = '^17.0.1';
+    pkg.scripts['cp-docs'] = `node dev/cp-folder.js dist/server_root/${appName}_web/lupine.js docs`;
   }
 
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(pkg, null, 2));
-
-  const gitignorePath = path.join(root, '_gitignore');
-  if (fs.existsSync(gitignorePath)) {
-    fs.renameSync(gitignorePath, path.join(root, '.gitignore'));
-  }
 
   if (fs.existsSync(path.join(root, '.env'))) {
     let envContent = fs.readFileSync(path.join(root, '.env'), 'utf-8');
@@ -252,6 +241,14 @@ function copyDir(srcDir, destDir) {
     const srcFile = path.resolve(srcDir, file);
     const destFile = path.resolve(destDir, file);
     copy(srcFile, destFile);
+  }
+}
+
+function changePkgName(src, name) {
+  if (fs.existsSync(src)) {
+    const pkgJson = JSON.parse(fs.readFileSync(src, 'utf-8'));
+    pkgJson.name = name;
+    fs.writeFileSync(src, JSON.stringify(pkgJson, null, 2));
   }
 }
 

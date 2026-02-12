@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
-const { markdownProcessOnEnd, readJson } = require('lupine.api/dev');
+const { markdownProcessOnEnd } = require('lupine.api/dev');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,9 +17,16 @@ async function build() {
   const fs = require('fs');
   if (fs.existsSync(configPath)) {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    console.log('Config loaded:', JSON.stringify(config, null, 2));
+    // console.log('Config loaded:', JSON.stringify(config, null, 2));
 
-    await markdownProcessOnEnd(config.markdownEntryPoints.indir, config.markdownEntryPoints.outdir);
+    // change to relative path
+    const indir = config.markdownEntryPoints.indir.startsWith('web/')
+      ? config.markdownEntryPoints.indir.substring(4)
+      : config.markdownEntryPoints.indir;
+    const outdir = config.markdownEntryPoints.outdir.startsWith('web/')
+      ? config.markdownEntryPoints.outdir.substring(4)
+      : config.markdownEntryPoints.outdir;
+    await markdownProcessOnEnd(indir, outdir);
   } else {
     console.error('lupine.json not found at', configPath);
   }
