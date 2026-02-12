@@ -1,0 +1,12 @@
+{
+  "name": "doc-web",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build-md": "node ../build.js"
+  },
+  "dependencies": {
+    "lupine.press": "^1.0.1"
+  },
+  "devDependencies": {}
+}

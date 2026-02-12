@@ -2,7 +2,7 @@ import { bindGlobalStyle, isFrontEnd, PageProps } from 'lupine.components';
 import { PressLayout } from '../components';
 import { getPressData, getPressSubDir, setPressLangs } from '../services/cache';
 
-export const PressPage = (props: PageProps) => {
+export const PressPage = async (props: PageProps) => {
   if (!isFrontEnd()) {
     return <div></div>;
   }
