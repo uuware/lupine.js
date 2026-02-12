@@ -1,0 +1,115 @@
+<p>Building a modern web application in 2026 often feels like choosing between &quot;heavy &amp; powerful&quot; (Next.js, Remix) or &quot;light &amp; limited&quot; (Vanilla JS, micro-libraries). But what if you could have the best of both worlds?</p>
+<p>Meet <strong>Lupine.js</strong> — a <strong>7kb</strong> (gzipped) full-stack framework that brings Server-Side Rendering (SSR), CSS-in-JS, and a React-like TSX experience without the massive bundle size.</p>
+<p>In this article, I&#39;ll show you how to build a lightning-fast, SEO-ready web app using Lupine.js.</p>
+<p><img src="/lupine.js/assets/ssr.png" alt="Lupine.js Architecture"></p>
+<h2 id="why-lupine-js"><a class="header-anchor" href="#why-lupine-js">#</a>Why Lupine.js?</h2><ul>
+<li><strong>⚡ Blazing Fast</strong>: No Virtual DOM overhead. Direct DOM manipulation with intelligent binding.</li>
+<li><strong>🪶 Tiny Footprint</strong>: ~7kb gzipped for a fully functional &quot;Hello World&quot; with SSR and Routing.</li>
+<li><strong>🧩 React-like Syntax</strong>: Uses JSX/TSX. If you know React, you already know 90% of Lupine.</li>
+<li><strong>🕸️ Native SSR</strong>: Server-Side Rendering is a first-class citizen, not an afterthought. SEO is automatic.</li>
+<li><strong>🎨 Built-in CSS-in-JS</strong>: Scoped styles, nesting, and media queries without extra libraries.</li>
+</ul>
+<h2 id="1-get-started-in-seconds"><a class="header-anchor" href="#1-get-started-in-seconds">#</a>1. Get Started in Seconds</h2><p>Lupine.js provides a CLI tool to scaffold your project instantly.</p>
+<pre><code class="language-bash">npx create-lupine@latest my-app
+cd my-app
+npm install
+npm run dev
+</code></pre>
+<p>Visit <code>http://localhost:11080</code> and you&#39;ll see your server-rendered app running.</p>
+<h2 id="2-the-hello-world-that-renders-on-the-server"><a class="header-anchor" href="#2-the-hello-world-that-renders-on-the-server">#</a>2. The &quot;Hello World&quot; (That Renders on the Server)</h2><p>Lupine.js components look familiar. Here is a simple counter component (<code>src/pages/home.tsx</code>):</p>
+<pre><code class="language-tsx">import { HtmlVar, CssProps } from &#39;lupine.web&#39;;
+
+export const HomePage = () =&gt; {
+  // 1. Reactive State (Signals)
+  // &#39;0&#39; is the initial value.
+  const count = new HtmlVar(&#39;0&#39;);
+
+  // 2. CSS-in-JS (Built-in!)
+  const css: CssProps = {
+    textAlign: &#39;center&#39;,
+    padding: &#39;50px&#39;,
+    h1: {
+      color: &#39;#333&#39;,
+      fontSize: &#39;2.5rem&#39;,
+    },
+    button: {
+      padding: &#39;10px 20px&#39;,
+      fontSize: &#39;1.2rem&#39;,
+      cursor: &#39;pointer&#39;,
+      &#39;&amp;:hover&#39;: {
+        backgroundColor: &#39;#eee&#39;,
+      },
+    },
+  };
+
+  return (
+    &lt;div css={css}&gt;
+      &lt;h1&gt;Hello Lupine.js!&lt;/h1&gt;
+      &lt;p&gt;Current Count: {count.node}&lt;/p&gt;
+
+      {/* Direct DOM update, no VDOM diffing */}
+      &lt;button
+        onClick={() =&gt; {
+          const current = Number(count.value);
+          count.value = (current + 1).toString();
+        }}
+      &gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="what-s-happening-here"><a class="header-anchor" href="#what-s-happening-here">#</a>What&#39;s happening here?</h3><ol>
+<li><strong><code>HtmlVar</code></strong>: This is Lupine&#39;s version of Signals. It binds directly to the text node. When you update <code>count.value</code>, only that specific text node updates. No re-rendering of the component!</li>
+<li><strong><code>css</code> prop</strong>: Styles are scoped automatically. SSR injects the critical CSS into the <code>&lt;head&gt;</code> so there&#39;s <strong>no Flash of Unstyled Content (FOUC)</strong>.</li>
+</ol>
+<h2 id="3-zero-config-seo-with-ssr"><a class="header-anchor" href="#3-zero-config-seo-with-ssr">#</a>3. Zero-Config SEO with SSR</h2><p>One of the biggest pain points in modern SPAs is SEO. Lupine handles this natively. You don&#39;t need <code>react-helmet</code> or complex layouts.</p>
+<pre><code class="language-tsx">import { MetaData, PageProps } from &#39;lupine.web&#39;;
+
+export const ProductPage = async (props: PageProps) =&gt; {
+  // 1. Fetch data (runs on Server during SSR, or Client during navigation)
+  // Note: Standard fetch works!
+  const product = await fetch(`https://api.example.com/products/${props.urlParameters[&#39;id&#39;]}`).then((res) =&gt;
+    res.json()
+  );
+
+  return (
+    &lt;div&gt;
+      {/* 2. Define SEO Metadata directly in the component */}
+      &lt;MetaData property=&#39;og:title&#39; content={product.name} /&gt;
+      &lt;MetaData property=&#39;og:description&#39; content={product.description} /&gt;
+      &lt;MetaData property=&#39;og:image&#39; content={product.imageUrl} /&gt;
+
+      &lt;h1&gt;{product.name}&lt;/h1&gt;
+      &lt;p&gt;{product.description}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<p>When a crawler (Googlebot, Twitter card) hits this URL, Lupine&#39;s server renders the HTML with all these meta tags populated <strong>before</strong> sending it back.</p>
+<h2 id="4-powerful-routing"><a class="header-anchor" href="#4-powerful-routing">#</a>4. Powerful Routing</h2><p>Lupine&#39;s <code>PageRouter</code> supports nested routes, middleware, and layouts out of the box.</p>
+<pre><code class="language-tsx">import { PageRouter, bindRouter } from &#39;lupine.web&#39;;
+
+const router = new PageRouter();
+
+// Middleware (e.g., Auth check)
+router.setFilter(async (props) =&gt; {
+  // Check auth logic...
+  return null; // continue
+});
+
+// Route Definitions
+router.use(&#39;/home&#39;, HomePage);
+router.use(&#39;/product/:id&#39;, ProductPage);
+router.use(&#39;*&#39;, NotFoundPage);
+
+// Bind to app
+bindRouter(router);
+</code></pre>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>Lupine.js isn&#39;t trying to replace React for massive enterprise ecosystem apps. But for <strong>blogs, landing pages, dashboards, and innovative web apps</strong> where speed and bundle size matter, it&#39;s a breath of fresh air.</p>
+<p>It brings the <strong>Developer Experience (DX) of 2026</strong> back to the <strong>Performance of 2010</strong>.</p>
+<p><strong>Give it a try and let me know what you think!</strong></p>
+<hr>
+<p>🔗 <strong>Github</strong>: <a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a>
+⭐ <strong>Star us if you like lightweight web tech!</strong></p>

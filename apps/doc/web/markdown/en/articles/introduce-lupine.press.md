@@ -11,6 +11,8 @@ Writing documentation shouldn't be painful. But in the current ecosystem, we oft
 
 It is a documentation framework built on **Lupine.js**, inheriting the latter's **"ultra-lightweight"** and **"high-performance"** DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.
 
+![Lupine.Press](/lupine.js/assets/lupine.press.png)
+
 ## Why Choose Lupine.Press?
 
 ### 1. ⚡ Incredible Speed

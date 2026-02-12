@@ -13,6 +13,8 @@ It comes with an ultra-lightweight CSS-in-JS engine **built right in**. No extra
 
 Let's dive into how it works and how to use it elegantly in your projects.
 
+![Lupine.js CSS-in-JS](/lupine.js/assets/css-in-js.png)
+
 ## 1. Say Goodbye to ClassName Hell
 
 Traditional CSS development often involves constant context switching between `.css` files and `.tsx` files, struggling to invent unique class names. In Lupine.js, everything stays within the component.

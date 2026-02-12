@@ -1,0 +1,91 @@
+<p>服务端渲染 (SSR) 已经从通过 SEO 锦上添花的“可选项”，变成了现代 Web 架构中提升性能和用户体验的“必选项”。</p>
+<p>在 2026 年，开发者通常会首选 <strong>Next.js</strong> (React 生态) 或 <strong>Angular SSR</strong> (前身是 Universal)。但是，这些重量级框架与像 <strong>Lupine.js</strong> 这样专为性能打造的轻量级框架相比，究竟表现如何？</p>
+<p>本文将深度解析它们在架构设计、水合 (Hydration) 成本以及开发体验上的差异。</p>
+<p><img src="/lupine.js/assets/ssr.png" alt="Lupine.js Architecture"></p>
+<h2 id="1-渲染架构对比"><a class="header-anchor" href="#1-渲染架构对比">#</a>1. 渲染架构对比</h2><h3 id="react-next-js-remix"><a class="header-anchor" href="#react-next-js-remix">#</a>React (Next.js/Remix)</h3><p>React 本身只是一个 UI 库。要实现 SSR，你通常需要引入一个元框架 (Meta-framework)。</p>
+<ul>
+<li><strong>机制</strong>: 服务端将组件树渲染成 HTML 字符串。</li>
+<li><strong>成本</strong>: 在客户端，React 必须下载完整的 JS 包，重新运行组件逻辑以构建虚拟 DOM (VDOM)，然后进行“水合” (Hydrate) —— 即把事件监听器挂载到现有的 HTML 上。</li>
+<li><strong>演进</strong>: React 服务端组件 (RSC) 通过保留部分逻辑在服务端来减少包体积，但随之而来的是流式传输、Suspense 边界以及客户端/服务端组件拆分的高复杂度。</li>
+</ul>
+<h3 id="angular-ssr-modern-hydration"><a class="header-anchor" href="#angular-ssr-modern-hydration">#</a>Angular (SSR / Modern Hydration)</h3><p>Angular 已经转向“非破坏性水合”和部分水合。</p>
+<ul>
+<li><strong>机制</strong>: Angular 使用 TransferState 序列化状态传输，避免客户端重复请求数据。</li>
+<li><strong>成本</strong>: 历史上，Angular SSR 会导致“闪烁”，因为它会销毁服务端 HTML 并重新渲染。现代版本虽然修复了这个问题，但框架本身的开销 (Zone.js, 依赖注入系统) 对于浏览器主线程来说仍然是一个不小的负担。</li>
+</ul>
+<h3 id="lupine-js"><a class="header-anchor" href="#lupine-js">#</a>Lupine.js</h3><p>Lupine 采取了根本不同的架构。它从第一行代码开始，就是作为一个<strong>全栈组件框架</strong>设计的。</p>
+<ul>
+<li><strong>机制</strong>: <code>serverSideRenderPage</code> 函数 (在 <code>lupine.api</code> 中) 直接执行组件逻辑。它精准识别并预留了关键资源（CSS, Meta, Title）的“插槽”。</li>
+<li><strong>无 VDOM</strong>: Lupine <strong>不使用虚拟 DOM</strong>。在服务端，它高效地拼接字符串。在客户端，它直接绑定到真实的 DOM 节点。</li>
+<li><strong>结果</strong>: 服务端发送的是完全样式化的 HTML 页面。客户端脚本 (~7kb) 加载后，仅仅是“绑定”到现有元素上。因为没有 VDOM 需要重建，所以没有繁重的“重计算”过程。</li>
+</ul>
+<h2 id="2-解决-fouc-无样式内容闪烁"><a class="header-anchor" href="#2-解决-fouc-无样式内容闪烁">#</a>2. 解决 &quot;FOUC&quot; (无样式内容闪烁)</h2><h3 id="问题"><a class="header-anchor" href="#问题">#</a>问题</h3><p>SSR 的 HTML 先到达浏览器，然后功能加载，最后样式加载。如果样式加载晚了，用户就会看到几毫秒的页面错乱 (FOUC)。</p>
+<h3 id="react-next-js"><a class="header-anchor" href="#react-next-js">#</a>React / Next.js</h3><p>Next.js 会收集样式（例如来自 CSS Modules 或 Tailwind）并注入。但是，如果使用运行时的 CSS-in-JS（像旧版的 styled-components），在水合期间重新计算样式可能会带来性能惩罚。</p>
+<h3 id="lupine-js"><a class="header-anchor" href="#lupine-js">#</a>Lupine.js</h3><p>Lupine 的 <code>BindStyles</code> 和 <code>CssProps</code> 引擎会在服务端渲染期间收集所有静态和动态样式。
+它会自动生成关键 CSS 代码块，并直接注入到初始 HTML 响应的 <code>&lt;head&gt;</code> 中。
+<strong>结果</strong>: 页面从第一个字节开始就是完美的。无需等待 JS 加载，布局就是正确的。</p>
+<h2 id="3-数据获取与水合"><a class="header-anchor" href="#3-数据获取与水合">#</a>3. 数据获取与水合</h2><p>如何从数据库获取数据并显示在屏幕上？</p>
+<h3 id="react-next-js-app-router"><a class="header-anchor" href="#react-next-js-app-router">#</a>React (Next.js App Router)</h3><pre><code class="language-tsx">// Server Component
+async function Page() {
+  const data = await db.query();
+  return &lt;ClientComponent data={data} /&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>优点</strong>: 数据和 UI 紧密配合 (Co-location)。</li>
+<li><strong>缺点</strong>: 服务端组件和客户端组件之间有严格的边界。你不能在服务端组件中使用 State 或 Effect。</li>
+</ul>
+<h3 id="lupine-js"><a class="header-anchor" href="#lupine-js">#</a>Lupine.js</h3><p>Lupine 支持页面级的 <code>async</code> 组件，这使得同一套逻辑可以无缝运行在服务端和客户端（SPA 导航期间）。</p>
+<pre><code class="language-tsx">// 既运行在服务端 (SSR)，也运行在客户端 (SPA 切换)
+export const ProductPage = async (props: PageProps) =&gt; {
+  // SSR: 在服务端请求，发送 HTML。
+  // CSR: 在客户端请求，更新 DOM。
+  const data = await fetch(`/api/products/${props.urlParameters.id}`);
+
+  return &lt;div&gt;{data.title}&lt;/div&gt;;
+};
+</code></pre>
+<ul>
+<li><strong>设计哲学</strong>: &quot;同构逻辑 (Isomorphic Logic)&quot;。你只写一个函数。它在两种环境中都能高效运行，你无需关心“序列化边界”或“客户端包装器”。</li>
+</ul>
+<h2 id="4-性能与包体积"><a class="header-anchor" href="#4-性能与包体积">#</a>4. 性能与包体积</h2><p>这是最显著的差异。</p>
+<table>
+<thead>
+<tr>
+<th align="left">指标</th>
+<th align="left">Next.js / React</th>
+<th align="left">Angular</th>
+<th align="left">Lupine.js</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Hello World 体积</strong></td>
+<td align="left">~70kb - 200kb</td>
+<td align="left">~100kb+</td>
+<td align="left"><strong>~7kb</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>水合策略</strong></td>
+<td align="left">VDOM 协调 (Reconciliation)</td>
+<td align="left">Zone.js / 事件回放</td>
+<td align="left"><strong>直接节点绑定</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>复杂度</strong></td>
+<td align="left">高 (Server Actions, RSC)</td>
+<td align="left">高 (模块, DI)</td>
+<td align="left"><strong>低 (函数, 信号量)</strong></td>
+</tr>
+</tbody></table>
+<h2 id="总结-如何选择"><a class="header-anchor" href="#总结-如何选择">#</a>总结: 如何选择？</h2><ul>
+<li><strong>选择 React/Next.js 如果</strong>: 你有庞大的 React 开发团队，需要海量的第三方库生态，且极度依赖 Vercel 等平台的集成。</li>
+<li><strong>选择 Angular 如果</strong>: 你在构建企业级软件，需要严格的类型约束、依赖注入系统，且团队规模较大。</li>
+<li><strong>选择 Lupine.js 如果</strong>:<ul>
+<li><strong>性能至上</strong>: 你追求最快的首屏内容绘制 (FCP)。</li>
+<li><strong>崇尚简约</strong>: 你不想配置 Webpack, Babel 或复杂的路由中间件。</li>
+<li><strong>SEO 很关键</strong>: 你需要简单、可预测的 Meta 标签控制。</li>
+<li><strong>全栈掌控</strong>: 你希望前后端使用同一套极简框架。</li>
+</ul>
+</li>
+</ul>
+<p>Lupine.js 证明了在 2026 年，构建现代高性能 SSR 应用并不需要沉重的框架。有些时候，<strong>少即是多</strong>。</p>

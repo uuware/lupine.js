@@ -1,0 +1,115 @@
+<p>在 2026 年构建现代 Web 应用，往往要在“沉重但强大”（如 Next.js, Remix）与“轻量但受限”（如 Vanilla JS, 微型库）之间做选择。但如果你能同时拥有两者的优点呢？</p>
+<p>遇见 <strong>Lupine.js</strong> —— 一个 <strong>7kb</strong> (gzipped) 的全栈框架，它带来了服务端渲染 (SSR)、CSS-in-JS 以及类 React 的 TSX 开发体验，却没有任何臃肿的打包体积。</p>
+<p>在本文中，我将展示如何使用 Lupine.js 构建一个闪电般快速、SEO 友好的 Web 应用。</p>
+<p><img src="/lupine.js/assets/ssr.png" alt="Lupine.js Architecture"></p>
+<h2 id="为什么选择-lupine-js"><a class="header-anchor" href="#为什么选择-lupine-js">#</a>为什么选择 Lupine.js？</h2><ul>
+<li><strong>⚡ 极速性能</strong>: 没有虚拟 DOM (Virtual DOM) 的开销。通过智能绑定直接操作 DOM。</li>
+<li><strong>🪶 极小体积</strong>: 一个功能完备、包含 SSR 和路由的 &quot;Hello World&quot; 应用，gzip 后仅需 ~7kb。</li>
+<li><strong>🧩 类 React 语法</strong>: 使用 JSX/TSX。如果你熟悉 React，通过 Lupine 上手几乎只需几分钟。</li>
+<li><strong>🕸️ 原生 SSR</strong>: 服务端渲染是的一等公民，而非事后补充。内置自动化的 SEO 支持。</li>
+<li><strong>🎨 内置 CSS-in-JS</strong>: 支持作用域样式、嵌套和媒体查询，无需引入任何额外库。</li>
+</ul>
+<h2 id="1-几秒钟内开始"><a class="header-anchor" href="#1-几秒钟内开始">#</a>1. 几秒钟内开始</h2><p>Lupine.js 提供了一个命令行工具 (CLI) 来快速生成项目脚手架。</p>
+<pre><code class="language-bash">npx create-lupine@latest my-app
+cd my-app
+npm install
+npm run dev
+</code></pre>
+<p>访问 <code>http://localhost:11080</code>，你就能看到你的服务端渲染应用正在运行了。</p>
+<h2 id="2-hello-world-亦在服务端渲染"><a class="header-anchor" href="#2-hello-world-亦在服务端渲染">#</a>2. &quot;Hello World&quot; (亦在服务端渲染)</h2><p>Lupine.js 组件看起来非常亲切。这是一个简单的计数器组件 (<code>src/pages/home.tsx</code>)：</p>
+<pre><code class="language-tsx">import { HtmlVar, CssProps } from &#39;lupine.web&#39;;
+
+export const HomePage = () =&gt; {
+  // 1. 响应式状态 (Signals)
+  // &#39;0&#39; 是初始值。
+  const count = new HtmlVar(&#39;0&#39;);
+
+  // 2. CSS-in-JS (内置支持!)
+  const css: CssProps = {
+    textAlign: &#39;center&#39;,
+    padding: &#39;50px&#39;,
+    h1: {
+      color: &#39;#333&#39;,
+      fontSize: &#39;2.5rem&#39;,
+    },
+    button: {
+      padding: &#39;10px 20px&#39;,
+      fontSize: &#39;1.2rem&#39;,
+      cursor: &#39;pointer&#39;,
+      &#39;&amp;:hover&#39;: {
+        backgroundColor: &#39;#eee&#39;,
+      },
+    },
+  };
+
+  return (
+    &lt;div css={css}&gt;
+      &lt;h1&gt;Hello Lupine.js!&lt;/h1&gt;
+      &lt;p&gt;Current Count: {count.node}&lt;/p&gt;
+
+      {/* 直接 DOM 更新，无 VDOM diffing */}
+      &lt;button
+        onClick={() =&gt; {
+          const current = Number(count.value);
+          count.value = (current + 1).toString();
+        }}
+      &gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="这里发生了什么"><a class="header-anchor" href="#这里发生了什么">#</a>这里发生了什么？</h3><ol>
+<li><strong><code>HtmlVar</code></strong>: 这是 Lupine 版本的 Signals（信号量）。它直接绑定到文本节点。当你更新 <code>count.value</code> 时，只有那个特定的文本节点会更新。组件本身不会重新渲染！</li>
+<li><strong><code>css</code> 属性</strong>: 样式会自动进行作用域隔离。SSR 会将关键 CSS 注入到 <code>&lt;head&gt;</code> 中，因此<strong>完全没有样式闪烁 (FOUC)</strong>。</li>
+</ol>
+<h2 id="3-零配置-ssr-与-seo"><a class="header-anchor" href="#3-零配置-ssr-与-seo">#</a>3. 零配置 SSR 与 SEO</h2><p>现代 SPA 开发中最大的痛点之一就是 SEO。Lupine 原生解决了这个问题。你不需要 <code>react-helmet</code> 或复杂的布局配置。</p>
+<pre><code class="language-tsx">import { MetaData, PageProps } from &#39;lupine.web&#39;;
+
+export const ProductPage = async (props: PageProps) =&gt; {
+  // 1. 获取数据 (在 SSR 期间运行于服务端，或者在页面导航时运行于客户端)
+  // 注意：可以直接使用标准 fetch！
+  const product = await fetch(`https://api.example.com/products/${props.urlParameters[&#39;id&#39;]}`).then((res) =&gt;
+    res.json()
+  );
+
+  return (
+    &lt;div&gt;
+      {/* 2. 直接在组件中定义 SEO 元数据 */}
+      &lt;MetaData property=&#39;og:title&#39; content={product.name} /&gt;
+      &lt;MetaData property=&#39;og:description&#39; content={product.description} /&gt;
+      &lt;MetaData property=&#39;og:image&#39; content={product.imageUrl} /&gt;
+
+      &lt;h1&gt;{product.name}&lt;/h1&gt;
+      &lt;p&gt;{product.description}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<p>当爬虫（如 Googlebot, Twitter card）访问这个 URL 时，Lupine 的服务端会在返回 HTML 之前渲染好所有这些元标签。</p>
+<h2 id="4-强大的路由系统"><a class="header-anchor" href="#4-强大的路由系统">#</a>4. 强大的路由系统</h2><p>Lupine 的 <code>PageRouter</code> 开箱即支持嵌套路由、中间件 (Middleware) 和布局 (Layouts)。</p>
+<pre><code class="language-tsx">import { PageRouter, bindRouter } from &#39;lupine.web&#39;;
+
+const router = new PageRouter();
+
+// 中间件 (例如：Auth 检查)
+router.setFilter(async (props) =&gt; {
+  // 检查登录逻辑...
+  return null; // 继续路由
+});
+
+// 定义路由
+router.use(&#39;/home&#39;, HomePage);
+router.use(&#39;/product/:id&#39;, ProductPage);
+router.use(&#39;*&#39;, NotFoundPage);
+
+// 绑定到应用
+bindRouter(router);
+</code></pre>
+<h2 id="总结"><a class="header-anchor" href="#总结">#</a>总结</h2><p>Lupine.js 无意在庞大的企业级生态应用中取代 React。但对于<strong>博客、落地页、仪表盘 (Dashboards) 和追求创新的 Web 应用</strong>，如果速度和包体积至关重要，那么 Lupine.js 将是一股清新的空气。</p>
+<p>它将 <strong>2026 年的开发体验 (DX)</strong> 带回了 <strong>2010 年的极致性能</strong>。</p>
+<p><strong>试一试吧，期待你的反馈！</strong></p>
+<hr>
+<p>🔗 <strong>Github</strong>: <a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a>
+⭐ <strong>如果喜欢轻量级 Web 技术，请给我们点个 Star！</strong></p>
