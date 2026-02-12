@@ -115,6 +115,7 @@ const clientProcessOnEnd = async (saved) => {
       saved.indexHtml,
       path.join(saved.outdir, 'index.html'),
       saved.appName,
+      saved.isDev,
       saved.isMobile,
       saved.defaultThemeName,
       saved.outdirData,

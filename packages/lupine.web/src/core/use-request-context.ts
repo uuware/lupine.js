@@ -12,7 +12,7 @@ export const appData: AppDataProps = {
   defaultTheme: defaultTheme,
   themes: {},
 
-  defaultStyles: new Map<string, { topUniqueClassName: string; noTopClassName: boolean; style: CssProps }>(),
+  appGlobalStyles: new Map<string, { topUniqueClassName: string; noTopClassName: boolean; style: CssProps }>(),
 
   // setDataEvent: null,
 };

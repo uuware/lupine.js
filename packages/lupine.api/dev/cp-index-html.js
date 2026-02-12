@@ -29,7 +29,16 @@ const readWebConfig = async (outdirData) => {
 
 const metaTextStart = '<!--META-ENV-START-->';
 const metaTextEnd = '<!--META-ENV-END-->';
-exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThemeName, outdirData, outdirSub) => {
+exports.cpIndexHtml = async (
+  htmlFile,
+  outputFile,
+  appName,
+  isDev,
+  isMobile,
+  defaultThemeName,
+  outdirData,
+  outdirSub
+) => {
   const f1 = await fileSizeAndTime(htmlFile);
   const f2 = await fileSizeAndTime(outputFile);
 
@@ -37,8 +46,8 @@ exports.cpIndexHtml = async (htmlFile, outputFile, appName, isMobile, defaultThe
   // if isMobile=true, then the last number is 1, or if isMobile=false, the last is 2
   const chgTime = Math.trunc(f1.mtime.getTime() / 10) * 10 + (isMobile ? 1 : 2);
 
-  // when it's isMobile, need to update env and configs => no configs as mobile app fetches it from api
-  if (!f2 || f2.mtime.getTime() !== chgTime || isMobile) {
+  // when production, change hash every time to load latest js and css
+  if (!isDev || !f2 || f2.mtime.getTime() !== chgTime || isMobile) {
     const inHtml = await fs.readFile(htmlFile, 'utf-8');
     let outStr = inHtml
       .replace(/\{hash\}/gi, new Date().getTime().toString(36))

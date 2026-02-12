@@ -205,7 +205,7 @@ async function init() {
     let envContent = fs.readFileSync(path.join(root, '.env'), 'utf-8');
 
     // Auto-generate passwords
-    const keysToUpdate = ['ADMIN_PASS=', 'CRYPTO_KEY=', 'DEV_ADMIN_PASS=', 'DEV_CRYPTO_KEY='];
+    const keysToUpdate = ['ADMIN_PASS=', 'CRYPTO_KEY=', 'DEV_ADMIN_PASS=', 'DEV_CRYPTO_KEY=', 'DEV_TOKEN='];
     keysToUpdate.forEach((key) => {
       // Replace line starting with key=
       envContent = envContent.replace(new RegExp(`^${key}.*`, 'gm'), `${key}${generateRandomString(32)}`);

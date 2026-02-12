@@ -7,7 +7,7 @@ import {
   isFrontEnd,
   debugWatch,
   webEnv,
-  bindGlobalStyle,
+  bindAppGlobalStyle,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes, setPressSubDir } from 'lupine.press';
 import { ClientEnvKeys } from '../src/client-env-keys';
@@ -20,7 +20,7 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 
 bindLang('en', {});
 bindTheme('light', pressThemes);
-bindGlobalStyle('comm-css', baseCss, false, true);
+bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Doc Starter');
 
 bindPressData(markdownConfig);
