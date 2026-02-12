@@ -13,6 +13,8 @@ const {
   cpIndexHtml,
   pluginIfelse,
   markdownProcessOnEnd,
+  obfuscatePlugin,
+  sha256,
 } = require('lupine.api/dev');
 
 const triggerHandle = {
@@ -26,7 +28,8 @@ const triggerReStartServer = async (isDev, npmCmd, httpPort) => {
     clearTimeout(triggerHandle.restart);
   }
   triggerHandle.restart = setTimeout(async () => {
-    const url = `http://127.0.0.1:${httpPort}/debug/shutdown`;
+    const token = sha256(process.env['DEV_TOKEN'] || '');
+    const url = `http://127.0.0.1:${httpPort}/debug/shutdown?t=${token}`;
     await sendRequest(url, isDev ? 2 : 0);
     console.log('[dev-server] ReStart Server: ', url);
     isDev && runCmd(npmCmd);
@@ -39,7 +42,8 @@ const triggerRefreshServer = async (isDev, httpPort) => {
     clearTimeout(triggerHandle.refresh);
   }
   triggerHandle.refresh = setTimeout(async () => {
-    const url = `http://127.0.0.1:${httpPort}/debug/refresh`;
+    const token = sha256(process.env['DEV_TOKEN'] || '');
+    const url = `http://127.0.0.1:${httpPort}/debug/refresh?t=${token}`;
     await sendRequest(url, isDev ? 2 : 0);
     console.log('[dev-server] Refresh Server: ', url);
   }, 500);
@@ -56,60 +60,6 @@ const watchServerPlugin = (isDev, npmCmd, httpPort) => {
         if (isDev) {
           await triggerReStartServer(isDev, npmCmd, httpPort);
         }
-      });
-    },
-  };
-};
-
-// javascript-obfuscator is needed
-const obfuscatePlugin = (isObfuscate, entryPoints = [], skipPaths = []) => {
-  if (!isObfuscate) return { name: 'obfuscatePlugin', setup() {} };
-
-  const JavaScriptObfuscator = require('javascript-obfuscator');
-  return {
-    name: 'obfuscatePlugin',
-    setup(build) {
-      build.onLoad({ filter: /\.(js|ts|tsx|jsx)$/ }, async (args) => {
-        if (args.path.includes('node_modules')) return null;
-        if (skipPaths.some((skipPath) => args.path.includes(skipPath))) {
-          console.log(`[dev-server] Skip obfuscate: ${args.path}`);
-          return null;
-        }
-
-        const ext = path.extname(args.path);
-        console.log(`[dev-server] Obfuscate: ${args.path}`);
-        let content = await fs.readFile(args.path, 'utf8');
-
-        // Transpile TS/JSX to JS first because obfuscator works on JS
-        if (['.ts', '.tsx', '.jsx'].includes(ext)) {
-          const result = await esbuild.transform(content, {
-            loader: ext.substring(1),
-            sourcefile: args.path,
-            jsx: 'automatic',
-            jsxImportSource: 'lupine.web',
-          });
-          content = result.code;
-        }
-
-        const obfuscationResult = JavaScriptObfuscator.obfuscate(content, {
-          compact: true,
-          controlFlowFlattening: true,
-          controlFlowFlatteningThreshold: 0.75,
-          deadCodeInjection: false,
-          deadCodeInjectionThreshold: 0,
-          // debugProtection: isEntryPoint, // this should be done in code: disableDebug('xxx');
-          debugProtectionInterval: 2000,
-          // disableConsoleOutput: isEntryPoint, // this should be done in code: disableConsole();
-          identifierNamesGenerator: 'hexadecimal',
-          stringArray: true,
-          stringArrayThreshold: 0.75,
-          ignoreImports: true,
-        });
-
-        return {
-          contents: obfuscationResult.getObfuscatedCode(),
-          loader: 'js',
-        };
       });
     },
   };
@@ -165,6 +115,7 @@ const clientProcessOnEnd = async (saved) => {
       saved.indexHtml,
       path.join(saved.outdir, 'index.html'),
       saved.appName,
+      saved.isDev,
       saved.isMobile,
       saved.defaultThemeName,
       saved.outdirData,
@@ -228,11 +179,7 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     jsxImportSource: 'lupine.web',
     jsx: 'automatic',
     target: ['chrome87'],
-    plugins: [
-      watchClientPlugin(saved),
-      pluginIfelse(ifPluginVars),
-      obfuscatePlugin(saved.isObfuscate, entryPoints, []),
-    ],
+    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars), obfuscatePlugin(saved.isObfuscate, [])],
   });
 
   isDev && (await ctx.watch());
