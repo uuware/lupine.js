@@ -2,6 +2,7 @@
 <p><strong>Lupine.js 选择了一条不同的路。</strong></p>
 <p>它内置了一个超轻量级的 CSS-in-JS 引擎，<strong>无需任何额外依赖</strong>，即可让你在组件内部舒适地编写样式。它不仅支持嵌套、媒体查询、关键帧动画，还拥有极高的运行效率。</p>
 <p>让我们来看看它是如何工作的，以及如何在你的项目中优雅地使用它。</p>
+<p><img src="/lupine.js/assets/css-in-js.png" alt="Lupine.js CSS-in-JS"></p>
 <h2 id="1-告别-classname-的烦恼"><a class="header-anchor" href="#1-告别-classname-的烦恼">#</a>1. 告别 className 的烦恼</h2><p>传统的 CSS 开发往往需要你在 <code>.css</code> 文件和 <code>.tsx</code> 文件之间反复横跳，还要挖空心思给 class 起名。而在 Lupine.js 中，一切都在组件内部解决。</p>
 <p>你只需要定义一个简单的对象，传递给 <code>css</code> 属性：</p>
 <pre><code class="language-tsx">const MyButton = () =&gt; {

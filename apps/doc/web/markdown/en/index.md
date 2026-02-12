@@ -37,6 +37,9 @@ sidebar:
       - /en/articles/introduce-lupine.js
       - /en/articles/css-in-js-lupine.js
       - /en/articles/introduce-lupine.press
+      - /en/articles/ssr-comparison
+      - /en/articles/how-to-build-fast-ssr-app
+      - /en/articles/cross-platform-app
   - submenu: /en/essentials
   - submenu: /en/lupine.web
   - submenu: /en/lupine.components

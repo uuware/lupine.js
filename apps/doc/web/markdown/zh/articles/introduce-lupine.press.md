@@ -11,6 +11,8 @@ description: 基于 Lupine.js 的超轻量级文档网站生成器
 
 它是基于 **Lupine.js** 构建的文档框架，继承了后者 **“极致轻量”** 和 **“高性能”** 的基因。它能让你用最简单的 Markdown，构建出专业、响应式且支持多语言的文档网站。
 
+![Lupine.Press](/lupine.js/assets/lupine.press.png)
+
 ## 为什么选择 Lupine.Press？
 
 ### 1. ⚡ 难以置信的快
