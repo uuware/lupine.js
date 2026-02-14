@@ -1,0 +1,64 @@
+<h1 id="十分钟-用-markdown-极速构建高颜值的个人简历网站"><a class="header-anchor" href="#十分钟-用-markdown-极速构建高颜值的个人简历网站">#</a>十分钟！用 Markdown 极速构建高颜值的个人简历网站</h1><p>想找一份好工作，写一份好的工作简历（CV）至关重要。如果能把这份简历做成一个专业的个人网站，那更是锦上添花，能让招聘者眼前一亮。</p>
+<p>这篇文章将介绍如何利用 <strong>Lupine.js</strong> 框架提供的 <strong>CV Starter</strong> 模板，只需要写简单的 Markdown 文件，就能生成一个漂亮的、响应式的简历网站。它自带黑白主题切换、多语言支持，并且可以<strong>免费托管在 GitHub Pages 上</strong>。</p>
+<p><img src="/lupine.js/assets/cv-generator.png" alt="Lupine.js CV Starter"></p>
+<h2 id="为什么选择-lupine-cv-starter"><a class="header-anchor" href="#为什么选择-lupine-cv-starter">#</a>为什么选择 Lupine CV Starter？</h2><ul>
+<li><strong>极简 Markdown</strong>: 专注于内容，像写文档一样写简历。</li>
+<li><strong>高颜值设计</strong>: 默认主题清新专业，支持<strong>浅色主题</strong>和<strong>深色主题</strong>。</li>
+<li><strong>多语言支持</strong>: 轻松构建中英文双语简历，展现国际化视野。</li>
+<li><strong>移动端适配</strong>: 完美适配手机桌面，随时随地优雅展示。</li>
+<li><strong>免费托管</strong>: 纯静态页面，可直接部署到 GitHub Pages，零成本上线。</li>
+</ul>
+<h2 id="快速开始"><a class="header-anchor" href="#快速开始">#</a>🚀 快速开始</h2><h3 id="1-创建项目"><a class="header-anchor" href="#1-创建项目">#</a>1. 创建项目</h3><p>只需一行命令，即可初始化你的简历项目：</p>
+<pre><code class="language-bash">npx create-lupine@latest my-cv
+</code></pre>
+<p>在提示中选择 <strong><code>cv-starter</code></strong> 模板。</p>
+<h3 id="2-启动预览"><a class="header-anchor" href="#2-启动预览">#</a>2. 启动预览</h3><p>进入项目目录并启动本地开发服务器：</p>
+<pre><code class="language-bash">cd my-cv
+npm install
+npm run dev
+</code></pre>
+<p>现在，打开浏览器，你就能看到一个包含<strong>个人简介、工作经历、项目经验、专业技能、教育背景</strong>等完整板块的简历雏形了！</p>
+<h2 id="定制你的简历"><a class="header-anchor" href="#定制你的简历">#</a>📝 定制你的简历</h2><p>模板已经为你预设了标准的简历结构，你只需要根据自己的情况进行增删改查。</p>
+<h3 id="修改内容"><a class="header-anchor" href="#修改内容">#</a>修改内容</h3><p>所有的内容都位于 <code>web/markdown</code> 目录下。</p>
+<ul>
+<li><code>zh/</code>: 中文版简历内容</li>
+<li><code>en/</code>: 英文版简历内容</li>
+</ul>
+<p>你可以直接修改 Markdown 文件。更棒的是，你完全可以只精心撰写一个语言版本（比如中文），然后<strong>让 AI 帮你翻译成另一个语言</strong>。现在的 AI 非常擅长处理 Markdown 格式，翻译质量通常很高，这能为你节省大量时间。</p>
+<h3 id="管理目录与侧边栏"><a class="header-anchor" href="#管理目录与侧边栏">#</a>管理目录与侧边栏</h3><p>当你添加或删除了某个页面（例如添加了“开源贡献”章节），你需要告诉网站如何显示侧边栏导航。</p>
+<p>打开语言根目录下的 <code>index.md</code> 文件（例如 <code>web/markdown/zh/index.md</code>），找到 <code>sidebar</code> 配置项进行修改：</p>
+<pre><code class="language-yaml">sidebar:
+  - text: 详细介绍
+    items:
+      - /zh/01-experience/index
+      - /zh/02-projects/index
+      - /zh/03-skills/index
+      - /zh/04-education/index
+      # - /zh/05-open-source/index  &lt;-- 新增的页面
+</code></pre>
+<p>保存文件后，浏览器页面会自动更新，所见即所得。</p>
+<h3 id="配置顶部导航-可选"><a class="header-anchor" href="#配置顶部导航-可选">#</a>配置顶部导航 (可选)</h3><p>由于简历通常包含的页面不多，模板默认没有开启顶部导航菜单。如果你希望在页面顶部也显示导航，可以在 <code>index.md</code> 中添加 <code>nav</code> 配置：</p>
+<pre><code class="language-yaml">nav:
+  - text: 工作经历
+    link: /zh/01-experience/index
+  - text: 项目经验
+    link: /zh/02-projects/index
+</code></pre>
+<p>这样，Header 左侧就会出现你配置的菜单项。</p>
+<h3 id="个性化设置"><a class="header-anchor" href="#个性化设置">#</a>个性化设置</h3><p>在 <code>index.md</code> 的 Frontmatter 中，你还可以进行更多个性化设置。</p>
+<h4 id="github-链接"><a class="header-anchor" href="#github-链接">#</a>GitHub 链接</h4><p>Header 右侧默认显示 GitHub 项目链接。如果你想修改或隐藏它：</p>
+<pre><code class="language-yaml"># 修改链接
+github-title: View on GitHub
+github-link: https://github.com/yourusername/my-cv
+# 或者直接删除这两行以隐藏
+</code></pre>
+<h4 id="自定义样式"><a class="header-anchor" href="#自定义样式">#</a>自定义样式</h4><p>想换个主题色？想调整侧边栏宽度？没问题！你可以在 <code>index.md</code> 中通过 <code>styles</code> 属性直接覆盖 CSS 变量：</p>
+<pre><code class="language-yaml">styles:
+  &#39;:root&#39;: { &#39;--primary-accent-color&#39;: &#39;#0ac92a&#39; } # 修改主色调为绿色
+  # body: { font-family: &#39;Inter&#39;, sans-serif; }    # 修改全局字体
+</code></pre>
+<p>关于更多样式配置，可以参考 <a href="https://uuware.github.io/lupine.js/zh/articles/introduce-lupine.press">这篇关于 Lupine.Press 的介绍</a>。</p>
+<h2 id="结语"><a class="header-anchor" href="#结语">#</a>结语</h2><p>使用 <strong>Lupine.js</strong> 构建简历网站，不仅能展示你的专业技能，这件事本身也体现了你对技术的热情和追求。</p>
+<p>Lupine 正在积极开发中，欢迎来 GitHub 关注我们，查看代码频率和贡献：</p>
+<p>👉 <strong><a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a></strong></p>
+<p>祝你早日拿到心仪的 Offer！</p>
