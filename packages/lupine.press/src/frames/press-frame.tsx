@@ -27,12 +27,22 @@ export const PressFrame = (props: PressFrameProps) => {
 
   const cssMarkdown: CssProps = {
     // used in built markdown htmls, put under some element to override global.css
+    h1: {
+      fontSize: '1.7rem',
+    },
+    h2: {
+      fontSize: '1.4rem',
+    },
+    h3: {
+      fontSize: '1.2rem',
+    },
     'h1, h2, h3': {
       borderBottom: '1px solid var(--press-border-color)',
       paddingBottom: '0.3em',
       marginTop: '1.5em',
       position: 'relative',
       scrollMarginTop: '80px',
+      fontWeight: 'bold',
       '&:first-child': { marginTop: 0 },
       '&:hover .header-anchor': { opacity: 1 },
     },
@@ -63,6 +73,7 @@ export const PressFrame = (props: PressFrameProps) => {
     },
     img: {
       maxWidth: '100%',
+      boxShadow: 'var(--cover-box-shadow)',
     },
   };
 
