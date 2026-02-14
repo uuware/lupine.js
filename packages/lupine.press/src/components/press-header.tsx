@@ -51,7 +51,7 @@ export const PageHeader = (props: PageHeaderProps) => {
     <header css={css} class='press-navbar'>
       <div class='press-navbar-left'>
         <div class='title'>
-          <a href={pressProcessUrl('/')}>{props.title}</a>
+          <a href={pressProcessUrl('/' + props.currentLang)}>{props.title}</a>
         </div>
         <nav class='nav'>
           {props.nav.map((item: any) => (
