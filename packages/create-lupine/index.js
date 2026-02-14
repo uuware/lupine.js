@@ -51,6 +51,13 @@ const TEMPLATES = [
     color: green,
     needsPress: true,
   },
+  {
+    name: 'cv-starter',
+    display: 'CV Starter',
+    itemType: 'frontend',
+    color: green,
+    needsPress: true,
+  },
 ];
 
 async function init() {
