@@ -1,0 +1,64 @@
+<h1 id="10-minutes-build-a-stunning-personal-cv-website-with-markdown"><a class="header-anchor" href="#10-minutes-build-a-stunning-personal-cv-website-with-markdown">#</a>10 Minutes! Build a Stunning Personal CV Website with Markdown</h1><p>Finding a good job starts with a great CV. If you can turn that CV into a professional personal website, it&#39;s even better and sure to catch a recruiter&#39;s eye.</p>
+<p>This article introduces how to use the <strong>CV Starter</strong> template provided by the <strong>Lupine.js</strong> framework to generate a beautiful, responsive resume website just by writing simple Markdown files. It comes with black and white theme switching, multi-language support, and can be <strong>hosted for free on GitHub Pages</strong>.</p>
+<p><img src="/lupine.js/assets/cv-generator.png" alt="Lupine.js CV Starter"></p>
+<h2 id="why-choose-lupine-cv-starter"><a class="header-anchor" href="#why-choose-lupine-cv-starter">#</a>Why Choose Lupine CV Starter?</h2><ul>
+<li><strong>Minimalist Markdown</strong>: Focus on content, writing your CV just like writing a document.</li>
+<li><strong>Beautiful Design</strong>: A fresh and professional default theme that supports both <strong>Light</strong> and <strong>Dark</strong> modes.</li>
+<li><strong>Multi-language Support</strong>: Easily build bilingual resumes to show your international perspective.</li>
+<li><strong>Mobile Responsive</strong>: Perfectly adapted for mobile desktops, displaying elegantly anytime, anywhere.</li>
+<li><strong>Free Hosting</strong>: Pure static pages that can be deployed directly to GitHub Pages with zero cost.</li>
+</ul>
+<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>🚀 Quick Start</h2><h3 id="1-create-project"><a class="header-anchor" href="#1-create-project">#</a>1. Create Project</h3><p>Initialize your CV project with just one command:</p>
+<pre><code class="language-bash">npx create-lupine@latest my-cv
+</code></pre>
+<p>Select the <strong><code>cv-starter</code></strong> template when prompted.</p>
+<h3 id="2-start-preview"><a class="header-anchor" href="#2-start-preview">#</a>2. Start Preview</h3><p>Enter the project directory and start the local development server:</p>
+<pre><code class="language-bash">cd my-cv
+npm install
+npm run dev
+</code></pre>
+<p>Now, open your browser and you&#39;ll see a complete resume prototype containing <strong>Profile, Experience, Projects, Skills, and Education</strong> sections!</p>
+<h2 id="customize-your-cv"><a class="header-anchor" href="#customize-your-cv">#</a>📝 Customize Your CV</h2><p>The template has already pre-set a standard resume structure for you; you only need to add, delete, or modify it according to your situation.</p>
+<h3 id="modify-content"><a class="header-anchor" href="#modify-content">#</a>Modify Content</h3><p>All content is located in the <code>web/markdown</code> directory.</p>
+<ul>
+<li><code>zh/</code>: Chinese version content</li>
+<li><code>en/</code>: English version content</li>
+</ul>
+<p>You can modify the Markdown files directly. Even better, you can carefully write just one language version (like English) and <strong>let AI help you translate it into another language</strong>. Current AI is very good at handling Markdown formats and translation quality is usually high, saving you a lot of time.</p>
+<h3 id="manage-directory-sidebar"><a class="header-anchor" href="#manage-directory-sidebar">#</a>Manage Directory &amp; Sidebar</h3><p>When you add or delete a page (e.g., adding an &quot;Open Source&quot; section), you need to tell the website how to display the sidebar navigation.</p>
+<p>Open the <code>index.md</code> file under the language root directory (e.g., <code>web/markdown/en/index.md</code>) and modify the <code>sidebar</code> configuration:</p>
+<pre><code class="language-yaml">sidebar:
+  - text: Details
+    items:
+      - /en/01-experience/index
+      - /en/02-projects/index
+      - /en/03-skills/index
+      - /en/04-education/index
+      # - /en/05-open-source/index  &lt;-- New page
+</code></pre>
+<p>After saving the file, the browser page will update automatically. What you see is what you get.</p>
+<h3 id="configure-top-navigation-optional"><a class="header-anchor" href="#configure-top-navigation-optional">#</a>Configure Top Navigation (Optional)</h3><p>Since resumes usually don&#39;t contain many pages, the template does not enable the top navigation menu by default. If you want to show navigation at the top of the page, you can add the <code>nav</code> configuration in <code>index.md</code>:</p>
+<pre><code class="language-yaml">nav:
+  - text: Experience
+    link: /en/01-experience/index
+  - text: Projects
+    link: /en/02-projects/index
+</code></pre>
+<p>This way, your configured menu items will appear on the left side of the Header.</p>
+<h3 id="personalization-settings"><a class="header-anchor" href="#personalization-settings">#</a>Personalization Settings</h3><p>In the Frontmatter of <code>index.md</code>, you can make more personalized settings.</p>
+<h4 id="github-link"><a class="header-anchor" href="#github-link">#</a>GitHub Link</h4><p>The right side of the Header shows the GitHub project link by default. If you want to modify or hide it:</p>
+<pre><code class="language-yaml"># Modify link
+github-title: View on GitHub
+github-link: https://github.com/yourusername/my-cv
+# Or delete these two lines directly to hide
+</code></pre>
+<h4 id="custom-styles"><a class="header-anchor" href="#custom-styles">#</a>Custom Styles</h4><p>Want to change the theme color? Want to adjust the sidebar width? No problem! You can directly override CSS variables via the <code>styles</code> attribute in <code>index.md</code>:</p>
+<pre><code class="language-yaml">styles:
+  &#39;:root&#39;: { &#39;--primary-accent-color&#39;: &#39;#0ac92a&#39; } # Change primary color to green
+  # body: { font-family: &#39;Inter&#39;, sans-serif; }    # Change global font
+</code></pre>
+<p>For more style configurations, please refer to <a href="https://uuware.github.io/lupine.js/en/articles/introduce-lupine.press">this introduction about Lupine.Press</a>.</p>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>Using <strong>Lupine.js</strong> to build a resume website not only showcases your professional skills, but the act itself also demonstrates your passion and pursuit of technology.</p>
+<p>Lupine is under active development. Welcome to GitHub to follow us and check our code frequency and contributions:</p>
+<p>👉 <strong><a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a></strong></p>
+<p>Wish you get your dream Offer soon!</p>

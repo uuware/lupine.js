@@ -30,6 +30,11 @@
       "to": "lupine.js/assets"
     },
     {
+      "type": "web",
+      "from": "web/lupine.js/404.html",
+      "to": "lupine.js/404.html"
+    },
+    {
       "type": "data",
       "from": "api/resources",
       "to": "resources"
