@@ -40,6 +40,7 @@ sidebar:
       - /en/articles/ssr-comparison
       - /en/articles/how-to-build-fast-ssr-app
       - /en/articles/cross-platform-app
+      - /en/articles/cv-generator
   - submenu: /en/essentials
   - submenu: /en/lupine.web
   - submenu: /en/lupine.components
