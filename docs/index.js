@@ -453,8 +453,7 @@ github-link: https://github.com/yourusername/my-cv
   # body: { font-family: &#39;Inter&#39;, sans-serif; }    # Change global font
 </code></pre>
 <p>For more style configurations, please refer to <a href="https://uuware.github.io/lupine.js/en/articles/introduce-lupine.press">this introduction about Lupine.Press</a>.</p>
-<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>Using <strong>Lupine.js</strong> to build a resume website not only showcases your professional skills, but the act itself also demonstrates your passion and pursuit of technology.</p>
-<p>Lupine is under active development. Welcome to GitHub to follow us and check our code frequency and contributions:</p>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>Building your CV website with Lupine.js is not just about showcasing your skills\u2014it&#39;s a statement of your passion for technology. If you find this template helpful or interesting, we&#39;d love your support! Please consider giving us a star on GitHub \u2B50\uFE0F</p>
 <p>\u{1F449} <strong><a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a></strong></p>
 <p>Wish you get your dream Offer soon!</p>
 `;var Kc=`<p>Building a modern web application in 2026 often feels like choosing between &quot;heavy &amp; powerful&quot; (Next.js, Remix) or &quot;light &amp; limited&quot; (Vanilla JS, micro-libraries). But what if you could have the best of both worlds?</p>
@@ -2716,8 +2715,7 @@ github-link: https://github.com/yourusername/my-cv
   # body: { font-family: &#39;Inter&#39;, sans-serif; }    # \u4FEE\u6539\u5168\u5C40\u5B57\u4F53
 </code></pre>
 <p>\u5173\u4E8E\u66F4\u591A\u6837\u5F0F\u914D\u7F6E\uFF0C\u53EF\u4EE5\u53C2\u8003 <a href="https://uuware.github.io/lupine.js/zh/articles/introduce-lupine.press">\u8FD9\u7BC7\u5173\u4E8E Lupine.Press \u7684\u4ECB\u7ECD</a>\u3002</p>
-<h2 id="\u7ED3\u8BED"><a class="header-anchor" href="#\u7ED3\u8BED">#</a>\u7ED3\u8BED</h2><p>\u4F7F\u7528 <strong>Lupine.js</strong> \u6784\u5EFA\u7B80\u5386\u7F51\u7AD9\uFF0C\u4E0D\u4EC5\u80FD\u5C55\u793A\u4F60\u7684\u4E13\u4E1A\u6280\u80FD\uFF0C\u8FD9\u4EF6\u4E8B\u672C\u8EAB\u4E5F\u4F53\u73B0\u4E86\u4F60\u5BF9\u6280\u672F\u7684\u70ED\u60C5\u548C\u8FFD\u6C42\u3002</p>
-<p>Lupine \u6B63\u5728\u79EF\u6781\u5F00\u53D1\u4E2D\uFF0C\u6B22\u8FCE\u6765 GitHub \u5173\u6CE8\u6211\u4EEC\uFF0C\u67E5\u770B\u4EE3\u7801\u9891\u7387\u548C\u8D21\u732E\uFF1A</p>
+<h2 id="\u7ED3\u8BED"><a class="header-anchor" href="#\u7ED3\u8BED">#</a>\u7ED3\u8BED</h2><p>\u4F7F\u7528 Lupine.js \u6784\u5EFA\u7B80\u5386\u7F51\u7AD9\uFF0C\u4E0D\u4EC5\u662F\u5C55\u793A\u4E13\u4E1A\u6280\u80FD\u7684\u6700\u4F73\u65B9\u5F0F\uFF0C\u66F4\u4F53\u73B0\u4E86\u60A8\u5BF9\u6280\u672F\u7684\u70ED\u60C5\u4E0E\u8FFD\u6C42\u3002\u5982\u679C\u60A8\u559C\u6B22\u8FD9\u4E2A\u6A21\u7248\uFF0C\u6216\u8005\u5B83\u5BF9\u60A8\u6709\u6240\u5E2E\u52A9\uFF0C\u6B22\u8FCE\u5728 GitHub \u4E0A\u4E3A\u6211\u4EEC\u70B9\u4EAE\u4E00\u9897\u661F \u2B50\uFE0F</p>
 <p>\u{1F449} <strong><a href="https://github.com/uuware/lupine.js">https://github.com/uuware/lupine.js</a></strong></p>
 <p>\u795D\u4F60\u65E9\u65E5\u62FF\u5230\u5FC3\u4EEA\u7684 Offer\uFF01</p>
 `;var bd=`<p>\u5728 2026 \u5E74\u6784\u5EFA\u73B0\u4EE3 Web \u5E94\u7528\uFF0C\u5F80\u5F80\u8981\u5728\u201C\u6C89\u91CD\u4F46\u5F3A\u5927\u201D\uFF08\u5982 Next.js, Remix\uFF09\u4E0E\u201C\u8F7B\u91CF\u4F46\u53D7\u9650\u201D\uFF08\u5982 Vanilla JS, \u5FAE\u578B\u5E93\uFF09\u4E4B\u95F4\u505A\u9009\u62E9\u3002\u4F46\u5982\u679C\u4F60\u80FD\u540C\u65F6\u62E5\u6709\u4E24\u8005\u7684\u4F18\u70B9\u5462\uFF1F</p>

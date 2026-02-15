@@ -126,9 +126,7 @@ styles:
 
 ## 结语
 
-使用 **Lupine.js** 构建简历网站，不仅能展示你的专业技能，这件事本身也体现了你对技术的热情和追求。
-
-Lupine 正在积极开发中，欢迎来 GitHub 关注我们，查看代码频率和贡献：
+使用 Lupine.js 构建简历网站，不仅是展示专业技能的最佳方式，更体现了您对技术的热情与追求。如果您喜欢这个模版，或者它对您有所帮助，欢迎在 GitHub 上为我们点亮一颗星 ⭐️
 
 👉 **[https://github.com/uuware/lupine.js](https://github.com/uuware/lupine.js)**
 
