@@ -49,6 +49,14 @@ export const PressPage = async (props: PageProps) => {
   }
 
   const config = markdownConfig[currentPath];
+  if (!config) {
+    // for https://uuware.github.io/lupine.js/en/articles/cv-generator -> https://uuware.github.io/lupine-template-cv-starter/
+    // if the sub-dir changed, we need a redirect
+    if (window.location.pathname[0] === '/' && !window.location.pathname.startsWith(subDir + '/')) {
+      window.location.href = subDir + window.location.pathname;
+      return;
+    }
+  }
   const content = config ? config.html : `<h1>404 - Page Not Found</h1><p>Path: ${currentPath}</p>`;
 
   // Get localized configuration from lang index
