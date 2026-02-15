@@ -126,9 +126,7 @@ For more style configurations, please refer to [this introduction about Lupine.P
 
 ## Conclusion
 
-Using **Lupine.js** to build a resume website not only showcases your professional skills, but the act itself also demonstrates your passion and pursuit of technology.
-
-Lupine is under active development. Welcome to GitHub to follow us and check our code frequency and contributions:
+Building your CV website with Lupine.js is not just about showcasing your skills—it's a statement of your passion for technology. If you find this template helpful or interesting, we'd love your support! Please consider giving us a star on GitHub ⭐️
 
 👉 **[https://github.com/uuware/lupine.js](https://github.com/uuware/lupine.js)**
 
