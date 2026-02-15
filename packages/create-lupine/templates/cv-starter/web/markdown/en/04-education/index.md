@@ -5,13 +5,12 @@ order: 4
 
 # Education
 
-## Shanghai Jiao Tong University (Example)
+## University of Auckland
 
-**Computer Science and Technology | Bachelor's Degree**
-**2014.09 - 2018.06**
+**Bachelor of Science in Computer Science**
+**Feb 2014 - Nov 2017**
 
-- **Major Courses**: Data Structures and Algorithms, Operating Systems, Computer Networks, Database Principles, Software Engineering.
-- **Honors**:
-  - 2016-2017 Academic Year School-level First Class Scholarship
-  - 2017 National Undergraduate Mathematical Contest in Modeling Provincial Second Prize
-  - 2018 Outstanding Graduate
+- **Key Coursework**: Data Structures & Algorithms, Operating Systems, Computer Networks, Database Systems, Software Engineering.
+- **Achievements**:
+  - Dean's Honours List (2016).
+  - First Class Honours.
