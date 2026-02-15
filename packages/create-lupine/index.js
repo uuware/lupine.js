@@ -4,6 +4,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
+import { execSync } from 'node:child_process';
+
+function getLatestVersion(pkgName, fallback) {
+  try {
+    const version = execSync(`npm view ${pkgName} version`, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 3000,
+    }).trim();
+    return version ? `^${version}` : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
 
 function generateRandomString(length) {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_!@&?-#$';
@@ -183,15 +197,21 @@ async function init() {
     },
   };
 
+  console.log('Fetching latest versions...');
+  const latestApi = getLatestVersion('lupine.api', '^1.0.1');
+  const latestWeb = getLatestVersion('lupine.web', '^1.0.1');
+  const latestComponents = getLatestVersion('lupine.components', '^1.0.1');
+  const latestPress = getLatestVersion('lupine.press', '^1.0.1');
+
   pkg.dependencies = {
-    'lupine.api': '^1.0.1',
-    'lupine.components': '^1.0.1',
-    'lupine.web': '^1.0.1',
+    'lupine.api': latestApi,
+    'lupine.components': latestComponents,
+    'lupine.web': latestWeb,
   };
 
   const templateObj = TEMPLATES.find((t) => t.name === template);
   if (templateObj && templateObj.needsPress) {
-    pkg.dependencies['lupine.press'] = '^1.0.1';
+    pkg.dependencies['lupine.press'] = latestPress;
     pkg.devDependencies['gray-matter'] = '^4.0.3';
     pkg.devDependencies['marked'] = '^17.0.1';
     pkg.scripts['cp-docs'] = `node dev/cp-folder.js dist/server_root/${appName}_web/github-pj-name docs`;
