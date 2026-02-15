@@ -9,7 +9,7 @@ description: 基于 Lupine.js 的 CV Starter 模板，让你的简历脱颖而�
 
 这篇文章将介绍如何利用 **Lupine.js** 框架提供的 **CV Starter** 模板，只需要写简单的 Markdown 文件，就能生成一个漂亮的、响应式的简历网站。它自带黑白主题切换、多语言支持，并且可以**免费托管在 GitHub Pages 上**。
 
-![Lupine.js CV Starter](/lupine.js/assets/cv-generator.png)
+![Lupine.js CV Starter](/lupine.js/assets/cv-generator-zh.png)
 
 ## 为什么选择 Lupine CV Starter？
 

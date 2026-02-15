@@ -1,5 +1,5 @@
 ---
-title: Resume
+title: CV
 order: 0
 github-title: View on GitHub
 github-link: https://github.com/uuware/lupine.js
@@ -13,25 +13,25 @@ sidebar:
       - /en/04-education/index
 ---
 
-# San Zhang
+# Alex Freeman
 
-> Full Stack Engineer | Open Source Enthusiast | Continuous Learner
+> Full Stack Engineer | Open Source Enthusiast | Lifelong Learner
 
 - 📧 Email: your.email@example.com
-- 📱 Phone: +86 138 0000 0000
+- 📱 Mobile: +64 21 123 4567
 - 🔗 GitHub: [github.com/yourusername](https://github.com/yourusername)
 - 🌐 Blog: [yourblog.com](https://yourblog.com)
-- 📍 Location: Shanghai, China
+- 📍 Location: Auckland, New Zealand
 
-## Profile
+## Personal Statement
 
-Over 5 years of experience in frontend and backend development, specializing in building high-performance, scalable Web applications. Proficient in React, Node.js, TypeScript, and other modern tech stacks. Passionate about the open-source community and maintaining several popular projects on GitHub.
+A seasoned Full Stack Engineer with over 5 years of experience in designing and building high-performance, scalable web applications. Proficient in the modern JavaScript ecosystem, including React, Node.js, and TypeScript. Passionate about open source software and actively maintaining several popular repositories on GitHub.
 
-Adept at solving complex problems, with strong teamwork and communication skills. Committed to writing clean, maintainable code, while focusing on user experience and product quality.
+A problem-solver at heart with strong collaborative and communication skills. Committed to writing clean, maintainable code and delivering exceptional user experiences.
 
-## Career Objective
+## Career Objectives
 
-- **Position**: Senior Frontend Engineer / Full Stack Engineer
-- **Locations**: Shanghai / Hangzhou / Remote
-- **Salary**: Negotiable
-- **Availability**: Immediate
+- **Role**: Senior Frontend Engineer / Full Stack Engineer
+- **Location**: Auckland / Remote
+- **Availability**: 4 weeks notice
+- **Visa Status**: NZ Resident / Work Visa

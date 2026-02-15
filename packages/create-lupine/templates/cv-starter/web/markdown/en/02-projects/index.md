@@ -5,32 +5,32 @@ order: 2
 
 # Projects
 
-## [Lupine.js](https://github.com/uuware/lupine.js) (Demo Project)
+## [Lupine.js](https://github.com/uuware/lupine.js) (Open Source)
 
 **Stack**: TypeScript, React, Node.js
 
-- **Description**: A high-performance, modular full-stack development framework designed to simplify the construction of modern Web applications.
-- **Responsibilities**:
-  - Designed and implemented the core runtime.
-  - Architected the plugin system, supporting dynamic loading of extensions.
-  - Wrote detailed official documentation and example code.
-- **Achievement**: Gained 1k+ Stars on GitHub, one of the main contributors.
+- **Overview**: A high-performance, modular full-stack development framework designed to streamline modern web application builds.
+- **Key Contributions**:
+  - Architected and implemented the core runtime environment.
+  - Designed a robust plugin system, enabling dynamic extension loading.
+  - Authored comprehensive official documentation and example projects.
+- **Impact**: Garnered 1k+ Stars on GitHub; recognised as a core contributor.
 
-## Personal Blog System
+## Personal Blog Generator
 
 **Stack**: Next.js, Tailwind CSS, Markdown
 
-- **Description**: A static blog generator built on Next.js, supporting MDX rendering and custom themes.
+- **Overview**: A static site generator for personal blogs built with Next.js, featuring MDX rendering and customisable themes.
 - **Features**:
-  - High-performance SSG rendering, SEO friendly.
-  - Integrated comment system and full-text search.
-  - Dark mode support.
-- **Achievement**: Long-term personal maintenance, with 500+ daily visits.
+  - High-performance Static Site Generation (SSG) for optimal SEO.
+  - Integrated commenting system and full-text search capability.
+  - Native Dark Mode support.
+- **Outcome**: Actively maintained personal project with 500+ daily unique visitors.
 
-## Real-time Collaborative Document Platform
+## Real-time Collaborative Editor
 
 **Stack**: Vue 3, Socket.io, Node.js, MongoDB
 
-- **Description**: A multi-person real-time online collaborative document editing tool similar to Google Docs.
-- **Core Challenge**: Solved conflict handling during multi-person simultaneous editing (OT algorithm).
-- **Achievement**: Successfully supported 20+ people editing the same document simultaneously, with latency as low as 100ms.
+- **Overview**: A collaborative online document editing tool similar to Google Docs.
+- **Challenge**: Implemented Operational Transformation (OT) algorithms to handle conflict resolution during simultaneous multi-user editing.
+- **Outcome**: Successfully supported 20+ concurrent users editing a single document with latency under 100ms.
