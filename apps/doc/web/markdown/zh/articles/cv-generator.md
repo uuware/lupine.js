@@ -31,6 +31,14 @@ npx create-lupine@latest my-cv
 
 在提示中选择 **`cv-starter`** 模板。
 
+为了让您更直观地了解效果，我们为您准备了一个完整的演示项目。您可以直接访问源码仓库，甚至直接 Fork 它作为您的起点：
+
+- **源码仓库**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+
+您也可以点击下方链接，在线查看该项目的实际运行效果：
+
+- **在线演示**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+
 ### 2. 启动预览
 
 进入项目目录并启动本地开发服务器：
