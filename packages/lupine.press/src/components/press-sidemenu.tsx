@@ -9,7 +9,7 @@ export const PressSidemenu = (props: { sidebar: any[] }) => {
     height: 'max-content',
     // overflowY: 'auto',
     '.&-item': {
-      marginBottom: '0.3rem',
+      marginBottom: '0.5rem',
       display: 'block',
       color: 'var(--text-color)',
       textDecoration: 'none',
