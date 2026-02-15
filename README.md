@@ -32,6 +32,14 @@ const HelloPage = () => {
 
 Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.github.io/lupine.js/zh/)
 
+CV Starter is powered by Lupine.js You can view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+
+The is the source repository, and you can fork it directly as your starting point:
+
+- **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+
 # AI Assisted Development
 
 This project includes a specialized context file for AI coding assistants.
