@@ -399,6 +399,14 @@ import &#39;./styles/app.css&#39;;
 <pre><code class="language-bash">npx create-lupine@latest my-cv
 </code></pre>
 <p>Select the <strong><code>cv-starter</code></strong> template when prompted.</p>
+<p>To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:</p>
+<ul>
+<li><strong>Source Repository</strong>: <a href="https://github.com/uuware/lupine-template-cv-starter">https://github.com/uuware/lupine-template-cv-starter</a></li>
+</ul>
+<p>You can also view the live demo here:</p>
+<ul>
+<li><strong>Live Demo</strong>: <a href="https://uuware.github.io/lupine-template-cv-starter/">https://uuware.github.io/lupine-template-cv-starter/</a></li>
+</ul>
 <h3 id="2-start-preview"><a class="header-anchor" href="#2-start-preview">#</a>2. Start Preview</h3><p>Enter the project directory and start the local development server:</p>
 <pre><code class="language-bash">cd my-cv
 npm install
@@ -2654,6 +2662,14 @@ import &#39;./styles/app.css&#39;;
 <pre><code class="language-bash">npx create-lupine@latest my-cv
 </code></pre>
 <p>\u5728\u63D0\u793A\u4E2D\u9009\u62E9 <strong><code>cv-starter</code></strong> \u6A21\u677F\u3002</p>
+<p>\u4E3A\u4E86\u8BA9\u60A8\u66F4\u76F4\u89C2\u5730\u4E86\u89E3\u6548\u679C\uFF0C\u6211\u4EEC\u4E3A\u60A8\u51C6\u5907\u4E86\u4E00\u4E2A\u5B8C\u6574\u7684\u6F14\u793A\u9879\u76EE\u3002\u60A8\u53EF\u4EE5\u76F4\u63A5\u8BBF\u95EE\u6E90\u7801\u4ED3\u5E93\uFF0C\u751A\u81F3\u76F4\u63A5 Fork \u5B83\u4F5C\u4E3A\u60A8\u7684\u8D77\u70B9\uFF1A</p>
+<ul>
+<li><strong>\u6E90\u7801\u4ED3\u5E93</strong>: <a href="https://github.com/uuware/lupine-template-cv-starter">https://github.com/uuware/lupine-template-cv-starter</a></li>
+</ul>
+<p>\u60A8\u4E5F\u53EF\u4EE5\u70B9\u51FB\u4E0B\u65B9\u94FE\u63A5\uFF0C\u5728\u7EBF\u67E5\u770B\u8BE5\u9879\u76EE\u7684\u5B9E\u9645\u8FD0\u884C\u6548\u679C\uFF1A</p>
+<ul>
+<li><strong>\u5728\u7EBF\u6F14\u793A</strong>: <a href="https://uuware.github.io/lupine-template-cv-starter/">https://uuware.github.io/lupine-template-cv-starter/</a></li>
+</ul>
 <h3 id="2-\u542F\u52A8\u9884\u89C8"><a class="header-anchor" href="#2-\u542F\u52A8\u9884\u89C8">#</a>2. \u542F\u52A8\u9884\u89C8</h3><p>\u8FDB\u5165\u9879\u76EE\u76EE\u5F55\u5E76\u542F\u52A8\u672C\u5730\u5F00\u53D1\u670D\u52A1\u5668\uFF1A</p>
 <pre><code class="language-bash">cd my-cv
 npm install

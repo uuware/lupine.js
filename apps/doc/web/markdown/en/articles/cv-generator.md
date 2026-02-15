@@ -31,6 +31,14 @@ npx create-lupine@latest my-cv
 
 Select the **`cv-starter`** template when prompted.
 
+To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:
+
+- **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+
+You can also view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+
 ### 2. Start Preview
 
 Enter the project directory and start the local development server:
