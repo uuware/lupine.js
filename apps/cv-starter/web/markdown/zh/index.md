@@ -35,3 +35,7 @@ sidebar:
 - **期望城市**: 上海 / 杭州 / 远程
 - **期望薪资**: 面议
 - **目前状态**: 随时到岗
+
+---
+
+Powered by [Lupine.js](https://github.com/uuware/lupine.js). 如果本模版对您有帮助，欢迎在 GitHub 上送我们一颗星 ⭐️

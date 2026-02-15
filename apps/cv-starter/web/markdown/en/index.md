@@ -35,3 +35,7 @@ A problem-solver at heart with strong collaborative and communication skills. Co
 - **Location**: Auckland / Remote
 - **Availability**: 4 weeks notice
 - **Visa Status**: NZ Resident / Work Visa
+
+---
+
+Powered by [Lupine.js](https://github.com/uuware/lupine.js). If you find this template helpful, a star on GitHub is always appreciated ⭐️
