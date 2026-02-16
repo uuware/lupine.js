@@ -2,6 +2,14 @@
 <p><strong>Lupine.Press</strong> is here to break this deadlock.</p>
 <p>It is a documentation framework built on <strong>Lupine.js</strong>, inheriting the latter&#39;s <strong>&quot;ultra-lightweight&quot;</strong> and <strong>&quot;high-performance&quot;</strong> DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.</p>
 <p><img src="/lupine.js/assets/lupine.press.png" alt="Lupine.Press"></p>
+<p>To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:</p>
+<ul>
+<li><strong>Source Repository</strong>: <a href="https://github.com/uuware/lupine-template-cv-starter">https://github.com/uuware/lupine-template-cv-starter</a></li>
+</ul>
+<p>You can also view the live demo here:</p>
+<ul>
+<li><strong>Live Demo</strong>: <a href="https://uuware.github.io/lupine-template-cv-starter/">https://uuware.github.io/lupine-template-cv-starter/</a></li>
+</ul>
 <h2 id="why-choose-lupine-press"><a class="header-anchor" href="#why-choose-lupine-press">#</a>Why Choose Lupine.Press?</h2><h3 id="1-incredible-speed"><a class="header-anchor" href="#1-incredible-speed">#</a>1. ⚡ Incredible Speed</h3><p>Need I say more? Based on the Lupine.js core (only 7kb), your documentation site will load incredibly fast. No bloated hydration process, content appears instantly.</p>
 <h3 id="2-markdown-driven-just-works"><a class="header-anchor" href="#2-markdown-driven-just-works">#</a>2. 📝 Markdown-Driven Just Works</h3><p>In Lupine.Press, file structure is routing.</p>
 <ul>
@@ -50,3 +58,6 @@ npm install
 npm run dev
 </code></pre>
 <p>Now, focus on writing!</p>
+<h2 id="deploying-to-github-pages"><a class="header-anchor" href="#deploying-to-github-pages">#</a>Deploying to GitHub Pages</h2><p>Under <code>apps/[your-project-name]/web</code>, you will find a folder named <code>github-pj-name</code>. Please rename this folder to your actual GitHub repository name. Next, perform a global search for <code>github-pj-name</code> and replace all occurrences with your GitHub repository name. This is necessary because GitHub Pages uses the URL structure <code>[github-account].github.io/[github-repository-name]/</code>.</p>
+<p>After editing your documentation, run <code>npm run build</code>. Once you confirm there are no compilation errors, run <code>npm run cp-docs</code>. This command copies the static files from the <code>build</code> directory to the <code>/docs</code> directory. Commit and push all changes to your GitHub repository. Then, go to your repository&#39;s Settings &gt; Pages. Under &quot;Build and deployment&quot;, select the <strong>main</strong> branch and the <strong>/docs</strong> folder, then click Save. You will soon be able to access your documentation site at <code>https://[github-account].github.io/[github-repository-name]/</code>.</p>
+<p>If you want to display this link in the &quot;About&quot; section of your repository, click the settings icon (gear) next to &quot;About&quot;, and check &quot;Use your GitHub Pages website&quot;.</p>

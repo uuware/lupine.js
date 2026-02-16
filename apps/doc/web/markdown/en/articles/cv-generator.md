@@ -11,6 +11,14 @@ This article introduces how to use the **CV Starter** template provided by the *
 
 ![Lupine.js CV Starter](/lupine.js/assets/cv-generator.png)
 
+To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:
+
+- **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+
+You can also view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+
 ## Why Choose Lupine CV Starter?
 
 - **Minimalist Markdown**: Focus on content, writing your CV just like writing a document.
@@ -30,14 +38,6 @@ npx create-lupine@latest my-cv
 ```
 
 Select the **`cv-starter`** template when prompted.
-
-To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:
-
-- **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
-
-You can also view the live demo here:
-
-- **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
 
 ### 2. Start Preview
 
