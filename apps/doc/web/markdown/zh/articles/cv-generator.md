@@ -11,6 +11,14 @@ description: 基于 Lupine.js 的 CV Starter 模板，让你的简历脱颖而�
 
 ![Lupine.js CV Starter](/lupine.js/assets/cv-generator-zh.png)
 
+为了让您更直观地了解效果，我们为您准备了一个完整的演示项目。您可以直接访问源码仓库，甚至直接 Fork 它作为您的起点：
+
+- **源码仓库**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+
+您也可以点击下方链接，在线查看该项目的实际运行效果：
+
+- **在线演示**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+
 ## 为什么选择 Lupine CV Starter？
 
 - **极简 Markdown**: 专注于内容，像写文档一样写简历。
@@ -30,14 +38,6 @@ npx create-lupine@latest my-cv
 ```
 
 在提示中选择 **`cv-starter`** 模板。
-
-为了让您更直观地了解效果，我们为您准备了一个完整的演示项目。您可以直接访问源码仓库，甚至直接 Fork 它作为您的起点：
-
-- **源码仓库**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
-
-您也可以点击下方链接，在线查看该项目的实际运行效果：
-
-- **在线演示**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
 
 ### 2. 启动预览
 
