@@ -15,11 +15,11 @@ It is a documentation framework built on **Lupine.js**, inheriting the latter's 
 
 To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:
 
-- **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+- **Source Repository**: [https://github.com/uuware/lupine-template-doc-starter](https://github.com/uuware/lupine-template-doc-starter)
 
 You can also view the live demo here:
 
-- **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+- **Live Demo**: [https://uuware.github.io/lupine-template-doc-starter/](https://uuware.github.io/lupine-template-doc-starter/)
 
 ## Why Choose Lupine.Press?
 
