@@ -13,6 +13,14 @@ description: 基于 Lupine.js 的超轻量级文档网站生成器
 
 ![Lupine.Press](/lupine.js/assets/lupine.press.png)
 
+为了让您更直观地了解效果，我们为您准备了一个完整的演示项目。您可以直接访问源码仓库，甚至直接 Fork 它作为您的起点：
+
+- **源码仓库**: [https://github.com/uuware/lupine-template-doc-starter](https://github.com/uuware/lupine-template-doc-starter)
+
+您也可以点击下方链接，在线查看该项目的实际运行效果：
+
+- **在线演示**: [https://uuware.github.io/lupine-template-doc-starter/](https://uuware.github.io/lupine-template-doc-starter/)
+
 ## 为什么选择 Lupine.Press？
 
 ### 1. ⚡ 难以置信的快
@@ -90,3 +98,11 @@ npm run dev
 ```
 
 现在，开始专注于写作吧！
+
+## 发布到 GitHub Pages
+
+在 `apps/[您的项目名]/web` 目录下，您会找到一个名为 `github-pj-name` 的文件夹。请将其重命名为您的 GitHub 项目名称。接着，在全局范围内搜索 `github-pj-name` 并将其全部替换为您的 GitHub 项目名称。这是为了适配 GitHub Pages 的路径结构：`[github-account].github.io/[github-pj-name]/`。
+
+编辑完文档后，请执行 `npm run build`。确认编译无误后，运行 `npm run cp-docs`。此命令会将 `build` 目录下的静态文件复制到 `/docs` 目录。将所有更改提交到 GitHub 仓库后，进入仓库的 Settings -> Pages 设置页。在 Build and deployment 下，选择 **main** 分支和 **/docs** 文件夹，然后点击保存。稍后您即可通过 `https://[github-account].github.io/[github-pj-name]/` 访问您的文档网站。
+
+若要在仓库主页的 About 区域显示此链接，点击 About 旁的设置图标 (齿轮)，勾选 "Use your GitHub Pages website" 即可。

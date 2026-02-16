@@ -2,6 +2,14 @@
 <p><strong>Lupine.Press</strong> 的出现，就是为了打破这个僵局。</p>
 <p>它是基于 <strong>Lupine.js</strong> 构建的文档框架，继承了后者 <strong>“极致轻量”</strong> 和 <strong>“高性能”</strong> 的基因。它能让你用最简单的 Markdown，构建出专业、响应式且支持多语言的文档网站。</p>
 <p><img src="/lupine.js/assets/lupine.press.png" alt="Lupine.Press"></p>
+<p>为了让您更直观地了解效果，我们为您准备了一个完整的演示项目。您可以直接访问源码仓库，甚至直接 Fork 它作为您的起点：</p>
+<ul>
+<li><strong>源码仓库</strong>: <a href="https://github.com/uuware/lupine-template-doc-starter">https://github.com/uuware/lupine-template-doc-starter</a></li>
+</ul>
+<p>您也可以点击下方链接，在线查看该项目的实际运行效果：</p>
+<ul>
+<li><strong>在线演示</strong>: <a href="https://uuware.github.io/lupine-template-doc-starter/">https://uuware.github.io/lupine-template-doc-starter/</a></li>
+</ul>
 <h2 id="为什么选择-lupine-press"><a class="header-anchor" href="#为什么选择-lupine-press">#</a>为什么选择 Lupine.Press？</h2><h3 id="1-难以置信的快"><a class="header-anchor" href="#1-难以置信的快">#</a>1. ⚡ 难以置信的快</h3><p>这就不用多说了。基于 Lupine.js 核心（仅 7kb），你的文档网站加载速度会快得惊人。没有臃肿的 hydration 过程，内容即刻呈现。</p>
 <h3 id="2-markdown-驱动的一切"><a class="header-anchor" href="#2-markdown-驱动的一切">#</a>2. 📝 Markdown 驱动的一切</h3><p>在 Lupine.Press 中，文件结构即路由。</p>
 <ul>
@@ -50,3 +58,6 @@ npm install
 npm run dev
 </code></pre>
 <p>现在，开始专注于写作吧！</p>
+<h2 id="发布到-github-pages"><a class="header-anchor" href="#发布到-github-pages">#</a>发布到 GitHub Pages</h2><p>在 <code>apps/[您的项目名]/web</code> 目录下，您会找到一个名为 <code>github-pj-name</code> 的文件夹。请将其重命名为您的 GitHub 项目名称。接着，在全局范围内搜索 <code>github-pj-name</code> 并将其全部替换为您的 GitHub 项目名称。这是为了适配 GitHub Pages 的路径结构：<code>[github-account].github.io/[github-pj-name]/</code>。</p>
+<p>编辑完文档后，请执行 <code>npm run build</code>。确认编译无误后，运行 <code>npm run cp-docs</code>。此命令会将 <code>build</code> 目录下的静态文件复制到 <code>/docs</code> 目录。将所有更改提交到 GitHub 仓库后，进入仓库的 Settings -&gt; Pages 设置页。在 Build and deployment 下，选择 <strong>main</strong> 分支和 <strong>/docs</strong> 文件夹，然后点击保存。稍后您即可通过 <code>https://[github-account].github.io/[github-pj-name]/</code> 访问您的文档网站。</p>
+<p>若要在仓库主页的 About 区域显示此链接，点击 About 旁的设置图标 (齿轮)，勾选 &quot;Use your GitHub Pages website&quot; 即可。</p>

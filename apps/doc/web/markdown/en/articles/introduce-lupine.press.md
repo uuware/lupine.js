@@ -13,6 +13,14 @@ It is a documentation framework built on **Lupine.js**, inheriting the latter's 
 
 ![Lupine.Press](/lupine.js/assets/lupine.press.png)
 
+To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:
+
+- **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
+
+You can also view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
+
 ## Why Choose Lupine.Press?
 
 ### 1. ⚡ Incredible Speed
@@ -90,3 +98,11 @@ npm run dev
 ```
 
 Now, focus on writing!
+
+## Deploying to GitHub Pages
+
+Under `apps/[your-project-name]/web`, you will find a folder named `github-pj-name`. Please rename this folder to your actual GitHub repository name. Next, perform a global search for `github-pj-name` and replace all occurrences with your GitHub repository name. This is necessary because GitHub Pages uses the URL structure `[github-account].github.io/[github-repository-name]/`.
+
+After editing your documentation, run `npm run build`. Once you confirm there are no compilation errors, run `npm run cp-docs`. This command copies the static files from the `build` directory to the `/docs` directory. Commit and push all changes to your GitHub repository. Then, go to your repository's Settings > Pages. Under "Build and deployment", select the **main** branch and the **/docs** folder, then click Save. You will soon be able to access your documentation site at `https://[github-account].github.io/[github-repository-name]/`.
+
+If you want to display this link in the "About" section of your repository, click the settings icon (gear) next to "About", and check "Use your GitHub Pages website".
