@@ -55,7 +55,9 @@ export const PageHeader = (props: PageHeaderProps) => {
         </div>
         <nav class='nav'>
           {props.nav.map((item: any) => (
-            <a href={pressProcessUrl(item.link)}>{item.text}</a>
+            <a href={pressProcessUrl(item.link)} target={item.target}>
+              {item.text}
+            </a>
           ))}
         </nav>
       </div>
