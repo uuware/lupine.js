@@ -24,8 +24,9 @@ hero:
 nav:
   - text: 指南
     link: /zh/guide/started
-  - text: API
-    link: /zh/essentials/api
+  - text: 演示
+    link: /demo
+    target: _blank
 
 sidebar:
   - text: 指南
