@@ -1,0 +1,330 @@
+/* app css 3 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.header-title {
+  font-size: var(--page-title-font-size);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.mobile-title {
+  font-size: 1.3rem;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
+.msg-area {
+  height: 100px;
+}
+
+.video-box {
+  width: 100%;
+  height: auto;
+}
+
+.login-form-width {
+  width: 550px;
+  max-width: 100%;
+}
+
+.tips-font-size {
+  font-size: 11px;
+}
+
+.mobile-row-side-btn {
+  height: 50px;
+  width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.div-btn {
+  padding: 2px;
+  margin: 0 3px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.div-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.div-btn-s {
+  font-size: 11px;
+}
+
+.float-add-icon {
+  position: fixed;
+  bottom: 70px;
+  right: 16px;
+  display: flex;
+  border-radius: 50%;
+  border: 1px solid var(--primary-border-color);
+  width: 35px;
+  height: 35px;
+  color: red;
+}
+
+/* .header-back-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding-right: 8px;
+  font-size: 28px;
+} */
+
+/* 彩虹流动线 */
+.line-rainbow {
+  height: 4px;
+  border-radius: 3px;
+  background: linear-gradient(270deg, #ff0080, #7928ca, #2af598, #009efd, #ecf011, #ff0080);
+  background-size: 400% 400%;
+  animation: line-rainbow-kf 6s ease infinite;
+}
+
+@keyframes line-rainbow-kf {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 跑马灯闪光线 */
+.line-shine {
+  height: 4px;
+  border-radius: 2px;
+  /* background-image: linear-gradient(90deg, #ff0, #f0f, #0ff, #ff0); */
+  background-size: 100px 50px;
+  animation: line-shine-kf 5s linear infinite;
+}
+
+@keyframes line-shine-kf {
+  to {
+    background-position: -200% center;
+  }
+}
+
+/* 波浪线（用背景渐变模拟波动） */
+.line-wave {
+  height: 4px;
+  border-radius: 3px;
+  /* background-image: repeating-linear-gradient(-45deg, #ff5f6d, #ff5f6d 10px, #ffc371 10px, #ffc371 15px, #36e230 20px); */
+  background-size: 20px 40px;
+  animation: line-wave-kf 3s linear infinite;
+}
+
+@keyframes line-wave-kf {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 40px 0;
+  }
+}
+
+/* 滚动脉冲线 */
+.line-starbeat {
+  height: 4px;
+  border-radius: 3px;
+  /* background-image: repeating-linear-gradient(15deg, #2c1fe6 5px, #ffc371 10px, #37cc43 15px); */
+  background-size: 40px 40px;
+  animation: line-starbeat-kf 3s linear infinite;
+}
+
+@keyframes line-starbeat-kf {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 40px 40px;
+  }
+}
+
+/* 霓虹灯呼吸效果 */
+.line-neon {
+  height: 4px;
+  border-radius: 2px;
+  background-image: #0ff;
+  box-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
+  animation: line-neon-kf 2s ease-in-out infinite;
+}
+
+@keyframes line-neon-kf {
+  0%,
+  100% {
+    background: #0ff;
+    box-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
+  }
+
+  30% {
+    background: #ddf124;
+    box-shadow: 0 0 20px #ddf124, 0 0 40px #ddf124, 0 0 80px #ddf124;
+  }
+
+  60% {
+    background: #f0f;
+    box-shadow: 0 0 20px #f0f, 0 0 40px #f0f, 0 0 80px #f0f;
+  }
+}
+
+/* 激光扫描线 */
+.line-laser {
+  position: relative;
+  height: 4px;
+  background-color: #b5b5b5;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.line-laser::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background-image: linear-gradient(90deg, transparent, #0ff, transparent);
+  animation: line-laser-kf 2s linear infinite;
+}
+
+@keyframes line-laser-kf {
+  from {
+    left: -50%;
+  }
+
+  to {
+    left: 100%;
+  }
+}
+
+/* 心跳脉冲线   */
+.line-heartbeat {
+  position: relative;
+  height: 4px;
+  background: #444;
+  overflow: hidden;
+}
+
+.line-heartbeat::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background-image: repeating-linear-gradient(to right, #0ff 0px, #0ff 2px, transparent 2px, transparent 20px);
+  animation: line-heartbeat-kf 3s linear infinite;
+}
+
+@keyframes line-heartbeat-kf {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* 三色渐变 */
+.line-gradient,
+.line-animate {
+  height: 4px;
+  /* background-image: linear-gradient(90deg, red, green, red); */
+  background-size: 200% auto;
+  border-radius: 2px;
+}
+
+.line-animate {
+  animation: line-gradient-animate 1.5s linear infinite;
+}
+
+@keyframes line-gradient-animate {
+  0% {
+    background-position: 0% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Footer Actions */
+.footer-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  /* pointer-events: none; */
+}
+
+.floating-buttons-area {
+  display: flex;
+  /* justify-content: center; */
+  /* align-items: flex-end; */
+  padding: 0 1rem 0 1rem;
+  /* pointer-events: auto; */
+}
+
+.floating-card {
+  background-color: #fff;
+  border-radius: 2.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--gray-100);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  /* gap: 2rem; */
+  width: 100%;
+  place-content: space-evenly;
+}
+
+@media (min-width: 768px) {
+  .floating-card {
+    gap: 3rem;
+  }
+}
+
+/* For slide-img */
+@keyframes pageFlip {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+
+  30% {
+    transform: rotateX(-10deg) rotateY(10deg);
+  }
+
+  100% {
+    transform: rotateX(-80deg) rotateY(180deg);
+  }
+}
+
+@keyframes pageFlipBack {
+  0% {
+    transform: rotateY(-180deg);
+  }
+
+  70% {
+    transform: rotateX(-10deg) rotateY(-10deg);
+  }
+
+  100% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+}
