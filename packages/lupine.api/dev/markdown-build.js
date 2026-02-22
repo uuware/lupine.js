@@ -147,20 +147,7 @@ function processFile(builtFiles, filePath, indir, outdir, relativePath) {
     data.sidebar = expandSidebar(data.sidebar);
   }
 
-  const prefixLinks = (obj) => {
-    if (!obj || typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return obj.map(prefixLinks);
-    const result = {};
-    for (const key in obj) {
-      let val = obj[key];
-      if (key === 'link' && typeof val === 'string' && val.startsWith('/') && !val.startsWith(`/${lang}/`)) {
-        val = `/${lang}${val}`;
-      }
-      result[key] = prefixLinks(val);
-    }
-    return result;
-  };
-  const prefixedData = prefixLinks(data);
+  const prefixedData = data;
 
   const route = '/' + relativePath.replace(/\\/g, '/').replace(/\.md$/, '');
   // const importPath = './' + relativePath.replace(/\\/g, '/').replace(/\.md$/, '.html');
@@ -265,6 +252,7 @@ const markdownProcessOnEnd = async (indir, outdir) => {
             text: item.text,
             link: item.link,
             level: level,
+            target: item.target,
           });
         }
       });
@@ -302,7 +290,7 @@ const markdownProcessOnEnd = async (indir, outdir) => {
           return { text: text || link, link: link };
         }
 
-        return { ...item, text: text || link, link: link };
+        return { ...item, text: text || link, link: link, target: item.target };
       };
 
       for (const info of builtFiles.values()) {
