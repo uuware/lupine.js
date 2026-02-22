@@ -1,6 +1,6 @@
 {
   "name": "lupine.press",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A modern documentation generator for lupine.js",
   "main": "src/index.ts",
   "license": "MIT",
