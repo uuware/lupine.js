@@ -186,7 +186,7 @@ export const PopupMenu = ({
         padding: '5px 0px',
         overflow: 'auto',
         'line-height': '1.2em',
-        'min-width': minWidth || 'auto',
+        'min-width': minWidth || 'max-content',
         'max-width': maxWidth || '200px',
         'max-height': maxHeight || '300px',
         'box-shadow': 'var(--cover-box-shadow)', //'#0000004c 0px 19px 38px, #00000038 0px 15px 12px',

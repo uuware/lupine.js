@@ -86,6 +86,10 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       textShadow: 'rgba(0, 0, 0, 0.1) 0 0 0.1em',
       userSelect: 'none',
     },
+    '&:disabled .button-inner span': {
+      backgroundImage: 'linear-gradient(135deg, rgba(150, 150, 150, 1), rgba(200, 200, 200, 1))',
+      opacity: 0.7,
+    },
     '&.button-ss': {
       borderRadius: '2px',
     },
@@ -114,17 +118,17 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       padding: '0.5rem 1.5rem',
       fontSize: '2rem',
     },
-    '&:active .button-outer': {
+    '&:active:not(:disabled) .button-outer': {
       boxShadow: '0 0 0 0 rgba(5, 5, 5, 1), 0 0 0 0 rgba(5, 5, 5, 0.5), 0 0 0 0 rgba(5, 5, 5, 0.25)',
     },
-    '&:active .button-inner': {
+    '&:active:not(:disabled) .button-inner': {
       boxShadow:
         '0.1em 0.15em 0.05em 0 inset rgba(5, 5, 5, 0.75), -0.025em -0.03em 0.05em 0.025em inset rgba(5, 5, 5, 0.5), 0.25em 0.25em 0.2em 0 inset rgba(5, 5, 5, 0.5), 0 0 0.05em 0.5em inset rgba(255, 255, 255, 0.15), 0 0 0 0 inset rgba(255, 255, 255, 1), 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25), -0.075em -0.12em 0.2em 0.1em inset rgba(5, 5, 5, 0.25)',
     },
-    '&:hover .button-inner': {
+    '&:hover:not(:disabled) .button-inner': {
       transform: 'scale(0.99)',
     },
-    '&:hover .button-inner span': {
+    '&:hover:not(:disabled) .button-inner span': {
       transform: 'scale(0.975)',
     },
     ...props.css,

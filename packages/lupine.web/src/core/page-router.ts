@@ -89,6 +89,7 @@ export class PageRouter {
       return vNode;
     } catch (e: any) {
       this.logger.error(`Processed path: ${path}, error: ${e.message}`);
+      console.error(e.stack);
       // res.write(JSON.stringify({ status: 'error', message: `Processed path: ${path}, error: ${e.message}` }));
     }
     return null;

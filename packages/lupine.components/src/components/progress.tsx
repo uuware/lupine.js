@@ -2,7 +2,7 @@ import { CssProps, RefProps } from 'lupine.web';
 import { HtmlVar } from './html-var';
 
 export type ProgressHookProps = {
-  onProgress?: (percentage: number, chunkNumber: number, totalChunks: number) => void;
+  onProgress?: (percentage: number, chunkNumber?: number, totalChunks?: number) => void;
   onShow?: (show: boolean, title?: string) => void;
 };
 export type ProgressProps = {
@@ -53,13 +53,13 @@ export const Progress = (props: ProgressProps) => {
     },
   };
 
-  props.hook.onProgress = (percentage: number, chunkNumber: number, totalChunks: number) => {
+  props.hook.onProgress = (percentage: number, chunkNumber?: number, totalChunks?: number) => {
     // console.log(`Upload progress: ${percentage}% (chunk ${chunkNumber} of ${totalChunks})`);
     percentage = Math.round(percentage * 100);
     const bar1 = document.querySelector('.progress-bar1') as HTMLElement;
     const bar2 = document.querySelector('.progress-bar2') as HTMLElement;
     bar1.style.width = `${percentage}%`;
-    bar2.style.width = `${1 - percentage}%`;
+    bar2.style.width = `${100 - percentage}%`;
     dom.value = `${percentage}%`;
   };
   props.hook.onShow = (show: boolean, title?: string) => {

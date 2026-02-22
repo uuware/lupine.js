@@ -63,7 +63,7 @@ export class ResizableSplitter {
         backgroundColor: '#ccc',
       },
     };
-    bindGlobalStyle('resizable-splitter', css);
+    bindGlobalStyle('resizable-splitter', css, false, true);
 
     window.addEventListener('mousemove', ResizableSplitter.onMousemove.bind(ResizableSplitter), false);
     document.documentElement.addEventListener('mouseup', ResizableSplitter.onMouseup.bind(ResizableSplitter), false);
@@ -105,14 +105,14 @@ export class ResizableSplitter {
   }
 
   static getSplitter(selector: string, isVertical: boolean, isRightOrTop: boolean) {
+    if (!this.initialized) {
+      this.initialized = true;
+      this.init();
+    }
+
     const className = this.getSplitterClassName(isVertical, isRightOrTop);
 
     const onMousedown = (event: any) => {
-      if (!this.initialized) {
-        this.initialized = true;
-        this.init();
-      }
-
       ResizableSplitter.hostNode = document.querySelector(selector)!;
       if (!ResizableSplitter.hostNode) {
         console.error(`Can't find element: ${selector}`);
