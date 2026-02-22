@@ -32,11 +32,21 @@ const HelloPage = () => {
 
 Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.github.io/lupine.js/zh/)
 
+## Template: Doc Starter
+Doc Starter is powered by Lupine.js You can view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-template-doc-starter/](https://uuware.github.io/lupine-template-doc-starter/)
+
+The is the source repository:
+
+- **Source Repository**: [https://github.com/uuware/lupine-template-doc-starter](https://github.com/uuware/lupine-template-doc-starter)
+
+## Template: CV Starter
 CV Starter is powered by Lupine.js You can view the live demo here:
 
 - **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
 
-The is the source repository, and you can fork it directly as your starting point:
+The is the source repository:
 
 - **Source Repository**: [https://github.com/uuware/lupine-template-cv-starter](https://github.com/uuware/lupine-template-cv-starter)
 
