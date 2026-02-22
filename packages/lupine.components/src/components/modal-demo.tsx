@@ -41,4 +41,16 @@ export const modalDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { ModalWindow } from 'lupine.components/components/modal';
+
+ModalWindow.show({
+  title: 'Example Modal',
+  children: <div style={{ padding: '20px' }}>This is the modal content!</div>,
+  buttons: ['Cancel', 'Confirm'],
+  handleClicked: (ind, close) => {
+    console.log('Clicked button:', ind);
+    close();
+  },
+});
+`,
 };

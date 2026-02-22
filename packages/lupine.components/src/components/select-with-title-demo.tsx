@@ -33,4 +33,21 @@ export const selectWithTitleDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { SelectWithTitle, SelectOptionProps } from 'lupine.components/components/select-with-title';
+
+const options: SelectOptionProps[] = [
+  { option: 'Apple', value: 'apple' },
+  { option: 'Banana', value: 'banana', selected: true },
+  { option: 'Cherry', value: 'cherry' },
+];
+
+{SelectWithTitle(
+  'Choose a fruit', // title
+  options,          // options array
+  (val) => console.log('Selected:', val), // onChange
+  1,                // size
+  'input-base',     // className
+  '200px'           // width
+)}
+`,
 };

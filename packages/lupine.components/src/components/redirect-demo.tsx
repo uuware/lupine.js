@@ -25,4 +25,12 @@ export const redirectDemo: DemoStory<RedirectProps> = {
       </div>
     );
   },
+  code: `import { Redirect } from 'lupine.components/components/redirect';
+
+<Redirect 
+  title="Redirecting you soon..." 
+  url="https://example.com" 
+  delaySeconds={3} 
+/>
+`,
 };

@@ -33,4 +33,14 @@ export const textGlowDemo: DemoStory<TextGlowProps> = {
       </div>
     );
   },
+  code: `import { TextGlow } from 'lupine.components/components/text-glow';
+
+<TextGlow 
+  text="NEON GLOW" 
+  color="#ffffff" 
+  fontSize="40px" 
+  padding="30px" 
+  fontWeight="bold" 
+/>
+`,
 };

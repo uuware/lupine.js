@@ -1,4 +1,4 @@
-import { CssProps, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
+import { CssProps, encodeHtml, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
 import { demoRegistry } from './demo-registry';
 
 export const DemoRenderPage = async (props: PageProps) => {
@@ -25,12 +25,34 @@ export const DemoRenderPage = async (props: PageProps) => {
     const story = id ? demoRegistry[id] : null;
 
     if (story) {
+      const renderContent = (args: any, showCode: boolean) => {
+        if (showCode && story.code) {
+          return (
+            <pre
+              style={{
+                margin: 0,
+                padding: '20px',
+                backgroundColor: '#f5f5f5',
+                width: '100%',
+                height: '100%',
+                overflow: 'auto',
+              }}
+            >
+              <code>{encodeHtml(story.code)}</code>
+            </pre>
+          );
+        } else if (showCode && !story.code) {
+          return <div>Code snippet not available for this demo.</div>;
+        }
+        return story.render(args);
+      };
+
       // First render using the correct context
-      dom.value = story.render(story.args);
+      dom.value = renderContent(story.args, false);
 
       (window as any)._lj_demo_hook = {
-        updateArgs: (newArgs: any) => {
-          dom.value = story.render(newArgs);
+        updateArgs: (newArgs: any, showCode: boolean = false) => {
+          dom.value = renderContent(newArgs, showCode);
         },
       };
     } else {
@@ -48,6 +70,7 @@ export const DemoRenderPage = async (props: PageProps) => {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center', // Center components by default
+    overflow: 'hidden',
   };
 
   return <div css={css}>{dom.node}</div>;

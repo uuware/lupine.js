@@ -38,4 +38,15 @@ export const spinnerDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { Spinner01, Spinner02, Spinner03, SpinnerSize } from 'lupine.components/components/spinner';
+
+{/* Spinner01 */}
+<Spinner01 size={SpinnerSize.Medium} color="#0a74c9" />
+
+{/* Spinner02 */}
+<Spinner02 size={SpinnerSize.Medium} color="#0a74c9" />
+
+{/* Spinner03 expects an RGB tuple string without the rgb() wrapper */}
+<Spinner03 size={SpinnerSize.Medium} colorRGB="10 116 201" />
+`,
 };

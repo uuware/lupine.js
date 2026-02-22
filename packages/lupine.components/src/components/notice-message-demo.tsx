@@ -49,4 +49,12 @@ export const noticeMessageDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { NotificationMessage, NotificationColor } from 'lupine.components/components/notice-message';
+
+// Show Info
+NotificationMessage.sendMessage('Action completed successfully!', NotificationColor.Info);
+
+// Show Success (permanent)
+NotificationMessage.sendMessage('Action completed successfully!', NotificationColor.Success, true);
+`,
 };

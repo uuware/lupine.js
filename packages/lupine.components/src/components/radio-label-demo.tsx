@@ -24,4 +24,18 @@ export const radioLabelDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { RadioLabelComponent } from 'lupine.components/components/radio-label-component';
+
+<RadioLabelComponent 
+  label="Option A" 
+  name="demo-radio-group" 
+  checked={true} 
+  disabled={false} 
+/>
+<RadioLabelComponent 
+  label="Option B" 
+  name="demo-radio-group" 
+  disabled={false} 
+/>
+`,
 };

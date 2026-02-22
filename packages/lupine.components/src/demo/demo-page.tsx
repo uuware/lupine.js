@@ -9,11 +9,12 @@ export type DemoPageProps<T> = {
 export const DemoPage = <T,>(props: DemoPageProps<T>) => {
   const { story } = props;
   let currentArgs = { ...story.args };
+  let currentMode: 'preview' | 'code' = 'preview';
   let iframeWindow: any = null;
 
   const updatePreview = () => {
     if (iframeWindow && iframeWindow._lj_demo_hook) {
-      iframeWindow._lj_demo_hook.updateArgs(currentArgs);
+      iframeWindow._lj_demo_hook.updateArgs(currentArgs, currentMode === 'code');
     }
   };
 
@@ -92,9 +93,38 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
 
     const controlCss: CssProps = {
       padding: '8px',
-      '.&-title': {
+      '.&-header': {
+        display: 'flex',
+        alignItems: 'center',
+        // justifyContent: 'space-between',
         margin: '0 0 16px 0',
+      },
+      '.&-title': {
+        margin: 0,
         fontSize: '16px',
+      },
+      '.&-modes': {
+        display: 'flex',
+        gap: '4px',
+        backgroundColor: '#f5f5f5',
+        padding: '2px',
+        borderRadius: '4px',
+        marginLeft: '16px',
+      },
+      '.&-mode-btn': {
+        border: 'none',
+        background: 'transparent',
+        padding: '4px 12px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        borderRadius: '2px',
+        color: '#666',
+        '&.active': {
+          background: 'white',
+          color: '#000',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+        },
       },
       '.&-ctl-check': {
         display: 'flex',
@@ -123,16 +153,46 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
         color: '#666',
       },
     };
+    const ref: RefProps = {};
     return (
-      <div css={controlCss}>
-        <h3 class='&-title'>Controls</h3>
-        {Object.keys(story.argTypes).map((key) => {
-          const argType = (story.argTypes as any)[key];
-          return renderControl(key, argType);
-        })}
+      <div css={controlCss} ref={ref}>
+        <div class='&-header'>
+          <h3 class='&-title'>Controls</h3>
+          <div class='&-modes'>
+            <button
+              class={`&-mode-btn ${currentMode === 'preview' ? 'active' : ''}`}
+              onClick={() => {
+                currentMode = 'preview';
+                updatePreview();
+                ref.$('&-mode-btn', true).forEach((btn: HTMLElement) => btn.classList.remove('active'));
+                (ref.$('&-mode-btn')[0] as HTMLElement).classList.add('active');
+              }}
+            >
+              Preview
+            </button>
+            <button
+              class={`&-mode-btn ${currentMode === 'code' ? 'active' : ''}`}
+              onClick={() => {
+                currentMode = 'code';
+                updatePreview();
+                ref.$('&-mode-btn', true).forEach((btn: HTMLElement) => btn.classList.remove('active'));
+                (ref.$('&-mode-btn')[1] as HTMLElement).classList.add('active');
+              }}
+            >
+              Code
+            </button>
+          </div>
+        </div>
+        {story.argTypes &&
+          Object.keys(story.argTypes).map((key) => {
+            const argType = (story.argTypes as any)[key];
+            return renderControl(key, argType);
+          })}
       </div>
     );
   };
 
-  return <DemoContainer demoUrl={`/demo?id=${story.id}`} onIframeLoad={onIframeLoad} controlBox={renderControlBox()} />;
+  const url =
+    typeof location !== 'undefined' ? location.pathname + `/demo?id=${story.id}` : `/demo/demo?id=${story.id}`;
+  return <DemoContainer demoUrl={url} onIframeLoad={onIframeLoad} controlBox={renderControlBox()} />;
 };
