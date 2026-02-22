@@ -21,4 +21,13 @@ export const buttonDemo: DemoStory<ButtonProps> = {
   render: (args: ButtonProps) => {
     return <Button {...args} />;
   },
+  code: `import { Button, ButtonSize } from 'lupine.components/components/button';
+
+// Basic Usage
+<Button 
+  text="Click Me" 
+  size={ButtonSize.Medium} 
+  onClick={() => console.log('Clicked!')} 
+/>
+`,
 };

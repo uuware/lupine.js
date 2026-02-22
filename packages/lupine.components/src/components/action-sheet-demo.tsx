@@ -84,4 +84,22 @@ export const actionSheetDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { ActionSheet, ActionSheetSelect, ActionSheetMessage, ActionSheetInput } from 'lupine.components/components/action-sheet';
+
+// Simple Action Sheet
+ActionSheet.show({
+  title: 'Select an Action',
+  children: <div style={{ padding: '20px' }}>Custom Content Here</div>,
+  confirmButtonText: 'Confirm Option',
+  cancelButtonText: 'Cancel Action',
+  handleConfirmClicked: (close) => close('confirm'),
+});
+
+// Action Sheet Select
+ActionSheetSelect.show({
+  title: 'Select an Action',
+  options: ['Option A', 'Option B', 'Option C'],
+  handleClicked: (index, close) => close('select'),
+});
+`,
 };

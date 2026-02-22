@@ -22,4 +22,12 @@ export const editableLabelDemo: DemoStory<EditableLabelProps> = {
       </div>
     );
   },
+  code: `import { EditableLabel } from 'lupine.components/components/editable-label';
+
+<EditableLabel 
+  text="Double click to edit me!" 
+  mandtory={false} 
+  save={(val) => console.log('Saved:', val)} 
+/>
+`,
 };

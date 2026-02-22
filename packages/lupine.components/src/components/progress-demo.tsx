@@ -48,4 +48,16 @@ export const progressDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { Progress, ProgressHookProps } from 'lupine.components/components/progress';
+
+const progressHook: ProgressHookProps = {};
+
+// 1. Render the component somewhere in your app (usually near the root)
+<Progress hook={progressHook} />
+
+// 2. Control it via the hook
+progressHook.onShow!(true, 'Uploading...'); // Show progress
+progressHook.onProgress!(0.5);              // Set to 50%
+progressHook.onShow!(false);                // Hide
+`,
 };

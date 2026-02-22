@@ -23,4 +23,14 @@ export const switchOptionDemo: DemoStory<SwitchOptionComponentProps> = {
       </div>
     );
   },
+  code: `import { SwitchOptionComponent } from 'lupine.components/components/switch-option-component';
+
+<SwitchOptionComponent 
+  option1="Day" 
+  option2="Night" 
+  defaultOption="Day" 
+  fontSize="14px" 
+  onChange={(val) => console.log('Switched to:', val)} 
+/>
+`,
 };

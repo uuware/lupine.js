@@ -17,5 +17,6 @@ export interface DemoStory<TArgs> {
   text: string;
   args: TArgs;
   argTypes?: DemoArgTypes<TArgs>;
+  code?: string;
   render: (args: TArgs) => VNode;
 }

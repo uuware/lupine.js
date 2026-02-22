@@ -46,4 +46,23 @@ export const popupMenuDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { PopupMenuWithButton, PopupMenuWithLabel, PopupMenuWithIcon } from 'lupine.components/components/popup-menu';
+
+const list = ['Edit Profile', 'Settings', '', 'Log Out'];
+
+{/* With Button */}
+<PopupMenuWithButton
+  label="Actions"
+  list={list}
+  defaultValue="Select..."
+  align="right"
+  handleSelected={(val: string) => console.log('Selected:', val)}
+/>
+
+{/* With Icon */}
+<PopupMenuWithIcon
+  list={list}
+  icon={<span style={{ fontSize: '24px' }}>⚙️</span>}
+/>
+`,
 };
