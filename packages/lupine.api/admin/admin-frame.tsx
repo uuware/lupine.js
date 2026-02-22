@@ -3,23 +3,6 @@ import { MenuSidebar, ThemeSelector, TabsHookProps, Tabs } from 'lupine.componen
 import { adminCss } from './admin-css';
 import { adminFrameHelper } from './admin-frame-helper';
 
-type AdminPanelProps = {
-  title?: string;
-  css?: CssProps;
-  refUpdate: TabsHookProps;
-};
-const AdminPanel = (props: AdminPanelProps) => {
-  const css: CssProps = {
-    height: '100%',
-  };
-  const pages: TabsPageProps[] = [];
-  return (
-    <div css={css}>
-      <Tabs pages={pages} hook={props.refUpdate} pagePadding='8px'></Tabs>
-    </div>
-  );
-};
-
 export type AdminFrameProps = {
   title?: string;
   css?: CssProps;
@@ -104,6 +87,9 @@ export const AdminFrame = (props: AdminFrameProps) => {
       overflowX: 'auto',
       // padding: '8px 16px',
     },
+    '.body-tabs': {
+      height: '100%',
+    },
     ...props.css,
   };
   const onLogoutClick = async () => {
@@ -115,6 +101,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
 
   bindGlobalStyle('admin-frame-box', css);
 
+  const pages: TabsPageProps[] = [];
   const refCloseMenu: RefProps = {};
   const adminTopMenu = adminFrameHelper.getAdminTopMenu();
   const onCloseMenuClick = () => {
@@ -156,7 +143,9 @@ export const AdminFrame = (props: AdminFrameProps) => {
           ></MenuSidebar>
         </div>
         <div class='body-content'>
-          <AdminPanel refUpdate={refUpdate} title='Panel'></AdminPanel>
+          <div css={css}>
+            <Tabs pages={pages} hook={refUpdate} pagePadding='8px'></Tabs>
+          </div>
         </div>
       </div>
     </div>
