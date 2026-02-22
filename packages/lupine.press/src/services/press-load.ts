@@ -15,10 +15,10 @@ export const pressProcessUrl = (url: string) => {
   const subDir = getPressSubDir();
   let target = url;
   if (subDir && !target.startsWith(subDir + '/') && !target.includes('//')) {
-    if (target.startsWith('/') && !langs.some((l) => target === `/${l.id}` || target.startsWith(`/${l.id}/`))) {
-      const { langName } = getCurrentLang();
-      target = `/${langName}${target}`;
-    }
+    // if (target.startsWith('/') && !langs.some((l) => target === `/${l.id}` || target.startsWith(`/${l.id}/`))) {
+    //   const { langName } = getCurrentLang();
+    //   target = `/${langName}${target}`;
+    // }
     target = `${subDir}${target}`;
   }
   return target || '/';
