@@ -1,5 +1,8 @@
-import { bindGlobalStyle, CssProps, RefProps } from 'lupine.components';
+import { bindGlobalStyle, CssProps, RefProps, VNode } from 'lupine.components';
 
+/*
+ma-cards-heart and ma-cards-heart-outline are font icons
+*/
 export type StarsHookComponentProps = {
   setValue: (value: number) => void;
   getValue: () => number;
@@ -10,6 +13,8 @@ export type StarsComponentProps = {
   onChange?: (value: number) => void;
   hook?: StarsHookComponentProps;
   fontSize?: string;
+  fullIcon?: VNode<any>; // should contain full classname
+  outlineIcon?: VNode<any>; // should contain outline classname
 };
 export const StarsComponent = (props: StarsComponentProps) => {
   const css: CssProps = {
@@ -46,6 +51,9 @@ export const StarsComponent = (props: StarsComponentProps) => {
     };
     props.hook.getValue = () => props.value;
   }
+
+  const fullIcon = props.fullIcon || <i class='ifc-icon ma-cards-heart full'></i>;
+  const outlineIcon = props.outlineIcon || <i class='ifc-icon ma-cards-heart-outline outline'></i>;
   const ref: RefProps = {};
   return (
     <div style={{ fontSize: props.fontSize || '20px' }} ref={ref} class='stars-box'>
@@ -57,8 +65,8 @@ export const StarsComponent = (props: StarsComponentProps) => {
             props.onChange?.(index + 1);
           }}
         >
-          <i class='ifc-icon ma-cards-heart full'></i>
-          <i class='ifc-icon ma-cards-heart-outline outline'></i>
+          {fullIcon}
+          {outlineIcon}
         </label>
       ))}
     </div>
