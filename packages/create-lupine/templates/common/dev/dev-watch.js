@@ -99,6 +99,7 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
     treeShaking: true,
     metafile: true,
     external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp'],
+    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
     minify: !isDev,
     plugins: [watchServerPlugin(isDev, npmCmd, httpPort)],
   });
@@ -214,6 +215,7 @@ const watchApi = async (saved, isDev, entryPoints) => {
     treeShaking: true,
     metafile: true,
     external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp'],
+    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
     minify: !isDev,
     plugins: [watchApiPlugin(isDev, saved.httpPort)],
   });
