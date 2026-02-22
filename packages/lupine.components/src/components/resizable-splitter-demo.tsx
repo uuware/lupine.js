@@ -65,4 +65,12 @@ export const resizableSplitterDemo: DemoStory<any> = {
       );
     }
   },
+  code: `import { ResizableSplitter } from 'lupine.components/components/resizable-splitter';
+
+{/* Left/Right Splitter (isVertical=true means the divider line is vertical) */}
+<div id="splitter-demo-box" style={{ width: '200px', height: '100%', position: 'relative' }}>
+  <div style={{ padding: '10px' }}>Left Panel (Drag right edge)</div>
+  {ResizableSplitter.getSplitter('#splitter-demo-box', true, true)}
+</div>
+`,
 };

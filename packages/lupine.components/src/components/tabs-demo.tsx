@@ -27,4 +27,16 @@ export const tabsDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { Tabs } from 'lupine.components/components/tabs';
+
+<Tabs 
+  defaultIndex={0} 
+  pagePadding="16px" 
+  pages={[
+    { title: 'Tab 1', page: <div>Content for Tab 1</div> },
+    { title: 'Tab 2', page: <div>Content for Tab 2</div> },
+    { title: 'Tab 3', page: <div style={{ color: 'red' }}>Content for Tab 3</div> },
+  ]} 
+/>
+`,
 };

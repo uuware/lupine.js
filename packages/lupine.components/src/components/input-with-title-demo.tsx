@@ -28,4 +28,15 @@ export const inputWithTitleDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { InputWithTitle } from 'lupine.components/components/input-with-title';
+
+{InputWithTitle(
+  'Enter your name', // title
+  'John Doe',        // defaultValue
+  (val) => console.log('onChange:', val),
+  (val) => console.log('onInput:', val),
+  'input-base',      // className
+  '250px'            // width
+)}
+`,
 };

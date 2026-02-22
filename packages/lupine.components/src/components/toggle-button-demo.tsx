@@ -29,4 +29,14 @@ export const toggleButtonDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { ToggleButton } from 'lupine.components/components/toggle-base';
+
+<ToggleButton 
+  onText="Turn Off" 
+  offText="Turn On" 
+  disabled={false} 
+  checked={false} 
+  onClick={(val) => console.log('Toggled:', val)} 
+/>
+`,
 };

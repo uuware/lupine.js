@@ -41,4 +41,16 @@ export const togglePlayButtonDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { TogglePlayButton, TogglePlayButtonSize } from 'lupine.components/components/toggle-base';
+
+<TogglePlayButton 
+  size={TogglePlayButtonSize.Medium} 
+  disabled={false} 
+  checked={false} 
+  textColor="#ffffff" 
+  backgroundColor="#3b29cc" 
+  noWave={false} 
+  onClick={(val) => console.log('Playing:', val)} 
+/>
+`,
 };

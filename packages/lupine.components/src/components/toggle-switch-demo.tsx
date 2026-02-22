@@ -30,4 +30,14 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
       </div>
     );
   },
+  code: `import { ToggleSwitch, ToggleSwitchSize } from 'lupine.components/components/toggle-switch';
+
+<ToggleSwitch 
+  size={ToggleSwitchSize.Medium} 
+  disabled={false} 
+  checked={false} 
+  text={{ on: 'ON', off: 'OFF' }} 
+  textWidth="30px" 
+/>
+`,
 };

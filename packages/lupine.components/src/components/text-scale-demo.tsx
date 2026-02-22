@@ -27,4 +27,15 @@ export const textScaleDemo: DemoStory<TextScaleProps> = {
       </div>
     );
   },
+  code: `import { TextScale } from 'lupine.components/components/text-scale';
+
+<TextScale 
+  text="Scaling Text!!!" 
+  color="#22b8ff" 
+  backgroundColor="#a1ffe8" 
+  fontSize="35px" 
+  padding="15px 30px" 
+  fontWeight="bold" 
+/>
+`,
 };

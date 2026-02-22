@@ -77,4 +77,31 @@ export const messageBoxDemo: DemoStory<any> = {
       </div>
     );
   },
+  code: `import { MessageBox, MessageBoxButtonProps } from 'lupine.components/components/message-box';
+
+// Quick Alert
+MessageBox.show({
+  title: 'System Alert',
+  buttonType: MessageBoxButtonProps.Ok,
+  children: <div style={{ padding: '20px' }}>Operation completed successfully!</div>,
+  handleClicked: (index, close) => {
+    close();
+  }
+});
+
+// Confirmation Dialog
+MessageBox.show({
+  title: 'Confirm Action',
+  buttonType: MessageBoxButtonProps.OkCancel,
+  children: <div style={{ padding: '20px' }}>Are you sure you want to proceed?</div>,
+  handleClicked: (index, close) => {
+    if (index === 0) {
+      console.log('User clicked OK');
+    } else {
+      console.log('User clicked Cancel');
+    }
+    close();
+  }
+});
+`,
 };

@@ -23,4 +23,14 @@ export const starsDemo: DemoStory<StarsComponentProps> = {
       </div>
     );
   },
+  code: `import { StarsComponent } from 'lupine.components/components/stars-component';
+
+<StarsComponent 
+  maxLength={5} 
+  value={3} 
+  fontSize="30px" 
+  fullIcon={<div class="ifc-icon full">★</div>} 
+  outlineIcon={<div class="ifc-icon outline">☆</div>} 
+/>
+`,
 };

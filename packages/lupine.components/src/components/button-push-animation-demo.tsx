@@ -21,4 +21,12 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
   render: (args: ButtonPushAnimationProps) => {
     return <ButtonPushAnimation {...args} />;
   },
+  code: `import { ButtonPushAnimation, ButtonPushAnimationSize } from 'lupine.components/components/button-push-animation';
+
+<ButtonPushAnimation 
+  text="Push Me" 
+  size={ButtonPushAnimationSize.Medium} 
+  onClick={() => console.log('Pushed!')} 
+/>
+`,
 };

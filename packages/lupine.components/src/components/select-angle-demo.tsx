@@ -21,4 +21,12 @@ export const selectAngleDemo: DemoStory<SelectAngleComponentProps> = {
       </div>
     );
   },
+  code: `import { SelectAngleComponent } from 'lupine.components/components/select-angle-component';
+
+<SelectAngleComponent 
+  size="100px" 
+  angle={45} 
+  onChange={(val) => console.log('Angle changed:', val)} 
+/>
+`,
 };

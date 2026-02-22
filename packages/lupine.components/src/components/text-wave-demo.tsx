@@ -33,4 +33,14 @@ export const textWaveDemo: DemoStory<TextLoadingProps> = {
       </div>
     );
   },
+  code: `import { TextWave } from 'lupine.components/components/text-wave';
+
+<TextWave 
+  text="Loading..." 
+  color="#22b8ff" 
+  fontSize="30px" 
+  padding="20px" 
+  fontWeight="bold" 
+/>
+`,
 };
