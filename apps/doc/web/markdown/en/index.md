@@ -24,8 +24,9 @@ hero:
 nav:
   - text: Guide
     link: /en/guide/started
-  - text: API
-    link: /en/essentials/api
+  - text: Demo
+    link: /demo
+    target: _blank
 
 sidebar:
   - text: Guide

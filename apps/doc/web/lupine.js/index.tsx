@@ -1,3 +1,6 @@
+import '../src/styles/global.css';
+import '../src/styles/app.css';
+
 import {
   bindRouter,
   PageRouter,
@@ -8,6 +11,7 @@ import {
   debugWatch,
   webEnv,
   bindAppGlobalStyle,
+  demoPageRouter,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes, setPressSubDir } from 'lupine.press';
 import { ClientEnvKeys } from '../src/client-env-keys';
@@ -28,6 +32,7 @@ setPressSubDir('/lupine.js');
 
 const pageRouter = new PageRouter();
 pageRouter.setSubDir('/lupine.js');
+pageRouter.use('/demo', demoPageRouter);
 pageRouter.use('*', PressPage);
 
 bindRouter(pageRouter);
