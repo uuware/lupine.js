@@ -11,8 +11,8 @@
       "outdir": "/"
     },
     {
-      "index": "web/lupine.js/index.tsx",
-      "html": "web/lupine.js/index.html",
+      "index": "web/src/lupine.js/index.tsx",
+      "html": "web/src/lupine.js/index.html",
       "outdir": "/lupine.js"
     }
   ],
@@ -26,12 +26,12 @@
     },
     {
       "type": "web",
-      "from": "web/lupine.js/assets",
+      "from": "web/src/lupine.js/assets",
       "to": "lupine.js/assets"
     },
     {
       "type": "web",
-      "from": "web/lupine.js/404.html",
+      "from": "web/src/lupine.js/404.html",
       "to": "lupine.js/404.html"
     },
     {

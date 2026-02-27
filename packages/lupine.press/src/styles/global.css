@@ -457,6 +457,11 @@ progress {
   height: 100%;
 }
 
+/* to make this tag as a ghost tag in Lupine.js system */
+fragment {
+  display: contents;
+}
+
 ::-webkit-scrollbar {
   background-color: var(--scrollbar-bg);
   width: 12px;
