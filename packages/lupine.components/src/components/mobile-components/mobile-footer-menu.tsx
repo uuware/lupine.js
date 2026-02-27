@@ -29,12 +29,13 @@ export const MobileFooterMenu = (props: MobileFooterMenuProps) => {
       color: props.color || 'var(--primary-color)',
     },
     '.footer-menu .footer-menu-item': {
-      padding: '4px 16px 4px 16px',
+      padding: '4px 0',
       fontSize: '11px',
       height: '55px', // 和主页保留的底部菜单高度一致
       width: '55px',
       display: 'flex',
-      flexWrap: 'wrap',
+      flexDirection: 'column',
+      justifyContent: 'center',
       alignItems: 'center',
     },
     '.footer-menu .footer-menu-item i': {
@@ -71,19 +72,28 @@ export const MobileFooterMenu = (props: MobileFooterMenuProps) => {
   return (
     <div css={css} class='footer-menu-box'>
       <div class='footer-menu'>
-        {props.items.map((item, index) => (
-          <a class='footer-menu-item-a' href={item.href} key={index}>
-            <div
-              class={`footer-menu-item ${item.topout ? 'footer-menu-topout' : ''} ${
-                curretnUrl === item.href ? 'active' : ''
-              }`}
-              onClick={() => onClick(index, item.href)}
-            >
-              <i class={`ifc-icon ${item.icon}`}></i>
-              {item.text}
-            </div>
-          </a>
-        ))}
+        {props.items.map((item, index) => {
+          const handleClick = (e: Event) => {
+            if (item.js) {
+              e.preventDefault();
+              item.js();
+            }
+          };
+
+          return (
+            <a class='footer-menu-item-a' href={item.url || 'javascript:void(0)'} key={index} onClick={handleClick}>
+              <div
+                class={`footer-menu-item ${item.topout ? 'footer-menu-topout' : ''} ${
+                  curretnUrl === item.url ? 'active' : ''
+                }`}
+                onClick={() => onClick(index, item.url)}
+              >
+                <i class={`ifc-icon ${item.icon}`}></i>
+                {item.text}
+              </div>
+            </a>
+          );
+        })}
         {/* <div class='footer-menu-item'><a href='/'><i class="ifc-icon ma-home-outline"></i>主页</a></div>
         <div class='footer-menu-item'><a href='/user/tools'><i class="ifc-icon bo-multimedia-music-note"></i>工具</a></div>
         <div class='footer-menu-item footer-menu-topout'><a href='/user/customer'><i class="ifc-icon co-cil-chat-bubble"></i>客服</a></div>

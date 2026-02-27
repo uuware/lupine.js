@@ -9,6 +9,14 @@ export const MobileTopSysIcon = () => {
     flexDirection: 'row',
     alignItems: 'center',
     fontSize: '28px',
+    transition: 'transform 0.1s ease, opacity 0.1s ease',
+    '&:hover': {
+      opacity: 0.6,
+    },
+    '&:active': {
+      opacity: 0.8,
+      transform: 'scale(0.9)',
+    },
   };
   return (
     <div css={css} onClick={() => MobileSideMenuHelper.show()}>

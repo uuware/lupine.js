@@ -62,7 +62,7 @@ export const HeaderWithBackFrame = ({
     '.header-back-top': {
       display: 'flex',
       flexDirection: 'row',
-      width: '100vw',
+      width: '100%',
       padding: '6px 0',
       backgroundColor: 'var(--activatable-bg-color-normal)',
       boxShadow: 'var(--mobile-header-shadow)',

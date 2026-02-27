@@ -71,6 +71,7 @@ function renderAttribute(type: any, props: any, jsxNodes: any, uniqueClassName?:
     if (i === 'ref') {
       if (props[i]) {
         props[i].id = genUniqueId(props);
+        // used in callUnload
         html.push('data-ref');
       }
     } else if (!['children', 'key', '_result', '_html', '_id'].includes(i)) {

@@ -1,5 +1,6 @@
 import { DemoStory } from '../demo/demo-types';
 import { ButtonPushAnimation, ButtonPushAnimationProps, ButtonPushAnimationSize } from './button-push-animation';
+import { HtmlVar } from './html-var';
 
 export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
   id: 'button-push-animation-demo',
@@ -19,7 +20,13 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
     disabled: { control: 'boolean', description: 'Whether the button is disabled' },
   },
   render: (args: ButtonPushAnimationProps) => {
-    return <ButtonPushAnimation {...args} />;
+    const msg = new HtmlVar('');
+    return (
+      <div>
+        <ButtonPushAnimation {...args} onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)} />
+        <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
+      </div>
+    );
   },
   code: `import { ButtonPushAnimation, ButtonPushAnimationSize } from 'lupine.components/components/button-push-animation';
 

@@ -21,6 +21,7 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
       position: 'relative',
       backgroundColor: 'var(--primary-bg-color)',
       cursor: 'pointer',
+      touchAction: 'none',
     },
     '&needle': {
       width: '2px',
@@ -76,7 +77,7 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
       updateAngleSub(angle);
     };
   }
-  const updateAngle = (ev: MouseEvent) => {
+  const updateAngle = (ev: PointerEvent) => {
     const dx = ev.clientX - cx;
     const dy = ev.clientY - cy;
     // atan2 返回弧度，顺时针0°为右侧
@@ -92,22 +93,24 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
     props.onChange(deg);
   };
 
-  const pointerdown = (ev: MouseEvent) => {
+  const pointerdown = (ev: PointerEvent) => {
     const picker = ref.$('&circle');
     const rect = picker.getBoundingClientRect();
     cx = rect.left + rect.width / 2;
     cy = rect.top + rect.height / 2;
 
+    (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId);
     updateAngle(ev);
     mv = true;
   };
-  const pointermove = (ev: MouseEvent) => {
+  const pointermove = (ev: PointerEvent) => {
     if (!mv) {
       return;
     }
     updateAngle(ev);
   };
-  const pointerup = () => {
+  const pointerup = (ev: PointerEvent) => {
+    (ev.currentTarget as HTMLElement).releasePointerCapture(ev.pointerId);
     mv = false;
   };
   const ref: RefProps = {};

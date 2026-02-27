@@ -6,6 +6,9 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
   // console.log('========', newProps, el);
   const id = newProps._id;
   // newProps["ref"].id = id; // this is set at bindAttributes
+  (el as any)._lj = (el as any)._lj || {};
+  (el as any)._lj.ref = newProps['ref'];
+
   newProps['ref'].current = el;
   if (newProps['ref'].onLoad) {
     // setTimeout(() => newProps['ref'].onLoad(el), 0);
@@ -14,7 +17,6 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
     defer(() => newProps['ref'].onLoad(el));
   }
   if (newProps['ref'].onUnload) {
-    (el as any)._lj = (el as any)._lj || {};
     (el as any)._lj.onUnload = async () => {
       await newProps['ref'].onUnload(el);
     };
