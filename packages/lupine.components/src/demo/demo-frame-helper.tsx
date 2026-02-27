@@ -26,6 +26,16 @@ import { textGlowDemo } from '../components/text-glow-demo';
 import { togglePlayButtonDemo } from '../components/toggle-play-button-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
+import { sliderFrameDemo } from '../components/slider-frame-demo';
+import { sliderDemo, gaugeDemo } from '../component-pool/slider';
+import { badgeDemo } from '../component-pool/badge';
+import { timelineDemo } from '../component-pool/timeline';
+import { radialProgressDemo } from '../component-pool/radial-progress';
+import { breadcrumbsDemo } from '../component-pool/breadcrumbs';
+import { skeletonDemo } from '../component-pool/skeleton';
+import { copyButtonDemo } from '../component-pool/copy-button';
+import { aspectRatioDemo } from '../component-pool/aspect-ratio';
+import { mapWrapperDemo } from '../component-pool/map-wrapper';
 import { DemoPage } from './demo-page';
 
 const chineseMenuText: { text: string; zh: string }[] = [
@@ -167,6 +177,12 @@ export class DemoFrameHelper {
           js: () => this.addPanel(progressDemo.text, <DemoPage story={progressDemo} />),
         },
         {
+          id: radialProgressDemo.id,
+          text: radialProgressDemo.text,
+          url: '',
+          js: () => this.addPanel(radialProgressDemo.text, <DemoPage story={radialProgressDemo} />),
+        },
+        {
           id: textWaveDemo.id,
           text: textWaveDemo.text,
           url: '',
@@ -195,6 +211,12 @@ export class DemoFrameHelper {
           text: toggleButtonDemo.text,
           url: '',
           js: () => this.addPanel(toggleButtonDemo.text, <DemoPage story={toggleButtonDemo} />),
+        },
+        {
+          id: badgeDemo.id,
+          text: badgeDemo.text,
+          url: '',
+          js: () => this.addPanel(badgeDemo.text, <DemoPage story={badgeDemo} />),
         },
       ],
     },
@@ -238,6 +260,18 @@ export class DemoFrameHelper {
           text: inputWithTitleDemo.text,
           url: '',
           js: () => this.addPanel(inputWithTitleDemo.text, <DemoPage story={inputWithTitleDemo} />),
+        },
+        {
+          id: sliderDemo.id,
+          text: sliderDemo.text,
+          url: '',
+          js: () => this.addPanel(sliderDemo.text, <DemoPage story={sliderDemo} />),
+        },
+        {
+          id: gaugeDemo.id,
+          text: gaugeDemo.text,
+          url: '',
+          js: () => this.addPanel(gaugeDemo.text, <DemoPage story={gaugeDemo} />),
         },
       ],
     },
@@ -287,6 +321,48 @@ export class DemoFrameHelper {
           text: redirectDemo.text,
           url: '',
           js: () => this.addPanel(redirectDemo.text, <DemoPage story={redirectDemo} />),
+        },
+        {
+          id: sliderFrameDemo.id,
+          text: sliderFrameDemo.text,
+          url: '',
+          js: () => this.addPanel(sliderFrameDemo.text, <DemoPage story={sliderFrameDemo} />),
+        },
+        {
+          id: timelineDemo.id,
+          text: timelineDemo.text,
+          url: '',
+          js: () => this.addPanel(timelineDemo.text, <DemoPage story={timelineDemo} />),
+        },
+        {
+          id: breadcrumbsDemo.id,
+          text: breadcrumbsDemo.text,
+          url: '',
+          js: () => this.addPanel(breadcrumbsDemo.text, <DemoPage story={breadcrumbsDemo} />),
+        },
+        {
+          id: skeletonDemo.id,
+          text: skeletonDemo.text,
+          url: '',
+          js: () => this.addPanel(skeletonDemo.text, <DemoPage story={skeletonDemo} />),
+        },
+        {
+          id: copyButtonDemo.id,
+          text: copyButtonDemo.text,
+          url: '',
+          js: () => this.addPanel(copyButtonDemo.text, <DemoPage story={copyButtonDemo} />),
+        },
+        {
+          id: aspectRatioDemo.id,
+          text: aspectRatioDemo.text,
+          url: '',
+          js: () => this.addPanel(aspectRatioDemo.text, <DemoPage story={aspectRatioDemo} />),
+        },
+        {
+          id: mapWrapperDemo.id,
+          text: mapWrapperDemo.text,
+          url: '',
+          js: () => this.addPanel(mapWrapperDemo.text, <DemoPage story={mapWrapperDemo} />),
         },
       ],
     },
