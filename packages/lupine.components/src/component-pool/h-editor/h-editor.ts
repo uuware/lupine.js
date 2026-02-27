@@ -1,15 +1,9 @@
 import { uniqueIdGenerator } from 'lupine.web';
-import icons from './buttons_morden.gif';
+import { LJ_SVG_ICON_CLASS, SvgIconNames, loadSvgIconStyles } from '../svg-icons';
 
 export type HEditorPickupImageHookProps = {
   callback: (url: string) => void;
 };
-const HEDITOR_ICON_WH = 18;
-const getHEditorIconStyle = (iconx: number, icony: number) => {
-  return `background-position: ${(iconx + 1) * -HEDITOR_ICON_WH}px ${(icony + 1) * -HEDITOR_ICON_WH}px;`;
-};
-export type HEditorLangProps = { [key: string]: string };
-export type HEditorLabelProps = { [key: string]: string };
 export type HEditorPluginButonProps = {
   name: string;
   label: string;
@@ -33,6 +27,10 @@ export type HEditorPluginProps = {
   ) => void;
   onButtonClick?: (editor: any, plugin: HEditorPluginProps, btnid: string) => void;
 };
+
+export type HEditorLangProps = { [key: string]: string };
+export type HEditorLabelProps = { [key: string]: string };
+
 export const HEditorLangEn: HEditorLangProps = {
   name: 'EN',
   Size: 'Size',
@@ -97,7 +95,7 @@ export class HEditor {
   static _plugins: { [key: string]: HEditorPluginProps } = {};
   static _lang: HEditorLangProps = HEditorLangEn;
   static _label: HEditorLabelProps = HEditorLabel;
-  static _iconPath: string = icons;
+  static iconColor = '#1384d1';
   static _PickupImageHook: (callback: (url: string) => void) => void;
 
   selector: string | HTMLDivElement;
@@ -116,8 +114,8 @@ export class HEditor {
   static setLabel(label: HEditorLabelProps) {
     HEditor._label = label;
   }
-  static setIconPath(iconPath: string) {
-    HEditor._iconPath = iconPath;
+  static setIconColor(color: string) {
+    HEditor.iconColor = color;
   }
   static setPickupImageHook(hook: (callback: (url: string) => void) => void) {
     HEditor._PickupImageHook = hook;
@@ -178,7 +176,9 @@ export class HEditor {
   m_ifrm: any;
   m_focus = false;
   m_range: any;
+  m_savedRange: Range | null = null;
   m_drag: any;
+  m_pickingColor = false;
   onBlur() {
     this.m_focus = false;
   }
@@ -187,6 +187,10 @@ export class HEditor {
     this.m_range = null;
   }
   onMDown(e: MouseEvent) {
+    if (this.m_pickingColor) {
+      e.preventDefault();
+      this.m_pickingColor = false;
+    }
     this.m_focus = true;
     const tg = e.target as HTMLElement;
     const tgname = tg.nodeName.toUpperCase();
@@ -227,7 +231,9 @@ export class HEditor {
       if (this.m_drag.ty >= 0) {
         if (!press) return this.onMUp(e);
       }
-      window.getSelection()?.removeAllRanges();
+      if (this.m_drag.ty !== -1) {
+        window.getSelection()?.removeAllRanges();
+      }
       if (this.m_drag.ty == 0) {
         e.preventDefault();
         this.m_drag.ty = 1;
@@ -293,14 +299,42 @@ export class HEditor {
     this.m_doc.execCommand(cmd, false, args);
   }
   pickupColor(callback: (color: string) => void) {
+    // Save current selection before opening color picker
+    const sel = this.m_win.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      this.m_savedRange = sel.getRangeAt(0).cloneRange();
+    }
+
     const input = document.querySelector(`.${this.m_id}_color`) as HTMLInputElement;
-    input.addEventListener(
-      'change',
-      () => {
-        callback(input.value);
-      },
-      { once: true }
-    );
+    this.m_pickingColor = true;
+
+    const apply = () => {
+      this.setFocus();
+      // Restore selection before applying color
+      if (this.m_savedRange) {
+        const restoreSel = this.m_win.getSelection();
+        if (restoreSel) {
+          restoreSel.removeAllRanges();
+          restoreSel.addRange(this.m_savedRange);
+        }
+      }
+      callback(input.value);
+
+      // Update our saved range to the newly formed DOM structure by execCommand
+      const afterSel = this.m_win.getSelection();
+      if (afterSel && afterSel.rangeCount > 0) {
+        this.m_savedRange = afterSel.getRangeAt(0).cloneRange();
+      }
+    };
+
+    input.oninput = apply;
+    input.onchange = () => {
+      apply();
+      setTimeout(() => {
+        this.m_pickingColor = false;
+      }, 200);
+    };
+
     input.click();
   }
   pickupImage(callback: (url: string) => void) {
@@ -326,13 +360,24 @@ export class HEditor {
       dom.setAttribute('_eid', _eid);
     }
     this.m_id = _eid;
+    loadSvgIconStyles();
+
     const s = `<div id="${_eid}_pp" style="display:flex;flex-direction:column;height:100%;width:100%;position:relative;">
 <style>
-.h_editor_icon {
-  background-image:url(${HEditor._iconPath});background-repeat:no-repeat;display:inline-block;height:18px;width:18px;overflow:hidden;margin-top:1px;
+.h_edt_box {
+  display:flex;cursor:pointer;border: 1px solid #aaaaaa;background-color:#efefef;
+}
+.h_edt_box:hover {
+  filter: brightness(0.8);
+}
+.h_edt_box > div {
+  display: flex;align-items: center;padding: 0 1px;
+}
+.h-editor-top-box .${LJ_SVG_ICON_CLASS} {
+  background-color: ${HEditor.iconColor};width: 18px;height: 18px;
 }
 </style>
-<div id="${_eid}_p" style="flex: 0 0 auto;width:100%;border: 1px solid #ccc;display:flex;font-size:14px;"></div>
+<div class='h-editor-top-box' id="${_eid}_p" style="flex: 0 0 auto;width:100%;border: 1px solid #ccc;display:flex;font-size:14px;color:#333;flex-wrap:wrap;"></div>
 <input style='height:0;width:0;padding:0;margin:0;border:0;' class='${_eid}_color' type='color' />
 <iframe id="${_eid}_ifrm" style="flex: 1 1 auto;min-height:0;width:100%;border: 1px solid #ccc;" allowTransparency="true" scrolling="auto" frameborder=0></iframe>
 </div>`;
@@ -400,8 +445,8 @@ export class HEditor {
       } else {
         const lab = HEditor.label(btn.label);
         s +=
-          `<div style="display:flex;cursor:pointer;border: 1px solid #aaaaaa;background-color:#efefef;${btn.style||''}" onmouseover="this.style.backgroundColor='#cccccc';" onmouseout="this.style.backgroundColor='#efefef';">` +
-          `<div title="${HEditor.lang(btn.name)}" style="margin:auto 0;" onclick="HEditor.processButtonClick(this,'${
+          `<div class='h_edt_box' style="${btn.style || ''}">` +
+          `<div title="${HEditor.lang(btn.name)}" onclick="HEditor.processButtonClick(this,'${
             this.m_id
           }','${pluginname}','${btnId}')">` +
           `${lab}</div></div>`;
@@ -568,58 +613,58 @@ const HEditorPluginBasic: HEditorPluginProps = {
   buttons: {
     bold: {
       name: 'bold',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(3, 2)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.bold}"></span>`,
     },
     italic: {
       name: 'italic',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(2, 2)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.italic}"></span>`,
     },
     underline: {
       name: 'underline',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(2, 0)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.underline}"></span>`,
     },
     strikethrough: {
       name: 'strikethrough',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(3, 0)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.strikethrough}"></span>`,
     },
 
     left: {
       name: 'left',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(0, 0)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.left}"></span>`,
       style: 'margin-left: 3px',
     },
     center: {
       name: 'center',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(1, 1)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.center}"></span>`,
     },
     right: {
       name: 'right',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(1, 0)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.right}"></span>`,
     },
     justify: {
       name: 'justify',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(0, 1)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.justify}"></span>`,
     },
     ol: {
       name: 'ol',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(0, 3)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.ol}"></span>`,
       style: 'margin-left: 3px',
     },
     ul: {
       name: 'ul',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(1, 3)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.ul}"></span>`,
     },
     indent: {
       name: 'indent',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(0, 2)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.indent}"></span>`,
     },
     outdent: {
       name: 'outdent',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(1, 2)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.outdent}"></span>`,
     },
     removeformat: {
       name: 'removeformat',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(0, 5)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.removeformat}"></span>`,
       style: 'margin-left: 3px;margin-right: 3px;',
     },
   },
@@ -664,11 +709,11 @@ const HEditorPluginColor: HEditorPluginProps = {
   buttons: {
     textColor: {
       name: 'textColor',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(3, 3)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.textColor}"></span>`,
     },
     backColor: {
       name: 'backColor',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(2, 3)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.backColor}"></span>`,
     },
   },
   onButtonClick: (editor: HEditor, plugin: HEditorPluginProps, btnid: string) => {
@@ -691,7 +736,7 @@ const HEditorPluginImage: HEditorPluginProps = {
   buttons: {
     image: {
       name: 'image',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(6, 3)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.image}"></span>`,
       style: 'margin-left: 3px;',
     },
   },
@@ -719,11 +764,11 @@ const HEditorPluginLink: HEditorPluginProps = {
   buttons: {
     link: {
       name: 'Link',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(6, 1)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.link}"></span>`,
     },
     unlink: {
       name: 'Unlink',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(2, 5)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.unlink}"></span>`,
     },
   },
   onButtonClick: (editor: HEditor, plugin: HEditorPluginProps, btnid: string) => {
@@ -768,7 +813,7 @@ const HEditorPluginHtml: HEditorPluginProps = {
   buttons: {
     html: {
       name: 'html',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(7, 0)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.html}"></span>`,
       style: 'margin-left: 3px;',
     },
   },
@@ -798,12 +843,12 @@ const HEditorPluginUndo: HEditorPluginProps = {
   buttons: {
     undo: {
       name: 'undo',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(4, 2)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.undo}"></span>`,
       style: 'margin-left: 3px',
     },
     redo: {
       name: 'redo',
-      label: `<span class="h_editor_icon" style="${getHEditorIconStyle(5, 2)}"></span>`,
+      label: `<span class="${LJ_SVG_ICON_CLASS} ${LJ_SVG_ICON_CLASS}_${SvgIconNames.redo}"></span>`,
     },
   },
   onButtonClick: (editor: HEditor, plugin: HEditorPluginProps, btnid: string) => {
