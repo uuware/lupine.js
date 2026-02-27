@@ -134,7 +134,7 @@ export class FloatWindow {
             fontSize: '26px',
             fontWeight: 'bold',
             cursor: 'pointer',
-            marginTop: '-8px',
+            marginTop: '-3px',
             marginRight: '-10px',
           },
           '.fwin-close:hover': {

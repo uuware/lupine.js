@@ -11,6 +11,7 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
   let currentArgs = { ...story.args };
   let currentMode: 'preview' | 'code' = 'preview';
   let iframeWindow: any = null;
+  const ref: RefProps = {};
 
   const updatePreview = () => {
     if (iframeWindow && iframeWindow._lj_demo_hook) {
@@ -74,6 +75,79 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
           value={val || 0}
           onInput={(e) => updateArg(key as keyof T, Number((e.target as HTMLInputElement).value))}
         />
+      );
+    } else if (control === 'color') {
+      inputNode = (
+        <label class='&-ctl-color' style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            type='color'
+            value={val || '#000000'}
+            onInput={(e) => updateArg(key as keyof T, (e.target as HTMLInputElement).value)}
+            style={{ cursor: 'pointer', padding: 0, width: '30px', height: '30px', border: 'none', background: 'none' }}
+          />
+          <span style={{ fontSize: '12px', color: 'var(--secondary-color, #666)' }}>{val || 'Default'}</span>
+        </label>
+      );
+    } else if (control === 'file') {
+      inputNode = (
+        <label class='&-ctl-file' style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input
+            type='file'
+            accept='image/*'
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = (e.target as HTMLInputElement).files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const dataUrl = ev.target?.result as string;
+                updateArg(key as keyof T, dataUrl);
+                // Update thumbnail in sibling img element
+                const label = (e.target as HTMLElement).closest('label');
+                const img = label?.querySelector('img') as HTMLImageElement | null;
+                if (img) {
+                  img.src = dataUrl;
+                  img.style.display = 'block';
+                }
+                const placeholder = label?.querySelector('.file-placeholder') as HTMLElement | null;
+                if (placeholder) placeholder.style.display = 'none';
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
+          {val ? (
+            <img
+              src={val}
+              style={{
+                width: '30px',
+                height: '30px',
+                objectFit: 'contain',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+              }}
+            />
+          ) : (
+            <span
+              class='file-placeholder'
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '30px',
+                height: '30px',
+                borderRadius: '4px',
+                border: '1px dashed #aaa',
+                fontSize: '18px',
+                color: '#aaa',
+              }}
+            >
+              +
+            </span>
+          )}
+          <span style={{ fontSize: '12px', color: 'var(--secondary-color, #666)' }}>
+            {val ? 'Change image…' : 'Click to upload image…'}
+          </span>
+        </label>
       );
     }
 
@@ -153,7 +227,6 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
         color: '#666',
       },
     };
-    const ref: RefProps = {};
     return (
       <div css={controlCss} ref={ref}>
         <div class='&-header'>
@@ -164,8 +237,8 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
               onClick={() => {
                 currentMode = 'preview';
                 updatePreview();
-                ref.$('&-mode-btn', true).forEach((btn: HTMLElement) => btn.classList.remove('active'));
-                (ref.$('&-mode-btn')[0] as HTMLElement).classList.add('active');
+                ref.$all('&-mode-btn', true).forEach((btn: HTMLElement) => btn.classList.remove('active'));
+                (ref.$all('&-mode-btn')[0] as HTMLElement).classList.add('active');
               }}
             >
               Preview
@@ -175,8 +248,8 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
               onClick={() => {
                 currentMode = 'code';
                 updatePreview();
-                ref.$('&-mode-btn', true).forEach((btn: HTMLElement) => btn.classList.remove('active'));
-                (ref.$('&-mode-btn')[1] as HTMLElement).classList.add('active');
+                ref.$all('&-mode-btn', true).forEach((btn: HTMLElement) => btn.classList.remove('active'));
+                (ref.$all('&-mode-btn')[1] as HTMLElement).classList.add('active');
               }}
             >
               Code
@@ -193,6 +266,6 @@ export const DemoPage = <T,>(props: DemoPageProps<T>) => {
   };
 
   const url =
-    typeof location !== 'undefined' ? location.pathname + `/demo?id=${story.id}` : `/demo/demo?id=${story.id}`;
+    typeof location !== 'undefined' ? location.pathname + `/render?id=${story.id}` : `/demo/render?id=${story.id}`;
   return <DemoContainer demoUrl={url} onIframeLoad={onIframeLoad} controlBox={renderControlBox()} />;
 };
