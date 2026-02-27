@@ -1,5 +1,5 @@
-import '../src/styles/global.css';
-import '../src/styles/app.css';
+import '../styles/global.css';
+import '../styles/app.css';
 
 import {
   bindRouter,
@@ -14,9 +14,9 @@ import {
   demoPageRouter,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes, setPressSubDir } from 'lupine.press';
-import { ClientEnvKeys } from '../src/client-env-keys';
-import { baseCss } from '../src/styles/base-css';
-import { markdownConfig } from '../src/markdown-built/markdown-config';
+import { ClientEnvKeys } from '../client-env-keys';
+import { baseCss } from '../styles/base-css';
+import { markdownConfig } from '../markdown-built/markdown-config';
 
 if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
   debugWatch(webEnv(ClientEnvKeys.API_PORT, 0));

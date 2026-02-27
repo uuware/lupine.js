@@ -8,6 +8,7 @@ import {
   debugWatch,
   webEnv,
   bindAppGlobalStyle,
+  demoPageRouter,
 } from 'lupine.components';
 import { bindPressData, PressPage, pressThemes } from 'lupine.press';
 import { markdownConfig } from './markdown-built/markdown-config';
@@ -26,6 +27,7 @@ setDefaultPageTitle('Lupine.js Doc');
 bindPressData(markdownConfig);
 
 const pageRouter = new PageRouter();
+pageRouter.use('/demo', demoPageRouter);
 pageRouter.use('*', PressPage);
 
 bindRouter(pageRouter);
