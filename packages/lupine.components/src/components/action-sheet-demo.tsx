@@ -6,6 +6,9 @@ import {
   ActionSheetInput,
   ActionSheetSelectOptionsProps,
 } from './action-sheet';
+import { ActionSheetTimePicker } from './action-sheet-time';
+import { ActionSheetDatePicker } from './action-sheet-date';
+import { ActionSheetColorPicker } from './action-sheet-color';
 import { Button, ButtonSize } from './button';
 
 export const actionSheetDemo: DemoStory<any> = {
@@ -79,6 +82,65 @@ export const actionSheetDemo: DemoStory<any> = {
                 close('confirm');
               },
             });
+          }}
+        />
+        <Button
+          text='Show Time Picker (HH:mm)'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetTimePicker({
+              title: 'Pick a time',
+              value: '09:30',
+              showSeconds: false,
+            });
+            if (result) console.log('Time selected (HH:mm):', result);
+          }}
+        />
+        <Button
+          text='Show Time Picker (HH:mm:ss)'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetTimePicker({
+              title: 'Pick a time',
+              value: '14:05:30',
+              showSeconds: true,
+            });
+            if (result) console.log('Time selected (HH:mm:ss):', result);
+          }}
+        />
+        <Button
+          text='Show Date Picker (Year-Month-Day)'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetDatePicker({
+              title: 'Pick a date',
+              value: '2026-02-24',
+              order: 'YMD',
+            });
+            if (result) console.log('Date selected (YMD):', result);
+          }}
+        />
+        <Button
+          text='Show Date Picker (Day-Month-Year)'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetDatePicker({
+              title: 'Pick a date',
+              value: '2026-02-24',
+              order: 'DMY',
+            });
+            if (result) console.log('Date selected (DMY):', result);
+          }}
+        />
+        <Button
+          text='Show Color Picker'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetColorPicker({
+              title: 'Pick a color',
+              value: '#4080ff',
+            });
+            if (result) console.log('Color selected:', result);
           }}
         />
       </div>

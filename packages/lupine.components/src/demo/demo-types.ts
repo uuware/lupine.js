@@ -1,6 +1,6 @@
 import { VNode } from 'lupine.components';
 
-export type DemoControlType = 'text' | 'boolean' | 'select' | 'number';
+export type DemoControlType = 'text' | 'boolean' | 'select' | 'number' | 'color' | 'file';
 
 export type DemoArgType<T = any> = {
   control: DemoControlType;

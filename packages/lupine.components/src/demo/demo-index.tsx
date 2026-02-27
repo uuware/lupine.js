@@ -11,7 +11,7 @@ export const DemoIndexPage = async (props: PageProps) => {
 };
 
 const demoPageRouter = new PageRouter();
-demoPageRouter.use('/demo', DemoRenderPage);
+demoPageRouter.use('/render', DemoRenderPage);
 demoPageRouter.use('/*', DemoIndexPage);
 
 export { demoPageRouter };

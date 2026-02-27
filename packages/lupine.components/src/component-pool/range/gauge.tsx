@@ -14,7 +14,7 @@ export type GaugeHookProps = {
 
 export type GaugeProps = {
   class?: string;
-  style?: any;
+  style?: CssProps;
   min?: number;
   max?: number;
   step?: number;
@@ -165,6 +165,7 @@ export const Gauge = (props: GaugeProps) => {
 
   let currentVal1 = val1;
   let currentVal2 = val2;
+  let mv = false;
 
   const getPercent = (v: number) => {
     return Math.max(0, Math.min(1, (v - min) / (max - min)));
@@ -200,107 +201,80 @@ export const Gauge = (props: GaugeProps) => {
 
   let draggingNeedle: 1 | 2 | null = null;
 
-  const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+  const onPointerDown = (ev: PointerEvent) => {
     if (props.disabled || isReadonly) return;
 
     const svg = ref.$('.&-svg') as SVGSVGElement;
     if (!svg) return;
 
-    let clientX, clientY;
-    if (e.type.startsWith('touch')) {
-      clientX = (e as TouchEvent).touches[0].clientX;
-      clientY = (e as TouchEvent).touches[0].clientY;
-    } else {
-      clientX = (e as MouseEvent).clientX;
-      clientY = (e as MouseEvent).clientY;
+    svg.setPointerCapture(ev.pointerId);
+    mv = true;
+    updatePosition(ev.clientX, ev.clientY);
+  };
+
+  const onPointerMove = (ev: PointerEvent) => {
+    if (!mv) return;
+    updatePosition(ev.clientX, ev.clientY);
+  };
+
+  const onPointerUp = (ev: PointerEvent) => {
+    const svg = ref.$('.&-svg') as SVGSVGElement;
+    if (svg) {
+      svg.releasePointerCapture(ev.pointerId);
+    }
+    mv = false;
+    draggingNeedle = null;
+    if (props.onChange) {
+      props.onChange(isRange ? [currentVal1, currentVal2] : currentVal1);
+    }
+  };
+
+  const updatePosition = (cx: number, cy: number) => {
+    const svg = ref.$('.&-svg') as SVGSVGElement;
+    if (!svg) return;
+
+    const rect = svg.getBoundingClientRect();
+    const scaleX = rect.width / 200;
+    const scaleY = rect.height / 120;
+
+    const centerX = rect.left + 100 * scaleX;
+    const centerY = rect.top + 100 * scaleY;
+
+    const dx = cx - centerX;
+    const dy = cy - centerY;
+
+    let angle = Math.atan2(dy, dx);
+    if (angle >= 0) {
+      if (angle > Math.PI / 2) angle = -Math.PI;
+      else angle = 0;
     }
 
-    const setPosition = (cx: number, cy: number) => {
-      const rect = svg.getBoundingClientRect();
-      // Center of viewBox(100, 100) based on actual width/height
-      const scaleX = rect.width / 200;
-      const scaleY = rect.height / 120; // total viewbox height
+    const percent = angle / Math.PI + 1;
+    let val = min + percent * (max - min);
 
-      const centerX = rect.left + 100 * scaleX;
-      const centerY = rect.top + 100 * scaleY;
+    if (step > 0) {
+      val = Math.round((val - min) / step) * step + min;
+    }
+    val = Math.max(min, Math.min(max, val));
 
-      const dx = cx - centerX;
-      const dy = cy - centerY;
-
-      let angle = Math.atan2(dy, dx);
-      // Math.atan2 returns -PI to PI.
-      // Top half is -PI to 0. (0 is right, -PI is left).
-      // Bottom half is 0 to PI.
-
-      if (angle >= 0) {
-        // user clicked below center line
-        if (angle > Math.PI / 2) angle = -Math.PI; // clamp to Left
-        else angle = 0; // clamp to Right
+    if (isRange) {
+      if (!draggingNeedle) {
+        const dist1 = Math.abs(val - currentVal1);
+        const dist2 = Math.abs(val - currentVal2);
+        if (dist1 <= dist2) draggingNeedle = 1;
+        else draggingNeedle = 2;
       }
 
-      // Convert from [-PI, 0] to [0, 1] (0% = Left, 100% = Right)
-      // Left is -PI, Right is 0.
-      // angle/PI is [-1, 0]. (angle/PI) + 1 is [0, 1].
-      const percent = angle / Math.PI + 1;
-      let val = min + percent * (max - min);
-
-      // Snap to step
-      if (step > 0) {
-        val = Math.round((val - min) / step) * step + min;
-      }
-      val = Math.max(min, Math.min(max, val));
-
-      if (isRange) {
-        if (!draggingNeedle) {
-          // Identify closest thumb
-          const dist1 = Math.abs(val - currentVal1);
-          const dist2 = Math.abs(val - currentVal2);
-          if (dist1 <= dist2) draggingNeedle = 1;
-          else draggingNeedle = 2;
-        }
-
-        if (draggingNeedle === 1) {
-          currentVal1 = Math.min(val, currentVal2);
-        } else {
-          currentVal2 = Math.max(val, currentVal1);
-        }
+      if (draggingNeedle === 1) {
+        currentVal1 = Math.min(val, currentVal2);
       } else {
-        currentVal1 = val;
+        currentVal2 = Math.max(val, currentVal1);
       }
+    } else {
+      currentVal1 = val;
+    }
 
-      updateVisuals();
-    };
-
-    setPosition(clientX, clientY);
-
-    const onMove = (moveEvt: MouseEvent | TouchEvent) => {
-      moveEvt.preventDefault();
-      let mx, my;
-      if (moveEvt.type.startsWith('touch')) {
-        mx = (moveEvt as TouchEvent).touches[0].clientX;
-        my = (moveEvt as TouchEvent).touches[0].clientY;
-      } else {
-        mx = (moveEvt as MouseEvent).clientX;
-        my = (moveEvt as MouseEvent).clientY;
-      }
-      setPosition(mx, my);
-    };
-
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onUp);
-      draggingNeedle = null;
-      if (props.onChange) {
-        props.onChange(isRange ? [currentVal1, currentVal2] : currentVal1);
-      }
-    };
-
-    document.addEventListener('mousemove', onMove, { passive: false });
-    document.addEventListener('mouseup', onUp);
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onUp);
+    updateVisuals();
   };
 
   if (props.hook) {
@@ -371,9 +345,15 @@ export const Gauge = (props: GaugeProps) => {
         .join(' ')
         .trim()}
       ref={ref}
-      style={props.style}
+      css={props.style}
     >
-      <SvgSvg class='&-svg' viewBox='0 0 200 120' onMouseDown={handlePointerDown} onTouchStart={handlePointerDown}>
+      <SvgSvg
+        class='&-svg'
+        viewBox='0 0 200 120'
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
         {/* Active Track (filled portion) - Placed first so it renders behind the base track and needles */}
         {showActiveTrack && <SvgPath class='&-active-track' d='' style={{ stroke: activeColor }} />}
 

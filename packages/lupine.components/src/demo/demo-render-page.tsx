@@ -1,10 +1,12 @@
 import { CssProps, encodeHtml, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
 import { demoRegistry } from './demo-registry';
+import { demoIcons, demoIconsCss } from './mock/demo-icons';
 
 export const DemoRenderPage = async (props: PageProps) => {
   const dom = new HtmlVar(
     (
       <div
+        class='demo-render-page-loading'
         css={{
           display: 'flex',
           justifyContent: 'center',
@@ -37,26 +39,25 @@ export const DemoRenderPage = async (props: PageProps) => {
                 height: '100%',
                 overflow: 'auto',
               }}
+              class='demo-render-page-code'
             >
               <code>{encodeHtml(story.code)}</code>
             </pre>
           );
         } else if (showCode && !story.code) {
-          return <div>Code snippet not available for this demo.</div>;
+          return <div class='demo-render-page-no-code'>Code snippet not available for this demo.</div>;
         }
         return story.render(args);
       };
 
-      // First render using the correct context
-      dom.value = renderContent(story.args, false);
-
       (window as any)._lj_demo_hook = {
         updateArgs: (newArgs: any, showCode: boolean = false) => {
+          // wait for parent to call here to render
           dom.value = renderContent(newArgs, showCode);
         },
       };
     } else {
-      dom.value = <div>Component not found</div>;
+      dom.value = <div class='demo-render-page-not-found'>Component not found</div>;
     }
   }
 
@@ -65,13 +66,21 @@ export const DemoRenderPage = async (props: PageProps) => {
     height: '100%',
     // Reset any body margins if they exist, though typically handled by global css
     margin: 0,
-    padding: 'var(--space-m, 16px)',
     boxSizing: 'border-box',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center', // Center components by default
-    overflow: 'hidden',
+    overflow: 'auto',
+    '>fragment>div': {
+      width: '100%',
+      height: '100%',
+    },
+    ...demoIconsCss,
   };
 
-  return <div css={css}>{dom.node}</div>;
+  return (
+    <div css={css} class='demo-render-page'>
+      {dom.node}
+    </div>
+  );
 };

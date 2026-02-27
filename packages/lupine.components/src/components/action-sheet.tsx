@@ -1,12 +1,13 @@
 import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
 import { backActionHelper } from '../lib';
+import { NotificationColor, NotificationMessage } from './notice-message';
 
 export type ActionSheetCloseProps = (reason?: ActionSheetCloseReasonProps) => void;
 
 export type ActionSheetCloseReasonProps = 'cancel' | 'confirm' | 'select' | undefined;
 
 export type ActionSheetShowProps = {
-  title: string;
+  title: string | VNode<any>;
   children: string | VNode<any>;
   contentMaxWidth?: string;
   contentMaxHeight?: string;
@@ -16,6 +17,7 @@ export type ActionSheetShowProps = {
   handleConfirmClicked?: (close: ActionSheetCloseProps) => void;
   cancelButtonText?: string; // no showing if not set
   zIndex?: string;
+  buttonsPosition?: 'bottom' | 'header';
 };
 
 // because it's over a mask, so it can use primary colors
@@ -33,6 +35,7 @@ export class ActionSheet {
     handleConfirmClicked,
     cancelButtonText = 'Cancel',
     zIndex,
+    buttonsPosition = 'bottom',
   }: ActionSheetShowProps): Promise<ActionSheetCloseProps> {
     const onConfirm = () => {
       if (handleConfirmClicked) {
@@ -89,8 +92,21 @@ export class ActionSheet {
           transform: 'translateY(0)',
         },
         '.act-sheet-title': {
-          padding: '20px 15px 10px 15px',
-          opacity: 0.5,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          width: '100%',
+          '.t': { padding: '12px 15px 12px 15px' },
+          '.btn': { display: 'flex', gap: '4px' },
+          '.act-sheet-header-item': {
+            border: 'none',
+            background: 'transparent',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            borderRadius: '6px',
+          },
         },
         '.act-sheet-content': {
           display: 'flex',
@@ -136,15 +152,29 @@ export class ActionSheet {
       >
         <div ref={ref} class='act-sheet-body'>
           <div class='act-sheet-content'>
-            <div class='act-sheet-title'>{title}</div>
+            <div class='act-sheet-title'>
+              <span class='t'>{title}</span>
+              <div class='btn'>
+                {buttonsPosition === 'header' && cancelButtonText && (
+                  <div class='act-sheet-header-item' onClick={onCancel}>
+                    {cancelButtonText}
+                  </div>
+                )}
+                {buttonsPosition === 'header' && confirmButtonText && (
+                  <div class='act-sheet-header-item' onClick={onConfirm}>
+                    {confirmButtonText}
+                  </div>
+                )}
+              </div>
+            </div>
             {children}
-            {confirmButtonText && (
+            {buttonsPosition === 'bottom' && confirmButtonText && (
               <div class='act-sheet-bottom-item act-sheet-confirm' onClick={onConfirm}>
                 {confirmButtonText}
               </div>
             )}
           </div>
-          {cancelButtonText && (
+          {buttonsPosition === 'bottom' && cancelButtonText && (
             <div class='act-sheet-bottom-item' onClick={onCancel}>
               {cancelButtonText}
             </div>
@@ -240,7 +270,7 @@ export class ActionSheetMessage {
 
 export type ActionSheetMessagePromiseProps = {
   message: string | VNode<any>;
-  title: string;
+  title: string | VNode<any>;
   contentMaxWidth?: string;
   contentMaxHeight?: string;
   closeWhenClickOutside?: boolean;
@@ -317,7 +347,7 @@ export class ActionSheetInput {
 
 export type ActionSheetInputPromiseProps = {
   defaultValue?: string;
-  title: string;
+  title: string | VNode<any>;
   contentMaxWidth?: string;
   contentMaxHeight?: string;
   closeWhenClickOutside?: boolean;
@@ -370,7 +400,7 @@ export const ActionSheetInputPromise = async ({
 };
 
 export type ActionSheetSelectPromiseProps = {
-  title: string;
+  title: string | VNode<any>;
   contentMaxWidth?: string;
   contentMaxHeight?: string;
   options?: string[];
@@ -414,6 +444,126 @@ export const ActionSheetSelectPromise = async ({
       closeEvent,
       closeWhenClickOutside,
       zIndex,
+    });
+  });
+};
+
+export type ActionSheetMultiSelectPromiseProps = {
+  title: string | VNode<any>;
+  contentMaxWidth?: string;
+  contentMaxHeight?: string;
+  options: string[];
+  initialSelected?: number[];
+  maxCount?: number;
+  align?: 'left' | 'center' | 'right';
+  closeWhenClickOutside?: boolean;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
+  zIndex?: string;
+  maxCountMessage?: string;
+};
+
+export const ActionSheetMultiSelectPromise = async ({
+  title,
+  contentMaxWidth,
+  contentMaxHeight,
+  options,
+  initialSelected = [],
+  maxCount,
+  align = 'center',
+  closeWhenClickOutside = true,
+  confirmButtonText = 'Confirm',
+  cancelButtonText = 'Cancel',
+  zIndex,
+  maxCountMessage = 'Max count reached',
+}: ActionSheetMultiSelectPromiseProps): Promise<number[]> => {
+  return new Promise(async (resolve) => {
+    const selected = new Set<number>(initialSelected);
+    const itemRefs: RefProps[] = options.map(() => ({}));
+
+    const toggleOption = (index: number) => {
+      if (selected.has(index)) {
+        selected.delete(index);
+        if (itemRefs[index].current) {
+          (itemRefs[index].current as HTMLElement).classList.remove('selected');
+        }
+      } else {
+        if (maxCount !== undefined && selected.size >= maxCount) {
+          NotificationMessage.sendMessage(maxCountMessage, NotificationColor.Error);
+          return; // Do not allow selecting more than maxCount
+        }
+        selected.add(index);
+        if (itemRefs[index].current) {
+          (itemRefs[index].current as HTMLElement).classList.add('selected');
+        }
+      }
+    };
+
+    const closeEvent = (reason?: ActionSheetCloseReasonProps) => {
+      if (reason !== 'confirm') {
+        resolve([...initialSelected]); // Return original if cancelled
+      }
+    };
+
+    const alignMap = {
+      left: 'flex-start',
+      center: 'center',
+      right: 'flex-end',
+    };
+
+    const css: CssProps = {
+      '.act-sheet-item.row-box': {
+        cursor: 'pointer',
+        justifyContent: alignMap[align],
+        paddingRight: '36px', // reserve space for checkmark
+        paddingLeft: '16px',
+        position: 'relative',
+      },
+      '.checkmark': {
+        position: 'absolute',
+        right: '16px',
+        color: 'var(--primary-color)',
+        opacity: '0',
+        transition: 'opacity 0.2s',
+        fontSize: '18px',
+      },
+      '.act-sheet-item.selected .checkmark': {
+        opacity: '1',
+      },
+      '.act-sheet-item.selected': {
+        color: 'var(--primary-color)',
+        fontWeight: 'bold',
+        backgroundColor: 'var(--primary-bg-color-hover, rgba(0,0,0,0.04))',
+      },
+    };
+    const handleClose = await ActionSheet.show({
+      title,
+      children: (
+        <div css={css}>
+          {options.map((option, index) => (
+            <div
+              ref={itemRefs[index]}
+              class={['act-sheet-item row-box', selected.has(index) ? 'selected' : ''].join(' ')}
+              onClick={() => toggleOption(index)}
+            >
+              <span>{option}</span>
+              <span class='checkmark'>✓</span>
+            </div>
+          ))}
+        </div>
+      ),
+      contentMaxWidth,
+      contentMaxHeight,
+      confirmButtonText,
+      handleConfirmClicked: (close) => {
+        resolve(Array.from(selected).sort((a, b) => a - b));
+        close('confirm');
+      },
+      cancelButtonText,
+      closeEvent,
+      closeWhenClickOutside,
+      zIndex,
+      buttonsPosition: 'header',
     });
   });
 };

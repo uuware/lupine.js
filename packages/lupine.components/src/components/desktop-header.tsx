@@ -38,14 +38,22 @@ export const DesktopHeader = (props: { title: string; items: IconMenuItemProps[]
     <div css={css} class='desktop-menu-box'>
       <div class='flex-1 d-header-title'>{props.title}</div>
       <div class='desktop-menu-bar'>
-        {props.items.map((item) => (
-          <div class='desktop-menu-item'>
-            <a href={item.href}>
-              <i class={`ifc-icon ${item.icon}`}></i>
-              {item.text}
-            </a>
-          </div>
-        ))}
+        {props.items.map((item) => {
+          const handleClick = (e: Event) => {
+            if (item.js) {
+              e.preventDefault();
+              item.js();
+            }
+          };
+          return (
+            <div class='desktop-menu-item'>
+              <a href={item.url || 'javascript:void(0)'} onClick={handleClick}>
+                <i class={`ifc-icon ${item.icon}`}></i>
+                {item.text}
+              </a>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

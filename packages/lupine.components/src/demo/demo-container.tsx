@@ -19,12 +19,14 @@ export const DemoContainer = (props: DemoContainerProps) => {
       width: '100%',
       height: '100%',
       // backgroundColor: 'white', // Default background for preview
-      border: 'dotted 1px red',
+      border: '4px solid var(--primary-border-color)',
+      borderRadius: '12px',
+      backgroundColor: 'var(--secondary-bg-color, #f5f5f5)',
     },
     '.&-control-box': {
       // Allow it to grow if needed, or scroll
       minHeight: '50px',
-      maxHeight: '50%',
+      maxHeight: '40%',
       overflowY: 'auto',
       borderTop: '1px solid var(--border-color, #ccc)',
       padding: 'var(--space-m, 8px)',

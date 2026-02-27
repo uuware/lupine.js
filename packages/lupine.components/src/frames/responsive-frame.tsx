@@ -20,7 +20,7 @@ export interface ResponsiveFrameProps {
   mobileSideMenuContent: VNode<any>;
   sharedContents: VNode<any>;
 }
-export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
+export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
   const cssContainer: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -30,7 +30,7 @@ export const ResponsiveFrame = async (props: ResponsiveFrameProps) => {
     '.frame-top-menu': {
       display: 'flex',
       flexDirection: 'column',
-      width: '100vw',
+      width: '100%',
       backgroundColor: 'var(--activatable-bg-color-normal)',
     },
     '.frame-content': {
