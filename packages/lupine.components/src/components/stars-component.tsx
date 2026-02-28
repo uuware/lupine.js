@@ -28,15 +28,18 @@ export const StarsComponent = (props: StarsComponentProps) => {
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
-    },
-    '.stars-label.active': {
-      color: 'blue',
-    },
-    '.stars-label .full, .stars-label.active .outline': {
-      display: 'none',
-    },
-    '.stars-label.active .full, .stars-label .outline': {
-      display: 'inline',
+      '&.active': {
+        color: 'blue',
+      },
+      '.full, &.active .outline': {
+        display: 'none',
+      },
+      '&.active .full, .outline': {
+        display: 'inline',
+      },
+      '.ifc-icon': {
+        backgroundColor: 'unset',
+      },
     },
     touchAction: 'none',
     userSelect: 'none',

@@ -1,5 +1,7 @@
 import { TimePicker, TimePickerProps } from './time-picker';
 import { DemoStory } from '../../demo/demo-types';
+import { ActionSheetTimePicker } from '../../components/action-sheet-time';
+import { Button, ButtonSize } from '../../components/button';
 
 export const timePickerDemo: DemoStory<TimePickerProps> = {
   id: 'timePickerDemo',
@@ -28,6 +30,40 @@ export const timePickerDemo: DemoStory<TimePickerProps> = {
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <TimePicker value='09:00:00' style={{ width: '150px' }} />
             <TimePicker value='18:45:30' style={{ width: '150px' }} />
+          </div>
+        </section>
+
+        <section>
+          <div class='section-title'>Mobile Friendly Alternative</div>
+          <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+            For mobile environments, it is highly recommended to use the ActionSheet-based Time Picker, which provides a
+            native-like bottom-sheet spinning wheel experience.
+          </p>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Button
+              text='Show Time Picker (HH:mm)'
+              size={ButtonSize.Medium}
+              onClick={async () => {
+                const result = await ActionSheetTimePicker({
+                  title: 'Pick a time',
+                  value: '09:30',
+                  showSeconds: false,
+                });
+                if (result) console.log('Time selected (HH:mm):', result);
+              }}
+            />
+            <Button
+              text='Show Time Picker (HH:mm:ss)'
+              size={ButtonSize.Medium}
+              onClick={async () => {
+                const result = await ActionSheetTimePicker({
+                  title: 'Pick a time',
+                  value: '14:05:30',
+                  showSeconds: true,
+                });
+                if (result) console.log('Time selected (HH:mm:ss):', result);
+              }}
+            />
           </div>
         </section>
       </div>

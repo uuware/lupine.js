@@ -17,6 +17,7 @@ const datePickerCss: CssProps = {
   display: 'inline-flex',
   position: 'relative',
   width: '100%',
+  flexDirection: 'column',
 
   '.&-input': {
     width: '100%',
@@ -54,11 +55,7 @@ const datePickerCss: CssProps = {
     backgroundColor: 'var(--primary-bg-color, #fff)',
     userSelect: 'none',
     display: 'flex',
-    flexDirection: 'column-reverse', // Footer at top when popup is BELOW input
-  },
-
-  ':global(.lupine-picker-host .top) .&-panel': {
-    flexDirection: 'column', // Footer at bottom when popup is ABOVE input
+    flexDirection: 'column',
   },
 
   '.&-header': {
@@ -160,24 +157,14 @@ const datePickerCss: CssProps = {
     },
   },
 
-  '.&-footer': {
-    padding: '8px',
-    borderBottom: '1px solid var(--secondary-border-color, #f0f0f0)',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-
-  ':global(.lupine-picker-host .top) .&-footer': {
-    borderBottom: 'none',
-    borderTop: '1px solid var(--secondary-border-color, #f0f0f0)',
-  },
-
   '.&-ok-btn': {
-    width: '100%',
-    padding: '8px 0',
-    borderRadius: 'var(--border-radius-m, 6px)',
-    fontSize: '14px',
-    fontWeight: 'bold',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: '2px',
+    borderRadius: '4px',
     cursor: 'pointer',
     backgroundColor: 'var(--primary-color, #1890ff)',
     color: '#fff',
@@ -341,7 +328,12 @@ export const DatePicker = (props: DatePickerProps) => {
           );
         }
 
-        return <div class='&-grid'>{daysNodes}</div>;
+        const ref2: RefProps = { globalCssId }; // used to replace the & in css
+        return (
+          <div class='&-grid' ref={ref2}>
+            {daysNodes}
+          </div>
+        );
       };
 
       const yearRange = props.yearRange || 10;
@@ -401,15 +393,12 @@ export const DatePicker = (props: DatePickerProps) => {
             <button class='&-nav-btn' onClick={() => changeYear(1)}>
               &raquo;
             </button>
-          </div>
-
-          <div class='&-body'>{gridVar.node}</div>
-
-          <div class='&-footer'>
             <button class='&-ok-btn' onClick={() => selectDay(selectedDate, true)} title='Confirm'>
               <CheckIcon />
             </button>
           </div>
+
+          <div class='&-body'>{gridVar.node}</div>
         </div>
       );
     };

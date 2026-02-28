@@ -1,5 +1,6 @@
 import { CssProps, getGlobalStylesId, bindGlobalStyle, RefProps, VNode } from 'lupine.web';
 import { MobileSideMenuHelper } from '../../components/mobile-components/mobile-side-menu';
+import { NotificationColor, NotificationMessage } from '../../components';
 
 export type SideMenuMockProps = {
   menuItems?: string[];
@@ -81,7 +82,7 @@ export const SideMenuMock = ({
     if (onAction) {
       onAction(item);
     } else {
-      alert(`Action: ${item}`);
+      NotificationMessage.sendMessage(`Action: ${item}`, NotificationColor.Info);
       MobileSideMenuHelper.hide();
     }
   };

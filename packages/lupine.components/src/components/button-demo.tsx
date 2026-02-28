@@ -22,7 +22,7 @@ export const buttonDemo: DemoStory<ButtonProps> = {
   render: (args: ButtonProps) => {
     const msg = new HtmlVar('');
     return (
-      <div>
+      <div css={{ padding: '20px' }}>
         <Button
           {...args}
           onClick={() => {

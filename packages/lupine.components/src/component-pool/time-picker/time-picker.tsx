@@ -9,12 +9,14 @@ export type TimePickerProps = {
   onChange?: (value: string) => void;
   style?: CssProps;
   clearable?: boolean;
+  readonly?: boolean;
 };
 
 const timePickerCss: CssProps = {
   display: 'inline-flex',
   position: 'relative',
   width: '100%',
+  flexDirection: 'column',
 
   '.&-input': {
     width: '100%',
@@ -99,7 +101,7 @@ const timePickerCss: CssProps = {
   '.&-footer': {
     padding: '8px',
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     borderBottom: '1px solid var(--secondary-border-color, #f0f0f0)',
   },
 
@@ -109,16 +111,14 @@ const timePickerCss: CssProps = {
   },
 
   '.&-ok-btn': {
-    width: '100%',
-    padding: '8px 0',
+    padding: '2px 0 0 0',
     borderRadius: 'var(--border-radius-m, 6px)',
-    fontSize: '14px',
-    fontWeight: 'bold',
     cursor: 'pointer',
     backgroundColor: 'var(--primary-color, #1890ff)',
     color: '#fff',
     border: 'none',
     transition: 'opacity 0.2s',
+    width: '100%',
 
     '&:hover': {
       opacity: 0.85,
@@ -162,6 +162,26 @@ export const TimePicker = (props: TimePickerProps) => {
     let selectedH = initialH;
     let selectedM = initialM;
     let selectedS = initialS;
+
+    const rect = input.getBoundingClientRect();
+    const offset = 8;
+    const spaceTop = rect.top - offset;
+    const spaceBottom = window.innerHeight - rect.bottom - offset;
+
+    let columnsHeight = 220;
+    const footerHeight = 44;
+    const expectedHeight = columnsHeight + footerHeight;
+
+    if (spaceBottom < expectedHeight) {
+      if (spaceTop > spaceBottom) {
+        // Will go top
+        columnsHeight = spaceTop - footerHeight;
+      } else {
+        // Will stay bottom
+        columnsHeight = spaceBottom - footerHeight;
+      }
+    }
+    columnsHeight = Math.max(100, Math.min(220, columnsHeight));
 
     const renderPanel = () => {
       const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -214,7 +234,7 @@ export const TimePicker = (props: TimePickerProps) => {
 
       return (
         <div class='&-panel' ref={panelRef}>
-          <div class='&-columns'>
+          <div class='&-columns' style={`height: ${columnsHeight}px`}>
             <div class='&-column col-h'>
               {hours.map((h) => (
                 <div
@@ -270,7 +290,7 @@ export const TimePicker = (props: TimePickerProps) => {
         class={['&-input', props.className || 'input-base'].join(' ')}
         placeholder={props.placeholder || 'Select time'}
         value={currentValue}
-        readonly
+        readonly={props.readonly !== false}
         onClick={showPicker}
       />
       <div

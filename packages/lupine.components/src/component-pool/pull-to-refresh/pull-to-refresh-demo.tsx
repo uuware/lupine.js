@@ -35,7 +35,9 @@ export const pullToRefreshDemo = {
       return Array.from({ length: 10 }, (_, i) => ({
         id: Math.random().toString(36).substr(2, 9),
         title: `Item ${i + 1}`,
-        description: `This is the description for item ${i + 1}. Pull down to refresh and see new items!`,
+        description: `This is the description for item ${
+          i + 1
+        }. On mobile devices, pull down to refresh and see new items!`,
       }));
     };
 
