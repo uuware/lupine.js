@@ -29,6 +29,7 @@ export interface TextLayer {
   x: number;
   y: number;
   color: string;
+  bgColor?: string;
   fontSize: number;
   fontFamily: string;
   bold: boolean;
@@ -70,6 +71,7 @@ export interface ShapeLayer {
   id: string;
   type: ShapeType;
   color: string;
+  bgColor?: string;
   strokeWidth: number;
   rotation: number; // For movable/rotatable shape manipulation
   points?: { x: number; y: number }[];
