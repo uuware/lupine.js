@@ -4,6 +4,7 @@ import { DemoAboutPage } from './demo-about';
 import { buttonDemo } from '../components/button-demo';
 import { buttonPushAnimationDemo } from '../components/button-push-animation-demo';
 import { toggleSwitchDemo } from '../components/toggle-switch-demo';
+import { inputNumberDemo } from '../components/input-number-demo';
 import { spinnerDemo } from '../components/spinner-demo';
 import { starsDemo } from '../components/stars-component-demo';
 import { editableLabelDemo } from '../components/editable-label-demo';
@@ -26,8 +27,9 @@ import { textGlowDemo } from '../components/text-glow-demo';
 import { togglePlayButtonDemo } from '../components/toggle-play-button-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
+import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
 import { sliderFrameDemo } from '../components/slider-frame-demo';
-import { sliderDemo, gaugeDemo } from '../component-pool/slider';
+import { rangeDemo, gaugeDemo } from '../component-pool/range';
 import { badgeDemo } from '../component-pool/badge';
 import { timelineDemo } from '../component-pool/timeline';
 import { radialProgressDemo } from '../component-pool/radial-progress';
@@ -36,35 +38,30 @@ import { skeletonDemo } from '../component-pool/skeleton';
 import { copyButtonDemo } from '../component-pool/copy-button';
 import { aspectRatioDemo } from '../component-pool/aspect-ratio';
 import { mapWrapperDemo } from '../component-pool/map-wrapper';
+import { avatarDemo } from '../component-pool/avatar';
+import { cardDemo } from '../component-pool/card';
+import { carouselDemo } from '../component-pool/carousel';
+import { cascaderDemo } from '../component-pool/cascader';
+import { tooltipDemo } from '../component-pool/tooltip';
+import { timePickerDemo } from '../component-pool/time-picker';
+import { datePickerDemo } from '../component-pool/date-picker';
+import { pullToRefreshDemo } from '../component-pool/pull-to-refresh/pull-to-refresh-demo';
+import { tagInputDemo } from '../component-pool/tag-input/tag-input-demo';
+import { floatingIconMenuDemo } from '../component-pool/floating-icon-menu';
+import { tourDemo } from '../component-pool/tour';
+import { searchInputDemo } from '../component-pool/search-input';
+import { hEditorDemo } from '../component-pool/h-editor';
+import { pagingLinkDemo } from '../components/paging-link-demo';
+import { slideTabDemo } from '../components/slide-tab-component-demo';
+import { qrcodeDemo } from '../component-pool/qrcode';
+import { iEditorDemo } from '../component-pool/i-editor';
+import { youtubePlayerDemo } from '../component-pool/youtube-player';
+import { pEditorDemo } from '../component-pool/p-editor';
+import { pdfViewerDemo } from '../component-pool/pdf-viewer';
 import { DemoPage } from './demo-page';
+import { responsiveFrameDemo } from '../frames/responsive-frame-demo';
 
 const chineseMenuText: { text: string; zh: string }[] = [
-  { text: 'Contents', zh: '内容管理' },
-  { text: 'Menu List', zh: '菜单列表' },
-  { text: 'Page List', zh: '页面列表' },
-  { text: 'Process List', zh: '流程列表' },
-
-  { text: 'DB', zh: '数据库' },
-  { text: 'Table List', zh: '表' },
-  { text: 'Create Tables', zh: '创建表' },
-  { text: 'Run SQL', zh: '运行 SQL' },
-
-  { text: 'Test', zh: '测试' },
-  { text: 'Test Themes', zh: '测试主题' },
-  { text: 'Test Component', zh: '测试组件' },
-  { text: 'Test Animations', zh: '测试动画' },
-  { text: 'Test Edit', zh: '测试编辑' },
-
-  { text: 'Access', zh: '管理服务器' },
-  { text: 'Release', zh: '发布' },
-  { text: 'Tokens', zh: '管理令牌' },
-
-  { text: 'Server Info', zh: '服务器信息' },
-  { text: 'Resources', zh: '管理资源' },
-  { text: 'Config', zh: '管理配置' },
-  { text: 'Shell', zh: '命令终端' },
-  { text: 'Performance', zh: '性能' },
-
   { text: 'Help', zh: '帮助' },
   { text: 'About', zh: '关于' },
 ];
@@ -125,19 +122,15 @@ export class DemoFrameHelper {
   }
 
   demoTopMenu: NestMenuItemProps[] = [
-    // { text: 'Top', url: '/admin' },
     {
-      id: 'basic-demo',
-      text: 'Basic',
+      id: 'general-demo',
+      text: 'General',
       url: '',
-      // hide: true,
       items: [
         {
           id: buttonDemo.id,
           text: buttonDemo.text,
           url: '',
-          // hide: true,
-          // Mounted via DemoPage to provide controls
           js: () => this.addPanel(buttonDemo.text, <DemoPage story={buttonDemo} />),
         },
         {
@@ -147,10 +140,40 @@ export class DemoFrameHelper {
           js: () => this.addPanel(buttonPushAnimationDemo.text, <DemoPage story={buttonPushAnimationDemo} />),
         },
         {
+          id: inputNumberDemo.id,
+          text: inputNumberDemo.text,
+          url: '',
+          js: () => this.addPanel(inputNumberDemo.text, <DemoPage story={inputNumberDemo} />),
+        },
+        {
           id: toggleSwitchDemo.id,
           text: toggleSwitchDemo.text,
           url: '',
           js: () => this.addPanel(toggleSwitchDemo.text, <DemoPage story={toggleSwitchDemo} />),
+        },
+        {
+          id: toggleButtonDemo.id,
+          text: toggleButtonDemo.text,
+          url: '',
+          js: () => this.addPanel(toggleButtonDemo.text, <DemoPage story={toggleButtonDemo} />),
+        },
+        {
+          id: togglePlayButtonDemo.id,
+          text: togglePlayButtonDemo.text,
+          url: '',
+          js: () => this.addPanel(togglePlayButtonDemo.text, <DemoPage story={togglePlayButtonDemo} />),
+        },
+        {
+          id: badgeDemo.id,
+          text: badgeDemo.text,
+          url: '',
+          js: () => this.addPanel(badgeDemo.text, <DemoPage story={badgeDemo} />),
+        },
+        {
+          id: copyButtonDemo.id,
+          text: copyButtonDemo.text,
+          url: '',
+          js: () => this.addPanel(copyButtonDemo.text, <DemoPage story={copyButtonDemo} />),
         },
         {
           id: spinnerDemo.id,
@@ -171,6 +194,153 @@ export class DemoFrameHelper {
           js: () => this.addPanel(editableLabelDemo.text, <DemoPage story={editableLabelDemo} />),
         },
         {
+          id: tooltipDemo.id,
+          text: tooltipDemo.text,
+          url: '',
+          js: () => this.addPanel(tooltipDemo.text, <DemoPage story={tooltipDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'navigation-demo',
+      text: 'Navigation',
+      url: '',
+      items: [
+        {
+          id: mobileSideMenuDemo.id,
+          text: mobileSideMenuDemo.text,
+          url: '',
+          js: () => this.addPanel(mobileSideMenuDemo.text, <DemoPage story={mobileSideMenuDemo} />),
+        },
+        {
+          id: responsiveFrameDemo.id,
+          text: responsiveFrameDemo.text,
+          url: '',
+          js: () => this.addPanel(responsiveFrameDemo.text, <DemoPage story={responsiveFrameDemo} />),
+        },
+        {
+          id: floatingIconMenuDemo.id,
+          text: floatingIconMenuDemo.text,
+          url: '',
+          js: () => this.addPanel(floatingIconMenuDemo.text, <DemoPage story={floatingIconMenuDemo} />),
+        },
+        {
+          id: breadcrumbsDemo.id,
+          text: breadcrumbsDemo.text,
+          url: '',
+          js: () => this.addPanel(breadcrumbsDemo.text, <DemoPage story={breadcrumbsDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'data-entry-demo',
+      text: 'Data Entry',
+      url: '',
+      items: [
+        {
+          id: inputWithTitleDemo.id,
+          text: inputWithTitleDemo.text,
+          url: '',
+          js: () => this.addPanel(inputWithTitleDemo.text, <DemoPage story={inputWithTitleDemo} />),
+        },
+        {
+          id: searchInputDemo.id,
+          text: searchInputDemo.text,
+          url: '',
+          js: () => this.addPanel(searchInputDemo.text, <DemoPage story={searchInputDemo} />),
+        },
+        {
+          id: tagInputDemo.id,
+          text: tagInputDemo.text,
+          url: '',
+          js: () => this.addPanel(tagInputDemo.text, <DemoPage story={tagInputDemo} />),
+        },
+        {
+          id: hEditorDemo.id,
+          text: hEditorDemo.text,
+          url: '',
+          js: () => this.addPanel(hEditorDemo.text, <DemoPage story={hEditorDemo} />),
+        },
+        {
+          id: iEditorDemo.id,
+          text: iEditorDemo.text,
+          url: '',
+          js: () => this.addPanel(iEditorDemo.text, <DemoPage story={iEditorDemo} />),
+        },
+        {
+          id: pEditorDemo.id,
+          text: pEditorDemo.text,
+          url: '',
+          js: () => this.addPanel(pEditorDemo.text, <DemoPage story={pEditorDemo} />),
+        },
+        {
+          id: pdfViewerDemo.id,
+          text: pdfViewerDemo.text,
+          url: '',
+          js: () => this.addPanel(pdfViewerDemo.text, <DemoPage story={pdfViewerDemo} />),
+        },
+        {
+          id: selectWithTitleDemo.id,
+          text: selectWithTitleDemo.text,
+          url: '',
+          js: () => this.addPanel(selectWithTitleDemo.text, <DemoPage story={selectWithTitleDemo} />),
+        },
+        {
+          id: rangeDemo.id,
+          text: rangeDemo.text,
+          url: '',
+          js: () => this.addPanel(rangeDemo.text, <DemoPage story={rangeDemo} />),
+        },
+        {
+          id: gaugeDemo.id,
+          text: gaugeDemo.text,
+          url: '',
+          js: () => this.addPanel(gaugeDemo.text, <DemoPage story={gaugeDemo} />),
+        },
+        {
+          id: radioLabelDemo.id,
+          text: radioLabelDemo.text,
+          url: '',
+          js: () => this.addPanel(radioLabelDemo.text, <DemoPage story={radioLabelDemo} />),
+        },
+        {
+          id: selectAngleDemo.id,
+          text: selectAngleDemo.text,
+          url: '',
+          js: () => this.addPanel(selectAngleDemo.text, <DemoPage story={selectAngleDemo} />),
+        },
+        {
+          id: switchOptionDemo.id,
+          text: switchOptionDemo.text,
+          url: '',
+          js: () => this.addPanel(switchOptionDemo.text, <DemoPage story={switchOptionDemo} />),
+        },
+        {
+          id: timePickerDemo.id,
+          text: timePickerDemo.text,
+          url: '',
+          js: () => this.addPanel(timePickerDemo.text, <DemoPage story={timePickerDemo} />),
+        },
+        {
+          id: datePickerDemo.id,
+          text: datePickerDemo.text,
+          url: '',
+          js: () => this.addPanel(datePickerDemo.text, <DemoPage story={datePickerDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'data-display-demo',
+      text: 'Data Display',
+      url: '',
+      items: [
+        {
+          id: pagingLinkDemo.id,
+          text: pagingLinkDemo.text,
+          url: '',
+          js: () => this.addPanel(pagingLinkDemo.text, <DemoPage story={pagingLinkDemo} />),
+        },
+        {
           id: progressDemo.id,
           text: progressDemo.text,
           url: '',
@@ -181,6 +351,153 @@ export class DemoFrameHelper {
           text: radialProgressDemo.text,
           url: '',
           js: () => this.addPanel(radialProgressDemo.text, <DemoPage story={radialProgressDemo} />),
+        },
+        {
+          id: timelineDemo.id,
+          text: timelineDemo.text,
+          url: '',
+          js: () => this.addPanel(timelineDemo.text, <DemoPage story={timelineDemo} />),
+        },
+        {
+          id: skeletonDemo.id,
+          text: skeletonDemo.text,
+          url: '',
+          js: () => this.addPanel(skeletonDemo.text, <DemoPage story={skeletonDemo} />),
+        },
+        {
+          id: avatarDemo.id,
+          text: avatarDemo.text,
+          url: '',
+          js: () => this.addPanel(avatarDemo.text, <DemoPage story={avatarDemo} />),
+        },
+        {
+          id: cardDemo.id,
+          text: cardDemo.text,
+          url: '',
+          js: () => this.addPanel(cardDemo.text, <DemoPage story={cardDemo} />),
+        },
+        {
+          id: carouselDemo.id,
+          text: carouselDemo.text,
+          url: '',
+          js: () => this.addPanel(carouselDemo.text, <DemoPage story={carouselDemo} />),
+        },
+        {
+          id: cascaderDemo.id,
+          text: cascaderDemo.text,
+          url: '',
+          js: () => this.addPanel(cascaderDemo.text, <DemoPage story={cascaderDemo} />),
+        },
+        {
+          id: slideTabDemo.id,
+          text: slideTabDemo.text,
+          url: '',
+          js: () => this.addPanel(slideTabDemo.text, <DemoPage story={slideTabDemo} />),
+        },
+        {
+          id: qrcodeDemo.id,
+          text: qrcodeDemo.text,
+          url: '',
+          js: () => this.addPanel(qrcodeDemo.text, <DemoPage story={qrcodeDemo} />),
+        },
+        {
+          id: youtubePlayerDemo.id,
+          text: youtubePlayerDemo.text,
+          url: '',
+          js: () => this.addPanel(youtubePlayerDemo.text, <DemoPage story={youtubePlayerDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'feedback-demo',
+      text: 'Feedback',
+      url: '',
+      items: [
+        {
+          id: modalDemo.id,
+          text: modalDemo.text,
+          url: '',
+          js: () => this.addPanel(modalDemo.text, <DemoPage story={modalDemo} />),
+        },
+        {
+          id: messageBoxDemo.id,
+          text: messageBoxDemo.text,
+          url: '',
+          js: () => this.addPanel(messageBoxDemo.text, <DemoPage story={messageBoxDemo} />),
+        },
+        {
+          id: actionSheetDemo.id,
+          text: actionSheetDemo.text,
+          url: '',
+          js: () => this.addPanel(actionSheetDemo.text, <DemoPage story={actionSheetDemo} />),
+        },
+        {
+          id: popupMenuDemo.id,
+          text: popupMenuDemo.text,
+          url: '',
+          js: () => this.addPanel(popupMenuDemo.text, <DemoPage story={popupMenuDemo} />),
+        },
+        {
+          id: noticeMessageDemo.id,
+          text: noticeMessageDemo.text,
+          url: '',
+          js: () => this.addPanel(noticeMessageDemo.text, <DemoPage story={noticeMessageDemo} />),
+        },
+        {
+          id: tourDemo.id,
+          text: tourDemo.text,
+          url: '',
+          js: () => this.addPanel(tourDemo.text, <DemoPage story={tourDemo} />),
+        },
+        {
+          id: pullToRefreshDemo.id,
+          text: pullToRefreshDemo.text,
+          url: '',
+          js: () => this.addPanel(pullToRefreshDemo.text, <DemoPage story={pullToRefreshDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'layout-demo',
+      text: 'Layout',
+      url: '',
+      items: [
+        {
+          id: tabsDemo.id,
+          text: tabsDemo.text,
+          url: '',
+          js: () => this.addPanel(tabsDemo.text, <DemoPage story={tabsDemo} />),
+        },
+        {
+          id: resizableSplitterDemo.id,
+          text: resizableSplitterDemo.text,
+          url: '',
+          js: () => this.addPanel(resizableSplitterDemo.text, <DemoPage story={resizableSplitterDemo} />),
+        },
+        {
+          id: aspectRatioDemo.id,
+          text: aspectRatioDemo.text,
+          url: '',
+          js: () => this.addPanel(aspectRatioDemo.text, <DemoPage story={aspectRatioDemo} />),
+        },
+        {
+          id: sliderFrameDemo.id,
+          text: sliderFrameDemo.text,
+          url: '',
+          js: () => this.addPanel(sliderFrameDemo.text, <DemoPage story={sliderFrameDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'advanced-demo',
+      text: 'Special FX',
+      url: '',
+      items: [
+        {
+          id: mapWrapperDemo.id,
+          text: mapWrapperDemo.text,
+          url: '',
+          js: () => this.addPanel(mapWrapperDemo.text, <DemoPage story={mapWrapperDemo} />),
         },
         {
           id: textWaveDemo.id,
@@ -201,168 +518,10 @@ export class DemoFrameHelper {
           js: () => this.addPanel(textGlowDemo.text, <DemoPage story={textGlowDemo} />),
         },
         {
-          id: togglePlayButtonDemo.id,
-          text: togglePlayButtonDemo.text,
-          url: '',
-          js: () => this.addPanel(togglePlayButtonDemo.text, <DemoPage story={togglePlayButtonDemo} />),
-        },
-        {
-          id: toggleButtonDemo.id,
-          text: toggleButtonDemo.text,
-          url: '',
-          js: () => this.addPanel(toggleButtonDemo.text, <DemoPage story={toggleButtonDemo} />),
-        },
-        {
-          id: badgeDemo.id,
-          text: badgeDemo.text,
-          url: '',
-          js: () => this.addPanel(badgeDemo.text, <DemoPage story={badgeDemo} />),
-        },
-      ],
-    },
-    {
-      id: 'forms-inputs-demo',
-      text: 'Forms & Inputs',
-      url: '',
-      items: [
-        {
-          id: radioLabelDemo.id,
-          text: radioLabelDemo.text,
-          url: '',
-          js: () => this.addPanel(radioLabelDemo.text, <DemoPage story={radioLabelDemo} />),
-        },
-        {
-          id: selectAngleDemo.id,
-          text: selectAngleDemo.text,
-          url: '',
-          js: () => this.addPanel(selectAngleDemo.text, <DemoPage story={selectAngleDemo} />),
-        },
-        {
-          id: switchOptionDemo.id,
-          text: switchOptionDemo.text,
-          url: '',
-          js: () => this.addPanel(switchOptionDemo.text, <DemoPage story={switchOptionDemo} />),
-        },
-        {
-          id: actionSheetDemo.id,
-          text: actionSheetDemo.text,
-          url: '',
-          js: () => this.addPanel(actionSheetDemo.text, <DemoPage story={actionSheetDemo} />),
-        },
-        {
-          id: selectWithTitleDemo.id,
-          text: selectWithTitleDemo.text,
-          url: '',
-          js: () => this.addPanel(selectWithTitleDemo.text, <DemoPage story={selectWithTitleDemo} />),
-        },
-        {
-          id: inputWithTitleDemo.id,
-          text: inputWithTitleDemo.text,
-          url: '',
-          js: () => this.addPanel(inputWithTitleDemo.text, <DemoPage story={inputWithTitleDemo} />),
-        },
-        {
-          id: sliderDemo.id,
-          text: sliderDemo.text,
-          url: '',
-          js: () => this.addPanel(sliderDemo.text, <DemoPage story={sliderDemo} />),
-        },
-        {
-          id: gaugeDemo.id,
-          text: gaugeDemo.text,
-          url: '',
-          js: () => this.addPanel(gaugeDemo.text, <DemoPage story={gaugeDemo} />),
-        },
-      ],
-    },
-    {
-      id: 'layout-popups-demo',
-      text: 'Layout & Popups',
-      url: '',
-      items: [
-        {
-          id: tabsDemo.id,
-          text: tabsDemo.text,
-          url: '',
-          js: () => this.addPanel(tabsDemo.text, <DemoPage story={tabsDemo} />),
-        },
-        {
-          id: modalDemo.id,
-          text: modalDemo.text,
-          url: '',
-          js: () => this.addPanel(modalDemo.text, <DemoPage story={modalDemo} />),
-        },
-        {
-          id: messageBoxDemo.id,
-          text: messageBoxDemo.text,
-          url: '',
-          js: () => this.addPanel(messageBoxDemo.text, <DemoPage story={messageBoxDemo} />),
-        },
-        {
-          id: popupMenuDemo.id,
-          text: popupMenuDemo.text,
-          url: '',
-          js: () => this.addPanel(popupMenuDemo.text, <DemoPage story={popupMenuDemo} />),
-        },
-        {
-          id: noticeMessageDemo.id,
-          text: noticeMessageDemo.text,
-          url: '',
-          js: () => this.addPanel(noticeMessageDemo.text, <DemoPage story={noticeMessageDemo} />),
-        },
-        {
-          id: resizableSplitterDemo.id,
-          text: resizableSplitterDemo.text,
-          url: '',
-          js: () => this.addPanel(resizableSplitterDemo.text, <DemoPage story={resizableSplitterDemo} />),
-        },
-        {
           id: redirectDemo.id,
           text: redirectDemo.text,
           url: '',
           js: () => this.addPanel(redirectDemo.text, <DemoPage story={redirectDemo} />),
-        },
-        {
-          id: sliderFrameDemo.id,
-          text: sliderFrameDemo.text,
-          url: '',
-          js: () => this.addPanel(sliderFrameDemo.text, <DemoPage story={sliderFrameDemo} />),
-        },
-        {
-          id: timelineDemo.id,
-          text: timelineDemo.text,
-          url: '',
-          js: () => this.addPanel(timelineDemo.text, <DemoPage story={timelineDemo} />),
-        },
-        {
-          id: breadcrumbsDemo.id,
-          text: breadcrumbsDemo.text,
-          url: '',
-          js: () => this.addPanel(breadcrumbsDemo.text, <DemoPage story={breadcrumbsDemo} />),
-        },
-        {
-          id: skeletonDemo.id,
-          text: skeletonDemo.text,
-          url: '',
-          js: () => this.addPanel(skeletonDemo.text, <DemoPage story={skeletonDemo} />),
-        },
-        {
-          id: copyButtonDemo.id,
-          text: copyButtonDemo.text,
-          url: '',
-          js: () => this.addPanel(copyButtonDemo.text, <DemoPage story={copyButtonDemo} />),
-        },
-        {
-          id: aspectRatioDemo.id,
-          text: aspectRatioDemo.text,
-          url: '',
-          js: () => this.addPanel(aspectRatioDemo.text, <DemoPage story={aspectRatioDemo} />),
-        },
-        {
-          id: mapWrapperDemo.id,
-          text: mapWrapperDemo.text,
-          url: '',
-          js: () => this.addPanel(mapWrapperDemo.text, <DemoPage story={mapWrapperDemo} />),
         },
       ],
     },
