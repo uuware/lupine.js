@@ -52,6 +52,7 @@ export function getTextHandles(
       x: cx - (w / 2) * Math.cos(t.rotation) + (h / 2) * Math.sin(t.rotation) - 2 * Math.cos(t.rotation),
       y: cy - (w / 2) * Math.sin(t.rotation) - (h / 2) * Math.cos(t.rotation) - 2 * Math.sin(t.rotation),
     },
+    tail: t.tailActive && t.tailX !== undefined && t.tailY !== undefined ? { x: t.tailX, y: t.tailY } : undefined,
   };
 }
 
@@ -68,13 +69,30 @@ export function hitText(
   const cx = t.x,
     cy = t.y;
 
+  // Extend hit area slightly for ease of use, scaling larger if a bubble stroke is present
+  const pad = t.tailActive ? (t.strokeWidth || 0) + 12 : 4;
+  if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
+    if (Math.hypot(cv.x - t.tailX, cv.y - t.tailY) < pad) return true;
+
+    const l2 = (t.tailX - cx) ** 2 + (t.tailY - cy) ** 2;
+    if (l2 > 0) {
+      let t_param = ((cv.x - cx) * (t.tailX - cx) + (cv.y - cy) * (t.tailY - cy)) / l2;
+      t_param = Math.max(0, Math.min(1, t_param));
+      const projX = cx + t_param * (t.tailX - cx);
+      const projY = cy + t_param * (t.tailY - cy);
+      const distToLine = Math.hypot(cv.x - projX, cv.y - projY);
+      // The visual tail is thickest near the box (approx h/2) and thin at the tip
+      const allowedDist = pad + (1 - t_param) * (h / 2 + 10);
+      if (distToLine < allowedDist) return true;
+    }
+  }
+
+  // Then check inner bounding box using reverse matrix rotation
   const cos = Math.cos(-t.rotation),
     sin = Math.sin(-t.rotation);
   const lx = cos * (cv.x - cx) - sin * (cv.y - cy);
   const ly = sin * (cv.x - cx) + cos * (cv.y - cy);
 
-  // Extend hit area slightly for ease of use, scaling larger if a bubble stroke is present
-  const pad = t.tailActive ? (t.strokeWidth || 0) + 12 : 4;
   return lx >= -w / 2 - pad && lx <= w / 2 + pad && ly >= -h / 2 - pad && ly <= h / 2 + pad;
 }
 

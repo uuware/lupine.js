@@ -267,12 +267,12 @@ export class DemoFrameHelper {
           url: '',
           js: () => this.addPanel(iEditorDemo.text, <DemoPage story={iEditorDemo} />),
         },
-        {
-          id: pEditorDemo.id,
-          text: pEditorDemo.text,
-          url: '',
-          js: () => this.addPanel(pEditorDemo.text, <DemoPage story={pEditorDemo} />),
-        },
+        // {
+        //   id: pEditorDemo.id,
+        //   text: pEditorDemo.text,
+        //   url: '',
+        //   js: () => this.addPanel(pEditorDemo.text, <DemoPage story={pEditorDemo} />),
+        // },
         {
           id: pdfViewerDemo.id,
           text: pdfViewerDemo.text,

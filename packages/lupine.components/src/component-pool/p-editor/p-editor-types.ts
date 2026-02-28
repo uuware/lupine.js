@@ -18,6 +18,7 @@ export interface TextLayer {
   x: number;
   y: number;
   color: string;
+  bgColor?: string;
   fontSize: number;
   fontFamily: string;
   bold: boolean;
