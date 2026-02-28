@@ -73,8 +73,9 @@ export function hitText(
   const lx = cos * (cv.x - cx) - sin * (cv.y - cy);
   const ly = sin * (cv.x - cx) + cos * (cv.y - cy);
 
-  // Extend hit area slightly for ease of use
-  return lx >= -w / 2 - 4 && lx <= w / 2 + 4 && ly >= -h / 2 - 4 && ly <= h / 2 + 4;
+  // Extend hit area slightly for ease of use, scaling larger if a bubble stroke is present
+  const pad = t.tailActive ? (t.strokeWidth || 0) + 12 : 4;
+  return lx >= -w / 2 - pad && lx <= w / 2 + pad && ly >= -h / 2 - pad && ly <= h / 2 + pad;
 }
 
 export function getShapeBoundingBox(s: ShapeLayer) {
