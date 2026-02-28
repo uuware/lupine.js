@@ -44,11 +44,13 @@ const pickerContainerCss: CssProps = {
   transition: 'opacity 0.2s ease, transform 0.2s ease',
   transform: 'translateY(10px)',
   overflow: 'hidden',
-  display: 'none',
+  visibility: 'hidden',
+  pointerEvents: 'none',
   outline: 'none',
 
   '&.open': {
-    display: 'block',
+    visibility: 'visible',
+    pointerEvents: 'auto',
     opacity: 1,
     transform: 'translateY(0)',
   },
@@ -129,14 +131,22 @@ export class PickerHelper {
     const pickerWidth = pickerEl.offsetWidth;
     const pickerHeight = pickerEl.offsetHeight;
 
-    let top = rect.bottom + 5;
     let left = rect.left;
     let isTop = false;
 
     // Check if bottom space is enough
-    if (top + pickerHeight > window.innerHeight - 10) {
-      top = rect.top - pickerHeight - 5;
+    if (rect.bottom + 5 + pickerHeight > window.innerHeight - 10) {
       isTop = true;
+    }
+
+    // Double check if top space is at least more than bottom space if we decided to go top
+    if (isTop) {
+      const spaceTop = rect.top;
+      const spaceBottom = window.innerHeight - rect.bottom;
+      if (spaceBottom > spaceTop) {
+        // If bottom still has more space, revert to bottom despite clipping
+        isTop = false;
+      }
     }
 
     // Check if right space is enough
@@ -145,12 +155,15 @@ export class PickerHelper {
     }
     if (left < 10) left = 10;
 
-    pickerEl.style.top = `${top}px`;
     pickerEl.style.left = `${left}px`;
 
     if (isTop) {
+      pickerEl.style.bottom = `${window.innerHeight - rect.top + 5}px`;
+      pickerEl.style.top = 'auto'; // ensure top is reset if it was previously set
       pickerEl.classList.add('top');
     } else {
+      pickerEl.style.top = `${rect.bottom + 5}px`;
+      pickerEl.style.bottom = 'auto'; // ensure bottom is reset
       pickerEl.classList.remove('top');
     }
 

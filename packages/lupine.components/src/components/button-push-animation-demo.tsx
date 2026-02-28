@@ -22,7 +22,7 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
   render: (args: ButtonPushAnimationProps) => {
     const msg = new HtmlVar('');
     return (
-      <div>
+      <div css={{ padding: '20px' }}>
         <ButtonPushAnimation {...args} onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)} />
         <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
       </div>

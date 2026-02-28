@@ -25,7 +25,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
     // Note: We don't expose 'text' as a simple control because our current demo system
     // handles primitives. But the user can see how it works with the default args.
     return (
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <div css={{ padding: '20px' }}>
         <ToggleSwitch {...args} />
       </div>
     );

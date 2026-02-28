@@ -5,9 +5,9 @@ export const switchOptionDemo: DemoStory<SwitchOptionComponentProps> = {
   id: 'switch-option-demo',
   text: 'Switch Option Demo',
   args: {
-    option1: 'Day',
-    option2: 'Night',
-    defaultOption: 'Day',
+    option1: 'On',
+    option2: 'Off',
+    defaultOption: 'On',
     fontSize: '14px',
   },
   argTypes: {
