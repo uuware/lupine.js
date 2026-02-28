@@ -24,32 +24,7 @@ import { EDITOR_STYLES } from './i-editor-styles';
 import { LJ_SVG_ICON_CLASS, SvgIconNames, loadSvgIconStyles } from '../svg-icons';
 import { ActionSheetSelectPromise } from '../../components/action-sheet';
 
-const FONT_OPTIONS = [
-  { val: 'sans-serif', label: 'Sans' },
-  { val: 'serif', label: 'Serif' },
-  { val: 'monospace', label: 'Mono' },
-  { val: 'cursive', label: 'Cursive' },
-  { val: 'system-ui', label: 'System UI' },
-  { val: 'Arial', label: 'Arial' },
-  { val: 'Helvetica', label: 'Helvetica' },
-  { val: '"Times New Roman"', label: 'Times New Roman' },
-  { val: 'Georgia', label: 'Georgia' },
-  { val: 'Verdana', label: 'Verdana' },
-  { val: 'Tahoma', label: 'Tahoma' },
-  { val: '"Trebuchet MS"', label: 'Trebuchet MS' },
-  { val: 'Impact', label: 'Impact' },
-  { val: '"Comic Sans MS"', label: 'Comic Sans MS' },
-  { val: '"Courier New"', label: 'Courier New' },
-  { val: '"Microsoft YaHei", "微软雅黑"', label: 'YaHei (微软雅黑)' },
-  { val: '"SimSun", "宋体"', label: 'SimSun (宋体)' },
-  { val: '"SimHei", "黑体"', label: 'SimHei (黑体)' },
-  { val: '"KaiTi", "楷体"', label: 'KaiTi (楷体)' },
-  { val: '"FangSong", "仿宋"', label: 'FangSong (仿宋)' },
-  { val: '"PingFang SC"', label: 'PingFang SC' },
-  { val: '"Hiragino Sans GB"', label: 'Hiragino Sans GB' },
-  { val: '"Source Han Sans SC"', label: 'Source Han Sans (思源黑体)' },
-  { val: '"Source Han Serif SC"', label: 'Source Han Serif (思源宋体)' },
-];
+import { FONT_OPTIONS } from '../canvas-helper';
 
 export class IEditor {
   private container: HTMLElement;
@@ -153,7 +128,7 @@ export class IEditor {
     startAngle: number;
     startRotation: number;
   } | null = null;
-  private movingTail: { layer: TextLayer } | null = null;
+  private movingTail: { layer: TextLayer; lastX: number; lastY: number } | null = null;
   private selectedSticker: StickerLayer | null = null;
   private selectedText: TextLayer | null = null;
   private selectedShape: ShapeLayer | null = null;
@@ -185,6 +160,7 @@ export class IEditor {
   private editingTextId: string | null = null;
 
   private textColor = '#ff0000';
+  private fillColor?: string = undefined;
   private textFontSize = 24;
   private textFontFamily = 'sans-serif';
   private textBold = false;
@@ -481,6 +457,34 @@ export class IEditor {
           this._redraw();
         }
       });
+
+      const curFill = curShape ? curShape.bgColor || '' : this.fillColor || '';
+      lbl(`Fill:<input type="color" value="${curFill || '#ffffff'}"/>`, (v) => {
+        this.fillColor = v;
+        if (curShape) {
+          curShape.bgColor = v;
+          this._redraw();
+        }
+      });
+
+      const tranBtn = document.createElement('button');
+      tranBtn.textContent = '🚫';
+      tranBtn.title = 'Transparent Fill';
+      tranBtn.style.background = !curFill ? 'var(--primary-accent-color,#0a74c9)' : 'transparent';
+      tranBtn.style.fontSize = '14px';
+      tranBtn.style.lineHeight = '1';
+      tranBtn.style.padding = '2px 4px';
+      tranBtn.style.minHeight = '0';
+      tranBtn.addEventListener('click', () => {
+        this.fillColor = undefined;
+        if (curShape) {
+          curShape.bgColor = undefined;
+        }
+        this._updateOpts();
+        this._redraw();
+      });
+      el.appendChild(tranBtn);
+
       const ls = document.createElement('label');
       ls.innerHTML = `Size:<input type="range" min="1" max="60" value="${curSize}"/><span>${curSize}px</span>`;
       const si = ls.querySelector('input') as HTMLInputElement;
@@ -574,6 +578,33 @@ export class IEditor {
           this._redraw();
         }
       });
+
+      const curFill = t ? t.bgColor || '' : this.fillColor || '';
+      lbl(`Fill:<input type="color" value="${curFill || '#ffffff'}"/>`, (v) => {
+        this.fillColor = v;
+        if (t) {
+          t.bgColor = v;
+          this._redraw();
+        }
+      });
+
+      const tranBtn = document.createElement('button');
+      tranBtn.textContent = '🚫';
+      tranBtn.title = 'Transparent Fill';
+      tranBtn.style.background = !curFill ? 'var(--primary-accent-color,#0a74c9)' : 'transparent';
+      tranBtn.style.fontSize = '14px';
+      tranBtn.style.lineHeight = '1';
+      tranBtn.style.padding = '2px 4px';
+      tranBtn.style.minHeight = '0';
+      tranBtn.addEventListener('click', () => {
+        this.fillColor = undefined;
+        if (t) {
+          t.bgColor = undefined;
+        }
+        this._updateOpts();
+        this._redraw();
+      });
+      el.appendChild(tranBtn);
 
       const fsLbl = document.createElement('label');
       fsLbl.innerHTML = `Size:<input type="range" min="12" max="120" value="${curSize}"/><span>${curSize}px</span>`;
@@ -693,8 +724,10 @@ export class IEditor {
               this.textStrokeWidth = 2;
             }
             if (t.tailX === undefined || t.tailY === undefined) {
-              t.tailX = t.x - 20;
-              t.tailY = t.y + 20;
+              this.ctx.font = this._textFont(t);
+              const m = this.ctx.measureText(t.text);
+              t.tailX = t.x - m.width / 2 - 20;
+              t.tailY = t.y + t.fontSize / 2 + 20;
             }
           }
         } else {
@@ -1219,7 +1252,7 @@ export class IEditor {
       }
     }
 
-    drawShapePath(ctx, this.penMode, this.penArrowType, this.penColor, sw, sh, fx, fy);
+    drawShapePath(ctx, this.penMode, this.penArrowType, this.penColor, sw, sh, fx, fy, this.fillColor);
   }
 
   // Double-click on a text layer (in pan or text mode) to re-edit it
@@ -1342,7 +1375,7 @@ export class IEditor {
         return true;
       }
       if (t.tailActive && Math.hypot(cv.x - (t.tailX || 0), cv.y - (t.tailY || 0)) < hs) {
-        this.movingTail = { layer: t };
+        this.movingTail = { layer: t, lastX: cv.x, lastY: cv.y };
         this._pushUndo();
         return true;
       }
@@ -1475,6 +1508,7 @@ export class IEditor {
         id: `shp_${Date.now()}`,
         type: this.penMode,
         color: this.penColor,
+        bgColor: this.fillColor,
         strokeWidth: this.penSize,
         rotation: 0,
         x: cv.x,
@@ -2171,6 +2205,7 @@ export class IEditor {
       if (obj.type === 'text') {
         const t = obj.layer as TextLayer;
         this.ctx.font = this._textFont(t);
+
         const m = this.ctx.measureText(t.text);
         const tw = m.width;
         const th = t.fontSize;
@@ -2205,12 +2240,18 @@ export class IEditor {
           this.ctx.globalAlpha = t.shadow.opacity / 100;
         }
         this.ctx.font = this._textFont(t);
-        if (t.strokeWidth && t.strokeWidth > 0) {
-          this.ctx.strokeStyle = t.strokeColor || '#000000';
-          this.ctx.lineWidth = t.strokeWidth;
-          this.ctx.lineJoin = 'round';
+        if (t.bgColor || (t.strokeWidth && t.strokeWidth > 0)) {
           buildBubblePath(this.ctx, tw, th, lx, ly, !!t.tailActive);
-          this.ctx.stroke();
+          if (t.bgColor) {
+            this.ctx.fillStyle = t.bgColor;
+            this.ctx.fill();
+          }
+          if (t.strokeWidth && t.strokeWidth > 0) {
+            this.ctx.strokeStyle = t.strokeColor || '#000000';
+            this.ctx.lineWidth = t.strokeWidth;
+            this.ctx.lineJoin = 'round';
+            this.ctx.stroke();
+          }
         }
         this.ctx.fillStyle = t.color;
         this.ctx.fillText(t.text, -tw / 2, th / 2 - 2);
@@ -2255,16 +2296,14 @@ export class IEditor {
             // Delete handle
             drawDeleteHandle(this.ctx, h.del.x, h.del.y, hs);
 
-            // Tail handle
-            if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
-              this.ctx.fillStyle = '#ff00ff';
+            if (h.tail) {
+              this.ctx.fillStyle = '#ffaa00';
+              this.ctx.strokeStyle = '#fff';
+              this.ctx.lineWidth = 1;
               this.ctx.beginPath();
-              this.ctx.moveTo(t.tailX, t.tailY - hs);
-              this.ctx.lineTo(t.tailX + hs, t.tailY);
-              this.ctx.lineTo(t.tailX, t.tailY + hs);
-              this.ctx.lineTo(t.tailX - hs, t.tailY);
-              this.ctx.closePath();
+              this.ctx.arc(h.tail.x, h.tail.y, 4, 0, Math.PI * 2);
               this.ctx.fill();
+              this.ctx.stroke();
             }
           }
         }
@@ -2391,7 +2430,7 @@ export class IEditor {
           this.ctx.lineWidth = s.strokeWidth;
           this.ctx.lineCap = 'round';
           this.ctx.lineJoin = 'round';
-          drawShapePath(this.ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h);
+          drawShapePath(this.ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, s.bgColor);
         }
         this.ctx.restore();
 
@@ -2936,6 +2975,7 @@ export class IEditor {
           x: Math.round(cvX + tw / 2),
           y: cvY,
           color: this.textColor,
+          bgColor: this.fillColor,
           fontSize: this.textFontSize,
           fontFamily: this.textFontFamily,
           bold: this.textBold,
@@ -2959,6 +2999,7 @@ export class IEditor {
         x: Math.round(cvX + tw / 2),
         y: cvY,
         color: this.textColor,
+        bgColor: this.fillColor,
         fontSize: this.textFontSize,
         fontFamily: this.textFontFamily,
         bold: this.textBold,
@@ -3062,12 +3103,18 @@ export class IEditor {
     this.offCtx.translate(cx, cy);
     this.offCtx.rotate(t.rotation);
 
-    if (t.strokeWidth && t.strokeWidth > 0) {
-      this.offCtx.strokeStyle = t.strokeColor || '#000000';
-      this.offCtx.lineWidth = t.strokeWidth;
-      this.offCtx.lineJoin = 'round';
+    if (t.bgColor || (t.strokeWidth && t.strokeWidth > 0)) {
       buildBubblePath(this.offCtx, tw, th, lx, ly, !!t.tailActive);
-      this.offCtx.stroke();
+      if (t.bgColor) {
+        this.offCtx.fillStyle = t.bgColor;
+        this.offCtx.fill();
+      }
+      if (t.strokeWidth && t.strokeWidth > 0) {
+        this.offCtx.strokeStyle = t.strokeColor || '#000000';
+        this.offCtx.lineWidth = t.strokeWidth;
+        this.offCtx.lineJoin = 'round';
+        this.offCtx.stroke();
+      }
     }
     this.offCtx.fillStyle = t.color;
     this.offCtx.fillText(t.text, -tw / 2, th / 2 - 2);
@@ -3298,12 +3345,18 @@ export class IEditor {
           this.offCtx.globalAlpha = t.shadow.opacity / 100;
         }
 
-        if (t.strokeWidth && t.strokeWidth > 0) {
-          this.offCtx.strokeStyle = t.strokeColor || '#000000';
-          this.offCtx.lineWidth = t.strokeWidth;
-          this.offCtx.lineJoin = 'round';
+        if (t.bgColor || (t.strokeWidth && t.strokeWidth > 0)) {
           buildBubblePath(this.offCtx, tw, th, lx, ly, !!t.tailActive);
-          this.offCtx.stroke();
+          if (t.bgColor) {
+            this.offCtx.fillStyle = t.bgColor;
+            this.offCtx.fill();
+          }
+          if (t.strokeWidth && t.strokeWidth > 0) {
+            this.offCtx.strokeStyle = t.strokeColor || '#000000';
+            this.offCtx.lineWidth = t.strokeWidth;
+            this.offCtx.lineJoin = 'round';
+            this.offCtx.stroke();
+          }
         }
         this.offCtx.fillStyle = t.color;
         this.offCtx.fillText(t.text, -tw / 2, th / 2 - 2);
@@ -3385,7 +3438,7 @@ export class IEditor {
           this.offCtx.lineWidth = s.strokeWidth;
           this.offCtx.lineCap = 'round';
           this.offCtx.lineJoin = 'round';
-          drawShapePath(this.offCtx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h);
+          drawShapePath(this.offCtx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, s.bgColor);
         }
         this.offCtx.restore();
       }

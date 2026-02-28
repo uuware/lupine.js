@@ -112,7 +112,8 @@ export function drawShapePath(
   sw: number, // start x
   sh: number, // start y
   fx: number, // end x (current pointer x)
-  fy: number // end y (current pointer y)
+  fy: number, // end y (current pointer y)
+  bgColor?: string
 ) {
   ctx.beginPath();
   switch (mode) {
@@ -124,6 +125,10 @@ export function drawShapePath(
     case 'circle': {
       const radius = Math.hypot(fx - sw, fy - sh);
       ctx.arc(sw, sh, radius, 0, Math.PI * 2);
+      if (bgColor) {
+        ctx.fillStyle = bgColor;
+        ctx.fill();
+      }
       ctx.stroke();
       break;
     }
@@ -131,6 +136,10 @@ export function drawShapePath(
       const w = fx - sw;
       const h = fy - sh;
       ctx.rect(sw, sh, w, h);
+      if (bgColor) {
+        ctx.fillStyle = bgColor;
+        ctx.fill();
+      }
       ctx.stroke();
       break;
     }
@@ -139,6 +148,10 @@ export function drawShapePath(
       ctx.lineTo(fx, fy);
       ctx.lineTo(sw, fy);
       ctx.closePath();
+      if (bgColor) {
+        ctx.fillStyle = bgColor;
+        ctx.fill();
+      }
       ctx.stroke();
       break;
     }
@@ -161,6 +174,10 @@ export function drawShapePath(
         rot += step;
       }
       ctx.closePath();
+      if (bgColor) {
+        ctx.fillStyle = bgColor;
+        ctx.fill();
+      }
       ctx.stroke();
       break;
     }
