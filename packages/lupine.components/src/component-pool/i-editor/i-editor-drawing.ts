@@ -48,7 +48,7 @@ export function buildBubblePath(
   tailActive: boolean
 ) {
   ctx.beginPath();
-  const pad = 10;
+  const pad = 4;
   const hw = tw / 2 + pad;
   const hh = th / 2 + pad;
   if (!tailActive || (lx === 0 && ly === 0)) {
