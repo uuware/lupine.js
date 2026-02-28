@@ -32,8 +32,15 @@ const HelloPage = () => {
 
 Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.github.io/lupine.js/zh/)
 
+## Lupine.components Demo
+
+- **Live Demo**: [https://uuware.github.io/lupine.js/demo](https://uuware.github.io/lupine.js/?redirect=/lupine.js/demo)
+
 ## Template: Doc Starter
-Doc Starter is powered by Lupine.js You can view the live demo here:
+
+**Doc Starter**, a documentation framework (Lupine.press) built on **Lupine.js**, inheriting the latter's **"ultra-lightweight"** and **"high-performance"** DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown, and can be **hosted for free on GitHub Pages**.
+
+You can view the live demo here:
 
 - **Live Demo**: [https://uuware.github.io/lupine-template-doc-starter/](https://uuware.github.io/lupine-template-doc-starter/)
 
@@ -42,7 +49,10 @@ The is the source repository:
 - **Source Repository**: [https://github.com/uuware/lupine-template-doc-starter](https://github.com/uuware/lupine-template-doc-starter)
 
 ## Template: CV Starter
-CV Starter is powered by Lupine.js You can view the live demo here:
+
+**CV Starter** template provided by the **Lupine.js** framework to generate a beautiful, responsive resume website just by writing simple Markdown files. It comes with black and white theme switching, multi-language support, and can be **hosted for free on GitHub Pages**.
+
+You can view the live demo here:
 
 - **Live Demo**: [https://uuware.github.io/lupine-template-cv-starter/](https://uuware.github.io/lupine-template-cv-starter/)
 
@@ -61,9 +71,3 @@ This project includes a specialized context file for AI coding assistants.
 ### Example Prompt
 
 > "Read `AI_CONTEXT.md` first. Create a 'User Profile' component that includes a standard settings list (Avatar, Name, Email) and a save button. Use the `SliderFrame` navigation pattern."
-
-# Check Code frequency (steps)
-
-https://api.github.com/repos/uuware/lupine.js/languages
-Or
-GitHub -> Code -> Insights -> Code frequency
