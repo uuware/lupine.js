@@ -23,6 +23,34 @@ import { applyMosaic, flipImageDataVertical } from './i-editor-image';
 import { EDITOR_STYLES } from './i-editor-styles';
 import { LJ_SVG_ICON_CLASS, SvgIconNames, loadSvgIconStyles } from '../svg-icons';
 import { ActionSheetSelectPromise } from '../../components/action-sheet';
+
+const FONT_OPTIONS = [
+  { val: 'sans-serif', label: 'Sans' },
+  { val: 'serif', label: 'Serif' },
+  { val: 'monospace', label: 'Mono' },
+  { val: 'cursive', label: 'Cursive' },
+  { val: 'system-ui', label: 'System UI' },
+  { val: 'Arial', label: 'Arial' },
+  { val: 'Helvetica', label: 'Helvetica' },
+  { val: '"Times New Roman"', label: 'Times New Roman' },
+  { val: 'Georgia', label: 'Georgia' },
+  { val: 'Verdana', label: 'Verdana' },
+  { val: 'Tahoma', label: 'Tahoma' },
+  { val: '"Trebuchet MS"', label: 'Trebuchet MS' },
+  { val: 'Impact', label: 'Impact' },
+  { val: '"Comic Sans MS"', label: 'Comic Sans MS' },
+  { val: '"Courier New"', label: 'Courier New' },
+  { val: '"Microsoft YaHei", "微软雅黑"', label: 'YaHei (微软雅黑)' },
+  { val: '"SimSun", "宋体"', label: 'SimSun (宋体)' },
+  { val: '"SimHei", "黑体"', label: 'SimHei (黑体)' },
+  { val: '"KaiTi", "楷体"', label: 'KaiTi (楷体)' },
+  { val: '"FangSong", "仿宋"', label: 'FangSong (仿宋)' },
+  { val: '"PingFang SC"', label: 'PingFang SC' },
+  { val: '"Hiragino Sans GB"', label: 'Hiragino Sans GB' },
+  { val: '"Source Han Sans SC"', label: 'Source Han Sans (思源黑体)' },
+  { val: '"Source Han Serif SC"', label: 'Source Han Serif (思源宋体)' },
+];
+
 export class IEditor {
   private container: HTMLElement;
   private canvas: HTMLCanvasElement;
@@ -563,11 +591,10 @@ export class IEditor {
       el.appendChild(fsLbl);
 
       const fLbl = document.createElement('label');
-      fLbl.innerHTML = `Font:<select style="padding:2px;border:1px solid #555;background:#333;color:#ccc;border-radius:3px">
-        <option value="sans-serif" ${curFamily === 'sans-serif' ? 'selected' : ''}>Sans</option>
-        <option value="serif" ${curFamily === 'serif' ? 'selected' : ''}>Serif</option>
-        <option value="monospace" ${curFamily === 'monospace' ? 'selected' : ''}>Mono</option>
-        <option value="cursive" ${curFamily === 'cursive' ? 'selected' : ''}>Cursive</option>
+      fLbl.innerHTML = `Font:<select style="padding:2px;border:1px solid #555;background:#333;color:#ccc;border-radius:3px;max-width:140px;">
+        ${FONT_OPTIONS.map(
+          (f) => `<option value='${f.val}' ${curFamily === f.val ? 'selected' : ''}>${f.label}</option>`
+        ).join('')}
       </select>`;
       const fs = fLbl.querySelector('select') as HTMLSelectElement;
       fs.onchange = () => {
@@ -657,9 +684,21 @@ export class IEditor {
       bT.style.padding = '2px 4px';
       bT.style.minHeight = '0';
       bT.addEventListener('click', () => {
-        this.textTailActive = !this.textTailActive;
         if (t) {
-          t.tailActive = this.textTailActive;
+          t.tailActive = !t.tailActive;
+          this.textTailActive = t.tailActive;
+          if (t.tailActive) {
+            if (!t.strokeWidth || t.strokeWidth === 0) {
+              t.strokeWidth = 2;
+              this.textStrokeWidth = 2;
+            }
+            if (t.tailX === undefined || t.tailY === undefined) {
+              t.tailX = t.x - 20;
+              t.tailY = t.y + 20;
+            }
+          }
+        } else {
+          this.textTailActive = !this.textTailActive;
         }
         this._updateOpts();
         this._redraw();
@@ -1642,8 +1681,14 @@ export class IEditor {
     }
     if (this.activeText) {
       const t = this.activeText;
-      t.layer.x = cv.x - t.offX;
-      t.layer.y = cv.y - t.offY;
+      const nx = cv.x - t.offX;
+      const ny = cv.y - t.offY;
+      const dx = nx - t.layer.x;
+      const dy = ny - t.layer.y;
+      t.layer.x = nx;
+      t.layer.y = ny;
+      if (t.layer.tailX !== undefined) t.layer.tailX += dx;
+      if (t.layer.tailY !== undefined) t.layer.tailY += dy;
       this._redraw();
       return;
     }
@@ -2301,6 +2346,19 @@ export class IEditor {
           this.ctx.translate(box.cx, box.cy);
           this.ctx.rotate(s.rotation || 0);
           this.ctx.translate(-box.cx, -box.cy);
+
+          if (s.shadow && s.shadow.type !== 'none') {
+            this.ctx.shadowBlur = s.shadow.blur;
+            this.ctx.shadowColor = s.shadow.color;
+            if (s.shadow.type === 'drop') {
+              this.ctx.shadowOffsetX = s.shadow.offsetX;
+              this.ctx.shadowOffsetY = s.shadow.offsetY;
+            } else {
+              this.ctx.shadowOffsetX = 0;
+              this.ctx.shadowOffsetY = 0;
+            }
+            this.ctx.globalAlpha = s.shadow.opacity / 100;
+          }
 
           if (s.points.length > 0) {
             this.ctx.moveTo(s.points[0].x, s.points[0].y);
