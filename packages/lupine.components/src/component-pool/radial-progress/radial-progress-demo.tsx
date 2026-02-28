@@ -1,6 +1,6 @@
 import { DemoStory } from '../../demo/demo-types';
 import { RadialProgress, RadialProgressProps } from './radial-progress';
-import { ButtonSize } from '../../components/button';
+import { Button, ButtonSize } from '../../components/button';
 import { bindRef } from 'lupine.web';
 
 export const radialProgressDemo: DemoStory<RadialProgressProps> = {
@@ -63,18 +63,7 @@ export const radialProgressDemo: DemoStory<RadialProgressProps> = {
           </p>
           <RadialProgress value={0} size={ButtonSize.Large} hook={hookData} />
           <div style={{ marginTop: '20px' }}>
-            <button
-              onClick={startSimulation}
-              style={{
-                padding: '8px 16px',
-                cursor: 'pointer',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-                background: '#fff',
-              }}
-            >
-              Start Upload/Download Simulation
-            </button>
+            <Button onClick={startSimulation} size={ButtonSize.Large} text='Start Upload/Download Simulation' />
           </div>
         </div>
       </div>

@@ -24,7 +24,7 @@ export const tagInputDemo: DemoStory<TagInputProps> = {
   render: (args: TagInputProps) => {
     const msg = new HtmlVar('');
     return (
-      <div>
+      <div style={{ padding: '20px' }}>
         <TagInput
           {...args}
           onChange={(indices, labels) => {

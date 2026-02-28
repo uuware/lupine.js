@@ -1,5 +1,7 @@
 import { DatePicker, DatePickerProps } from './date-picker';
 import { DemoStory } from '../../demo/demo-types';
+import { ActionSheetDatePicker } from '../../components/action-sheet-date';
+import { Button, ButtonSize } from '../../components/button';
 
 export const datePickerDemo: DemoStory<DatePickerProps> = {
   id: 'datePickerDemo',
@@ -31,6 +33,40 @@ export const datePickerDemo: DemoStory<DatePickerProps> = {
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <DatePicker value='1990-01-01' style={{ width: '150px' }} />
             <DatePicker value='2030-12-31' style={{ width: '150px' }} />
+          </div>
+        </section>
+
+        <section>
+          <div class='section-title'>Mobile Friendly Alternative</div>
+          <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+            For mobile environments, it is highly recommended to use the ActionSheet-based Date Picker, which provides a
+            native-like bottom-sheet spinning wheel experience.
+          </p>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Button
+              text='Show Date Picker (Year-Month-Day)'
+              size={ButtonSize.Medium}
+              onClick={async () => {
+                const result = await ActionSheetDatePicker({
+                  title: 'Pick a date',
+                  value: '2026-02-24',
+                  order: 'YMD',
+                });
+                if (result) console.log('Date selected (YMD):', result);
+              }}
+            />
+            <Button
+              text='Show Date Picker (Day-Month-Year)'
+              size={ButtonSize.Medium}
+              onClick={async () => {
+                const result = await ActionSheetDatePicker({
+                  title: 'Pick a date',
+                  value: '2026-02-24',
+                  order: 'DMY',
+                });
+                if (result) console.log('Date selected (DMY):', result);
+              }}
+            />
           </div>
         </section>
       </div>
