@@ -174,6 +174,7 @@ export class IEditor {
 
   // Clipboard (copied region)
   private clipboardImg: HTMLImageElement | null = null;
+  private internalClipboard: { type: 'text' | 'sticker' | 'shape'; data: any } | null = null;
 
   // Adjustments (Brightness and Contrast and Color Balance)
   private adjustBrightness = 100;
@@ -212,7 +213,9 @@ export class IEditor {
       overflow: 'hidden',
       fontFamily: 'sans-serif',
       background: 'var(--primary-bg-color, #1a1a1a)',
+      outline: 'none',
     });
+    this.container.tabIndex = 0;
     this._injectStyles();
     this._buildToolbar();
 
@@ -359,21 +362,6 @@ export class IEditor {
     );
     this.container.insertBefore(tb, this.optionsBarEl?.parentElement ?? this.container.firstChild);
     this.container.appendChild(tb);
-
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        this.undo();
-      }
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Z')) {
-        e.preventDefault();
-        this.redo();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        e.preventDefault();
-        this._pasteClipboard();
-      }
-    });
   }
 
   private _setTool(t: Tool, keepSelection = false) {
@@ -1180,9 +1168,53 @@ export class IEditor {
     c.addEventListener('drop', (e) => {
       e.preventDefault();
       const f = e.dataTransfer?.files[0];
-      if (f?.type.startsWith('image/')) this._loadFile(f);
+      if (f?.type.startsWith('image/')) {
+        this._loadFile(f);
+      }
     });
-    window.addEventListener('keydown', (e) => {
+
+    this.container.addEventListener('paste', (e) => {
+      // Do not intercept if user is typing in an input
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          e.preventDefault();
+          const file = items[i].getAsFile();
+          if (file) {
+            const img = new Image();
+            img.onload = () => {
+              this._pushUndo();
+              const maxW = Math.min(img.naturalWidth, this.offCanvas.width * 0.8);
+              const ratio = maxW / img.naturalWidth;
+              const w = maxW;
+              const h = img.naturalHeight * ratio;
+              const newSticker: StickerLayer = {
+                id: `st_${Date.now()}`,
+                img,
+                x: (this.offCanvas.width - w) / 2,
+                y: (this.offCanvas.height - h) / 2,
+                w,
+                h,
+                rotation: 0,
+              };
+              this.stickerLayers.push(newSticker);
+              this.selectedSticker = newSticker;
+              this.selectedText = null;
+              this.selectedShape = null;
+              this._updateOpts();
+              this._redraw();
+            };
+            img.src = URL.createObjectURL(file);
+          }
+          return;
+        }
+      }
+    });
+    this.container.addEventListener('keydown', (e) => {
       if (this.textInput) return;
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
@@ -1192,8 +1224,24 @@ export class IEditor {
           this._deleteSelected();
         }
       } else if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'c' || e.key === 'C') {
-          if (this.hasSelection) this._copySelectionAsSticker();
+        if (e.key === 'z' || e.key === 'Z') {
+          e.preventDefault();
+          if (e.shiftKey || e.key === 'Z') {
+            this.redo();
+          } else {
+            this.undo();
+          }
+          return;
+        } else if (e.key === 'y' || e.key === 'Y') {
+          e.preventDefault();
+          this.redo();
+          return;
+        } else if (e.key === 'c' || e.key === 'C') {
+          if (this.hasSelection) {
+            this._copySelectionAsSticker();
+          } else {
+            this._copyInternalClipboard();
+          }
         } else if (e.key === 'x' || e.key === 'X') {
           if (this.hasSelection) {
             this._copySelectionAsSticker();
@@ -1205,8 +1253,13 @@ export class IEditor {
             this.offCtx.clearRect(sx, sy, sw, sh);
             this.hasSelection = false;
             this._redraw();
+          } else if (this.selectedSticker || this.selectedText || this.selectedShape) {
+            this._copyInternalClipboard();
+            this._deleteSelected();
           }
         } else if (e.key === 'v' || e.key === 'V') {
+          // Native paste event is preferred for system inputs,
+          // but we manually trigger internal pasting here if the browser blocks system clipboard
           this._pasteClipboard();
         }
       }
@@ -1453,6 +1506,7 @@ export class IEditor {
       this._commitText();
       return;
     }
+    this.container.focus();
     this.canvas.setPointerCapture(e.pointerId);
     this.isPointerDown = true;
 
@@ -1952,7 +2006,86 @@ export class IEditor {
     };
   }
 
+  private _copyInternalClipboard() {
+    if (this.selectedText) {
+      this.internalClipboard = { type: 'text', data: { ...this.selectedText } };
+    } else if (this.selectedSticker) {
+      this.internalClipboard = { type: 'sticker', data: { ...this.selectedSticker } };
+    } else if (this.selectedShape) {
+      this.internalClipboard = {
+        type: 'shape',
+        data: {
+          ...this.selectedShape,
+          points: this.selectedShape.points ? this.selectedShape.points.map((p) => ({ ...p })) : undefined,
+        },
+      };
+    }
+  }
+
   private _pasteClipboard() {
+    if (this.internalClipboard) {
+      this._pushUndo();
+      const newId = `c_${Date.now()}`;
+      const offset = 20 / this.viewScale; // shifted right and down
+
+      if (this.internalClipboard.type === 'text') {
+        const t = { ...this.internalClipboard.data, id: newId };
+        t.x += offset;
+        t.y += offset;
+        if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
+          t.tailX += offset;
+          t.tailY += offset;
+        }
+        this.textLayers.push(t);
+        this.selectedText = t;
+        this.selectedShape = null;
+        this.selectedSticker = null;
+      } else if (this.internalClipboard.type === 'sticker') {
+        const s = { ...this.internalClipboard.data, id: newId };
+        s.x += offset;
+        s.y += offset;
+        this.stickerLayers.push(s);
+        this.selectedSticker = s;
+        this.selectedText = null;
+        this.selectedShape = null;
+      } else if (this.internalClipboard.type === 'shape') {
+        const sh = {
+          ...this.internalClipboard.data,
+          id: newId,
+          points: this.internalClipboard.data.points
+            ? this.internalClipboard.data.points.map((p: any) => ({ ...p }))
+            : undefined,
+        };
+        sh.x += offset;
+        sh.y += offset;
+        if (sh.points) {
+          for (const p of sh.points) {
+            p.x += offset;
+            p.y += offset;
+          }
+        }
+        this.shapes.push(sh);
+        this.selectedShape = sh;
+        this.selectedText = null;
+        this.selectedSticker = null;
+      }
+
+      this.displayObjects.push({
+        id: newId,
+        type: this.internalClipboard.type,
+        layer:
+          this.internalClipboard.type === 'text'
+            ? this.selectedText
+            : this.internalClipboard.type === 'sticker'
+            ? this.selectedSticker
+            : this.selectedShape,
+      } as any);
+
+      this._updateOpts();
+      this._redraw();
+      return;
+    }
+
     if (!this.clipboardImg) return;
     this._pushUndo();
     const img = this.clipboardImg;
@@ -1966,6 +2099,7 @@ export class IEditor {
       rotation: 0,
     };
     this.stickerLayers.push(s);
+    this.displayObjects.push({ id: s.id, type: 'sticker', layer: s });
     this.selectedSticker = s;
     this._redraw();
   }
@@ -3596,6 +3730,7 @@ export class IEditor {
       this.selectedText = null;
       this._updateOpts();
     }
+    this._redraw();
   }
 
   private _addShadowUI(el: HTMLElement, layer: StickerLayer | TextLayer | ShapeLayer) {
