@@ -9,13 +9,14 @@ import {
   DisplayObject,
 } from './i-editor-types';
 import {
-  hitSticker,
-  hitText,
-  getStickerHandles,
-  getTextHandles,
+  computeTextLayout,
   getShapeBoundingBox,
   getShapeHandles,
+  getStickerHandles,
+  getTextHandles,
   hitShape,
+  hitSticker,
+  hitText,
 } from './i-editor-geometry';
 import { drawHeartPath, drawDeleteHandle, buildBubblePath, drawShapePath } from './i-editor-drawing';
 import { drawFrame } from './i-editor-frames';
@@ -120,7 +121,8 @@ export class IEditor {
     startH: number;
   } | null = null;
 
-  private resizingText: { layer: TextLayer; startX: number; startFontSize: number } | null = null;
+  private resizingText: { layer: TextLayer; startX: number; startY: number; startW: number; startH: number } | null =
+    null;
   private rotatingText: {
     layer: TextLayer;
     cx: number;
@@ -179,6 +181,7 @@ export class IEditor {
   private adjustRed = 100;
   private adjustGreen = 100;
   private adjustBlue = 100;
+  private isExporting = false;
 
   // Round Corners Tool
   private roundRadius = 0;
@@ -191,7 +194,7 @@ export class IEditor {
 
   private rotateValue = 0;
 
-  private textInput: HTMLInputElement | null = null;
+  private textInput: HTMLTextAreaElement | null = null;
   private subOptionsBarEl!: HTMLDivElement;
   private optionsBarEl!: HTMLDivElement;
 
@@ -606,21 +609,6 @@ export class IEditor {
       });
       el.appendChild(tranBtn);
 
-      const fsLbl = document.createElement('label');
-      fsLbl.innerHTML = `Size:<input type="range" min="12" max="120" value="${curSize}"/><span>${curSize}px</span>`;
-      const fi = fsLbl.querySelector('input') as HTMLInputElement;
-      const fsp = fsLbl.querySelector('span') as HTMLSpanElement;
-      fi.oninput = () => {
-        const v = Number(fi.value);
-        this.textFontSize = v;
-        fsp.textContent = `${v}px`;
-        if (t) {
-          t.fontSize = v;
-          this._redraw();
-        }
-      };
-      el.appendChild(fsLbl);
-
       const fLbl = document.createElement('label');
       fLbl.innerHTML = `Font:<select style="padding:2px;border:1px solid #555;background:#333;color:#ccc;border-radius:3px;max-width:140px;">
         ${FONT_OPTIONS.map(
@@ -686,9 +674,11 @@ export class IEditor {
 
       // Stroke Width Slider
       const widthVal = t && t.strokeWidth !== undefined ? t.strokeWidth : this.textStrokeWidth;
-      if (widthVal > 0) {
+      const isBubbleActive = t ? t.tailActive : this.textTailActive;
+      const minOutline = isBubbleActive ? 1 : 0;
+      if (widthVal >= 0) {
         const strokWidthLbl = document.createElement('label');
-        strokWidthLbl.innerHTML = `<input type="range" min="1" max="50" value="${widthVal}" style="width:60px" /><span>${widthVal}</span>`;
+        strokWidthLbl.innerHTML = `<input type="range" min="${minOutline}" max="50" value="${widthVal}" style="width:60px" /><span>${widthVal}</span>`;
         const strokWidthInp = strokWidthLbl.querySelector('input') as HTMLInputElement;
         const strokWidthSpan = strokWidthLbl.querySelector('span') as HTMLSpanElement;
         strokWidthInp.oninput = () => {
@@ -724,10 +714,8 @@ export class IEditor {
               this.textStrokeWidth = 2;
             }
             if (t.tailX === undefined || t.tailY === undefined) {
-              this.ctx.font = this._textFont(t);
-              const m = this.ctx.measureText(t.text);
-              t.tailX = t.x - m.width / 2 - 20;
-              t.tailY = t.y + t.fontSize / 2 + 20;
+              t.tailX = t.x;
+              t.tailY = t.y + t.fontSize * 1.5;
             }
           }
         } else {
@@ -1269,12 +1257,26 @@ export class IEditor {
         const sy = t.y * this.viewScale + this.viewOffY + r.top;
         // Also copy styles into editing state, so properties aren't reset.
         this.textColor = t.color;
-        this.textFontSize = t.fontSize;
+        const layout = computeTextLayout(this.ctx, t, (l) => this._textFont(l));
+        this.textFontSize = layout.fs;
         this.textFontFamily = t.fontFamily;
         this.textBold = !!t.bold;
         this.textItalic = !!t.italic;
+        this.fillColor = t.bgColor;
+        this.textStrokeColor = t.strokeColor || '#000000';
+        this.textStrokeWidth = t.strokeWidth || 0;
+        this.textTailActive = !!t.tailActive;
+        this._updateOpts();
 
-        this._showTextInput(sx, sy, cvLeftX, t.y, t.id, t.text);
+        this._showTextInput(
+          0, // screenX unused natively now
+          0, // screenY unused natively now
+          t.x,
+          t.y,
+          t.id,
+          t.text,
+          t.rotation || 0
+        );
         return;
       }
     }
@@ -1357,17 +1359,25 @@ export class IEditor {
       const t = this.selectedText;
       const h = getTextHandles(t, this.viewScale, this.offCtx, (l) => this._textFont(l));
       if (Math.hypot(cv.x - h.rot.x, cv.y - h.rot.y) < hs) {
+        this.offCtx.font = this._textFont(t);
+        const tw = this.offCtx.measureText(t.text).width;
         this.rotatingText = {
           layer: t,
-          cx: t.x,
+          cx: t.x + tw / 2,
           cy: t.y,
-          startAngle: Math.atan2(cv.y - t.y, cv.x - t.x),
+          startAngle: Math.atan2(cv.y - t.y, cv.x - (t.x + tw / 2)),
           startRotation: t.rotation,
         };
         return true;
       }
       if (Math.hypot(cv.x - h.resize.x, cv.y - h.resize.y) < hs) {
-        this.resizingText = { layer: t, startX: cv.x, startFontSize: t.fontSize };
+        this.resizingText = {
+          layer: t,
+          startX: cv.x,
+          startY: cv.y,
+          startW: t.w || 200,
+          startH: t.h || t.fontSize * 1.5,
+        };
         return true;
       }
       if (Math.hypot(cv.x - h.del.x, cv.y - h.del.y) < hs) {
@@ -1595,10 +1605,26 @@ export class IEditor {
     const cv = this._scr2cv(e.clientX, e.clientY);
     const sc = this._scr2wrap(e.clientX, e.clientY);
 
+    // Boundary clamp for dragging objects so they aren't lost off-screen infinitely
+    if (this.movingShape || this.activeSticker || this.activeText) {
+      cv.x = Math.max(-100, Math.min(cv.x, this.offCanvas.width + 20));
+      cv.y = Math.max(-100, Math.min(cv.y, this.offCanvas.height + 20));
+    }
+
     // resizingText works regardless of active tool
     if (this.resizingText) {
-      const dx = cv.x - this.resizingText.startX;
-      this.resizingText.layer.fontSize = Math.max(8, Math.round(this.resizingText.startFontSize + dx));
+      const r = this.resizingText;
+      const dx = cv.x - r.startX;
+      const dy = cv.y - r.startY;
+      const rot = r.layer.rotation || 0;
+      const cos = Math.cos(-rot);
+      const sin = Math.sin(-rot);
+
+      const unDx = dx * cos - dy * sin;
+      const unDy = dx * sin + dy * cos;
+
+      r.layer.w = Math.max(60, r.startW + unDx);
+      r.layer.h = Math.max(20, r.startH + unDy * 2);
       this._redraw();
       return;
     }
@@ -1661,8 +1687,14 @@ export class IEditor {
     }
     if (this.movingShape) {
       const m = this.movingShape;
-      const dx = cv.x - m.lastX;
-      const dy = cv.y - m.lastY;
+      const bx = getShapeBoundingBox(m.layer);
+      const rightMax = Math.max(0, this.canvas.width - bx.w);
+      const bottomMax = Math.max(0, this.canvas.height - bx.h);
+      const newX = Math.max(0, Math.min(cv.x - m.lastX + bx.cx, rightMax + bx.cx));
+      const newY = Math.max(0, Math.min(cv.y - m.lastY + bx.cy, bottomMax + bx.cy));
+      const dx = newX - bx.cx;
+      const dy = newY - bx.cy;
+
       if (m.layer.type === 'pencil' && m.layer.points) {
         for (const p of m.layer.points) {
           p.x += dx;
@@ -1674,8 +1706,8 @@ export class IEditor {
         m.layer.w += dx;
         m.layer.h += dy;
       }
-      m.lastX = cv.x;
-      m.lastY = cv.y;
+      m.lastX += dx;
+      m.lastY += dy;
       this._redraw();
       return;
     }
@@ -1708,15 +1740,19 @@ export class IEditor {
     }
     if (this.activeSticker) {
       const s = this.activeSticker;
-      s.layer.x = cv.x - s.offX;
-      s.layer.y = cv.y - s.offY;
+      const nx = Math.max(0, Math.min(cv.x - s.offX, this.canvas.width - s.layer.w));
+      const ny = Math.max(0, Math.min(cv.y - s.offY, this.canvas.height - s.layer.h));
+      s.layer.x = nx;
+      s.layer.y = ny;
       this._redraw();
       return;
     }
     if (this.activeText) {
       const t = this.activeText;
-      const nx = cv.x - t.offX;
-      const ny = cv.y - t.offY;
+      let mw = t.layer.w || 200;
+      let mh = t.layer.h || t.layer.fontSize * 1.5;
+      const nx = Math.max(0, Math.min(cv.x - t.offX, this.canvas.width - mw));
+      const ny = Math.max(0, Math.min(cv.y - t.offY, this.canvas.height - mh));
       const dx = nx - t.layer.x;
       const dy = ny - t.layer.y;
       t.layer.x = nx;
@@ -1831,6 +1867,11 @@ export class IEditor {
       this.rotatingShape ||
       this.resizingShape
     ) {
+      if (this.resizingText) {
+        const layout = computeTextLayout(this.offCtx, this.resizingText.layer, (l) => this._textFont(l));
+        this.resizingText.layer.fontSize = layout.fs;
+        this.textFontSize = layout.fs;
+      }
       this.resizingText = null;
       this.rotatingSticker = null;
       this.rotatingText = null;
@@ -2204,12 +2245,10 @@ export class IEditor {
     this.displayObjects.forEach((obj) => {
       if (obj.type === 'text') {
         const t = obj.layer as TextLayer;
-        this.ctx.font = this._textFont(t);
-
-        const m = this.ctx.measureText(t.text);
-        const tw = m.width;
-        const th = t.fontSize;
-        const cx = t.x;
+        const layout = computeTextLayout(this.ctx, t, (layer: any) => this._textFont(layer));
+        const tw = layout.actualW;
+        const th = layout.actualH;
+        const cx = t.x + tw / 2;
         const cy = t.y;
 
         let lx = 0,
@@ -2239,22 +2278,36 @@ export class IEditor {
           }
           this.ctx.globalAlpha = t.shadow.opacity / 100;
         }
-        this.ctx.font = this._textFont(t);
-        if (t.bgColor || (t.strokeWidth && t.strokeWidth > 0)) {
+
+        this.ctx.font = this._textFont({ ...t, fontSize: layout.fs } as TextLayer);
+        if (t.bgColor || t.strokeWidth !== undefined) {
           buildBubblePath(this.ctx, tw, th, lx, ly, !!t.tailActive);
           if (t.bgColor) {
             this.ctx.fillStyle = t.bgColor;
             this.ctx.fill();
           }
           if (t.strokeWidth && t.strokeWidth > 0) {
+            this.ctx.setLineDash([]);
             this.ctx.strokeStyle = t.strokeColor || '#000000';
             this.ctx.lineWidth = t.strokeWidth;
             this.ctx.lineJoin = 'round';
             this.ctx.stroke();
+          } else if (t.strokeWidth === 0 && !this.isExporting) {
+            this.ctx.setLineDash([5, 5]);
+            this.ctx.strokeStyle = '#aaa';
+            this.ctx.lineWidth = 1;
+            this.ctx.lineJoin = 'round';
+            this.ctx.stroke();
+            this.ctx.setLineDash([]); // reset immediately
           }
         }
         this.ctx.fillStyle = t.color;
-        this.ctx.fillText(t.text, -tw / 2, th / 2 - 2);
+        this.ctx.textBaseline = 'middle';
+
+        const startY = -th / 2 + layout.lineHeight / 2;
+        for (let i = 0; i < layout.lines.length; i++) {
+          this.ctx.fillText(layout.lines[i], -tw / 2, startY + i * layout.lineHeight);
+        }
         this.ctx.restore();
 
         if (
@@ -2273,7 +2326,7 @@ export class IEditor {
           this.ctx.rotate(t.rotation);
           this.ctx.strokeStyle = iss ? 'rgba(255,200,0,0.8)' : 'rgba(80,140,255,0.4)';
           this.ctx.lineWidth = 1 / this.viewScale;
-          this.ctx.strokeRect(-tw / 2 - 2, -th / 2 - 2, tw + 4, th + 8);
+          this.ctx.strokeRect(-layout.actualW / 2 - 2, -layout.actualH / 2 - 2, layout.actualW + 4, layout.actualH + 8);
           this.ctx.restore();
 
           if (iss) {
@@ -2896,14 +2949,14 @@ export class IEditor {
     cvX: number,
     cvY: number,
     editId?: string,
-    prefill?: string
+    prefill?: string,
+    rot: number = 0
   ) {
     const wrap = this.canvas.parentElement!;
-    const rect = wrap.getBoundingClientRect();
-    const left = screenX - rect.left;
-    const top = screenY - rect.top - 28;
+    const left = cvX * this.viewScale + this.viewOffX;
+    const top = cvY * this.viewScale + this.viewOffY;
 
-    const applyStyle = (inp: HTMLInputElement) => {
+    const applyStyle = (inp: HTMLTextAreaElement) => {
       inp.style.fontFamily = this.textFontFamily;
       inp.style.fontSize = '18px'; // Fixed size for editing box
       inp.style.fontWeight = this.textBold ? 'bold' : 'normal';
@@ -2911,23 +2964,47 @@ export class IEditor {
       inp.style.color = this.textColor;
     };
 
-    // ── Text input ────────────────────────────────────────────────────────────
-    const inp = document.createElement('input');
-    inp.type = 'text';
+    let boxW = Math.max(200, this.textFontSize * this.viewScale * 5);
+    let boxH = 50;
+    let hasExplicitW = false;
+    if (editId) {
+      const idx = this.displayObjects.findIndex((x) => x.id === editId);
+      if (idx !== -1) {
+        const t = this.displayObjects[idx].layer as TextLayer;
+        if (t.w) {
+          boxW = t.w * this.viewScale;
+          hasExplicitW = true;
+        }
+        if (t.h) boxH = Math.max(50, t.h * this.viewScale);
+      }
+    }
+
+    const inp = document.createElement('textarea');
     inp.className = 'ie-text-input';
-    inp.placeholder = 'Type text…';
+    inp.placeholder = 'Type text… (Shift+Enter to newline)';
+    inp.style.position = 'absolute';
     inp.style.left = `${left}px`;
-    inp.style.top = `${top + 28}px`; // middle height matches click point
-    inp.style.transform = 'translateY(-50%)';
+    inp.style.top = `${top}px`;
+    inp.style.transform = `translate(0, -50%) rotate(${rot}rad)`;
+    inp.style.transformOrigin = '50% 50%';
     inp.style.textAlign = 'left';
+    inp.style.width = `${boxW}px`;
+    inp.style.height = `${boxH}px`;
+    inp.style.resize = 'none';
+    inp.style.whiteSpace = 'pre';
+    inp.style.overflow = 'auto';
     inp.dataset.cvx = String(cvX);
     inp.dataset.cvy = String(cvY);
+    inp.dataset.boxw = String(boxW);
+    inp.dataset.boxh = String(boxH);
+    inp.dataset.rot = String(rot);
+    inp.dataset.explicitw = hasExplicitW ? 'true' : 'false';
     if (editId) inp.dataset.editid = editId;
     if (prefill) inp.value = prefill;
     applyStyle(inp);
 
     inp.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         this._commitText();
       }
@@ -2949,7 +3026,11 @@ export class IEditor {
     const txt = this.textInput.value.trim();
     const cvX = Number(this.textInput.dataset.cvx),
       cvY = Number(this.textInput.dataset.cvy);
+    const explicitW = this.textInput.dataset.explicitw === 'true';
+    const uiA = Number(this.textInput.dataset.boxw) / this.viewScale || 200;
+    const expectedBoxW = explicitW ? uiA : undefined;
     const editId = this.textInput.dataset.editid || null;
+    const lastRot = Number(this.textInput.dataset.rot) || 0;
     this.textInput.remove();
     this.textInput = null;
 
@@ -2972,7 +3053,7 @@ export class IEditor {
         const newLayer: TextLayer = {
           ...oldLayer,
           text: txt,
-          x: Math.round(cvX + tw / 2),
+          x: cvX,
           y: cvY,
           color: this.textColor,
           bgColor: this.fillColor,
@@ -2980,14 +3061,29 @@ export class IEditor {
           fontFamily: this.textFontFamily,
           bold: this.textBold,
           italic: this.textItalic,
+          rotation: lastRot,
           strokeColor: this.textStrokeColor,
           strokeWidth: this.textStrokeWidth,
           tailActive: this.textTailActive,
         };
+
+        // Calculate actual layout width B with unbounded flow
+        newLayer.w = undefined;
+        newLayer.h = undefined;
+        const layoutB = computeTextLayout(this.ctx, newLayer, (l) => this._textFont(l));
+        const B = layoutB.actualW;
+
+        // If it was explicitly resized in the past, respect that constraint tightly.
+        // Otherwise, bound it up to uiA (original boxW). If smaller than uiA, tightly wrap it to B.
+        newLayer.w = explicitW ? expectedBoxW : Math.min(B, uiA);
+        const layoutFinal = computeTextLayout(this.ctx, newLayer, (l) => this._textFont(l));
+        newLayer.h = layoutFinal.actualH;
+        newLayer.fontSize = layoutFinal.fs;
+
         // If tail was just activated and never set
         if (newLayer.tailActive && (newLayer.tailX === undefined || newLayer.tailY === undefined)) {
-          newLayer.tailX = newLayer.x + 50;
-          newLayer.tailY = newLayer.y + 50;
+          newLayer.tailX = newLayer.x;
+          newLayer.tailY = newLayer.y + newLayer.fontSize * 1.5;
         }
         this.displayObjects[idx].layer = newLayer;
       }
@@ -2996,7 +3092,7 @@ export class IEditor {
       const layer: TextLayer = {
         id: newId,
         text: txt,
-        x: Math.round(cvX + tw / 2),
+        x: cvX,
         y: cvY,
         color: this.textColor,
         bgColor: this.fillColor,
@@ -3004,14 +3100,28 @@ export class IEditor {
         fontFamily: this.textFontFamily,
         bold: this.textBold,
         italic: this.textItalic,
-        rotation: 0,
+        rotation: lastRot,
         strokeColor: this.textStrokeColor,
         strokeWidth: this.textStrokeWidth,
         tailActive: this.textTailActive,
       };
+
+      // Calculate actual layout width B with unbounded flow
+      layer.w = undefined;
+      layer.h = undefined;
+      const layoutB = computeTextLayout(this.ctx, layer, (l) => this._textFont(l));
+      const B = layoutB.actualW;
+
+      // If it was explicitly resized in the past, respect that constraint tightly.
+      // Otherwise, bound it up to uiA (original boxW). If smaller than uiA, tightly wrap it to B.
+      layer.w = explicitW ? expectedBoxW : Math.min(B, uiA);
+      const layoutFinal = computeTextLayout(this.ctx, layer, (l) => this._textFont(l));
+      layer.h = layoutFinal.actualH;
+      layer.fontSize = layoutFinal.fs;
+
       if (layer.tailActive) {
-        layer.tailX = layer.x + 50;
-        layer.tailY = layer.y + 50;
+        layer.tailX = layer.x;
+        layer.tailY = layer.y + layer.fontSize * 1.5;
       }
       this.displayObjects.push({ id: newId, type: 'text', layer: layer });
       this.selectedText = layer;
@@ -3081,11 +3191,10 @@ export class IEditor {
   private _mergeSelectedText() {
     if (!this.selectedText) return;
     const t = this.selectedText;
-    this.offCtx.font = this._textFont(t);
-    const m = this.offCtx.measureText(t.text);
-    const tw = m.width;
-    const th = t.fontSize;
-    const cx = t.x;
+    const layout = computeTextLayout(this.offCtx, t as any, this._textFont.bind(this) as any);
+    const tw = layout.actualW;
+    const th = layout.actualH;
+    const cx = t.x + tw / 2;
     const cy = t.y;
 
     let lx = 0,
@@ -3117,7 +3226,12 @@ export class IEditor {
       }
     }
     this.offCtx.fillStyle = t.color;
-    this.offCtx.fillText(t.text, -tw / 2, th / 2 - 2);
+    this.offCtx.textBaseline = 'middle';
+    let currentY = -th / 2 + layout.fs * 0.6;
+    for (const line of layout.lines) {
+      this.offCtx.fillText(line, -tw / 2, currentY);
+      currentY += layout.lineHeight;
+    }
     this.offCtx.restore();
 
     this.displayObjects = this.displayObjects.filter((x) => x.layer !== t);
@@ -3243,12 +3357,15 @@ export class IEditor {
   }
 
   private _download(fmt: 'png' | 'jpeg' | 'webp') {
+    this.isExporting = true;
     this._mergeLayersToOff(false);
     const type = fmt === 'jpeg' ? 'image/jpeg' : fmt === 'webp' ? 'image/webp' : 'image/png';
     const a = document.createElement('a');
     a.href = this.offCanvas.toDataURL(type, 0.92);
     a.download = `image.${fmt}`;
     a.click();
+    this.isExporting = false;
+    this._redraw();
   }
 
   // ─── Undo / Redo ─────────────────────────────────────────────────────────────
@@ -3310,11 +3427,10 @@ export class IEditor {
     this.displayObjects.forEach((obj) => {
       if (obj.type === 'text') {
         const t = obj.layer as TextLayer;
-        this.offCtx.font = this._textFont(t);
-        const m = this.offCtx.measureText(t.text);
-        const tw = m.width;
-        const th = t.fontSize;
-        const cx = t.x;
+        const layout = computeTextLayout(this.offCtx, t as any, this._textFont.bind(this) as any);
+        const tw = layout.actualW;
+        const th = layout.actualH;
+        const cx = t.x + tw / 2;
         const cy = t.y;
 
         let lx = 0,
@@ -3359,7 +3475,12 @@ export class IEditor {
           }
         }
         this.offCtx.fillStyle = t.color;
-        this.offCtx.fillText(t.text, -tw / 2, th / 2 - 2);
+        this.offCtx.textBaseline = 'middle';
+        let currentY = -th / 2 + layout.fs * 0.6;
+        for (const line of layout.lines) {
+          this.offCtx.fillText(line, -tw / 2, currentY);
+          currentY += layout.lineHeight;
+        }
         this.offCtx.restore();
       } else if (obj.type === 'sticker') {
         const s = obj.layer as StickerLayer;

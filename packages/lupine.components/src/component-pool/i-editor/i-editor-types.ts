@@ -28,6 +28,8 @@ export interface TextLayer {
   text: string;
   x: number;
   y: number;
+  w?: number;
+  h?: number;
   color: string;
   bgColor?: string;
   fontSize: number;

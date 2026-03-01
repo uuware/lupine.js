@@ -1,5 +1,104 @@
 import { StickerLayer, TextLayer, ShapeLayer } from './i-editor-types';
 
+export interface TextLayoutResult {
+  fs: number;
+  lines: string[];
+  actualW: number;
+  actualH: number;
+  lineHeight: number;
+}
+
+export function computeTextLayout(
+  ctx: CanvasRenderingContext2D,
+  t: TextLayer,
+  textFontFn: (t: TextLayer) => string
+): TextLayoutResult {
+  const reqW = t.w || Infinity;
+  const reqH = t.h || Infinity;
+  const minFs = 12;
+  const maxFs = 500;
+
+  let bestFs = minFs;
+  let bestLines: string[] = [];
+  let bestTotalH = 0;
+  let foundFit = false;
+
+  const wrapFn = (size: number) => {
+    ctx.font = textFontFn({ ...t, fontSize: size } as TextLayer);
+    const result: string[] = [];
+    const paragraphs = t.text.split('\n');
+    for (const p of paragraphs) {
+      if (!p) {
+        result.push('');
+        continue;
+      }
+      let line = '';
+      for (let i = 0; i < p.length; i++) {
+        const char = p[i];
+        const testLine = line + char;
+        if (ctx.measureText(testLine).width > reqW && line.length > 0) {
+          const lastSpace = line.lastIndexOf(' ');
+          if (lastSpace > 0) {
+            result.push(line.substring(0, lastSpace));
+            line = line.substring(lastSpace + 1) + char;
+          } else {
+            result.push(line);
+            line = char;
+          }
+        } else {
+          line = testLine;
+        }
+      }
+      if (line) result.push(line);
+    }
+    return result;
+  };
+
+  let low = minFs;
+  let high = t.w && t.h ? maxFs : t.fontSize;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const lines = wrapFn(mid);
+    const lh = mid * 1.2;
+    const totalH = lines.length * lh;
+
+    ctx.font = textFontFn({ ...t, fontSize: mid } as TextLayer);
+    let maxLineWidth = 0;
+    for (const l of lines) {
+      maxLineWidth = Math.max(maxLineWidth, ctx.measureText(l).width);
+    }
+
+    if (totalH <= reqH && maxLineWidth <= reqW) {
+      bestFs = mid;
+      bestLines = lines;
+      bestTotalH = totalH;
+      foundFit = true;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  if (!foundFit) {
+    bestFs = minFs;
+    bestLines = wrapFn(bestFs);
+    bestTotalH = bestLines.length * (bestFs * 1.2);
+  }
+
+  ctx.font = textFontFn({ ...t, fontSize: bestFs } as TextLayer);
+  let maxLineWidth = 0;
+  for (const l of bestLines) maxLineWidth = Math.max(maxLineWidth, ctx.measureText(l).width);
+
+  return {
+    fs: bestFs,
+    lines: bestLines,
+    actualW: t.w ? reqW : Math.max(maxLineWidth, 20),
+    actualH: t.h ? Math.max(t.h, bestTotalH) : Math.max(bestFs * 1.5, bestTotalH),
+    lineHeight: bestFs * 1.2,
+  };
+}
+
 export function getStickerHandles(s: StickerLayer, viewScale: number) {
   const cx = s.x + s.w / 2,
     cy = s.y + s.h / 2;
@@ -33,12 +132,11 @@ export function getTextHandles(
   ctx: CanvasRenderingContext2D,
   textFontFn: (t: TextLayer) => string
 ) {
-  ctx.font = textFontFn(t);
-  const m = ctx.measureText(t.text);
-  const w = m.width;
-  const h = t.fontSize;
+  const layout = computeTextLayout(ctx, t, textFontFn);
+  const w = layout.actualW;
+  const h = layout.actualH;
 
-  const cx = t.x,
+  const cx = t.x + w / 2,
     cy = t.y;
   const rotDist = h / 2 + 20 / viewScale;
 
@@ -62,11 +160,10 @@ export function hitText(
   ctx: CanvasRenderingContext2D,
   textFontFn: (t: TextLayer) => string
 ) {
-  ctx.font = textFontFn(t);
-  const m = ctx.measureText(t.text);
-  const w = m.width;
-  const h = t.fontSize;
-  const cx = t.x,
+  const layout = computeTextLayout(ctx, t, textFontFn);
+  const w = layout.actualW;
+  const h = layout.actualH;
+  const cx = t.x + w / 2,
     cy = t.y;
 
   // Extend hit area slightly for ease of use, scaling larger if a bubble stroke is present
