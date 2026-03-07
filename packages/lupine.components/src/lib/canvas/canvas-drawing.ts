@@ -1,3 +1,6 @@
+import { TextLayer, StickerLayer, ShapeLayer } from './canvas-types';
+import { computeTextLayout, getShapeBoundingBox } from './canvas-geometry';
+
 export function drawHeartPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
   // Scaling 24x24 viewBox coordinates to fit 'size'
   const s = size / 10;
@@ -113,10 +116,20 @@ export function drawShapePath(
   sh: number, // start y
   fx: number, // end x (current pointer x)
   fy: number, // end y (current pointer y)
-  bgColor?: string
+  bgColor?: string,
+  points?: { x: number; y: number }[]
 ) {
   ctx.beginPath();
   switch (mode) {
+    case 'pencil':
+      if (points && points.length > 0) {
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
+      }
+      break;
     case 'line':
       ctx.moveTo(sw, sh);
       ctx.lineTo(fx, fy);
@@ -306,4 +319,185 @@ export function drawShapePath(
       break;
     }
   }
+}
+
+export function renderTextLayer(
+  ctx: CanvasRenderingContext2D,
+  t: TextLayer,
+  textFontFn: (layer: TextLayer) => string,
+  viewScale: number = 1,
+  isExporting: boolean = false
+) {
+  const layout = computeTextLayout(ctx, t, textFontFn);
+  const tw = layout.actualW * viewScale;
+  const th = layout.actualH * viewScale;
+  const cx = t.x * viewScale + tw / 2;
+  const cy = t.y * viewScale;
+
+  let lx = 0,
+    ly = 0;
+  if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
+    const dx = t.tailX * viewScale - cx;
+    const dy = t.tailY * viewScale - cy;
+    const cos = Math.cos(-t.rotation);
+    const sin = Math.sin(-t.rotation);
+    lx = dx * cos - dy * sin;
+    ly = dx * sin + dy * cos;
+  }
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(t.rotation);
+
+  if (t.shadow && t.shadow.type !== 'none') {
+    ctx.shadowBlur = t.shadow.blur;
+    ctx.shadowColor = t.shadow.color;
+    if (t.shadow.type === 'drop') {
+      ctx.shadowOffsetX = t.shadow.offsetX;
+      ctx.shadowOffsetY = t.shadow.offsetY;
+    } else {
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+    ctx.globalAlpha = t.shadow.opacity / 100;
+  }
+
+  ctx.font = textFontFn({ ...t, fontSize: layout.fs * viewScale } as TextLayer);
+
+  if (t.bgColor || t.strokeWidth !== undefined) {
+    buildBubblePath(ctx, tw, th, lx, ly, !!t.tailActive);
+    if (t.bgColor) {
+      ctx.fillStyle = t.bgColor;
+      ctx.fill();
+    }
+    if (t.strokeColor && t.strokeWidth && t.strokeWidth > 0) {
+      ctx.setLineDash([]);
+      ctx.strokeStyle = t.strokeColor;
+      ctx.lineWidth = t.strokeWidth * viewScale;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    } else if (t.strokeWidth === 0 && !isExporting) {
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 1;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  ctx.fillStyle = t.color;
+  ctx.textBaseline = 'middle';
+
+  const totalTextH = layout.lines.length * layout.lineHeight * viewScale;
+  const startY = -th / 2 + (th - totalTextH) / 2 + (layout.lineHeight * viewScale) / 2;
+  for (let i = 0; i < layout.lines.length; i++) {
+    const txtLine = layout.lines[i];
+    const dropY = startY + i * layout.lineHeight * viewScale;
+    if (t.strokeColor && t.strokeWidth) {
+      ctx.strokeText(txtLine, -tw / 2, dropY);
+    }
+    ctx.fillText(txtLine, -tw / 2, dropY);
+  }
+  ctx.restore();
+}
+
+export function renderStickerLayer(ctx: CanvasRenderingContext2D, s: StickerLayer, viewScale = 1) {
+  const w = s.w * viewScale;
+  const h = s.h * viewScale;
+  const cx = s.x * viewScale + w / 2;
+  const cy = s.y * viewScale + h / 2;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(s.rotation);
+  if (s.shadow && s.shadow.type !== 'none') {
+    ctx.shadowBlur = s.shadow.blur;
+    ctx.shadowColor = s.shadow.color;
+    if (s.shadow.type === 'drop') {
+      ctx.shadowOffsetX = s.shadow.offsetX;
+      ctx.shadowOffsetY = s.shadow.offsetY;
+    } else {
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+  }
+  ctx.drawImage(s.img, -w / 2, -h / 2, w, h);
+  ctx.restore();
+}
+
+export function renderShapeLayer(ctx: CanvasRenderingContext2D, s: ShapeLayer, viewScale = 1) {
+  ctx.save();
+  if (s.type === 'pencil' && s.points) {
+    ctx.beginPath();
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = s.strokeWidth * viewScale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    const box = getShapeBoundingBox(s);
+    ctx.translate(box.cx * viewScale, box.cy * viewScale);
+    ctx.rotate(s.rotation || 0);
+    ctx.translate(-box.cx * viewScale, -box.cy * viewScale);
+
+    if (s.shadow && s.shadow.type !== 'none') {
+      ctx.shadowBlur = s.shadow.blur;
+      ctx.shadowColor = s.shadow.color;
+      if (s.shadow.type === 'drop') {
+        ctx.shadowOffsetX = s.shadow.offsetX;
+        ctx.shadowOffsetY = s.shadow.offsetY;
+      } else {
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      }
+      ctx.globalAlpha = s.shadow.opacity / 100;
+    }
+
+    if (s.points.length > 0) {
+      ctx.moveTo(s.points[0].x * viewScale, s.points[0].y * viewScale);
+      for (let i = 1; i < s.points.length; i++) {
+        ctx.lineTo(s.points[i].x * viewScale, s.points[i].y * viewScale);
+      }
+      ctx.stroke();
+    }
+  } else {
+    const cx = s.x * viewScale + (s.w * viewScale - s.x * viewScale) / 2;
+    const cy = s.y * viewScale + (s.h * viewScale - s.y * viewScale) / 2;
+    ctx.translate(cx, cy);
+    ctx.rotate(s.rotation || 0);
+    ctx.translate(-cx, -cy);
+
+    if (s.shadow && s.shadow.type !== 'none') {
+      ctx.shadowBlur = s.shadow.blur;
+      ctx.shadowColor = s.shadow.color;
+      if (s.shadow.type === 'drop') {
+        ctx.shadowOffsetX = s.shadow.offsetX;
+        ctx.shadowOffsetY = s.shadow.offsetY;
+      } else {
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      }
+      ctx.globalAlpha = s.shadow.opacity / 100;
+    }
+
+    ctx.strokeStyle = s.color;
+    ctx.fillStyle = s.color;
+    ctx.lineWidth = s.strokeWidth * viewScale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const scaledPoints = s.points ? s.points.map((p) => ({ x: p.x * viewScale, y: p.y * viewScale })) : undefined;
+    drawShapePath(
+      ctx,
+      s.type,
+      s.arrowType || 'standard',
+      s.color,
+      s.x * viewScale,
+      s.y * viewScale,
+      s.w * viewScale,
+      s.h * viewScale,
+      s.bgColor,
+      scaledPoints
+    );
+  }
+  ctx.restore();
 }
