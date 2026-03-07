@@ -386,7 +386,7 @@ const TestButtons = () => {
       <div class='row-box mb-s'>
         <Button
           text='Test 1'
-          size={ButtonSize.SmallLarge}
+          size={ButtonSize.SmallSmall}
           disabled={true}
           class='mr-m'
           onClick={onButtonClick}
