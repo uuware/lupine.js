@@ -47,9 +47,9 @@ description: 基于 Lupine.js 的超轻量级文档网站生成器
 
 虽然它很轻，但它不“死板”。因为本质上它就是一个 Lupine.js 应用。你可以随时：
 
-- 在 Markdown 里嵌入 React 风格的组件。
-- 使用 `bindGlobalStyle` 自定义全局样式。
-- 编写自定义的 Layout。
+- 使用 TSX 语法编写类似 React 风格的组件。
+- 添加自定义任意样式的页面。
+- 添加任意自动的式样覆盖已有式样。
 
 ## 部署黑科技：GitHub Pages 也能跑 SPA？
 

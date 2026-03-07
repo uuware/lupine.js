@@ -2,7 +2,7 @@ import { CssProps, RefProps } from 'lupine.web';
 import { DemoStory } from '../../demo/demo-types';
 import { IEditor } from './i-editor';
 
-const IEditorDemoPage = () => {
+export const IEditorDemoPage = () => {
   let editor: IEditor | undefined;
 
   const ref: RefProps = {

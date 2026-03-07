@@ -266,6 +266,12 @@ export class AdminFrameHelper {
       devAdmin: true,
       items: [
         {
+          id: 'demo',
+          text: 'Demo',
+          url: '',
+          js: () => window.open('/admin_dev/demo', '_blank'),
+        },
+        {
           id: 'about',
           text: 'About',
           url: '',

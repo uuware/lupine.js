@@ -385,6 +385,9 @@ input.base-css[type='text'][disabled='true']::placeholder {
 }
 
 .button-base {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1.1;
   height: var(--button-height);
   cursor: pointer;
