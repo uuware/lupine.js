@@ -81,8 +81,8 @@ export const cardDemo: DemoStory<any> = {
                         padding: '4px 12px',
                         borderRadius: '4px',
                         border: 'none',
-                        backgroundColor: 'var(--primary-color)',
-                        color: '#fff',
+                        backgroundColor: 'var(--primary-accent-color, #1890ff)',
+                        color: 'var(--primary-bg-color, #fff)',
                         cursor: 'pointer',
                       }}
                     >
@@ -140,8 +140,9 @@ export const cardDemo: DemoStory<any> = {
                   style={{
                     padding: '8px 16px',
                     borderRadius: '6px',
-                    border: '1px solid var(--primary-color)',
-                    background: 'none',
+                    border: '1px solid var(--primary-accent-color, #1890ff)',
+                    color: 'var(--primary-accent-color, #1890ff)',
+                    background: 'transparent',
                   }}
                 >
                   Preview
@@ -151,8 +152,8 @@ export const cardDemo: DemoStory<any> = {
                     padding: '8px 16px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: 'var(--primary-color)',
-                    color: '#fff',
+                    background: 'var(--primary-accent-color, #1890ff)',
+                    color: 'var(--primary-bg-color, #fff)',
                   }}
                 >
                   Add to Cart

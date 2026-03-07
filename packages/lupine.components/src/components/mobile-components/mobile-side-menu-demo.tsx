@@ -14,16 +14,6 @@ export const mobileSideMenuDemo: DemoStory<any> = {
         padding: '20px',
         textAlign: 'center',
       },
-      '.demo-btn': {
-        padding: '10px 20px',
-        backgroundColor: 'var(--primary-color, #4080ff)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontSize: '16px',
-        marginTop: '20px',
-      },
     };
 
     return (
@@ -34,7 +24,7 @@ export const mobileSideMenuDemo: DemoStory<any> = {
           <p>
             <strong>OR by swiping from the left edge of the screen to the right.</strong>
           </p>
-          <button class='demo-btn' onClick={() => MobileSideMenuHelper.show()}>
+          <button class='button-base' onClick={() => MobileSideMenuHelper.show()}>
             Open Side Menu
           </button>
         </div>

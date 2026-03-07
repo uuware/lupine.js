@@ -47,7 +47,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
       transition: 'color 0.2s',
     },
     '.&-item.is-active': {
-      color: 'var(--primary-text-color, #111827)',
+      color: 'var(--primary-color, #111827)',
       fontWeight: '500',
     },
     '.&-item a': {
@@ -60,7 +60,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
       transition: 'color 0.2s',
     },
     '.&-item a:hover': {
-      color: 'var(--primary-text-color, #111827)',
+      color: 'var(--primary-color, #111827)',
     },
     '.&-separator': {
       display: 'inline-flex',

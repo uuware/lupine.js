@@ -23,12 +23,65 @@ export const buttonDemo: DemoStory<ButtonProps> = {
     const msg = new HtmlVar('');
     return (
       <div css={{ padding: '20px' }}>
-        <Button
-          {...args}
-          onClick={() => {
-            msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-          }}
-        />
+        <div class='mx-l my-l'>
+          <Button
+            {...args}
+            onClick={() => {
+              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
+            }}
+          />
+        </div>
+        <hr />
+
+        <div class='mx-l my-l'>
+          <Button
+            size={ButtonSize.SmallSmall}
+            text='SmallSmall Button'
+            onClick={() => {
+              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
+            }}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <Button
+            size={ButtonSize.Small}
+            text='Small Button'
+            onClick={() => {
+              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
+            }}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <Button
+            size={ButtonSize.Medium}
+            text={
+              <>
+                <i class='icon ifc-icon ma-account-cog-outline mr-m'></i>Button
+              </>
+            }
+            onClick={() => {
+              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
+            }}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <Button
+            size={ButtonSize.Large}
+            text='Large Button'
+            onClick={() => {
+              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
+            }}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <Button
+            size={ButtonSize.LargeLarge}
+            text='Large Button'
+            onClick={() => {
+              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
+            }}
+          />
+        </div>
         <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
       </div>
     );

@@ -29,7 +29,7 @@ export const carouselDemo: DemoStory<any> = {
         fontWeight: 'bold',
         marginBottom: '20px',
         color: 'var(--primary-color)',
-        borderBottom: '2px solid var(--secondary-border-color)',
+        borderBottom: '2px solid var(--primary-border, #eee)',
         paddingBottom: '10px',
       },
       '.carousel-container': {
@@ -148,8 +148,8 @@ export const carouselDemo: DemoStory<any> = {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#f0f4f8',
-                  color: '#2c3e50',
+                  backgroundColor: 'var(--secondary-bg-color, #f0f4f8)',
+                  color: 'var(--primary-color, #2c3e50)',
                   fontSize: '24px',
                 }}
               >
@@ -168,8 +168,8 @@ export const carouselDemo: DemoStory<any> = {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#e8f5e9',
-                  color: '#2e7d32',
+                  backgroundColor: 'var(--success-bg-color, #e8f5e9)',
+                  color: 'var(--success-color, #2e7d32)',
                   fontSize: '24px',
                 }}
               >

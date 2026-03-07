@@ -8,6 +8,7 @@ export class HtmlVar implements HtmlVarResult {
   private _ref: RefProps;
   private resolve!: () => void;
   private promise: Promise<void>;
+  private updatePromise: Promise<void> | null = null;
 
   constructor(initial?: HtmlVarValueProps) {
     this.promise = new Promise<void>((res) => {
@@ -28,10 +29,23 @@ export class HtmlVar implements HtmlVarResult {
   }
 
   private async update(): Promise<void> {
-    const v = typeof this._value === 'function' ? await this._value() : this._value;
-    await this._ref.mountInnerComponent!(v);
-    this._dirty = false;
-    this._value = '';
+    if (this.updatePromise) {
+      return this.updatePromise;
+    }
+
+    this.updatePromise = (async () => {
+      while (this._dirty) {
+        this._dirty = false;
+        const v = typeof this._value === 'function' ? await this._value() : this._value;
+        await this._ref.mountInnerComponent!(v);
+        if (!this._dirty) {
+          this._value = '';
+        }
+      }
+    })();
+
+    await this.updatePromise;
+    this.updatePromise = null;
   }
 
   // need to wait before use ref.current

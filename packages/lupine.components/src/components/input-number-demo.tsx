@@ -11,6 +11,7 @@ export const inputNumberDemo: DemoStory<InputNumberProps> = {
     max: 10,
     step: 1,
     size: InputNumberSize.Medium,
+    shape: 'square',
     disabled: false,
   },
   argTypes: {
@@ -23,19 +24,127 @@ export const inputNumberDemo: DemoStory<InputNumberProps> = {
       options: Object.values(InputNumberSize),
       description: 'Size of the stepper',
     },
+    shape: {
+      control: 'select',
+      options: ['square', 'circle'],
+      description: 'Shape of the buttons',
+    },
     disabled: { control: 'boolean', description: 'Disable interaction' },
   },
   render: (args: InputNumberProps) => {
     const msg = new HtmlVar('');
     return (
-      <div>
-        <InputNumber
-          {...args}
-          onChange={(v) => {
-            msg.value = `Value changed: ${v}`;
-          }}
-        />
-        <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
+      <div style={{ padding: '20px' }}>
+        <div class='mx-l my-l'>
+          <InputNumber
+            {...args}
+            onChange={(v) => {
+              msg.value = `Value changed: ${v}`;
+            }}
+          />
+        </div>
+        <hr />
+
+        <div style={{ display: 'flex', gap: '50px' }}>
+          <div>
+            <div class='mx-l my-l' style={{ fontWeight: 'bold', color: 'var(--secondary-color, #666)' }}>
+              Square Shape
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.SmallSmall}
+                onChange={(v) => {
+                  msg.value = `SmallSmall changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.Small}
+                onChange={(v) => {
+                  msg.value = `Small changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.Medium}
+                onChange={(v) => {
+                  msg.value = `Medium changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.Large}
+                onChange={(v) => {
+                  msg.value = `Large changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.LargeLarge}
+                onChange={(v) => {
+                  msg.value = `LargeLarge changed: ${v}`;
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <div class='mx-l my-l' style={{ fontWeight: 'bold', color: 'var(--secondary-color, #666)' }}>
+              Circle Shape
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.SmallSmall}
+                shape='circle'
+                onChange={(v) => {
+                  msg.value = `SmallSmall (Circle) changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.Small}
+                shape='circle'
+                onChange={(v) => {
+                  msg.value = `Small (Circle) changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.Medium}
+                shape='circle'
+                onChange={(v) => {
+                  msg.value = `Medium (Circle) changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.Large}
+                shape='circle'
+                onChange={(v) => {
+                  msg.value = `Large (Circle) changed: ${v}`;
+                }}
+              />
+            </div>
+            <div class='mx-l my-l'>
+              <InputNumber
+                size={InputNumberSize.LargeLarge}
+                shape='circle'
+                onChange={(v) => {
+                  msg.value = `LargeLarge (Circle) changed: ${v}`;
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
       </div>
     );
   },

@@ -40,8 +40,8 @@ export const badgeDemo: DemoStory<BadgeProps> = {
     content: 5,
     max: 99,
     dot: false,
-    color: '#ffffff',
-    bgColor: '#e74c3c',
+    color: 'var(--primary-bg-color, #ffffff)',
+    bgColor: 'var(--danger-bg-color, var(--primary-accent-color, #e74c3c))',
   },
   argTypes: {
     content: { control: 'number', description: 'Number or text to display' },
@@ -64,14 +64,30 @@ export const badgeDemo: DemoStory<BadgeProps> = {
               bgColor={args.bgColor}
               onClick={() => alert(`Badge clicked: ${args.content}`)}
             >
-              <div style={{ padding: '8px 16px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>Messages</div>
+              <div
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'var(--secondary-bg-color, #f0f0f0)',
+                  borderRadius: '4px',
+                }}
+              >
+                Messages
+              </div>
             </Badge>
           </div>
 
           <div style={{ textAlign: 'center' }}>
             <div style={{ marginBottom: '16px' }}>Max Value (99+)</div>
             <Badge content={150} max={99}>
-              <div style={{ padding: '8px 16px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>Notifications</div>
+              <div
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'var(--secondary-bg-color, #f0f0f0)',
+                  borderRadius: '4px',
+                }}
+              >
+                Notifications
+              </div>
             </Badge>
           </div>
 
@@ -85,14 +101,29 @@ export const badgeDemo: DemoStory<BadgeProps> = {
           <div style={{ textAlign: 'center' }}>
             <div style={{ marginBottom: '16px' }}>Custom Node Content</div>
             <Badge content={<CheckIcon />} bgColor='var(--success-color, #2ecc71)'>
-              <div style={{ width: '40px', height: '40px', backgroundColor: '#eee', borderRadius: '4px' }} />
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  backgroundColor: 'var(--secondary-bg-color, #eee)',
+                  borderRadius: '4px',
+                }}
+              />
             </Badge>
           </div>
 
           <div style={{ textAlign: 'center' }}>
             <div style={{ marginBottom: '16px' }}>Text Content</div>
             <Badge content='NEW' bgColor='var(--primary-accent-color, #0a74c9)'>
-              <div style={{ padding: '8px 16px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>Features</div>
+              <div
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'var(--secondary-bg-color, #f0f0f0)',
+                  borderRadius: '4px',
+                }}
+              >
+                Features
+              </div>
             </Badge>
           </div>
 

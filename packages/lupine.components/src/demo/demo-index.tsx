@@ -1,4 +1,4 @@
-import { PageProps, PageRouter } from 'lupine.components';
+import { DemoAboutPage, PageProps, PageRouter } from 'lupine.components';
 import { DemoFrame } from './demo-frame';
 import { DemoRenderPage } from './demo-render-page';
 
@@ -12,6 +12,7 @@ export const DemoIndexPage = async (props: PageProps) => {
 
 const demoPageRouter = new PageRouter();
 demoPageRouter.use('/render', DemoRenderPage);
+demoPageRouter.use('/about', DemoAboutPage);
 demoPageRouter.use('/*', DemoIndexPage);
 
 export { demoPageRouter };

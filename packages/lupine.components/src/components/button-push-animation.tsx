@@ -1,4 +1,4 @@
-import { CssProps, RefProps } from 'lupine.web';
+import { bindGlobalStyle, CssProps, RefProps } from 'lupine.web';
 
 export enum ButtonPushAnimationSize {
   SmallSmall = 'button-ss',
@@ -18,7 +18,6 @@ export type ButtonPushAnimationProps = {
   onClick?: () => void;
   hook?: ButtonPushAnimationHookProps;
   class?: string;
-  css?: CssProps;
 };
 export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
   let disabled = props.disabled || false;
@@ -47,7 +46,7 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
     '-webkit-tap-highlight-color': 'rgba(0, 0, 0, 0)',
     position: 'relative',
     borderRadius: 'var(--border-radius-m)',
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'var(--secondary-bg-color, rgba(0, 0, 0, 0.75))',
     boxShadow: '-0.15em -0.15em 0.15em -0.075em rgba(5, 5, 5, 0.25), 0.0375em 0.0375em 0.0675em 0 rgba(5, 5, 5, 0.1)',
     '.button-outer': {
       position: 'relative',
@@ -63,7 +62,7 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       zIndex: 2,
       borderRadius: 'inherit',
       padding: 'var(--button-padding)',
-      background: 'linear-gradient(135deg, #ffffff, #eeeeee)',
+      background: 'var(--primary-bg-color, linear-gradient(135deg, #ffffff, #eeeeee))',
       transition: 'box-shadow 300ms ease, background-image 250ms ease, transform 250ms ease;',
       willChange: 'box-shadow, background-image, transform',
       overflow: 'clip',
@@ -74,27 +73,32 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
     '.button-inner span': {
       position: 'relative',
       zIndex: 4,
-      // fontFamily: 'Inter, sans-serif',
       letterSpacing: '-0.05em',
-      // fontWeight: 500,
-      color: 'rgba(0, 0, 0, 0);',
-      backgroundImage: 'linear-gradient(135deg, rgba(25, 25, 25, 1), rgba(75, 75, 75, 1))',
+      color: 'var(--primary-color, rgba(0, 0, 0, 0))',
+      backgroundImage:
+        'linear-gradient(135deg, var(--primary-color, rgba(25, 25, 25, 1)), var(--primary-color, rgba(75, 75, 75, 1)))',
       backgroundClip: 'text',
+      WebkitBackgroundClip: 'text',
       transition: 'transform 250ms ease',
-      display: 'block',
+      display: 'inline-block',
+      lineHeight: '1.2',
       willChange: 'transform',
       textShadow: 'rgba(0, 0, 0, 0.1) 0 0 0.1em',
       userSelect: 'none',
     },
-    '&:disabled .button-inner span': {
-      backgroundImage: 'linear-gradient(135deg, rgba(150, 150, 150, 1), rgba(200, 200, 200, 1))',
-      opacity: 0.7,
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 'var(--primary-disabled-opacity, 0.5)',
+      filter: 'grayscale(1)',
     },
     '&.button-ss': {
       borderRadius: '2px',
     },
     '&.button-s': {
       borderRadius: '3px',
+    },
+    '&.button-m': {
+      borderRadius: '4px',
     },
     '&.button-l': {
       borderRadius: '6px',
@@ -103,12 +107,16 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
       borderRadius: '10px',
     },
     '&.button-ss .button-inner': {
-      padding: '0.1rem 0.3rem',
-      fontSize: '0.65rem',
+      padding: '0.05rem 0.25rem',
+      fontSize: '0.6rem',
     },
     '&.button-s .button-inner': {
-      padding: '0.2rem 0.5rem',
+      padding: '0.2rem 0.6rem',
       fontSize: '0.85rem',
+    },
+    '&.button-m .button-inner': {
+      padding: 'var(--button-padding)',
+      fontSize: '1rem',
     },
     '&.button-l .button-inner': {
       padding: '0.4rem 1.2rem',
@@ -128,22 +136,26 @@ export const ButtonPushAnimation = (props: ButtonPushAnimationProps) => {
     '&:hover:not(:disabled) .button-inner': {
       transform: 'scale(0.99)',
     },
-    '&:hover:not(:disabled) .button-inner span': {
+    '&:hover:not(:disabled) .button-inner .button-text': {
       transform: 'scale(0.975)',
     },
-    ...props.css,
+    '&.button-m .button-inner .button-text': {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   };
+  bindGlobalStyle('button-push-animation', css);
   return (
     <button
       ref={ref}
-      css={css}
       class={['button-push-animation', props.size, props.class].join(' ')}
       disabled={disabled}
       onClick={onClick}
     >
       <div class='button-outer'>
         <div class='button-inner'>
-          <span>{props.text}</span>
+          <span class='button-text'>{props.text}</span>
         </div>
       </div>
     </button>

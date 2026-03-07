@@ -19,6 +19,7 @@ export interface ResponsiveFrameProps {
   mobileBottomMenu: IconMenuItemProps[];
   mobileSideMenuContent: VNode<any>;
   sharedContents: VNode<any>;
+  maxWidth?: string;
 }
 export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
   const cssContainer: CssProps = {
@@ -27,6 +28,8 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     width: '100%',
     height: '100%',
     minHeight: '100%',
+    maxWidth: props.maxWidth || '',
+    margin: '0 auto',
     '.frame-top-menu': {
       display: 'flex',
       flexDirection: 'column',
@@ -55,6 +58,12 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     },
     '.content-block .padding-block': {
       padding: '0 16px',
+    },
+    [MediaQueryRange.DesktopAbove]: {
+      // for big screens, remove the shadow on the top of mobile header
+      '.mobile-header-title-icon-top': {
+        boxShadow: 'unset',
+      },
     },
     [MediaQueryRange.TabletBelow]: {
       '.frame-footer .d-footer-box, .frame-top-menu .desktop-menu-box': {

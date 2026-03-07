@@ -22,7 +22,6 @@ import { redirectDemo } from '../components/redirect-demo';
 import { textWaveDemo } from '../components/text-wave-demo';
 import { textScaleDemo } from '../components/text-scale-demo';
 import { textGlowDemo } from '../components/text-glow-demo';
-import { togglePlayButtonDemo } from '../components/toggle-play-button-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
 import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
@@ -85,7 +84,6 @@ export const demoRegistry: Record<string, DemoStory<any>> = {
   [textWaveDemo.id]: textWaveDemo,
   [textScaleDemo.id]: textScaleDemo,
   [textGlowDemo.id]: textGlowDemo,
-  [togglePlayButtonDemo.id]: togglePlayButtonDemo,
   [toggleButtonDemo.id]: toggleButtonDemo,
   [messageBoxDemo.id]: messageBoxDemo,
   [sliderFrameDemo.id]: sliderFrameDemo,

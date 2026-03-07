@@ -68,8 +68,8 @@ const carouselCss: CssProps = {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    border: '1px solid var(--secondary-border-color, #eee)',
+    backgroundColor: 'var(--primary-bg-color, rgba(255, 255, 255, 0.9))',
+    border: '1px solid var(--primary-border, #eee)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -77,8 +77,9 @@ const carouselCss: CssProps = {
     zIndex: 10,
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    color: 'var(--primary-color, #000)',
     '&:hover': {
-      backgroundColor: '#fff',
+      backgroundColor: 'var(--secondary-bg-color, #fff)',
       transform: 'translateY(-50%) scale(1.1)',
     },
     '&.disabled': {
