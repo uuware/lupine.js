@@ -5,7 +5,10 @@ export const DemoAboutPage = () => {
 
   return (
     <div css={css} class='demo-about-top'>
-      <div class='row-box'>This is a demo page for testing components.</div>
+      <div class='row-box'>
+        lupine.components: A fully-featured, out-of-the-box front-end component library designed for everyday
+        development.
+      </div>
       <div class='row-box'></div>
     </div>
   );

@@ -82,7 +82,7 @@ export const MobileHeaderComponent = (props: any) => {
     width: '100%',
     height: 'auto',
     // padding: '2px 0',
-    // boxShadow: 'var(--mobile-header-shadow)', // 第二项 2px 的话，顶部有阴影（线）
+    // boxShadow: 'var(--mobile-header-shadow)', // if 2px, then there is a shadow (line) on the top
     '& > *': {
       height: '100%',
     },

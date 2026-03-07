@@ -30,8 +30,8 @@ const css: CssProps = {
 
   // Default styles based on variant
   '&.variant-solid': {
-    backgroundColor: 'var(--primary-color, #3b82f6)',
-    color: '#fff',
+    backgroundColor: 'var(--primary-accent-color, #3b82f6)',
+    color: 'var(--primary-bg-color, #fff)',
     '&:hover': {
       filter: 'brightness(1.1)',
     },
@@ -42,7 +42,7 @@ const css: CssProps = {
   '&.variant-outline': {
     border: '1px solid var(--secondary-border-color, #e5e7eb)',
     backgroundColor: 'var(--primary-bg-color, #fff)',
-    color: 'var(--primary-text-color, #111827)',
+    color: 'var(--primary-color, #111827)',
     '&:hover': {
       backgroundColor: 'var(--secondary-bg-color, #f3f4f6)',
     },
@@ -55,7 +55,7 @@ const css: CssProps = {
     color: 'var(--secondary-color, #6b7280)',
     '&:hover': {
       backgroundColor: 'var(--secondary-bg-color, #f3f4f6)',
-      color: 'var(--primary-text-color, #111827)',
+      color: 'var(--primary-color, #111827)',
     },
     '&:active': {
       transform: 'scale(0.95)',
@@ -80,9 +80,9 @@ const css: CssProps = {
     borderColor: 'var(--success-color, #10b981)',
   },
   '&.is-copied.variant-solid': {
-    backgroundColor: 'var(--success-color, #10b981)',
+    backgroundColor: 'var(--success-bg-color, var(--success-color, #10b981))',
     borderColor: 'transparent',
-    color: '#fff',
+    color: 'var(--success-text-color, #fff)',
   },
   '&.is-copied .&-default-content': {
     display: 'none',

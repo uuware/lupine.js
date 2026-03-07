@@ -58,12 +58,26 @@ export const tourDemo: DemoStory<any> = {
         <div style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
           <div
             id='tour-step-2'
-            style={{ padding: '20px', backgroundColor: '#f0f2f5', borderRadius: '8px', width: '200px' }}
+            style={{
+              padding: '20px',
+              backgroundColor: 'var(--secondary-bg-color, #f0f2f5)',
+              color: 'var(--primary-color, inherit)',
+              borderRadius: '8px',
+              width: '200px',
+            }}
           >
             <h3>Feature Card</h3>
             <p>This is some pseudo content to highlight.</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#f0f2f5', borderRadius: '8px', width: '200px' }}>
+          <div
+            style={{
+              padding: '20px',
+              backgroundColor: 'var(--secondary-bg-color, #f0f2f5)',
+              color: 'var(--primary-color, inherit)',
+              borderRadius: '8px',
+              width: '200px',
+            }}
+          >
             <h3>Another Card</h3>
             <p>This will not be highlighted.</p>
           </div>

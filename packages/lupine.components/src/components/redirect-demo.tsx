@@ -5,8 +5,8 @@ export const redirectDemo: DemoStory<RedirectProps> = {
   id: 'redirect-demo',
   text: 'Redirect Demo',
   args: {
-    title: 'Redirecting you soon...' + new Date().toISOString(),
-    url: '#test-redirect',
+    title: 'Redirecting you soon...',
+    url: 'about',
     delaySeconds: 3,
   },
   argTypes: {
@@ -16,8 +16,8 @@ export const redirectDemo: DemoStory<RedirectProps> = {
   },
   render: (args) => {
     return (
-      <div style={{ padding: '20px', border: '1px solid #ccc', backgroundColor: '#f9f9f9' }}>
-        <p style={{ color: '#666', marginBottom: '16px' }}>
+      <div style={{ padding: '20px', border: 'var(--primary-border)', backgroundColor: 'var(--secondary-bg-color)' }}>
+        <p style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>
           This component automatically changes the `window.location.href` after the specified delay. In this demo, the
           iframe will redirect itself to `{args.url}` after {args.delaySeconds} seconds.
         </p>

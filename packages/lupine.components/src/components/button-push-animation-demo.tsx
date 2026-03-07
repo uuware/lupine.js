@@ -23,7 +23,51 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
     const msg = new HtmlVar('');
     return (
       <div css={{ padding: '20px' }}>
-        <ButtonPushAnimation {...args} onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)} />
+        <div class='mx-l my-l'>
+          <ButtonPushAnimation {...args} onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)} />
+        </div>
+        <hr />
+
+        <div class='mx-l my-l'>
+          <ButtonPushAnimation
+            size={ButtonPushAnimationSize.SmallSmall}
+            text='SmallSmall Button'
+            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <ButtonPushAnimation
+            size={ButtonPushAnimationSize.Small}
+            text='Small Button'
+            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <ButtonPushAnimation
+            size={ButtonPushAnimationSize.Medium}
+            text={
+              <>
+                <i class='icon ifc-icon ma-account-cog-outline mr-m'></i>Button
+              </>
+            }
+            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <ButtonPushAnimation
+            size={ButtonPushAnimationSize.Large}
+            text='Large Button'
+            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
+          />
+        </div>
+        <div class='mx-l my-l'>
+          <ButtonPushAnimation
+            size={ButtonPushAnimationSize.LargeLarge}
+            text='LargeLarge Button'
+            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
+          />
+        </div>
+
         <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
       </div>
     );

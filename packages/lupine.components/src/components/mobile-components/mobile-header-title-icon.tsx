@@ -59,6 +59,7 @@ export const MobileHeaderTitleIcon = ({
     color: color || 'var(--primary-color)',
     background: background || 'var(--activatable-bg-color-normal)',
     boxShadow: noShadow ? 'unset' : 'var(--mobile-header-shadow)',
+    position: 'relative',
     zIndex: 'var(--layer-inside)', // bring boxShadow to front
     '.mhti-title': {
       display: 'flex',

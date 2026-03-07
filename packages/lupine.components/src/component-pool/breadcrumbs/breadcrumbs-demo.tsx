@@ -59,17 +59,31 @@ export const breadcrumbsDemo: DemoStory<BreadcrumbsProps> = {
       <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
         <div>
           <h3 style={{ marginBottom: '20px' }}>Auto-Collapsing Long Breadcrumbs</h3>
-          <p style={{ color: '#666', fontSize: '13px', marginBottom: '10px' }}>
+          <p style={{ color: 'var(--secondary-color, #666)', fontSize: '13px', marginBottom: '10px' }}>
             Scale the window (or iframe) down to see the middle sections collapse into an ellipsis `...`
           </p>
-          <div style={{ padding: '16px', border: '1px solid #eee', borderRadius: '8px', backgroundColor: '#fafafa' }}>
+          <div
+            style={{
+              padding: '16px',
+              border: '1px solid var(--primary-border, #eee)',
+              borderRadius: '8px',
+              backgroundColor: 'var(--secondary-bg-color, #fafafa)',
+            }}
+          >
             <Breadcrumbs items={longItems} autoCollapse={args.autoCollapse} />
           </div>
         </div>
 
         <div>
           <h3 style={{ marginBottom: '20px' }}>Short Breadcrumbs</h3>
-          <div style={{ padding: '16px', border: '1px solid #eee', borderRadius: '8px', backgroundColor: '#fafafa' }}>
+          <div
+            style={{
+              padding: '16px',
+              border: '1px solid var(--primary-border, #eee)',
+              borderRadius: '8px',
+              backgroundColor: 'var(--secondary-bg-color, #fafafa)',
+            }}
+          >
             <Breadcrumbs items={shortItems} autoCollapse={args.autoCollapse} />
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { CssProps, RefProps } from 'lupine.web';
 
 export enum ButtonSize {
-  SmallLarge = 'button-ss',
+  SmallSmall = 'button-ss',
   Small = 'button-s',
   Medium = 'button-m',
   Large = 'button-l',

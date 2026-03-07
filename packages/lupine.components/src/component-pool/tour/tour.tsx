@@ -62,7 +62,7 @@ export const Tour = (props: TourProps) => {
       width: '280px',
       boxShadow: 'var(--cover-box-shadow, 0 4px 12px rgba(0,0,0,0.15))',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      color: 'var(--primary-text-color, #333)',
+      color: 'var(--primary-color, #333)',
       boxSizing: 'border-box',
     },
 
@@ -77,7 +77,7 @@ export const Tour = (props: TourProps) => {
       fontSize: '14px',
       lineHeight: '1.5',
       marginBottom: '16px',
-      color: 'var(--secondary-text-color)',
+      color: 'var(--secondary-color, #666)',
     },
 
     '.&-footer': {
@@ -88,7 +88,7 @@ export const Tour = (props: TourProps) => {
 
     '.&-steps-count': {
       fontSize: '12px',
-      color: 'var(--secondary-text-color)',
+      color: 'var(--secondary-color, #666)',
     },
 
     '.&-buttons': {
@@ -103,10 +103,11 @@ export const Tour = (props: TourProps) => {
       fontSize: '14px',
       border: 'none',
       backgroundColor: 'transparent',
+      color: 'var(--primary-color, #333)',
     },
 
     '.&-btn-primary': {
-      backgroundColor: 'var(--primary-color, #1890ff)',
+      backgroundColor: 'var(--primary-accent-color, #1890ff)',
       color: 'var(--primary-bg-color, white)',
     },
 

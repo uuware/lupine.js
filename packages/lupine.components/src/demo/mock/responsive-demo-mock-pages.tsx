@@ -9,8 +9,8 @@ export const HomePage = () => {
     <div style={{ padding: '16px' }}>
       <div
         style={{
-          backgroundColor: 'var(--primary-color, #1890ff)',
-          color: 'white',
+          backgroundColor: 'var(--primary-accent-color, #1890ff)',
+          color: 'var(--primary-bg-color, white)',
           padding: '24px',
           borderRadius: '12px',
           marginBottom: '20px',
@@ -39,7 +39,7 @@ export const HomePage = () => {
                 width: '40px',
                 height: '40px',
                 borderRadius: '50%',
-                backgroundColor: 'var(--primary-color, #1890ff)',
+                backgroundColor: 'var(--primary-accent-color, #1890ff)',
                 opacity: 0.1,
                 marginRight: '16px',
               }}
@@ -77,11 +77,17 @@ export const CustomerPage = () => {
       >
         <div class='row-box' style={{ marginBottom: '16px' }}>
           <div
-            style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#eee', marginRight: '12px' }}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--secondary-bg-color, #eee)',
+              marginRight: '12px',
+            }}
           ></div>
           <div
             style={{
-              backgroundColor: 'white',
+              backgroundColor: 'var(--primary-bg-color, white)',
               padding: '12px',
               borderRadius: '0 12px 12px 12px',
               border: '1px solid var(--primary-border, #eee)',
@@ -93,8 +99,8 @@ export const CustomerPage = () => {
         <div class='row-box' style={{ marginBottom: '16px', justifyContent: 'flex-end' }}>
           <div
             style={{
-              backgroundColor: 'var(--primary-color, #1890ff)',
-              color: 'white',
+              backgroundColor: 'var(--primary-accent-color, #1890ff)',
+              color: 'var(--primary-bg-color, white)',
               padding: '12px',
               borderRadius: '12px 0 12px 12px',
             }}
@@ -107,7 +113,7 @@ export const CustomerPage = () => {
       <div
         class='row-box'
         style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--primary-bg-color, white)',
           borderRadius: '24px',
           padding: '4px 4px 4px 16px',
           border: '1px solid var(--primary-border, #eee)',
@@ -116,12 +122,12 @@ export const CustomerPage = () => {
         <input
           type='text'
           placeholder='Type a message...'
-          style={{ border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
+          style={{ border: 'none', background: 'transparent', color: 'inherit', outline: 'none', flex: 1 }}
         />
         <div
           style={{
-            backgroundColor: 'var(--primary-color, #1890ff)',
-            color: 'white',
+            backgroundColor: 'var(--primary-accent-color, #1890ff)',
+            color: 'var(--primary-bg-color, white)',
             padding: '8px 16px',
             borderRadius: '20px',
             cursor: 'pointer',
@@ -148,7 +154,13 @@ export const MemberPage = () => {
         }}
       >
         <div
-          style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#eee', marginRight: '16px' }}
+          style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--secondary-bg-color, #eee)',
+            marginRight: '16px',
+          }}
         ></div>
         <div class='col'>
           <h2 style={{ margin: 0 }}>John Doe</h2>

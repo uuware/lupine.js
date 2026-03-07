@@ -43,7 +43,7 @@ export class ResizableSplitter {
       },
       '.resizable-splitter-v-left:hover, .resizable-splitter-v-right:hover': {
         width: '4px',
-        backgroundColor: '#ccc',
+        backgroundColor: 'var(--primary-accent-color, #1890ff)',
       },
 
       '.resizable-splitter-h-top, .resizable-splitter-h-bottom': {
@@ -60,7 +60,7 @@ export class ResizableSplitter {
       },
       '.resizable-splitter-h-top:hover, .resizable-splitter-h-bottom:hover': {
         height: '4px',
-        backgroundColor: '#ccc',
+        backgroundColor: 'var(--primary-accent-color, #1890ff)',
       },
     };
     bindGlobalStyle('resizable-splitter', css, false, true);

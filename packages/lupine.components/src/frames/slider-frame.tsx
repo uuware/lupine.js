@@ -69,6 +69,9 @@ export const SliderFrame = (props: SliderFrameProps) => {
     transform: props.direction === 'bottom' ? 'translateY(100%)' : 'translateX(100%)',
     transition: 'transform 0.4s ease-in-out',
     backgroundColor: 'var(--primary-bg-color)',
+    // trick: to put two padding-top properties
+    'padding-top ': 'constant(safe-area-inset-top)',
+    'padding-top': 'env(safe-area-inset-top)',
     '&.show': {
       transform: props.direction === 'bottom' ? 'translateY(0)' : 'translateX(0)',
     },

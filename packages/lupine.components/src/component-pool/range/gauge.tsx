@@ -8,8 +8,8 @@ export type GaugeHighlightRange = {
 };
 
 export type GaugeHookProps = {
-  setValue: (val: number | [number, number]) => void;
-  getValue: () => number | [number, number];
+  setValue?: (val: number | [number, number]) => void;
+  getValue?: () => number | [number, number];
 };
 
 export type GaugeProps = {

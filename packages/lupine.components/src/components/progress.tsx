@@ -18,7 +18,9 @@ export const Progress = (props: ProgressProps) => {
     width: '100%',
     zIndex: 'var(--layer-modal-over)',
     flexDirection: 'column',
-    backgroundColor: '#e6e6e6de',
+    backgroundColor: 'var(--primary-bg-color, #e6e6e6)',
+    color: 'var(--primary-color, #333)',
+    boxShadow: 'var(--cover-box-shadow-up, 0 -4px 12px rgba(0,0,0,0.1))',
     padding: '16px',
     '.progress-box': {
       display: 'flex',
@@ -39,17 +41,23 @@ export const Progress = (props: ProgressProps) => {
     '.progress-bar1': {
       height: '100%',
       width: '0%',
-      backgroundColor: '#49e57e',
+      backgroundColor: 'var(--success-color, #49e57e)',
+      transition: 'width 0.2s',
     },
     '.progress-bar2': {
       height: '100%',
       width: '100%',
-      backgroundColor: '#2bb8cd',
+      backgroundColor: 'var(--secondary-bg-color, #e5e7eb)',
+      transition: 'width 0.2s',
     },
     '.progress-tips': {
       marginTop: '10px',
       fontSize: '30px',
-      color: '#49e57e',
+      color: 'var(--success-color, #49e57e)',
+      fontWeight: 'bold',
+    },
+    '.progress-title': {
+      fontWeight: '600',
     },
   };
 

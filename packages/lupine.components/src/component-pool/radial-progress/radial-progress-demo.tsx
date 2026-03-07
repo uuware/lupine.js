@@ -49,7 +49,7 @@ export const radialProgressDemo: DemoStory<RadialProgressProps> = {
               marginTop: '20px',
             }}
           >
-            <RadialProgress value={10} size={ButtonSize.SmallLarge} />
+            <RadialProgress value={10} size={ButtonSize.SmallSmall} />
             <RadialProgress value={30} size={ButtonSize.Small} />
             <RadialProgress value={args.value} size={args.size} color={args.color} trackColor={args.trackColor} />
             <RadialProgress value={85} size={ButtonSize.LargeLarge} color='#49e57e' />
