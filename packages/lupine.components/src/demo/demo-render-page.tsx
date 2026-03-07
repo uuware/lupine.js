@@ -1,6 +1,6 @@
 import { CssProps, encodeHtml, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
 import { demoRegistry } from './demo-registry';
-import { demoIcons, demoIconsCss } from './mock/demo-icons';
+import { demoIconsCss } from './mock/demo-icons';
 
 export const DemoRenderPage = async (props: PageProps) => {
   const dom = new HtmlVar(

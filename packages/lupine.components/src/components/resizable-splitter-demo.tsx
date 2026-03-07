@@ -20,20 +20,38 @@ export const resizableSplitterDemo: DemoStory<any> = {
 
     if (args.isVertical) {
       return (
-        <div style={{ display: 'flex', width: '600px', height: '400px', border: '1px solid #999', padding: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            width: '600px',
+            height: '400px',
+            padding: '20px',
+            color: 'var(--primary-color, inherit)',
+          }}
+        >
           <div
             id={containerId}
             style={{
               width: '200px',
               height: '100%',
-              backgroundColor: '#eee',
+              border: 'var(--primary-border)',
+              backgroundColor: 'var(--secondary-bg-color, #eee)',
               position: 'relative',
             }}
           >
             <div style={{ padding: '10px' }}>Left Panel (Drag right edge)</div>
             {ResizableSplitter.getSplitter(`#${containerId}`, true, true)}
           </div>
-          <div style={{ flex: 1, backgroundColor: '#ddd', padding: '10px' }}>Right Panel (Flex 1)</div>
+          <div
+            style={{
+              flex: 1,
+              backgroundColor: 'var(--secondary-bg-color, #ddd)',
+              border: 'var(--primary-border)',
+              padding: '10px',
+            }}
+          >
+            Right Panel (Flex 1)
+          </div>
         </div>
       );
     } else {
@@ -44,8 +62,8 @@ export const resizableSplitterDemo: DemoStory<any> = {
             flexDirection: 'column',
             width: '600px',
             height: '400px',
-            border: '1px solid #999',
             padding: '20px',
+            color: 'var(--primary-color, inherit)',
           }}
         >
           <div
@@ -53,14 +71,24 @@ export const resizableSplitterDemo: DemoStory<any> = {
             style={{
               height: '150px',
               width: '100%',
-              backgroundColor: '#eee',
+              border: 'var(--primary-border)',
+              backgroundColor: 'var(--secondary-bg-color, #eee)',
               position: 'relative',
             }}
           >
             <div style={{ padding: '10px' }}>Top Panel (Drag bottom edge)</div>
             {ResizableSplitter.getSplitter(`#${containerId}`, false, false)}
           </div>
-          <div style={{ flex: 1, backgroundColor: '#ddd', padding: '10px' }}>Bottom Panel (Flex 1)</div>
+          <div
+            style={{
+              flex: 1,
+              backgroundColor: 'var(--secondary-bg-color, #ddd)',
+              border: 'var(--primary-border)',
+              padding: '10px',
+            }}
+          >
+            Bottom Panel (Flex 1)
+          </div>
         </div>
       );
     }

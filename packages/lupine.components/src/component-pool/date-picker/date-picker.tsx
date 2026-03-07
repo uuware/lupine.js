@@ -51,7 +51,7 @@ const datePickerCss: CssProps = {
   },
 
   '.&-panel': {
-    width: '280px',
+    width: '220px',
     backgroundColor: 'var(--primary-bg-color, #fff)',
     userSelect: 'none',
     display: 'flex',
@@ -61,18 +61,18 @@ const datePickerCss: CssProps = {
   '.&-header': {
     display: 'flex',
     alignItems: 'center',
-    padding: '12px',
-    borderBottom: '1px solid var(--secondary-border-color, #f0f0f0)',
+    padding: '6px 12px 4px 12px',
+    borderBottom: '1px solid var(--primary-border, #f0f0f0)',
     gap: '4px',
   },
 
   '.&-nav-btn': {
-    padding: '4px 8px',
+    padding: '4px',
     border: '1px solid transparent',
     backgroundColor: 'transparent',
     cursor: 'pointer',
-    color: 'var(--primary-color-normal, #666)',
-    '&:hover': { color: 'var(--primary-color, #1890ff)' },
+    color: 'var(--primary-color, #666)',
+    '&:hover': { color: 'var(--primary-accent-color, #1890ff)' },
     fontSize: '16px',
     fontWeight: 'bold',
   },
@@ -83,32 +83,36 @@ const datePickerCss: CssProps = {
     flex: 1,
     position: 'relative',
     '.year-input': {
-      width: '100%',
-      border: '1px solid var(--secondary-border-color, #d9d9d9)',
+      width: '60px',
+      border: '1px solid var(--primary-border, #d9d9d9)',
       borderRadius: '4px',
-      padding: '4px 8px',
+      padding: '4px',
       fontSize: '14px',
       textAlign: 'center',
       cursor: 'pointer',
-      '&:focus': { borderColor: 'var(--primary-color, #1890ff)', outline: 'none' },
+      backgroundColor: 'transparent',
+      color: 'inherit',
+      '&:focus': { borderColor: 'var(--primary-accent-color, #1890ff)', outline: 'none' },
     },
   },
 
   '.&-month-select': {
-    border: '1px solid var(--secondary-border-color, #d9d9d9)',
+    border: '1px solid var(--primary-border, #d9d9d9)',
     borderRadius: '4px',
-    padding: '4px',
+    backgroundColor: 'transparent',
+    color: 'inherit',
+    padding: '2px 4px',
     cursor: 'pointer',
   },
 
   '.&-body': {
-    padding: '12px',
+    padding: '6px',
   },
 
   '.&-grid': {
     display: 'grid',
     gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '2px',
+    gap: '1px',
   },
 
   '.&-weekday': {
@@ -116,30 +120,30 @@ const datePickerCss: CssProps = {
     fontSize: '12px',
     fontWeight: '600',
     color: 'var(--secondary-color, #8c8c8c)',
-    padding: '8px 0',
+    padding: '4px 0',
   },
 
   '.&-day': {
     textAlign: 'center',
-    padding: '8px 0',
+    padding: '4px 0',
     cursor: 'pointer',
     borderRadius: '4px',
     fontSize: '14px',
     transition: 'all 0.2s',
 
     '&:hover': {
-      backgroundColor: 'var(--primary-bg-color-hover, #e6f7ff)',
-      color: 'var(--primary-color, #1890ff)',
+      backgroundColor: 'var(--secondary-bg-color, #e6f7ff)',
+      color: 'var(--primary-accent-color, #1890ff)',
     },
 
     '&.selected': {
-      backgroundColor: 'var(--primary-color, #1890ff)',
+      backgroundColor: 'var(--primary-accent-color, #1890ff)',
       color: '#fff',
       fontWeight: 'bold',
     },
 
     '&.today': {
-      color: 'var(--primary-color, #1890ff)',
+      color: 'var(--primary-accent-color, #1890ff)',
       fontWeight: 'bold',
       '&::after': {
         content: '""',
@@ -148,12 +152,12 @@ const datePickerCss: CssProps = {
         width: '4px',
         height: '4px',
         borderRadius: '50%',
-        backgroundColor: 'var(--primary-color, #1890ff)',
+        backgroundColor: 'var(--primary-accent-color, #1890ff)',
       },
     },
 
     '&.not-this-month': {
-      color: 'var(--secondary-color-light, #d9d9d9)',
+      color: 'var(--secondary-color, #d9d9d9)',
     },
   },
 
@@ -166,7 +170,7 @@ const datePickerCss: CssProps = {
     padding: '2px',
     borderRadius: '4px',
     cursor: 'pointer',
-    backgroundColor: 'var(--primary-color, #1890ff)',
+    backgroundColor: 'var(--primary-accent-color, #1890ff)',
     color: '#fff',
     border: 'none',
     transition: 'opacity 0.2s',
@@ -178,10 +182,10 @@ const datePickerCss: CssProps = {
     top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--primary-bg-color, #fff)',
     boxShadow: 'var(--cover-box-shadow, 0 4px 12px rgba(0,0,0,0.1))',
     borderRadius: '4px',
-    border: '1px solid var(--secondary-border-color, #f0f0f0)',
+    border: '1px solid var(--primary-border, #f0f0f0)',
     maxHeight: '200px',
     overflowY: 'auto',
     scrollbarWidth: 'none',
@@ -198,7 +202,7 @@ const datePickerCss: CssProps = {
       cursor: 'pointer',
       fontSize: '13px',
       '&:hover': { backgroundColor: 'var(--secondary-bg-color, #f5f5f5)' },
-      '&.active': { color: 'var(--primary-color, #1890ff)', fontWeight: 'bold' },
+      '&.active': { color: 'var(--primary-accent-color, #1890ff)', fontWeight: 'bold' },
     },
   },
 };

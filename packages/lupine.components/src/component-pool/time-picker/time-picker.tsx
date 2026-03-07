@@ -64,7 +64,7 @@ const timePickerCss: CssProps = {
   '.&-columns': {
     display: 'flex',
     height: '220px',
-    borderBottom: '1px solid var(--secondary-border-color, #eee)',
+    borderBottom: '1px solid var(--primary-border, #eee)',
   },
 
   '.&-column': {
@@ -85,15 +85,15 @@ const timePickerCss: CssProps = {
     cursor: 'pointer',
     fontSize: '13px',
     transition: 'all 0.2s',
-    color: 'var(--primary-color-normal, #333)',
+    color: 'var(--primary-color, #333)',
 
     '&:hover': {
       backgroundColor: 'var(--secondary-bg-color, #f5f5f5)',
     },
 
     '&.selected': {
-      backgroundColor: 'var(--primary-bg-color-hover, #e6f7ff)',
-      color: 'var(--primary-color, #1890ff)',
+      backgroundColor: 'var(--secondary-bg-color, #e6f7ff)',
+      color: 'var(--primary-accent-color, #1890ff)',
       fontWeight: 'bold',
     },
   },
@@ -102,19 +102,19 @@ const timePickerCss: CssProps = {
     padding: '8px',
     display: 'flex',
     justifyContent: 'flex-end',
-    borderBottom: '1px solid var(--secondary-border-color, #f0f0f0)',
+    borderBottom: '1px solid var(--primary-border, #f0f0f0)',
   },
 
   ':global(.lupine-picker-host .top) .&-footer': {
     borderBottom: 'none',
-    borderTop: '1px solid var(--secondary-border-color, #f0f0f0)',
+    borderTop: '1px solid var(--primary-border, #f0f0f0)',
   },
 
   '.&-ok-btn': {
     padding: '2px 0 0 0',
     borderRadius: 'var(--border-radius-m, 6px)',
     cursor: 'pointer',
-    backgroundColor: 'var(--primary-color, #1890ff)',
+    backgroundColor: 'var(--primary-accent-color, #1890ff)',
     color: '#fff',
     border: 'none',
     transition: 'opacity 0.2s',
@@ -168,7 +168,7 @@ export const TimePicker = (props: TimePickerProps) => {
     const spaceTop = rect.top - offset;
     const spaceBottom = window.innerHeight - rect.bottom - offset;
 
-    let columnsHeight = 220;
+    let columnsHeight = 200;
     const footerHeight = 44;
     const expectedHeight = columnsHeight + footerHeight;
 

@@ -15,7 +15,9 @@ export const TextWave = (props: TextLoadingProps) => {
   const css: CssProps = {
     width: `100%`,
     height: `100%`,
-    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     color: props.color || '#22b8ff',
     padding: props.padding || '10px',
     fontSize: props.fontSize || '20px',

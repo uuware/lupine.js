@@ -38,8 +38,8 @@ const badgeCss: CssProps = {
     lineHeight: '1',
     whiteSpace: 'nowrap',
 
-    backgroundColor: 'var(--danger-color, #e74c3c)',
-    color: '#ffffff',
+    backgroundColor: 'var(--danger-bg-color, var(--primary-accent-color, #e74c3c))',
+    color: 'var(--primary-bg-color, #ffffff)',
     boxShadow: '0 0 0 1px var(--primary-bg-color, #ffffff)',
 
     zIndex: 10,

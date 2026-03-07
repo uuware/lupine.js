@@ -1,4 +1,4 @@
-import { CssProps, RefProps } from 'lupine.web';
+import { bindGlobalStyle, CssProps, RefProps } from 'lupine.web';
 import { ButtonSize } from './button';
 
 // Re-export ButtonSize as InputNumberSize for semantic clarity
@@ -10,6 +10,7 @@ export type InputNumberProps = {
   max?: number;
   step?: number;
   size?: ButtonSize;
+  shape?: 'square' | 'circle';
   disabled?: boolean;
   onChange?: (value: number) => void;
   class?: string;
@@ -18,11 +19,19 @@ export type InputNumberProps = {
 
 type SizeCfg = { h: number; fs: number; valW: number };
 const SIZE_CFG: Record<ButtonSize, SizeCfg> = {
-  [ButtonSize.SmallLarge]: { h: 24, fs: 11, valW: 36 },
+  [ButtonSize.SmallSmall]: { h: 24, fs: 11, valW: 36 },
   [ButtonSize.Small]: { h: 28, fs: 12, valW: 42 },
   [ButtonSize.Medium]: { h: 36, fs: 14, valW: 52 },
   [ButtonSize.Large]: { h: 44, fs: 16, valW: 60 },
   [ButtonSize.LargeLarge]: { h: 52, fs: 18, valW: 72 },
+};
+
+const CIRCLE_SIZE_CFG: Record<ButtonSize, SizeCfg> = {
+  [ButtonSize.SmallSmall]: { h: 18, fs: 12, valW: 20 },
+  [ButtonSize.Small]: { h: 22, fs: 14, valW: 24 },
+  [ButtonSize.Medium]: { h: 26, fs: 16, valW: 28 },
+  [ButtonSize.Large]: { h: 28, fs: 18, valW: 32 },
+  [ButtonSize.LargeLarge]: { h: 30, fs: 20, valW: 36 },
 };
 
 export const InputNumber = ({
@@ -31,14 +40,14 @@ export const InputNumber = ({
   max,
   step = 1,
   size = ButtonSize.Medium,
+  shape = 'square',
   disabled = false,
   onChange,
   class: cls,
-  css: extraCss,
 }: InputNumberProps) => {
   let current = value;
   const valRef: RefProps = {};
-  const { h, fs, valW } = SIZE_CFG[size];
+  const { h, fs, valW } = shape === 'circle' ? CIRCLE_SIZE_CFG[size] : SIZE_CFG[size];
 
   const update = (next: number) => {
     if (disabled) return;
@@ -74,16 +83,14 @@ export const InputNumber = ({
     border: '1px solid var(--primary-border-color)',
     borderRadius: 'var(--border-radius-m, 8px)',
     overflow: 'hidden',
-    opacity: disabled ? '0.5' : '1',
+    opacity: disabled ? 'var(--primary-disabled-opacity, 0.5)' : '1',
+    filter: disabled ? 'grayscale(1)' : 'none',
     userSelect: 'none',
 
     '.inp-btn': {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: `${h}px`,
-      height: `${h}px`,
-      fontSize: `${fs + 5}px`,
       fontWeight: 'bold',
       lineHeight: 1,
       background: 'transparent',
@@ -100,9 +107,6 @@ export const InputNumber = ({
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minWidth: `${valW}px`,
-      height: `${h}px`,
-      fontSize: `${fs}px`,
       fontVariantNumeric: 'tabular-nums',
       borderLeft: '1px solid var(--primary-border-color)',
       borderRight: '1px solid var(--primary-border-color)',
@@ -110,8 +114,34 @@ export const InputNumber = ({
       padding: '0 6px',
     },
 
-    ...extraCss,
+    '&.shape-circle': {
+      border: 'none',
+      gap: '4px',
+      overflow: 'visible',
+      '.inp-btn': {
+        borderRadius: '50%',
+        color: 'var(--primary-color, #222)',
+        background: 'var(--primary-bg-color, linear-gradient(180deg, #fefefe 0%, #dcdcdc 100%))',
+        border: 'var(--primary-border, 1px solid #b3b3b3)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+        transition: 'all 0.1s ease-out',
+        '&:hover': {
+          background: 'var(--primary-bg-color, linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%))',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+        },
+        '&:active': {
+          transform: 'scale(0.96)',
+          background: 'var(--secondary-bg-color, linear-gradient(180deg, #dcdcdc 0%, #fefefe 100%))',
+          boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.2), 0 1px 1px rgba(255,255,255,0.8)',
+        },
+      },
+      '.inp-val': {
+        borderLeft: 'none',
+        borderRight: 'none',
+      },
+    },
   };
+  bindGlobalStyle('input-number', css);
 
   // Native touch binding (passive:false = allows e.preventDefault to block synthetic mouse events)
   const minusBtnRef: RefProps = {
@@ -144,12 +174,12 @@ export const InputNumber = ({
       el.addEventListener('touchcancel', pressStop);
     },
   };
-
   return (
-    <div css={css} class={cls}>
+    <div class={['input-number', `shape-${shape}`, cls].join(' ').trim()}>
       <button
         ref={minusBtnRef}
         class='inp-btn'
+        style={{ width: `${h}px`, height: `${h}px`, fontSize: `${fs + 5}px` }}
         disabled={disabled}
         onMouseDown={() => pressStart(-step)}
         onMouseUp={pressStop}
@@ -157,12 +187,13 @@ export const InputNumber = ({
       >
         −
       </button>
-      <span class='inp-val' ref={valRef}>
+      <span class='inp-val' ref={valRef} style={{ minWidth: `${valW}px`, height: `${h}px`, fontSize: `${fs}px` }}>
         {value}
       </span>
       <button
         ref={plusBtnRef}
         class='inp-btn'
+        style={{ width: `${h}px`, height: `${h}px`, fontSize: `${fs + 5}px` }}
         disabled={disabled}
         onMouseDown={() => pressStart(+step)}
         onMouseUp={pressStop}

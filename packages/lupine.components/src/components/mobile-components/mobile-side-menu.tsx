@@ -206,6 +206,9 @@ export const MobileSideMenu = (props: { children: VNode<any> }) => {
       overflowY: 'auto',
       transform: 'translateX(-100%)',
       boxShadow: 'var(--cover-box-shadow)',
+      // trick: to put two padding-top properties
+      'padding-top ': 'constant(safe-area-inset-top)',
+      'padding-top': 'env(safe-area-inset-top)',
     },
   };
 

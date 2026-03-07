@@ -26,7 +26,9 @@ export const textWaveDemo: DemoStory<TextLoadingProps> = {
           justifyContent: 'center',
           alignItems: 'center',
           height: '200px',
-          backgroundColor: '#f0f0f0',
+          backgroundColor: 'var(--secondary-bg-color, #f0f0f0)',
+          border: '1px solid var(--primary-border, #ccc)',
+          borderRadius: '8px',
         }}
       >
         <TextWave {...args} />
