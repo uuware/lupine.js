@@ -6,13 +6,17 @@ exports.copyFolder = async (copyCache, src, dest, isDev) => {
   const stat = await fs.stat(src);
   if (stat.isDirectory()) {
     await fs.mkdir(dest, { recursive: true });
-    (await fs.readdir(src)).forEach(async (childItemName) => {
-      await exports.copyFolder(copyCache, path.join(src, childItemName), path.join(dest, childItemName));
-    });
+    const children = await fs.readdir(src);
+    for (const childItemName of children) {
+      await exports.copyFolder(copyCache, path.join(src, childItemName), path.join(dest, childItemName), isDev);
+    }
   } else if (stat.isFile()) {
     const statDest = copyCache.get(src);
     if (!statDest || stat.size !== statDest.size || stat.mtime.getTime() !== statDest.mtime.getTime()) {
       try {
+        const destDir = path.dirname(dest);
+        await fs.mkdir(destDir, { recursive: true });
+
         if (isDev && src.endsWith('.css')) {
           const css = await fs.readFile(src, 'utf-8');
           const newCss = (await esbuild.transform(css, { loader: 'css', minify: true })).code;

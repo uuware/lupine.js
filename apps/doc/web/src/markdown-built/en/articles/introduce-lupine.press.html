@@ -1,6 +1,5 @@
-<h1 id="lupine-press-built-for-doc-speed"><a class="header-anchor" href="#lupine-press-built-for-doc-speed">#</a>Lupine.Press: Built for Doc Speed</h1><p>Writing documentation shouldn&#39;t be painful. But in the current ecosystem, we often have to choose between &quot;complex configuration&quot; and &quot;ugly default styles&quot;.</p>
-<p><strong>Lupine.Press</strong> is here to break this deadlock.</p>
-<p>It is a documentation framework built on <strong>Lupine.js</strong>, inheriting the latter&#39;s <strong>&quot;ultra-lightweight&quot;</strong> and <strong>&quot;high-performance&quot;</strong> DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.</p>
+<h1 id="lupine-press-writing-documentation-no-longer-painful"><a class="header-anchor" href="#lupine-press-writing-documentation-no-longer-painful">#</a>Lupine.Press: Writing Documentation No Longer Painful</h1><p>With the help of AI, writing documentation is really no longer a painful thing. I love technology and love writing documents, but I&#39;m particularly lazy about writing documents. Writing documents is boring and very tedious. But now it&#39;s different. No matter how much code you have or how complex it is, AI can sort it out in minutes. AI is also particularly good at writing Markdown documents. So how do you turn the Markdown written by AI into a beautiful one that can be hosted for free on Github or Cloudflare? This article is about how to use Lupine.Press (built on Lupine.js) to quickly create a technical documentation website.</p>
+<p><strong>Lupine.Press</strong> is a documentation framework built on <strong>Lupine.js</strong>, inheriting the latter&#39;s <strong>&quot;ultra-lightweight&quot;</strong> and <strong>&quot;high-performance&quot;</strong> DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.</p>
 <p><img src="/lupine.js/assets/lupine.press.png" alt="Lupine.Press"></p>
 <p>To give you a better idea of what you can build, we have prepared a complete demo project. You can visit the repository or fork it directly as your starting point:</p>
 <ul>
@@ -25,9 +24,9 @@
 </ul>
 <h3 id="4-flexible-extensibility"><a class="header-anchor" href="#4-flexible-extensibility">#</a>4. 🛠️ Flexible Extensibility</h3><p>Although it&#39;s lightweight, it&#39;s not &quot;rigid&quot;. Because fundamentally it is a Lupine.js application. You can always:</p>
 <ul>
-<li>Embed React-style components within Markdown.</li>
-<li>Use <code>bindGlobalStyle</code> to customize global styles.</li>
-<li>Write custom layouts.</li>
+<li>Use TSX syntax to write React-style components.</li>
+<li>Add custom pages with any styles.</li>
+<li>Add any styles to override existing styles.</li>
 </ul>
 <h2 id="deployment-hack-spa-on-github-pages"><a class="header-anchor" href="#deployment-hack-spa-on-github-pages">#</a>Deployment Hack: SPA on GitHub Pages?</h2><p>As we all know, static hosting services like GitHub Pages are not friendly to Single Page Applications (SPA). Because they don&#39;t know that <code>/guide/started</code> should actually point to <code>index.html</code>, they often return a <strong>404</strong> directly.</p>
 <p>Lupine.Press provides a clever solution.</p>

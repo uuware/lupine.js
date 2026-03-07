@@ -1,15 +1,13 @@
 ---
-title: 'Lupine.Press: Built for Doc Speed'
+title: 'Lupine.Press + AI: Create Your Technical Documentation Website in Minutes'
 description: The ultra-light documentation generator powered by Lupine.js
 ---
 
-# Lupine.Press: Built for Doc Speed
+# Lupine.Press: Writing Documentation No Longer Painful
 
-Writing documentation shouldn't be painful. But in the current ecosystem, we often have to choose between "complex configuration" and "ugly default styles".
+With the help of AI, writing documentation is really no longer a painful thing. I love technology and love writing documents, but I'm particularly lazy about writing documents. Writing documents is boring and very tedious. But now it's different. No matter how much code you have or how complex it is, AI can sort it out in minutes. AI is also particularly good at writing Markdown documents. So how do you turn the Markdown written by AI into a beautiful one that can be hosted for free on Github or Cloudflare? This article is about how to use Lupine.Press (built on Lupine.js) to quickly create a technical documentation website.
 
-**Lupine.Press** is here to break this deadlock.
-
-It is a documentation framework built on **Lupine.js**, inheriting the latter's **"ultra-lightweight"** and **"high-performance"** DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.
+**Lupine.Press** is a documentation framework built on **Lupine.js**, inheriting the latter's **"ultra-lightweight"** and **"high-performance"** DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown.
 
 ![Lupine.Press](/lupine.js/assets/lupine.press.png)
 
@@ -47,9 +45,9 @@ You don't need to know CSS to have a beautiful documentation site. The `PressFra
 
 Although it's lightweight, it's not "rigid". Because fundamentally it is a Lupine.js application. You can always:
 
-- Embed React-style components within Markdown.
-- Use `bindGlobalStyle` to customize global styles.
-- Write custom layouts.
+- Use TSX syntax to write React-style components.
+- Add custom pages with any styles.
+- Add any styles to override existing styles.
 
 ## Deployment Hack: SPA on GitHub Pages?
 

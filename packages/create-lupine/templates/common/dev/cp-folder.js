@@ -5,18 +5,14 @@ function copyRecursiveSync(src, dest) {
   const stats = fs.statSync(src);
   const isDirectory = stats.isDirectory();
   if (isDirectory) {
-    if (!fs.existsSync(dest)) {
-      fs.mkdirSync(dest, { recursive: true });
-    }
+    fs.mkdirSync(dest, { recursive: true });
     fs.readdirSync(src).forEach((childItemName) => {
       copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
     });
   } else {
     // Ensure parent directory exists for file copy (just in case)
     const destDir = path.dirname(dest);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
+    fs.mkdirSync(destDir, { recursive: true });
     fs.copyFileSync(src, dest);
   }
 }

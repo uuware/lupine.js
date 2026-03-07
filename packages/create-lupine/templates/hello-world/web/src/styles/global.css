@@ -785,6 +785,66 @@ body {
   font-weight: var(--font-weight-base);
 }
 
+.safe-area-pt {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-pb {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-pl {
+  padding-left: constant(safe-area-inset-left);
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-pr {
+  padding-right: constant(safe-area-inset-right);
+  padding-right: env(safe-area-inset-right);
+}
+.safe-area-pall {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: constant(safe-area-inset-left);
+  padding-left: env(safe-area-inset-left);
+  padding-right: constant(safe-area-inset-right);
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-area-mt {
+  margin-top: constant(safe-area-inset-top);
+  margin-top: env(safe-area-inset-top);
+}
+
+.safe-area-mb {
+  margin-bottom: constant(safe-area-inset-bottom);
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-ml {
+  margin-left: constant(safe-area-inset-left);
+  margin-left: env(safe-area-inset-left);
+}
+
+.safe-area-mr {
+  margin-right: constant(safe-area-inset-right);
+  margin-right: env(safe-area-inset-right);
+}
+.safe-area-mall {
+  margin-top: constant(safe-area-inset-top);
+  margin-top: env(safe-area-inset-top);
+  margin-bottom: constant(safe-area-inset-bottom);
+  margin-bottom: env(safe-area-inset-bottom);
+  margin-left: constant(safe-area-inset-left);
+  margin-left: env(safe-area-inset-left);
+  margin-right: constant(safe-area-inset-right);
+  margin-right: env(safe-area-inset-right);
+}
+
 input.base-css[type='text'],
 input.base-css[type='password'],
 input.base-css[type='email'],
@@ -888,6 +948,9 @@ input.base-css[type='text'][disabled='true']::placeholder {
 }
 
 .button-base {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1.1;
   height: var(--button-height);
   cursor: pointer;

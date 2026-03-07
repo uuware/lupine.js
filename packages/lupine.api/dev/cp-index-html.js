@@ -15,17 +15,17 @@ const fileUpdateTime = async (filename, time) => {
   fs.utimes(filename, time, time);
 };
 
-const readWebConfig = async (outdirData) => {
-  let tempPath = path.join(outdirData, 'config.json');
-  if (!(await fileUtils.pathExists(tempPath))) {
-    tempPath = path.join(outdirData, 'resources', 'config_default.json');
-  }
+// const readWebConfig = async (outdirData) => {
+//   let tempPath = path.join(outdirData, 'config.json');
+//   if (!(await fileUtils.pathExists(tempPath))) {
+//     tempPath = path.join(outdirData, 'resources', 'config_default.json');
+//   }
 
-  // file should exist
-  const data = await fs.readFile(tempPath, 'utf-8');
-  const json = JSON.parse(data || {});
-  return webEnv.getWebConfig(json);
-};
+//   // file should exist
+//   const data = await fs.readFile(tempPath, 'utf-8');
+//   const json = JSON.parse(data || {});
+//   return webEnv.getWebConfig(json);
+// };
 
 const metaTextStart = '<!--META-ENV-START-->';
 const metaTextEnd = '<!--META-ENV-END-->';
@@ -47,7 +47,9 @@ exports.cpIndexHtml = async (
   const chgTime = Math.trunc(f1.mtime.getTime() / 10) * 10 + (isMobile ? 1 : 2);
 
   // when production, change hash every time to load latest js and css
-  if (!isDev || !f2 || f2.mtime.getTime() !== chgTime || isMobile) {
+  // if (!isDev || !f2 || f2.mtime.getTime() !== chgTime || isMobile) {
+  // some times, js or css is not updated, so we change hash every time
+  if (true) {
     const inHtml = await fs.readFile(htmlFile, 'utf-8');
     let outStr = inHtml
       .replace(/\{hash\}/gi, new Date().getTime().toString(36))

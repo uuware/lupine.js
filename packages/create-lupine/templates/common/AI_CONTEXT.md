@@ -46,13 +46,28 @@ Supports nesting and media queries. **Prefer this over inline styles.** Define y
 
 ## 3. Styles & Themes ("The Look")
 
-### Global Variables (Theming)
+### Global Variables (Theming) & Dark Mode Compatibility
 
-**NEVER hardcode colors** (e.g., `#000`). Always use CSS variables to support Dark/Light modes.
+**NEVER hardcode colors** (e.g., `#000`, `#fff`, `#f0f0f0`). Always use CSS variables to support Dark/Light modes. If you must use a fallback, wrap it: `var(--primary-bg-color, #fff)`.
 
-- **Colors**: `var(--primary-color)`, `var(--primary-bg-color)`, `var(--secondary-color)`, `var(--error-color)`.
-- **Borders**: `var(--primary-border)`, `var(--border-radius-m)`.
-- **Spacing**: `var(--space-m)` (8px), `var(--space-l)` (16px).
+#### 🎨 Color Variable Semantics (CRITICAL FOR DARK MODE)
+
+1.  **Backgrounds (`--primary-bg-color` vs `--secondary-bg-color`)**:
+    - `--primary-bg-color`: The lowest-level background (White in light mode, **Deep Black** in dark mode).
+    - `--secondary-bg-color`: An elevated background (Light gray in light mode, **Lighter Black/Gray** in dark mode).
+    - _⚠️ Dark Mode Trap_: If you place a floating panel/card on the main body, **do NOT** use `--primary-bg-color` for the panel. It will blend into the body's deep black and become invisible. Use `--secondary-bg-color` for elevated panels to ensure visual separation.
+2.  **Text Colors (`--primary-color` vs `--secondary-color`)**:
+    - `--primary-color`: The primary **TEXT** color. (Dark grey/black in light mode, **White** in dark mode).
+    - _⚠️ Dark Mode Trap_: **Never** use `--primary-color` as the background color for a blue "Primary Action Button". It will turn white in dark mode.
+    - Always explicitly declare `color: 'var(--primary-color, inherit)'` on cards/containers so child text properly flips white in dark mode.
+3.  **Action / Brand Colors (`--primary-accent-color`)**:
+    - `--primary-accent-color`: The vibrant brand color (e.g., Lupine Blue). Use this for the **backgrounds of primary buttons**, active tabs, slider fills, and highlights.
+    - When using this as a background, set the text color to `var(--primary-bg-color)` so it stays high-contrast (white) in both themes.
+4.  **Borders (`--primary-border` / `--secondary-border-color`)**:
+    - Replace all hardcoded `#eee`, `#ccc`, `#999` borders with these to ensure they darken appropriately in dark mode.
+5.  **Status Colors**:
+    - `--success-color`, `--warning-color`, `--error-color`, `--success-bg-color` (Use replacing hardcoded green/reds).
+6.  **Spacing**: `var(--space-m)` (8px), `var(--space-l)` (16px).
 
 ### Standard Utility Classes
 
@@ -60,7 +75,7 @@ Supports nesting and media queries. **Prefer this over inline styles.** Define y
 - **Margins/Padding**: `m-auto`, `p-m`, `mt-s`, `pb-l` (s=small, m=medium, l=large).
 - **Text**: `.text-center`, `.ellipsis`.
 
-### The Component CSS & Ampersand (`&`) Pattern
+### The Component CSS & Ampersand (`&`) Pattern (must go with RefProps)
 
 Lupine.js handles component-scoped CSS safely to avoid class collisions. The modern and **preferred** way to style components is to attach a `css={css}` prop to the root element and use the **Ampersand (`&`) Pattern**.
 
@@ -180,6 +195,23 @@ export const ToggleButton = (props: { color?: string; disabled?: boolean }) => {
     </div>
   );
 };
+```
+
+### ⚠️ IMPORTANT: Hardcoded Namespace IDs vs `getGlobalStylesId`
+
+While using `getGlobalStylesId` combined with the `&` pattern is the most robust approach, you may sometimes use a hardcoded string as the namespace ID: `bindGlobalStyle('my-custom-component', css)`.
+
+If you do this, Lupine will generate CSS targeting `.my-custom-component`. Therefore, **you MUST ensure that your root JSX element explicitly includes this exact class name**, otherwise the top-level CSS properties will fail to apply.
+
+**CORRECT Example (Hardcoded ID):**
+
+```typescript
+const css: CssProps = { padding: '10px' };
+// ID is 'my-custom-component'
+bindGlobalStyle('my-custom-component', css);
+
+// Root element MUST have class='my-custom-component'
+return <div class='my-custom-component'>...</div>;
 ```
 
 ### ⚠️ IMPORTANT: The "Static `CssProps`" Rule
@@ -389,7 +421,7 @@ Use the `maskImage` property wrapped in `url()` to apply the SVG data to the ico
 const css: CssProps = {
   // Target the specific system icon class you wish to override
   '.ifc-icon.ma-close': {
-    maskImage: \`url("\${DemoIcons['ma-close']}")\`,
+    maskImage: `url("${DemoIcons['ma-close']}")`,
     // If needed, specify mask sizing properties:
     // maskRepeat: 'no-repeat',
     // maskPosition: 'center',
@@ -397,3 +429,84 @@ const css: CssProps = {
   },
 };
 ```
+
+## 8. Cross-Platform App Bootstrapping Guidance
+
+When creating a new Cross-Platform App using `lupine.js`, follow this standard procedure for scaffolding the entry point, navigation, and icons:
+
+1. **Custom Navigation Icons (`app-icons.ts`)**:
+   Instead of using the default icon font, you should export SVG Data URIs for your app's specific icons from `app-icons.ts`. Use a `reduce` function to generate the appropriate `CssProps` with `maskImage: 'url("' + svg + '")'` to override the `.ifc-icon.[icon-name]` classes. Avoid using backticks (\"\`\") when injecting SVG variables inside the maskImage URL to prevent escaping issues.
+
+2. **Base Styles (`base-css.ts`)**:
+   Create a `styles/base-css.ts` file that imports the dynamic icon styles (from `app-icons.ts`), and defines any placeholder wrappers (e.g., `.user-page-placeholder` having `width: '100%', height: '100%'`). Use `bindGlobalStyle('comm-css', baseCss, false, true)` in the index file to register these.
+
+3. **Global UI Frame (`app-responsive-frame.tsx`)**:
+   Use `ResponsiveFrame` along with `SliderFrame` (for drill-down navigation via `SliderFrameHookProps`) to define the app's skeleton.
+
+   - Define your top/bottom navigation menus based on your icons.
+   - Return `ResponsiveFrame` passing in the `mainContent`, menus, and ensure you provide all required properties like `mobileSideMenuContent: <></>` (even if empty) to satisfy TypeScript interfaces.
+
+4. **Page Router Configuration (`index.tsx`)**:
+   Create a `PageRouter`. Bind the `AppResponsiveFrame` using `pageRouter.setFramePage({ component: AppResponsiveFrame, placeholderClassname: 'user-page-placeholder' })`. Then associate the routes (`pageRouter.use('*', HomePage)`) and finalize with `bindRouter(pageRouter)`.
+
+5. **Local Storage Patterns**:
+   For pure frontend utility apps (compatible with browsers, Capacitor, and Electron), wrap `localStorage.getItem()` and `localStorage.setItem()` inside dedicated Service singletons (e.g., `LocalNotesService`). Always parse/serialize consistently and assign standard unique IDs (like `Date.now()`) for newly inserted records. Combine this with the `onLoad` pattern inside `RefProps` to fetch data immediately when components render, injecting it directly into an `HtmlVar` wrapping the list.
+
+## 9. Standard Mobile App Layout & Interactions
+
+When asked to "create a list page" or "initialize a standard mobile framework", rigorously apply this exact structural pattern based on the cross-platform starter app.
+
+### A. The Global Root (`index.tsx` & `AppResponsiveFrame`)
+
+- Use `bindTheme` to load global color tokens.
+- Set the global frame with `pageRouter.setFramePage({ component: AppResponsiveFrame, placeholderClassname: 'user-page-placeholder' })`.
+- **`AppResponsiveFrame`** handles the macro layout:
+  - It renders `<ResponsiveFrame>` wrapping `<main class='user-page-placeholder'></main>`.
+  - It contains the global left `mobileSideMenuContent` (typically abstracted into a `<SideMenuContent />` component).
+
+### B. The Home / List Page (`HomePage`)
+
+A standard mobile list page must employ:
+
+1. **The Top Header (`MobileHeaderCenter`)**:
+
+   - Wrap the top bar in `<MobileHeaderCenter>`.
+   - Use `<MobileHeaderTitleIcon title='App Name' left={...} right={...} />`.
+   - The _left_ slot usually contains an empty spacer `<MobileHeaderEmptyIcon />`.
+   - The _right_ slot contains actions (e.g., Search icon, `<MobileTopSysIcon />` to open the Side Menu).
+
+2. **The Scrollable Content Area**:
+
+   - Beneath the header, create a flex-grow scrollable div: `<div class='flex-1 overflow-y-auto padding-m'>`.
+   - Mount an `HtmlVar` instance here (`{dom.node}`) to dynamically bind the list data arrays fetched typically via `RefProps.onLoad`.
+
+3. **Floating Action Button (FAB)**:
+   - Overlay a primary action button at `bottom: 24px`, `right: 24px` using `.fab-button` styled with `var(--primary-accent-color)`.
+
+### C. Advanced Touch Interactions (`createDragUtil` in Lists)
+
+For interactive lists, `createDragUtil()` from `lupine.components` handles complex gesture physics.
+
+- **Swipe-to-Reveal (Horizontal)**:
+
+  - Render an absolute positioned `.actions-layer` (opacity: 0 initially) underneath the `.list-card`.
+  - When the card's `onTouchStart`/`onMouseDown` is triggered, attach `dragUtil` handlers.
+  - In `dragUtil.setOnMoveCallback`, translate the card `transform: translateX(...)` up to a negative boundary (e.g., -100px) and toggle the action layer's opacity to 1.
+  - Implement a global `resetSwipeMenus` function attached to `onMouseDown={handleBgTouch}` at the page root to ensure an exclusive accordion-like menu state (only one open at a time).
+
+- **Drag-to-Reorder (Vertical)**:
+  - Define a distinct `.drag-handle` slot inside the card (e.g., `bs-list` icon).
+  - In `dragUtil.setOnMoveCallback`, when dragging this handle, apply `scale(1.02)` and elevated `boxShadow` to the grabbed card. Compare its `relativeY` pointer position against sibling card `offsetTop`s to execute live `insertBefore / insertAfter` DOM swaps.
+  - Conclude by saving the new DOM sibling ordering in `dragUtil.setOnMoveEndCallback`.
+
+### D. Sub-Page Routing & Drill-Downs (`SliderFrame`)
+
+- Slide-over interactions are mandatory for Search panels, Creation modals, and Details views.
+- The `HomePage` must define a top-level `<SliderFrame hook={sliderFrameHook} />` inside its scroll area.
+- Opening a child acts instantly via: `sliderFrameHook.load!(<MyChildPage sliderFrameHook={sliderFrameHook} />)`.
+- **Inside the Child Component**:
+  - Must be wrapped with `<HeaderWithBackFrame title='Subpage' onBack={(e) => props.sliderFrameHook.close!(e)}>` to provide the standard top-left back chevron.
+- **Nested SliderFrames**:
+  - When opening a sliding frame _from within_ another sliding frame (e.g., opening a Settings About page from the Settings root page), you **MUST** define a new local hook `const innerSliderHook: SliderFrameHookProps = {};` and mount a _new_ `<SliderFrame hook={innerSliderHook} />` inside the parent slider component.
+  - Using the parent's hook will replace the parent's content instead of sliding a new frame over it.
+  - Wrap multiple children in `<></>` or a `<div>` if they are direct children to satisfy single `VNode` rendering constraints.
