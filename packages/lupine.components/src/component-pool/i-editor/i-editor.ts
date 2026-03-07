@@ -1,14 +1,4 @@
 import {
-  Tool,
-  TextLayer,
-  StickerLayer,
-  Snapshot,
-  IEditorOptions,
-  HANDLE_SIZE,
-  ShapeLayer,
-  DisplayObject,
-} from './i-editor-types';
-import {
   computeTextLayout,
   getShapeBoundingBox,
   getShapeHandles,
@@ -17,15 +7,31 @@ import {
   hitShape,
   hitSticker,
   hitText,
-} from './i-editor-geometry';
-import { drawHeartPath, drawDeleteHandle, buildBubblePath, drawShapePath } from './i-editor-drawing';
+  Tool,
+  TextLayer,
+  StickerLayer,
+  Snapshot,
+  IEditorOptions,
+  HANDLE_SIZE,
+  ShapeLayer,
+  DisplayObject,
+  drawHeartPath,
+  drawDeleteHandle,
+  buildBubblePath,
+  drawShapePath,
+  FONT_OPTIONS,
+  exportToSystemClipboard,
+  enforceBounds,
+  applyMosaic,
+  flipImageDataVertical,
+  renderTextLayer,
+  renderStickerLayer,
+  renderShapeLayer,
+} from '../../lib/canvas';
 import { drawFrame } from './i-editor-frames';
-import { applyMosaic, flipImageDataVertical } from './i-editor-image';
 import { EDITOR_STYLES } from './i-editor-styles';
 import { LJ_SVG_ICON_CLASS, SvgIconNames, loadSvgIconStyles } from '../svg-icons';
 import { ActionSheetSelectPromise } from '../../components/action-sheet';
-
-import { FONT_OPTIONS } from '../canvas-helper';
 
 export class IEditor {
   private container: HTMLElement;
@@ -71,10 +77,6 @@ export class IEditor {
   private initialPinchDist = 0;
   private initialPinchScale = 1;
   private pinchCenter = { x: 0, y: 0 };
-  private brushSizeInput!: HTMLInputElement;
-  private brushSizeVal!: HTMLSpanElement;
-  private optsWrap!: HTMLLabelElement | HTMLDivElement;
-  private rotSliderRange!: HTMLInputElement;
 
   private penColor = '#e74c3c';
   private penSize = 8;
@@ -159,8 +161,6 @@ export class IEditor {
     origPoints: { x: number; y: number }[];
   } | null = null;
 
-  private editingTextId: string | null = null;
-
   private textColor = '#ff0000';
   private fillColor?: string = undefined;
   private textFontSize = 24;
@@ -174,7 +174,9 @@ export class IEditor {
 
   // Clipboard (copied region)
   private clipboardImg: HTMLImageElement | null = null;
+  private clipboardImgTime: number = 0;
   private internalClipboard: { type: 'text' | 'sticker' | 'shape'; data: any } | null = null;
+  private internalClipboardTime: number = 0;
 
   // Adjustments (Brightness and Contrast and Color Balance)
   private adjustBrightness = 100;
@@ -420,14 +422,6 @@ export class IEditor {
       i.oninput = () => fn(i.value);
       el.appendChild(l);
     };
-    const isUniversalMode =
-      this.activeTool === 'pan' ||
-      this.activeTool === 'select' ||
-      this.activeTool === 'mosaic' ||
-      this.activeTool === 'eraser' ||
-      this.activeTool === 'text' ||
-      this.activeTool === 'pencil' ||
-      this.activeTool === 'sticker';
 
     const showShapeOpts =
       this.activeTool === 'pencil' ||
@@ -1178,6 +1172,12 @@ export class IEditor {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
 
+      // Prevent custom internal payloads (which Ctrl+V handles) from triggering external Image parsing natively
+      if (e.clipboardData?.types.includes('text/html')) {
+        const payloadFlag = e.clipboardData.getData('text/html');
+        if (payloadFlag && payloadFlag.includes('lupine-editor')) return;
+      }
+
       const items = e.clipboardData?.items;
       if (!items) return;
       for (let i = 0; i < items.length; i++) {
@@ -1202,6 +1202,11 @@ export class IEditor {
                 rotation: 0,
               };
               this.stickerLayers.push(newSticker);
+              this.displayObjects.push({
+                id: newSticker.id,
+                type: 'sticker',
+                layer: newSticker,
+              } as any);
               this.selectedSticker = newSticker;
               this.selectedText = null;
               this.selectedShape = null;
@@ -1258,42 +1263,22 @@ export class IEditor {
             this._deleteSelected();
           }
         } else if (e.key === 'v' || e.key === 'V') {
-          // Native paste event is preferred for system inputs,
-          // but we manually trigger internal pasting here if the browser blocks system clipboard
-          this._pasteClipboard();
+          // Prevent the OS native paste event (which relies on pure OS clipboard images)
+          // from firing a double-paste sticker if our internal object cache exists.
+          let _w: any = window;
+          try {
+            _w = window.top || window;
+          } catch (err) {}
+          const globalTime = _w.__lupine_clipboard_time || 0;
+          const globalImgTime = _w.__lupine_clipboard_img_time || 0;
+
+          if (globalTime > 0 || globalImgTime > 0 || this.internalClipboard || this.clipboardImg) {
+            e.preventDefault();
+            this._pasteClipboard();
+          }
         }
       }
     });
-  }
-
-  private _drawShapePath(ctx: CanvasRenderingContext2D, dx: number, dy: number, shift: boolean) {
-    const sw = this.penStartX;
-    const sh = this.penStartY;
-    // Current xy coordinates (relative to stroke start)
-    const cx = sw + dx;
-    const cy = sh + dy;
-
-    // Shift key constraint logic
-    let fx = cx;
-    let fy = cy;
-    let dist = Math.hypot(dx, dy);
-
-    if (shift) {
-      if (this.penMode === 'line' || this.penMode === 'arrow') {
-        // Snap to 45 degree angles
-        const angle = Math.atan2(dy, dx);
-        const snapped = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);
-        fx = sw + Math.cos(snapped) * dist;
-        fy = sh + Math.sin(snapped) * dist;
-      } else {
-        // Square/Circle snapping: 1:1 aspect ratio constraint
-        const maxDim = Math.max(Math.abs(dx), Math.abs(dy));
-        fx = sw + maxDim * Math.sign(dx);
-        fy = sh + maxDim * Math.sign(dy);
-      }
-    }
-
-    drawShapePath(ctx, this.penMode, this.penArrowType, this.penColor, sw, sh, fx, fy, this.fillColor);
   }
 
   // Double-click on a text layer (in pan or text mode) to re-edit it
@@ -2000,7 +1985,13 @@ export class IEditor {
     const img = new Image();
     img.src = tmp.toDataURL();
     img.onload = () => {
+      this.clipboardImgTime = Date.now();
       this.clipboardImg = img;
+      try {
+        const _w: any = window.top || window;
+        _w.__lupine_clipboard_img = img;
+        _w.__lupine_clipboard_img_time = this.clipboardImgTime;
+      } catch (err) {}
       this.hasSelection = false;
       this._updateOpts();
     };
@@ -2008,7 +1999,13 @@ export class IEditor {
 
   private _copyInternalClipboard() {
     if (this.selectedText) {
-      this.internalClipboard = { type: 'text', data: { ...this.selectedText } };
+      const layout = computeTextLayout(
+        this.ctx,
+        this.selectedText,
+        (layer: any) =>
+          `${layer.italic ? 'italic ' : ''}${layer.bold ? 'bold ' : ''}${layer.fontSize}px ${layer.fontFamily}`
+      );
+      this.internalClipboard = { type: 'text', data: { ...this.selectedText, w: layout.actualW, h: layout.actualH } };
     } else if (this.selectedSticker) {
       this.internalClipboard = { type: 'sticker', data: { ...this.selectedSticker } };
     } else if (this.selectedShape) {
@@ -2020,50 +2017,115 @@ export class IEditor {
         },
       };
     }
+
+    if (this.internalClipboard) {
+      this.internalClipboardTime = Date.now();
+      try {
+        const _w: any = window.top || window;
+        _w.__lupine_clipboard = this.internalClipboard;
+        _w.__lupine_clipboard_time = this.internalClipboardTime;
+      } catch (err) {}
+      exportToSystemClipboard(this.internalClipboard, (ctx, shifted) => {
+        if (this.internalClipboard!.type === 'text') {
+          renderTextLayer(ctx, shifted, (layer: any) => this._textFont(layer), 1, true);
+        } else if (this.internalClipboard!.type === 'shape') {
+          renderShapeLayer(ctx, shifted, 1);
+        } else if (this.internalClipboard!.type === 'sticker') {
+          renderStickerLayer(ctx, shifted, 1);
+        }
+      });
+    }
   }
 
   private _pasteClipboard() {
-    if (this.internalClipboard) {
+    let _w: any = window;
+    try {
+      _w = window.top || window;
+    } catch (err) {}
+    const globalTime = _w.__lupine_clipboard_time || 0;
+    const globalImgTime = _w.__lupine_clipboard_img_time || 0;
+
+    const useImgGlobal = globalImgTime > this.clipboardImgTime;
+    const bestImgTime = useImgGlobal ? globalImgTime : this.clipboardImgTime;
+
+    const useInternalGlobal = globalTime > this.internalClipboardTime;
+    const bestInternalTime = useInternalGlobal ? globalTime : this.internalClipboardTime;
+
+    if (bestImgTime > bestInternalTime && bestImgTime > 0) {
+      if (!this.clipboardImg && !_w.__lupine_clipboard_img) return;
+      this._pushUndo();
+      const img = useImgGlobal ? _w.__lupine_clipboard_img : this.clipboardImg;
+      const s: StickerLayer = {
+        id: `st_${Date.now()}`,
+        img,
+        x: (this.offCanvas.width - img.naturalWidth) / 2,
+        y: (this.offCanvas.height - img.naturalHeight) / 2,
+        w: img.naturalWidth,
+        h: img.naturalHeight,
+        rotation: 0,
+      };
+      this.stickerLayers.push(s);
+      this.displayObjects.push({ id: s.id, type: 'sticker', layer: s });
+      this.selectedSticker = s;
+      this._redraw();
+      return;
+    }
+
+    const internal = useInternalGlobal ? _w.__lupine_clipboard : this.internalClipboard || _w.__lupine_clipboard;
+
+    if (internal) {
       this._pushUndo();
       const newId = `c_${Date.now()}`;
       const offset = 20 / this.viewScale; // shifted right and down
 
-      if (this.internalClipboard.type === 'text') {
-        const t = { ...this.internalClipboard.data, id: newId };
+      const vw = this.canvas.width / this.viewScale;
+      const vh = this.canvas.height / this.viewScale;
+      const vx = -this.viewOffX / this.viewScale;
+      const vy = -this.viewOffY / this.viewScale;
+
+      if (internal.type === 'text') {
+        const t = { ...internal.data, id: newId };
         t.x += offset;
         t.y += offset;
         if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
           t.tailX += offset;
           t.tailY += offset;
         }
+        enforceBounds(t, false, vx, vy, vw, vh, this.viewScale);
         this.textLayers.push(t);
         this.selectedText = t;
         this.selectedShape = null;
         this.selectedSticker = null;
-      } else if (this.internalClipboard.type === 'sticker') {
-        const s = { ...this.internalClipboard.data, id: newId };
+      } else if (internal.type === 'sticker') {
+        const s = { ...internal.data, id: newId };
         s.x += offset;
         s.y += offset;
+        enforceBounds(s, false, vx, vy, vw, vh, this.viewScale);
         this.stickerLayers.push(s);
         this.selectedSticker = s;
         this.selectedText = null;
         this.selectedShape = null;
-      } else if (this.internalClipboard.type === 'shape') {
+      } else if (internal.type === 'shape') {
         const sh = {
-          ...this.internalClipboard.data,
+          ...internal.data,
           id: newId,
-          points: this.internalClipboard.data.points
-            ? this.internalClipboard.data.points.map((p: any) => ({ ...p }))
-            : undefined,
+          points: internal.data.points ? internal.data.points.map((p: any) => ({ ...p })) : undefined,
         };
+
         sh.x += offset;
         sh.y += offset;
+        if (sh.endX !== undefined) sh.endX += offset;
+        if (sh.w !== undefined) sh.w += offset;
+        if (sh.endY !== undefined) sh.endY += offset;
+        if (sh.h !== undefined) sh.h += offset;
+
         if (sh.points) {
           for (const p of sh.points) {
             p.x += offset;
             p.y += offset;
           }
         }
+        enforceBounds(sh, true, vx, vy, vw, vh, this.viewScale);
         this.shapes.push(sh);
         this.selectedShape = sh;
         this.selectedText = null;
@@ -2072,11 +2134,11 @@ export class IEditor {
 
       this.displayObjects.push({
         id: newId,
-        type: this.internalClipboard.type,
+        type: internal.type,
         layer:
-          this.internalClipboard.type === 'text'
+          internal.type === 'text'
             ? this.selectedText
-            : this.internalClipboard.type === 'sticker'
+            : internal.type === 'sticker'
             ? this.selectedSticker
             : this.selectedShape,
       } as any);
@@ -2617,7 +2679,7 @@ export class IEditor {
           this.ctx.lineWidth = s.strokeWidth;
           this.ctx.lineCap = 'round';
           this.ctx.lineJoin = 'round';
-          drawShapePath(this.ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, s.bgColor);
+          drawShapePath(this.ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, s.bgColor, s.points);
         }
         this.ctx.restore();
 
@@ -2705,7 +2767,7 @@ export class IEditor {
         this.ctx.lineWidth = s.strokeWidth;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
-        drawShapePath(this.ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h);
+        drawShapePath(this.ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, undefined, s.points);
       }
       this.ctx.restore();
     }
@@ -2846,8 +2908,6 @@ export class IEditor {
       i.max = '10000';
       i.style.cssText =
         'flex:1;padding:4px 8px;border:1px solid #555;background:#333;color:#ccc;border-radius:4px;font-size:13px';
-      // Ensure options list wrapper is saved
-      this.optsWrap = l;
 
       l.appendChild(i);
       box.appendChild(l);
@@ -3693,7 +3753,18 @@ export class IEditor {
           this.offCtx.lineWidth = s.strokeWidth;
           this.offCtx.lineCap = 'round';
           this.offCtx.lineJoin = 'round';
-          drawShapePath(this.offCtx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, s.bgColor);
+          drawShapePath(
+            this.offCtx,
+            s.type,
+            s.arrowType || 'standard',
+            s.color,
+            s.x,
+            s.y,
+            s.w,
+            s.h,
+            s.bgColor,
+            s.points
+          );
         }
         this.offCtx.restore();
       }

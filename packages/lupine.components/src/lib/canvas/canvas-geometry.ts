@@ -1,4 +1,4 @@
-import { StickerLayer, TextLayer, ShapeLayer } from './i-editor-types';
+import { StickerLayer, TextLayer, ShapeLayer } from './canvas-types';
 
 export interface TextLayoutResult {
   fs: number;

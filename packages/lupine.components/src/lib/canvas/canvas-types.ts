@@ -25,6 +25,7 @@ export interface LayerShadow {
 
 export interface TextLayer {
   id: string;
+  pageIndex?: number;
   text: string;
   x: number;
   y: number;
@@ -47,6 +48,7 @@ export interface TextLayer {
 
 export interface StickerLayer {
   id: string;
+  pageIndex?: number;
   img: HTMLImageElement;
   x: number;
   y: number;
