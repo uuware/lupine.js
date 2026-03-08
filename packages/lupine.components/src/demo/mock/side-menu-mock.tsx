@@ -55,7 +55,7 @@ const sideMenuMockCss: CssProps = {
     justifyContent: 'space-between',
   },
   '.msm-footer-cfg .msm-item': {
-    padding: '12px 0px',
+    padding: '12px',
   },
   '.msm-footer-version': {
     textAlign: 'center',

@@ -141,6 +141,29 @@ export class ActionSheet {
           marginTop: 'unset',
           maxWidth: 'unset',
         },
+        '.act-sheet-wrap-container': {
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+        },
+        '.act-sheet-wrap-item': {
+          cursor: 'pointer',
+          padding: '8px',
+          borderRadius: '8px',
+          border: '1px solid var(--primary-border-color)',
+          margin: '4px',
+          width: 'calc(25% - 8px)',
+          minWidth: '60px',
+          textAlign: 'center',
+          transition: 'all 0.3s ease',
+        },
+        '.act-sheet-wrap-item:hover': {
+          fontWeight: 'bold',
+          backgroundColor: 'var(--primary-bg-color-hover, rgba(0,0,0,0.04))',
+        },
       },
     };
     const component = (
@@ -433,6 +456,46 @@ export const ActionSheetSelectPromise = async ({
         <div>
           {options.map((option, index) => (
             <div class='act-sheet-item' key={index} onClick={() => handleClicked(index, handleClose)}>
+              {option}
+            </div>
+          ))}
+        </div>
+      ),
+      contentMaxWidth,
+      contentMaxHeight,
+      cancelButtonText,
+      closeEvent,
+      closeWhenClickOutside,
+      zIndex,
+    });
+  });
+};
+
+export const ActionSheetSelectWrapPromise = async ({
+  title,
+  contentMaxWidth,
+  contentMaxHeight,
+  options = ActionSheetSelectOptionsProps.Ok,
+  closeWhenClickOutside = true,
+  cancelButtonText = 'Cancel',
+  zIndex,
+}: ActionSheetSelectPromiseProps): Promise<number> => {
+  return new Promise(async (resolve, reject) => {
+    const handleClicked = async (index: number, close: ActionSheetCloseProps) => {
+      resolve(index);
+      close('select');
+    };
+    const closeEvent = (reason?: ActionSheetCloseReasonProps) => {
+      if (reason !== 'select') {
+        resolve(-1);
+      }
+    };
+    const handleClose = await ActionSheet.show({
+      title,
+      children: (
+        <div class='act-sheet-wrap-container'>
+          {options.map((option, index) => (
+            <div class='act-sheet-wrap-item' key={index} onClick={() => handleClicked(index, handleClose)}>
               {option}
             </div>
           ))}
