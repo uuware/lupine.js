@@ -14,6 +14,8 @@
 */
 import { VNode, CssProps, HtmlVar, RefProps, stopPropagation, MediaQueryRange } from 'lupine.components';
 
+// addClass(SliderFramePosition) is used to show two SliderFrames for big screens,
+// so when the second is showing, it needs to set this on the first one
 export type SliderFramePosition = 'desktop-slide-left' | 'desktop-slide-right';
 export type SliderFrameHookProps = {
   load?: (children: VNode<any>) => void;
@@ -62,7 +64,7 @@ export const SliderFrame = (props: SliderFrameProps) => {
     flexDirection: 'column',
     position: 'fixed',
     top: '0',
-    left: '0',
+    left: 'var(--auto-sidemenu-left-offset, 0px)',
     right: '0',
     bottom: '0',
     zIndex: 'var(--layer-slider)',
@@ -75,8 +77,12 @@ export const SliderFrame = (props: SliderFrameProps) => {
     '&.show': {
       transform: props.direction === 'bottom' ? 'translateY(0)' : 'translateX(0)',
     },
+    '& > *': {
+      '--auto-sidemenu-left-offset': '0px',
+    },
     '& > fragment': {
       height: '100%',
+      '--auto-sidemenu-left-offset': '0px',
     },
     '&.desktop-slide-left': {
       [MediaQueryRange.TabletAbove]: {
@@ -87,8 +93,8 @@ export const SliderFrame = (props: SliderFrameProps) => {
     },
     '&.desktop-slide-right': {
       [MediaQueryRange.TabletAbove]: {
-        top: '59px',
-        left: '30%',
+        top: '59px', // Just below DesktopHeader
+        left: 'calc(max(var(--auto-sidemenu-left-offset, 0px), 30%))',
         transform: 'translateX(0)',
         // notice: here is connected with mobile-header-title-icon.tsx
         '.mobile-header-title-icon-top': {

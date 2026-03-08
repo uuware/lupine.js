@@ -1,9 +1,9 @@
-import { backActionHelper, CssProps, RefProps, VNode } from 'lupine.components';
+import { backActionHelper, CssProps, RefProps, VNode, MediaQueryRange } from 'lupine.components';
 
 export class MobileSideMenuHelper {
   static show() {
     const ref = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
-    if (!ref) return;
+    if (!ref || ref.clientWidth > 100) return;
 
     ref.classList.add('show');
 
@@ -170,7 +170,7 @@ export class MobileSideMenuHelper {
     });
   }
 }
-export const MobileSideMenu = (props: { children: VNode<any> }) => {
+export const MobileSideMenu = (props: { children: VNode<any>; autoExtend?: boolean }) => {
   const css: CssProps = {
     '.mobile-side-menu-mask': {
       display: 'none',
@@ -206,9 +206,25 @@ export const MobileSideMenu = (props: { children: VNode<any> }) => {
       overflowY: 'auto',
       transform: 'translateX(-100%)',
       boxShadow: 'var(--cover-box-shadow)',
-      // trick: to put two padding-top properties
       'padding-top ': 'constant(safe-area-inset-top)',
       'padding-top': 'env(safe-area-inset-top)',
+    },
+    [MediaQueryRange.TabletAbove]: {
+      '&.auto-extend .mobile-side-menu-mask': {
+        display: 'flex !important',
+        width: 'var(--auto-sidemenu-left-offset, 260px)',
+        right: 'auto',
+        backgroundColor: 'transparent !important',
+        pointerEvents: 'none',
+      },
+      '&.auto-extend .mobile-side-menu': {
+        transform: 'translateX(0) !important',
+        width: '100%',
+        maxWidth: 'unset',
+        boxShadow: 'none',
+        borderRight: '1px solid var(--primary-border-color)',
+        pointerEvents: 'auto',
+      },
     },
   };
 
@@ -226,7 +242,7 @@ export const MobileSideMenu = (props: { children: VNode<any> }) => {
     },
   };
   return (
-    <div css={css} ref={ref}>
+    <div css={css} ref={ref} class={['mobile-side-menu-top', props.autoExtend ? 'auto-extend' : ''].join(' ').trim()}>
       {/* <SliderFrame hook={props.sliderFrameHook} /> */}
       <div class='mobile-side-menu-mask' onClick={onClickContainer}>
         <div class='mobile-side-menu'>{props.children}</div>
