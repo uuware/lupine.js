@@ -19,7 +19,7 @@ export const MobileTopSysIcon = () => {
     },
   };
   return (
-    <div css={css} onClick={() => MobileSideMenuHelper.show()}>
+    <div css={css} onClick={() => MobileSideMenuHelper.show()} class='mobile-top-sys-icon'>
       <i class='ifc-icon bs-list'></i>
     </div>
   );

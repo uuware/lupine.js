@@ -5,6 +5,7 @@ import {
   ActionSheetMessage,
   ActionSheetInput,
   ActionSheetSelectOptionsProps,
+  ActionSheetSelectWrapPromise,
 } from './action-sheet';
 import { ActionSheetTimePicker } from './action-sheet-time';
 import { ActionSheetDatePicker } from './action-sheet-date';
@@ -85,6 +86,18 @@ export const actionSheetDemo: DemoStory<any> = {
           }}
         />
         <Button
+          text='Show Action Sheet Wrap Select'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const days = Array.from({ length: 31 }, (_, i) => String(i + 1));
+            const result = await ActionSheetSelectWrapPromise({
+              title: 'Select a Day',
+              options: days,
+            });
+            if (result >= 0) console.log('Wrap Select picked:', days[result]);
+          }}
+        />
+        <Button
           text='Show Time Picker (HH:mm)'
           size={ButtonSize.Medium}
           onClick={async () => {
@@ -130,6 +143,30 @@ export const actionSheetDemo: DemoStory<any> = {
               order: 'DMY',
             });
             if (result) console.log('Date selected (DMY):', result);
+          }}
+        />
+        <Button
+          text='Show Date Picker (Month-Day)'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetDatePicker({
+              title: 'Pick Month and Day',
+              value: '02-24',
+              format: 'MD',
+            });
+            if (result) console.log('Date selected (MD):', result);
+          }}
+        />
+        <Button
+          text='Show Date Picker (Day Only)'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetDatePicker({
+              title: 'Pick a Day',
+              value: '24',
+              format: 'D',
+            });
+            if (result) console.log('Date selected (D):', result);
           }}
         />
         <Button

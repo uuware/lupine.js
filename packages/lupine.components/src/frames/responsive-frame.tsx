@@ -15,11 +15,12 @@ export interface ResponsiveFrameProps {
   mainContent: VNode<any>;
   desktopHeaderTitle: string;
   desktopFooterTitle?: string;
-  desktopTopMenu: IconMenuItemProps[];
-  mobileBottomMenu: IconMenuItemProps[];
+  desktopTopMenu?: IconMenuItemProps[];
+  mobileBottomMenu?: IconMenuItemProps[];
   mobileSideMenuContent: VNode<any>;
   sharedContents: VNode<any>;
   maxWidth?: string;
+  autoExtendSidemenu?: boolean;
 }
 export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
   const cssContainer: CssProps = {
@@ -29,7 +30,10 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     height: '100%',
     minHeight: '100%',
     maxWidth: props.maxWidth || '',
+    borderRight: props.maxWidth ? '1px solid var(--primary-border-color)' : 'none',
+    borderLeft: props.maxWidth ? '1px solid var(--primary-border-color)' : 'none',
     margin: '0 auto',
+    overflowX: 'hidden',
     '.frame-top-menu': {
       display: 'flex',
       flexDirection: 'column',
@@ -70,21 +74,37 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
         display: 'none',
       },
     },
+    [MediaQueryRange.TabletAbove]: {
+      transform: 'translateX(0)', // Traps position: fixed children inside this container's dimensions
+      '&.auto-extend': {
+        '--auto-sidemenu-left-offset': '260px',
+        paddingLeft: 'var(--auto-sidemenu-left-offset)',
+        boxSizing: 'border-box',
+      },
+      '.mobile-top-sys-icon': {
+        display: 'none',
+      },
+    },
   };
 
   return (
-    <div css={cssContainer} class='responsive-frame'>
+    <div
+      css={cssContainer}
+      class={['responsive-frame', props.autoExtendSidemenu ? 'auto-extend' : ''].join(' ').trim()}
+    >
       {props.sharedContents}
       <div class='frame-top-menu'>
-        <DesktopHeader title={props.desktopHeaderTitle} items={props.desktopTopMenu}></DesktopHeader>
+        {props.desktopTopMenu && (
+          <DesktopHeader title={props.desktopHeaderTitle} items={props.desktopTopMenu}></DesktopHeader>
+        )}
         <MobileHeaderComponent></MobileHeaderComponent>
       </div>
       <div class='frame-content'>
-        <MobileSideMenu>{props.mobileSideMenuContent}</MobileSideMenu>
+        <MobileSideMenu autoExtend={props.autoExtendSidemenu}>{props.mobileSideMenuContent}</MobileSideMenu>
         <div class={'content-block ' + props.placeholderClassname}>{props.mainContent}</div>
         <div class='frame-footer'>
           {props.desktopFooterTitle && <DesktopFooter title={props.desktopFooterTitle}></DesktopFooter>}
-          <MobileFooterMenu items={props.mobileBottomMenu}></MobileFooterMenu>
+          {props.mobileBottomMenu && <MobileFooterMenu items={props.mobileBottomMenu}></MobileFooterMenu>}
         </div>
       </div>
     </div>
