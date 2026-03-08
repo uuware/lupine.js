@@ -3,7 +3,7 @@ import { DemoStory } from '../../demo/demo-types';
 import { PEditor } from './p-editor';
 import { PEditorOptions } from './p-editor-types';
 
-const PEditorDemoPage = (props: { args: PEditorOptions }) => {
+export const PEditorDemoPage = (props: { args: PEditorOptions }) => {
   let editor: PEditor | undefined;
 
   const ref: RefProps = {
