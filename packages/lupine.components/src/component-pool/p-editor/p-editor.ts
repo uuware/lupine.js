@@ -1,21 +1,33 @@
-import { Tool, TextLayer, StickerLayer, PEditorOptions, HANDLE_SIZE, ShapeLayer, ShapeType } from './p-editor-types';
-import { loadPdfScripts } from './p-editor-utils';
-import { PEDITOR_STYLES } from './p-editor-styles';
 import {
-  hitSticker,
-  hitText,
+  ShapeLayer,
+  ShapeType,
+  computeTextLayout,
+  getShapeBoundingBox,
+  getShapeHandles,
   getStickerHandles,
   getTextHandles,
   hitShape,
-  getShapeHandles,
-  getShapeBoundingBox,
-} from '../i-editor/i-editor-geometry';
-import { drawShapePath, drawDeleteHandle } from '../i-editor/i-editor-drawing';
+  hitSticker,
+  hitText,
+  drawShapePath,
+  drawDeleteHandle,
+  buildBubblePath,
+  FONT_OPTIONS,
+  exportToSystemClipboard,
+  enforceBounds,
+  Tool,
+  TextLayer,
+  StickerLayer,
+  LayerShadow,
+  HANDLE_SIZE,
+  renderTextLayer,
+  renderStickerLayer,
+  renderShapeLayer,
+} from '../../lib/canvas';
+import { PEditorOptions } from './p-editor-types';
+import { loadPdfScripts } from './p-editor-utils';
+import { PEDITOR_STYLES } from './p-editor-styles';
 import { LJ_SVG_ICON_CLASS, SvgIconNames, loadSvgIconStyles } from '../svg-icons';
-const PEditorSvgs = ['upload', 'download', 'pan', 'select', 'zoomIn', 'zoomOut', 'draw', 'text', 'sticker'];
-
-const BUBBLE_SVG_PATH =
-  'M12 2C6.48 2 2 5.58 2 10c0 2.53 1.48 4.79 3.75 6.22l-.95 3.32c-.11.39.29.74.65.59l4.52-1.92A11.83 11.83 0 0012 18c5.52 0 10-3.58 10-8s-4.48-8-10-8z';
 
 export class PEditor {
   private container: HTMLElement;
@@ -32,11 +44,23 @@ export class PEditor {
   // Options
   private tool: Tool = 'pan';
   private color = '#ff0000';
-  private _fontFamily = 'Arial, sans-serif';
+  private fillColor?: string;
+  private _fontFamily = 'sans-serif';
   private _fontSize = 24;
+  private _textBold = false;
+  private _textItalic = false;
+  private _textTailActive = false;
+  private _tempRot = 0;
+  private _textStrokeColor = '#000000';
+  private _textStrokeWidth = 0;
   private zoom = 1.0;
+  private zoomSliderRange!: HTMLInputElement;
+  private zoomSliderLabel!: HTMLSpanElement;
+
+  private eraserSize = 20;
 
   // PDF State
+  private pdfBytesBase?: Uint8Array;
   private pdfBytes?: Uint8Array;
   private pdfDoc?: any; // PDFLib.PDFDocument
   private pdfJsDoc?: any; // PDF.js Proxy
@@ -47,6 +71,7 @@ export class PEditor {
   private texts: TextLayer[] = [];
   private stickers: StickerLayer[] = [];
   private shapes: ShapeLayer[] = [];
+  private renderOrder: string[] = [];
 
   private activeId: string | null = null;
   private dragState: any = null;
@@ -56,12 +81,21 @@ export class PEditor {
   private _penSize = 4;
   private _arrowType: 'standard' | 'double' | 'thick' | 'fishtail' | 'arc' = 'standard';
   private activeShape: ShapeLayer | null = null;
+  private internalClipboard: { type: 'text' | 'sticker' | 'shape'; data: any } | null = null;
+  private internalClipboardTime: number = 0;
   private textInput: HTMLTextAreaElement | null = null;
   private textCommitFn: (() => void) | null = null;
   private textCancelFn: (() => void) | null = null;
+  private _isExporting = false;
+
+  // Undo / Redo
+  private undoStack: Array<{ texts: any[]; stickers: any[]; shapes: any[]; renderOrder: string[] }> = [];
+  private redoStack: Array<{ texts: any[]; stickers: any[]; shapes: any[]; renderOrder: string[] }> = [];
 
   constructor(container: HTMLElement, options?: PEditorOptions) {
     this.container = container;
+    this.container.tabIndex = 0;
+    this.container.style.outline = 'none';
     this._injectStyles();
 
     // UI Layout
@@ -93,6 +127,73 @@ export class PEditor {
     this._buildToolbar();
     this._attachEvents();
 
+    // The original code had this.container.appendChild(this.toolbar) etc.
+    // The current structure uses innerHTML to build the initial DOM.
+    // The instruction seems to be based on a different DOM construction approach.
+    // I will adapt the instruction to the current DOM structure.
+
+    // The instruction implies wrapping the sidebar and adding a zoom slider.
+    // The current `this.sidebar` is already a DOM element obtained from querySelector.
+    // I need to create a new wrapper div and move the existing sidebar into it.
+
+    const mainContentArea = this.container.querySelector('.pe-main')!;
+    const existingSidebar = this.container.querySelector('.pe-sidebar')!;
+
+    const sidebarWrap = document.createElement('div');
+    sidebarWrap.style.width = '200px';
+    sidebarWrap.style.flexShrink = '0';
+    sidebarWrap.style.display = 'flex';
+    sidebarWrap.style.flexDirection = 'column';
+    sidebarWrap.style.borderRight = '1px solid #ccc';
+    sidebarWrap.style.background = '#f5f5f5';
+
+    // Disconnect the sidebar temporarily to wrap it
+    if (existingSidebar.parentNode) existingSidebar.parentNode.removeChild(existingSidebar);
+    this.sidebar.style.flex = '1';
+    this.sidebar.style.minHeight = '0';
+    this.sidebar.style.width = '100%';
+    this.sidebar.style.borderRight = 'none'; // handled by wrapper
+
+    sidebarWrap.appendChild(this.sidebar);
+
+    const zoomOverlay = document.createElement('div');
+    zoomOverlay.style.padding = '10px';
+    zoomOverlay.style.borderTop = '1px solid #ddd';
+    zoomOverlay.style.display = 'flex';
+    zoomOverlay.style.alignItems = 'center';
+    zoomOverlay.style.justifyContent = 'space-between';
+    zoomOverlay.style.fontSize = '12px';
+    zoomOverlay.style.color = '#333';
+    zoomOverlay.style.background = '#e9e9e9';
+
+    this.zoomSliderRange = document.createElement('input');
+    this.zoomSliderRange.type = 'range';
+    this.zoomSliderRange.min = '0.3';
+    this.zoomSliderRange.max = '4';
+    this.zoomSliderRange.step = '0.05';
+    this.zoomSliderRange.value = '1';
+    this.zoomSliderRange.style.width = '100px';
+    this.zoomSliderRange.style.cursor = 'pointer';
+
+    this.zoomSliderLabel = document.createElement('span');
+    this.zoomSliderLabel.textContent = '100%';
+    this.zoomSliderLabel.style.minWidth = '36px';
+    this.zoomSliderLabel.style.textAlign = 'right';
+
+    this.zoomSliderRange.oninput = () => {
+      const ns = parseFloat(this.zoomSliderRange.value);
+      this.zoom = ns;
+      this._updateZoomSlider();
+      this._renderPage();
+    };
+
+    zoomOverlay.appendChild(this.zoomSliderRange);
+    zoomOverlay.appendChild(this.zoomSliderLabel);
+    sidebarWrap.appendChild(zoomOverlay);
+
+    // Replace the original sidebar with the new sidebarWrap
+    mainContentArea.insertBefore(sidebarWrap, mainContentArea.firstChild);
+
     if (options?.pdfUrl || options?.pdfArrayBuffer) {
       this._init(options);
     } else {
@@ -110,6 +211,68 @@ export class PEditor {
     }
   }
 
+  // ─── Undo / Redo ─────────────────────────────────────────────────────────────
+
+  private _cloneState() {
+    return {
+      texts: this.texts.map((t) => ({ ...t })),
+      // Preserve HTMLImageElement intentionally
+      stickers: this.stickers.map((s) => ({ ...s })),
+      // Preserve shape points array manually
+      shapes: this.shapes.map((s) => ({
+        ...s,
+        points: s.points ? s.points.map((p: any) => ({ ...p })) : undefined,
+      })),
+      renderOrder: [...this.renderOrder],
+    };
+  }
+
+  private _pushUndo() {
+    const newState = this._cloneState();
+    if (this.undoStack.length > 0) {
+      const topState = this.undoStack[this.undoStack.length - 1];
+      if (JSON.stringify(topState) === JSON.stringify(newState)) return;
+    }
+    this.undoStack.push(newState);
+    this.redoStack = [];
+    if (this.undoStack.length > 50) this.undoStack.shift();
+  }
+
+  undo() {
+    if (!this.undoStack.length) return;
+    this.redoStack.push(this._cloneState());
+
+    const st = this.undoStack.pop()!;
+    // Deep clone it out of the stack so subsequent redos/undos don't mutate stack references
+    this.texts = st.texts.map((t) => ({ ...t }));
+    this.stickers = st.stickers.map((s) => ({ ...s }));
+    this.shapes = st.shapes.map((s) => ({
+      ...s,
+      points: s.points ? s.points.map((p: any) => ({ ...p })) : undefined,
+    }));
+    this.renderOrder = [...st.renderOrder];
+
+    this.activeId = null;
+    this._drawFg();
+  }
+
+  redo() {
+    if (!this.redoStack.length) return;
+    this.undoStack.push(this._cloneState());
+
+    const st = this.redoStack.pop()!;
+    this.texts = st.texts.map((t) => ({ ...t }));
+    this.stickers = st.stickers.map((s) => ({ ...s }));
+    this.shapes = st.shapes.map((s) => ({
+      ...s,
+      points: s.points ? s.points.map((p: any) => ({ ...p })) : undefined,
+    }));
+    this.renderOrder = [...st.renderOrder];
+
+    this.activeId = null;
+    this._drawFg();
+  }
+
   private async _init(options?: PEditorOptions) {
     this.loadingOverlay.style.display = 'flex';
     try {
@@ -119,41 +282,60 @@ export class PEditor {
 
       if (options?.pdfArrayBuffer) {
         this.pdfBytes = new Uint8Array(options.pdfArrayBuffer);
+        this.pdfBytesBase = new Uint8Array(options.pdfArrayBuffer);
       } else if (options?.pdfUrl) {
         const res = await fetch(options.pdfUrl);
         const arrayBuffer = await res.arrayBuffer();
         this.pdfBytes = new Uint8Array(arrayBuffer);
+        this.pdfBytesBase = new Uint8Array(arrayBuffer);
       } else {
         // Init empty A4
         const doc = await PDFDocument.create();
-        const page = doc.addPage([595.28, 841.89]); // A4 Size in points
+        doc.addPage([595.28, 841.89]); // A4 Size in points
 
-        // Add branding texts
-        const font = await doc.embedFont(StandardFonts.HelveticaBold);
-        const fontNorm = await doc.embedFont(StandardFonts.Helvetica);
-
-        page.drawText('p-editor', {
+        // Add branding texts as editable layers instead of hardcoding into PDF byte array
+        const id1 = `t_init_1`;
+        const id2 = `t_init_2`;
+        this.texts.push({
+          id: id1,
+          text: 'p-editor',
           x: 230,
-          y: 600,
-          size: 40,
-          font: font,
-          color: rgb(0.2, 0.2, 0.2),
+          y: 300,
+          fontSize: 40,
+          fontFamily: 'HelveticaBold',
+          bgColor: 'transparent',
+          color: '#333333',
+          bold: false,
+          italic: false,
+          rotation: 0,
+          pageIndex: 1,
         });
 
-        page.drawText('Powered by Lupine.js', {
-          x: 250,
-          y: 560,
-          size: 14,
-          font: fontNorm,
-          color: rgb(0.5, 0.5, 0.5),
+        this.texts.push({
+          id: id2,
+          text: 'Powered by Lupine.js',
+          x: 230,
+          y: 340,
+          fontSize: 14,
+          fontFamily: 'Helvetica',
+          bgColor: 'transparent',
+          color: '#808080',
+          bold: false,
+          italic: false,
+          rotation: 0,
+          pageIndex: 1,
         });
+
+        this.renderOrder.push(id1, id2);
 
         this.pdfBytes = await doc.save();
+        this.pdfBytesBase = this.pdfBytes!.slice(0);
       }
 
       if (this.pdfBytes) {
-        this.pdfDoc = await PDFDocument.load(this.pdfBytes);
-        const loadingTask = pdfjsLib.getDocument({ data: this.pdfBytes });
+        if (!this.pdfBytesBase) this.pdfBytesBase = new Uint8Array(this.pdfBytes);
+        this.pdfDoc = await PDFDocument.load(this.pdfBytesBase!);
+        const loadingTask = pdfjsLib.getDocument({ data: this.pdfBytes! });
         this.pdfJsDoc = await loadingTask.promise;
         this.numPages = this.pdfJsDoc.numPages;
         this.cp = 1;
@@ -180,7 +362,7 @@ export class PEditor {
     btn.dataset.id = id;
     btn.onclick = () => {
       this._setTool(id as Tool);
-      if (['upload', 'download', 'zoomIn', 'zoomOut'].includes(id)) {
+      if (['upload', 'download', 'zoomIn', 'zoomOut', 'resize'].includes(id)) {
         fn();
       }
     };
@@ -200,6 +382,14 @@ export class PEditor {
 
     tb.appendChild(
       this._grp(
+        this._btn('undo', 'Undo (Ctrl+Z)', 'undo', () => this.undo()),
+        this._btn('redo', 'Redo (Ctrl+Y)', 'redo', () => this.redo())
+      )
+    );
+
+    tb.appendChild(
+      this._grp(
+        this._btn('resize', 'Resize Canvas', 'resize', () => this._showResizeModal()),
         this._btn('upload', 'Upload PDF', 'upload', () => this._handleUpload()),
         this._btn('download', 'Download PDF', 'download', () => this._handleDownload())
       )
@@ -208,9 +398,8 @@ export class PEditor {
     tb.appendChild(
       this._grp(
         this._btn('pan', 'Pan', 'pan', () => {}),
-        this._btn('select', 'Select', 'select', () => {}),
-        this._btn('zoomIn', 'Zoom In', 'zoomIn', () => this._zoom(1.2)),
-        this._btn('zoomOut', 'Zoom Out', 'zoomOut', () => this._zoom(1 / 1.2))
+        this._btn('zoomIn', 'Zoom In', 'zoomIn', () => this._zoom(0.1)),
+        this._btn('zoomOut', 'Zoom Out', 'zoomOut', () => this._zoom(-0.1))
       )
     );
 
@@ -225,8 +414,8 @@ export class PEditor {
     this._setTool('pan');
   }
 
-  private _setTool(t: Tool) {
-    if (!['upload', 'download', 'zoomIn', 'zoomOut'].includes(t)) {
+  private _setTool(t: Tool, keepSelection = false, initialRotation: number = 0) {
+    if (!['upload', 'download', 'zoomIn', 'zoomOut', 'resize'].includes(t)) {
       this.tool = t;
       this.container.querySelectorAll('.pe-toolbar .pe-btn').forEach((b) => {
         if ((b as HTMLButtonElement).dataset.id === t) b.classList.add('active');
@@ -237,7 +426,9 @@ export class PEditor {
       else if (t === 'select') area.style.cursor = 'default';
       else area.style.cursor = 'crosshair';
 
-      this.activeId = null;
+      if (!keepSelection) {
+        this.activeId = null;
+      }
       this._updateOpts();
       this._drawFg();
     }
@@ -292,23 +483,189 @@ export class PEditor {
 
     if (t === 'text' || activeTxt) {
       clr('Color');
-      const sz = document.createElement('input');
-      sz.type = 'range';
-      sz.min = '10';
-      sz.max = '100';
-      if (activeTxt) this._fontSize = activeTxt.fontSize;
-      sz.value = this._fontSize + '';
-      sz.oninput = () => {
-        this._fontSize = +sz.value;
-        this._applyTextSizeToActive();
+
+      const textFill = activeTxt ? activeTxt.bgColor || '' : this.fillColor || '';
+      const tFlbl = document.createElement('label');
+      tFlbl.textContent = 'Fill';
+      const tFinp = document.createElement('input');
+      tFinp.type = 'color';
+      tFinp.value = textFill || '#ffffff';
+      tFinp.oninput = () => {
+        this.fillColor = tFinp.value;
+        if (activeTxt) {
+          activeTxt.bgColor = tFinp.value;
+          this._drawFg();
+        }
+      };
+      tFlbl.appendChild(tFinp);
+      w.appendChild(tFlbl);
+
+      const tTranBtn = document.createElement('button');
+      tTranBtn.textContent = '🚫';
+      tTranBtn.title = 'Transparent Fill';
+      tTranBtn.style.background = !textFill ? 'var(--primary-accent-color,#0a74c9)' : 'transparent';
+      tTranBtn.style.fontSize = '14px';
+      tTranBtn.style.lineHeight = '1';
+      tTranBtn.style.padding = '2px 4px';
+      tTranBtn.style.marginLeft = '4px';
+      tTranBtn.addEventListener('click', () => {
+        this.fillColor = undefined;
+        if (activeTxt) {
+          activeTxt.bgColor = undefined;
+        }
+        this._updateOpts();
+        this._drawFg();
+      });
+      w.appendChild(tTranBtn);
+
+      const fLbl = document.createElement('label');
+      const curFamily = activeTxt ? activeTxt.fontFamily : this._fontFamily;
+      fLbl.innerHTML = `Font:<select style="padding:2px;border:1px solid #555;background:#333;color:#ccc;border-radius:3px;max-width:140px;">
+        ${FONT_OPTIONS.map(
+          (f) => `<option value='${f.val}' ${curFamily === f.val ? 'selected' : ''}>${f.label}</option>`
+        ).join('')}
+      </select>`;
+      const fs = fLbl.querySelector('select') as HTMLSelectElement;
+      fs.onchange = () => {
+        this._fontFamily = fs.value;
+        if (activeTxt) activeTxt.fontFamily = fs.value;
         this._drawFg();
       };
-      w.appendChild(sz);
-      btn('+Bubble', () => {
-        if (this.activeId) this._toggleBubble(this.activeId);
+      w.appendChild(fLbl);
+
+      const curBold = activeTxt ? activeTxt.bold : this._textBold;
+      const bB = document.createElement('button');
+      bB.textContent = 'B';
+      bB.style.fontWeight = 'bold';
+      bB.style.background = curBold ? 'var(--primary-accent-color,#0a74c9)' : '#eee';
+      bB.addEventListener('click', () => {
+        this._textBold = !this._textBold;
+        if (activeTxt) activeTxt.bold = this._textBold;
+        this._updateOpts();
+        this._drawFg();
       });
+      w.appendChild(bB);
+
+      const curItalic = activeTxt ? activeTxt.italic : this._textItalic;
+      const bI = document.createElement('button');
+      bI.textContent = 'I';
+      bI.style.fontStyle = 'italic';
+      bI.style.background = curItalic ? 'var(--primary-accent-color,#0a74c9)' : '#eee';
+      bI.addEventListener('click', () => {
+        this._textItalic = !this._textItalic;
+        if (activeTxt) activeTxt.italic = this._textItalic;
+        this._updateOpts();
+        this._drawFg();
+      });
+      w.appendChild(bI);
+
+      const strokColorLbl = document.createElement('label');
+      strokColorLbl.innerHTML = `OutLine:<input type="color" value="${
+        activeTxt ? activeTxt.strokeColor || '#000000' : this._textStrokeColor
+      }"/>`;
+      const strokColorInp = strokColorLbl.querySelector('input') as HTMLInputElement;
+      strokColorInp.oninput = () => {
+        this._textStrokeColor = strokColorInp.value;
+        if (activeTxt) {
+          if (!activeTxt.strokeWidth || activeTxt.strokeWidth === 0) {
+            activeTxt.strokeWidth = 2;
+            this._textStrokeWidth = 2;
+          }
+          activeTxt.strokeColor = this._textStrokeColor;
+          this._drawFg();
+          this._updateOpts();
+        }
+      };
+      w.appendChild(strokColorLbl);
+
+      // Stroke Width Slider
+      const widthVal = activeTxt && activeTxt.strokeWidth !== undefined ? activeTxt.strokeWidth : this._textStrokeWidth;
+      const isBubbleActive = activeTxt ? activeTxt.tailActive : this._textTailActive;
+      const minOutline = isBubbleActive ? 1 : 0;
+      if (widthVal >= 0) {
+        const strokWidthLbl = document.createElement('label');
+        strokWidthLbl.innerHTML = `<input type="range" min="${minOutline}" max="50" value="${widthVal}" style="width:60px" /><span>${widthVal}</span>`;
+        const strokWidthInp = strokWidthLbl.querySelector('input') as HTMLInputElement;
+        const strokWidthSpan = strokWidthLbl.querySelector('span') as HTMLSpanElement;
+        strokWidthInp.oninput = () => {
+          const w = Number(strokWidthInp.value);
+          this._textStrokeWidth = w;
+          strokWidthSpan.textContent = `${w}`;
+          if (activeTxt) {
+            activeTxt.strokeWidth = w;
+            this._drawFg();
+          }
+        };
+        w.appendChild(strokWidthLbl);
+      }
+
+      const bT = document.createElement('button');
+      bT.textContent = '🗯';
+      bT.title = 'Bubble';
+      bT.style.background = (activeTxt ? activeTxt.tailActive : this._textTailActive)
+        ? 'var(--primary-accent-color,#0a74c9)'
+        : 'transparent';
+      bT.style.fontSize = '14px';
+      bT.style.lineHeight = '1';
+      bT.style.padding = '2px 4px';
+      bT.style.minHeight = '0';
+      bT.addEventListener('click', () => {
+        if (activeTxt) {
+          activeTxt.tailActive = !activeTxt.tailActive;
+          this._textTailActive = activeTxt.tailActive;
+          if (activeTxt.tailActive) {
+            if (!activeTxt.strokeWidth || activeTxt.strokeWidth === 0) {
+              activeTxt.strokeWidth = 2;
+              this._textStrokeWidth = 2;
+            }
+            if (activeTxt.tailX === undefined || activeTxt.tailY === undefined) {
+              activeTxt.tailX = activeTxt.x;
+              activeTxt.tailY = activeTxt.y + activeTxt.fontSize * 1.5;
+            }
+          }
+        } else {
+          this._textTailActive = !this._textTailActive;
+        }
+        this._updateOpts();
+        this._drawFg();
+      });
+      w.appendChild(bT);
     } else if (t === 'pencil' || activeShp) {
       clr('Color');
+
+      const shpFill = activeShp ? activeShp.bgColor || '' : this.fillColor || '';
+      const sFlbl = document.createElement('label');
+      sFlbl.textContent = 'Fill';
+      const sFinp = document.createElement('input');
+      sFinp.type = 'color';
+      sFinp.value = shpFill || '#ffffff';
+      sFinp.oninput = () => {
+        this.fillColor = sFinp.value;
+        if (activeShp) {
+          activeShp.bgColor = sFinp.value;
+          this._drawFg();
+        }
+      };
+      sFlbl.appendChild(sFinp);
+      w.appendChild(sFlbl);
+
+      const sTranBtn = document.createElement('button');
+      sTranBtn.textContent = '🚫';
+      sTranBtn.title = 'Transparent Fill';
+      sTranBtn.style.background = !shpFill ? 'var(--primary-accent-color,#0a74c9)' : 'transparent';
+      sTranBtn.style.fontSize = '14px';
+      sTranBtn.style.lineHeight = '1';
+      sTranBtn.style.padding = '2px 4px';
+      sTranBtn.style.marginLeft = '4px';
+      sTranBtn.addEventListener('click', () => {
+        this.fillColor = undefined;
+        if (activeShp) {
+          activeShp.bgColor = undefined;
+        }
+        this._updateOpts();
+        this._drawFg();
+      });
+      w.appendChild(sTranBtn);
       const sz = document.createElement('input');
       sz.type = 'range';
       sz.min = '1';
@@ -390,9 +747,11 @@ export class PEditor {
               h: nh / this.zoom,
               rotation: 0,
             };
+            this._pushUndo();
             this.stickers.push(newSticker);
+            if (!this.renderOrder.includes(newSticker.id)) this.renderOrder.push(newSticker.id);
             this.activeId = newSticker.id;
-            this._setTool('select');
+            this._setTool('pan', true);
             this._drawFg();
           };
           img.src = u;
@@ -403,6 +762,58 @@ export class PEditor {
       b.onclick = () => inp.click();
       w.appendChild(b);
       w.appendChild(inp);
+    }
+
+    const activeStk = this.activeId ? this.stickers.find((st) => st.id === this.activeId) : null;
+    if (this.activeId && (activeTxt || activeShp || activeStk)) {
+      const zGrp = document.createElement('div');
+      zGrp.style.display = 'inline-block';
+      zGrp.style.marginLeft = '10px';
+      zGrp.style.borderLeft = '1px solid #555';
+      zGrp.style.paddingLeft = '10px';
+
+      const btnZ = (icon: string, hint: string, fn: () => void) => {
+        const b = document.createElement('button');
+        b.innerHTML = icon;
+        b.title = hint;
+        b.style.marginLeft = '4px';
+        b.onclick = fn;
+        zGrp.appendChild(b);
+      };
+
+      btnZ('⇡', 'Bring Forward', () => {
+        const idx = this.renderOrder.indexOf(this.activeId!);
+        if (idx >= 0 && idx < this.renderOrder.length - 1) {
+          const tmp = this.renderOrder[idx];
+          this.renderOrder[idx] = this.renderOrder[idx + 1];
+          this.renderOrder[idx + 1] = tmp;
+          this._drawFg();
+        }
+      });
+      btnZ('⇈', 'Bring to Front', () => {
+        const idx = this.renderOrder.indexOf(this.activeId!);
+        if (idx >= 0 && idx < this.renderOrder.length - 1) {
+          this.renderOrder.push(this.renderOrder.splice(idx, 1)[0]);
+          this._drawFg();
+        }
+      });
+      btnZ('⇣', 'Send Backward', () => {
+        const idx = this.renderOrder.indexOf(this.activeId!);
+        if (idx > 0) {
+          const tmp = this.renderOrder[idx];
+          this.renderOrder[idx] = this.renderOrder[idx - 1];
+          this.renderOrder[idx - 1] = tmp;
+          this._drawFg();
+        }
+      });
+      btnZ('⇊', 'Send to Back', () => {
+        const idx = this.renderOrder.indexOf(this.activeId!);
+        if (idx > 0) {
+          this.renderOrder.unshift(this.renderOrder.splice(idx, 1)[0]);
+          this._drawFg();
+        }
+      });
+      w.appendChild(zGrp);
     }
   }
 
@@ -416,13 +827,9 @@ export class PEditor {
   private _applyTextSizeToActive() {
     if (!this.activeId) return;
     const txt = this.texts.find((x) => x.id === this.activeId && x.pageIndex === this.cp);
-    if (txt) txt.fontSize = this._fontSize;
-  }
-  private _toggleBubble(id: string) {
-    const txt = this.texts.find((x) => x.id === id && x.pageIndex === this.cp);
     if (txt) {
-      txt.tailActive = !txt.tailActive;
-      this._drawFg();
+      txt.fontSize = this._fontSize;
+      txt.h = undefined;
     }
   }
 
@@ -452,8 +859,9 @@ export class PEditor {
               this.pdfDoc.insertPage(this.cp + i, copiedPages[i]);
             }
             this.pdfBytes = await this.pdfDoc.save();
+            this.pdfBytesBase = this.pdfBytes!.slice(0);
             const pdfjsLib = (window as any).pdfjsLib;
-            this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes }).promise;
+            this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes! }).promise;
             this.numPages = this.pdfJsDoc.numPages;
             await this._renderSidebar();
             await this._renderPage();
@@ -469,22 +877,156 @@ export class PEditor {
 
   private async _handleDownload() {
     if (!this.pdfBytes) return;
+    this._isExporting = true;
+    this._drawFg(); // rerender text dashed borders to false
     this.loadingOverlay.style.display = 'flex';
     this.loadingOverlay.textContent = 'Baking and saving...';
     try {
-      this._commitAnnotationsToPdfDoc(); // will apply to pdfDoc
+      const { PDFDocument } = (window as any).PDFLib;
+      this.pdfDoc = await PDFDocument.load(this.pdfBytesBase!);
+      await this._commitAnnotationsToPdfDoc(); // will apply to pdfDoc
       const finalBytes = await this.pdfDoc.save();
       const blob = new Blob([finalBytes], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'edited.pdf';
       link.click();
-      this.pdfBytes = finalBytes; // update internal state to match exactly
     } catch (err) {
       console.error(err);
     }
     this.loadingOverlay.textContent = 'Loading PDF Framework...';
     this.loadingOverlay.style.display = 'none';
+  }
+
+  private _showResizeModal() {
+    if (!this.pdfBytesBase) return;
+
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: '99999',
+    });
+
+    const box = document.createElement('div');
+    Object.assign(box.style, {
+      background: '#242424',
+      padding: '20px',
+      borderRadius: '8px',
+      width: '280px',
+      color: '#fff',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      fontFamily: 'sans-serif',
+    });
+
+    box.innerHTML = '<p style="margin:0 0 14px;font-weight:bold;font-size:14px">Resize Dimensions (cm)</p>';
+
+    const presetsList = {
+      A0: [84.1, 118.9],
+      A1: [59.4, 84.1],
+      A2: [42.0, 59.4],
+      A3: [29.7, 42.0],
+      A4: [21.0, 29.7],
+      A5: [14.8, 21.0],
+      A6: [10.5, 14.8],
+      B4: [25.0, 35.3],
+      B5: [17.6, 25.0],
+      Letter: [21.6, 27.9],
+      Legal: [21.6, 35.6],
+      Ledger: [27.9, 43.2],
+      Executive: [18.4, 26.7],
+    };
+
+    const sel = document.createElement('select');
+    sel.style.cssText =
+      'width:100%;margin-bottom:14px;padding:6px;background:#333;color:#fff;border:1px solid #555;border-radius:4px;outline:none;font-size:13px;';
+    Object.entries(presetsList).forEach(([k, v]) => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.text = `${k} (${v[0]} x ${v[1]} cm)`;
+      if (k === 'A4') opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    box.appendChild(sel);
+
+    const inputsDiv = document.createElement('div');
+    inputsDiv.style.cssText = 'display:flex;gap:10px;margin-bottom:14px;';
+
+    const inp = (label: string, defaultVal: number) => {
+      const wrapper = document.createElement('div');
+      wrapper.style.flex = '1';
+      wrapper.innerHTML = `<div style="font-size:12px;color:#aaa;margin-bottom:4px;">${label}</div>`;
+      const i = document.createElement('input');
+      i.type = 'number';
+      i.value = defaultVal.toString();
+      i.step = '0.1';
+      i.style.cssText =
+        'width:100%;background:#111;color:#fff;border:1px solid #444;border-radius:4px;padding:6px;font-size:13px;box-sizing:border-box;outline:none;';
+      wrapper.appendChild(i);
+      inputsDiv.appendChild(wrapper);
+      return i;
+    };
+
+    const wI = inp('Width (cm)', 21.0);
+    const hI = inp('Height (cm)', 29.7);
+    box.appendChild(inputsDiv);
+
+    sel.onchange = () => {
+      const preset = presetsList[sel.value as keyof typeof presetsList];
+      if (preset) {
+        wI.value = preset[0].toString();
+        hI.value = preset[1].toString();
+      }
+    };
+
+    const btnLine = document.createElement('div');
+    btnLine.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;margin-top:20px;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.className = 'pe-btn';
+    cancelBtn.style.cssText =
+      'width:auto;padding:6px 12px;background:#444;border:none;border-radius:4px;color:#fff;cursor:pointer;';
+    cancelBtn.onclick = () => overlay.remove();
+
+    const applyBtn = document.createElement('button');
+    applyBtn.textContent = 'Apply';
+    applyBtn.className = 'pe-btn';
+    applyBtn.style.cssText =
+      'width:auto;padding:6px 12px;background:#0a74c9;border:none;border-radius:4px;color:#fff;cursor:pointer;font-weight:bold;';
+
+    applyBtn.onclick = async () => {
+      overlay.remove();
+      this.loadingOverlay.style.display = 'flex';
+      this.loadingOverlay.textContent = 'Resizing Document...';
+      try {
+        const { PDFDocument } = (window as any).PDFLib;
+        const doc = await PDFDocument.load(this.pdfBytesBase!);
+        const newW = parseFloat(wI.value) * 28.3464567; // convert cm to points
+        const newH = parseFloat(hI.value) * 28.3464567;
+        doc.getPages().forEach((p: any) => p.setSize(newW, newH));
+        this.pdfBytesBase = await doc.save();
+        await this._init();
+      } catch (e) {
+        console.error(e);
+      }
+      this.loadingOverlay.style.display = 'none';
+      this.loadingOverlay.textContent = 'Loading PDF Framework...';
+    };
+
+    btnLine.appendChild(cancelBtn);
+    btnLine.appendChild(applyBtn);
+    box.appendChild(btnLine);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
   }
 
   private async _commitAnnotationsToPdfDoc() {
@@ -497,168 +1039,170 @@ export class PEditor {
       // Y axis goes bottom-to-top in PDF
 
       const pgTexts = this.texts.filter((t) => t.pageIndex === pIdx);
-      for (const t of pgTexts) {
-        // Hex to RGB
-        const hex = t.color.replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16) / 255;
-        const g = parseInt(hex.substring(2, 4), 16) / 255;
-        const b = parseInt(hex.substring(4, 6), 16) / 255;
-
-        // Very rough bubble draw if active
-        // Full vector bubble synthesis in pdf-lib is complex; usually we draw an SVG path.
-        if (t.tailActive) {
-          // As a demonstration, draw a rectangle behind text. Real bubble implies complex svg to PDF path convert.
-          page.drawRectangle({
-            x: t.x - 10,
-            y: height - t.y - t.fontSize,
-            width: t.fontSize * t.text.length * 0.6 + 20,
-            height: t.fontSize + 10,
-            color: rgb(0.9, 0.9, 0.9),
-            opacity: 0.8,
-          });
-        }
-        page.drawText(t.text, {
-          x: t.x,
-          y: height - t.y,
-          size: t.fontSize,
-          color: rgb(r, g, b),
-          rotate: degrees((t.rotation * 180) / Math.PI),
-        });
-      }
-
       const pgSticks = this.stickers.filter((s) => s.pageIndex === pIdx);
-      for (const s of pgSticks) {
-        // Embed image
-        // To properly embed we ideally need the original bits, but here we can draw the canvas.
-        const c = document.createElement('canvas');
-        c.width = s.img.width;
-        c.height = s.img.height;
-        c.getContext('2d')!.drawImage(s.img, 0, 0);
-        const dataUrl = c.toDataURL('image/png');
-        const imgBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
-
-        const embedded = await this.pdfDoc.embedPng(imgBytes);
-        page.drawImage(embedded, {
-          x: s.x - s.w / 2,
-          y: height - (s.y + s.h / 2),
-          width: s.w,
-          height: s.h,
-          rotate: degrees((-s.rotation * 180) / Math.PI), // pdf-lib rotation inverse
-        });
+      const pgShapes = this.shapes.filter((s) => s.pageIndex === pIdx);
+      if (this.activeShape && this.activeShape.pageIndex === pIdx) {
+        pgShapes.push(this.activeShape);
       }
 
-      const pgShapes = this.shapes.filter((s) => s.pageIndex === pIdx);
-      for (const s of pgShapes) {
-        const hex = s.color.replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16) / 255;
-        const g = parseInt(hex.substring(2, 4), 16) / 255;
-        const b = parseInt(hex.substring(4, 6), 16) / 255;
-        const color = rgb(r, g, b);
+      const renderedIds = new Set<string>();
+      const pageObjects: { type: string; obj: any }[] = [];
 
-        if (s.type === 'pencil' && s.points && s.points.length > 0) {
-          let path = `M ${s.points[0].x} ${height - s.points[0].y}`;
-          for (let i = 1; i < s.points.length; i++) {
-            path += ` L ${s.points[i].x} ${height - s.points[i].y}`;
+      this.renderOrder.forEach((id) => {
+        let obj: any = pgTexts.find((t) => t.id === id);
+        if (obj) {
+          pageObjects.push({ type: 'text', obj });
+          renderedIds.add(id);
+          return;
+        }
+        obj = pgSticks.find((s) => s.id === id);
+        if (obj) {
+          pageObjects.push({ type: 'sticker', obj });
+          renderedIds.add(id);
+          return;
+        }
+        obj = pgShapes.find((s) => s.id === id);
+        if (obj) {
+          pageObjects.push({ type: 'shape', obj });
+          renderedIds.add(id);
+          return;
+        }
+      });
+
+      pgTexts.forEach((t) => {
+        if (!renderedIds.has(t.id)) pageObjects.push({ type: 'text', obj: t });
+      });
+      pgSticks.forEach((s) => {
+        if (!renderedIds.has(s.id)) pageObjects.push({ type: 'sticker', obj: s });
+      });
+      pgShapes.forEach((s) => {
+        if (!renderedIds.has(s.id)) pageObjects.push({ type: 'shape', obj: s });
+      });
+
+      for (const item of pageObjects) {
+        if (item.type === 'text') {
+          const t = item.obj as TextLayer;
+          const cxC = document.createElement('canvas').getContext('2d')!;
+          const fontFn = (tx: any) =>
+            `${tx.italic ? 'italic ' : ''}${tx.bold ? 'bold ' : ''}${tx.fontSize}px ${tx.fontFamily}`;
+          const layout = computeTextLayout(cxC, t as any, fontFn);
+          const tw = layout.actualW;
+          const th = layout.actualH;
+          const cx = t.x + tw / 2;
+          const cy = t.y;
+
+          let lx = 0,
+            ly = 0;
+          if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
+            const dx = t.tailX - cx;
+            const dy = t.tailY - cy;
+            const cos = Math.cos(-t.rotation);
+            const sin = Math.sin(-t.rotation);
+            lx = dx * cos - dy * sin;
+            ly = dx * sin + dy * cos;
           }
-          page.drawSvgPath(path, { borderColor: color, borderWidth: s.strokeWidth });
-        } else if (s.type === 'line') {
-          page.drawLine({
-            start: { x: s.x, y: height - s.y },
-            end: { x: s.w, y: height - s.h },
-            color,
-            thickness: s.strokeWidth,
-          });
-        } else if (s.type === 'rect') {
-          const rx = Math.min(s.x, s.w);
-          const ry = Math.min(s.y, s.h);
-          const rw = Math.abs(s.w - s.x);
-          const rh = Math.abs(s.h - s.y);
-          page.drawRectangle({
-            x: rx,
-            y: height - ry - rh,
-            width: rw,
-            height: rh,
-            borderColor: color,
-            borderWidth: s.strokeWidth,
-          });
-        } else if (s.type === 'circle') {
-          const radius = Math.hypot(s.w - s.x, s.h - s.y);
-          page.drawEllipse({
-            x: s.x,
-            y: height - s.y,
-            xScale: radius,
-            yScale: radius,
-            borderColor: color,
-            borderWidth: s.strokeWidth,
-          });
-        } else if (s.type === 'triangle') {
-          const path = `M ${s.x + (s.w - s.x) / 2} ${height - s.y} L ${s.w} ${height - s.h} L ${s.x} ${height - s.h} Z`;
-          page.drawSvgPath(path, { borderColor: color, borderWidth: s.strokeWidth });
-        } else if (s.type === 'star') {
-          const spikes = 5;
-          const outerRadius = Math.hypot(s.w - s.x, s.h - s.y);
-          const innerRadius = outerRadius / 2.5;
-          let rot = (Math.PI / 2) * 3;
-          const step = Math.PI / spikes;
-          let path = '';
-          for (let i = 0; i < spikes; i++) {
-            const xOuter = s.x + Math.cos(rot) * outerRadius;
-            const yOuter = height - (s.y + Math.sin(rot) * outerRadius);
-            path += (i === 0 ? 'M ' : ' L ') + `${xOuter} ${yOuter}`;
-            rot += step;
-            const xInner = s.x + Math.cos(rot) * innerRadius;
-            const yInner = height - (s.y + Math.sin(rot) * innerRadius);
-            path += ` L ${xInner} ${yInner}`;
-            rot += step;
-          }
-          path += ' Z';
-          page.drawSvgPath(path, { borderColor: color, borderWidth: s.strokeWidth });
-        } else if (s.type === 'arrow') {
-          // Simplistic vector mapping for standard arrow.
-          const dist = Math.hypot(s.w - s.x, s.h - s.y);
-          if (dist >= 2) {
-            const arrowAngle = Math.atan2(s.h - s.y, s.w - s.x);
-            const headlen = Math.max(10, dist * 0.2);
-            const span = Math.PI / 6;
-            const ex = s.w;
-            const ey = height - s.h;
 
-            page.drawLine({
-              start: { x: s.x, y: height - s.y },
-              end: { x: ex, y: ey },
-              color,
-              thickness: s.strokeWidth,
-            });
+          const pad = t.tailActive ? (t.strokeWidth || 0) + 12 : Math.max(t.strokeWidth || 0, 4);
+          const boundHalfW = Math.max(tw / 2 + pad, Math.abs(lx) + pad);
+          const boundHalfH = Math.max(th / 2 + pad, Math.abs(ly) + pad);
 
-            // Front heads
-            const h1x = ex - headlen * Math.cos(arrowAngle - span);
-            const h1y = ey + headlen * Math.sin(arrowAngle - span);
-            page.drawLine({ start: { x: ex, y: ey }, end: { x: h1x, y: h1y }, color, thickness: s.strokeWidth });
+          const cW = Math.ceil(boundHalfW * 2);
+          const cH = Math.ceil(boundHalfH * 2);
 
-            const h2x = ex - headlen * Math.cos(arrowAngle + span);
-            const h2y = ey + headlen * Math.sin(arrowAngle + span);
-            page.drawLine({ start: { x: ex, y: ey }, end: { x: h2x, y: h2y }, color, thickness: s.strokeWidth });
+          const scale = 2; // Better resolution
+          const c = document.createElement('canvas');
+          c.width = cW * scale;
+          c.height = cH * scale;
+          const ctx = c.getContext('2d')!;
+          ctx.scale(scale, scale);
+          ctx.translate(cW / 2, cH / 2);
 
-            if (s.arrowType === 'double') {
-              const b1x = s.x + headlen * Math.cos(arrowAngle - span);
-              const b1y = height - s.y - headlen * Math.sin(arrowAngle - span);
-              page.drawLine({
-                start: { x: s.x, y: height - s.y },
-                end: { x: b1x, y: b1y },
-                color,
-                thickness: s.strokeWidth,
-              });
-
-              const b2x = s.x + headlen * Math.cos(arrowAngle + span);
-              const b2y = height - s.y - headlen * Math.sin(arrowAngle + span);
-              page.drawLine({
-                start: { x: s.x, y: height - s.y },
-                end: { x: b2x, y: b2y },
-                color,
-                thickness: s.strokeWidth,
-              });
+          if (t.bgColor || (t.strokeWidth && t.strokeWidth > 0)) {
+            buildBubblePath(ctx, tw, th, lx, ly, !!t.tailActive);
+            if (t.bgColor) {
+              ctx.fillStyle = t.bgColor;
+              ctx.fill();
+            }
+            if (t.strokeWidth && t.strokeWidth > 0) {
+              ctx.strokeStyle = t.strokeColor || '#000000';
+              ctx.lineWidth = t.strokeWidth;
+              ctx.lineJoin = 'round';
+              ctx.stroke();
             }
           }
+
+          ctx.font = fontFn({ ...t, fontSize: layout.fs });
+          ctx.fillStyle = t.color;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          let currentY = -th / 2 + layout.fs * 0.6;
+          for (const line of layout.lines) {
+            ctx.fillText(line, -tw / 2, currentY);
+            currentY += layout.lineHeight;
+          }
+
+          const dataUrl = c.toDataURL('image/png');
+          const imgBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (ch) => ch.charCodeAt(0));
+          const embedded = await this.pdfDoc.embedPng(imgBytes);
+
+          page.drawImage(embedded, {
+            x: cx - cW / 2,
+            y: height - cy - cH / 2,
+            width: cW,
+            height: cH,
+            rotate: degrees((-t.rotation * 180) / Math.PI),
+          });
+        } else if (item.type === 'sticker') {
+          const s = item.obj as StickerLayer;
+          const c = document.createElement('canvas');
+          c.width = s.img.width;
+          c.height = s.img.height;
+          c.getContext('2d')!.drawImage(s.img, 0, 0);
+          const dataUrl = c.toDataURL('image/png');
+          const imgBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
+
+          const embedded = await this.pdfDoc.embedPng(imgBytes);
+          page.drawImage(embedded, {
+            x: s.x,
+            y: height - (s.y + s.h),
+            width: s.w,
+            height: s.h,
+            rotate: degrees((-s.rotation * 180) / Math.PI),
+          });
+        } else if (item.type === 'shape') {
+          const s = item.obj as ShapeLayer;
+          const box = getShapeBoundingBox(s as any);
+          const pad = (s.strokeWidth || 4) + 20;
+          const cW = Math.ceil(box.w + pad * 2);
+          const cH = Math.ceil(box.h + pad * 2);
+
+          const c = document.createElement('canvas');
+          c.width = cW;
+          c.height = cH;
+          const ctx = c.getContext('2d')!;
+
+          ctx.translate(cW / 2, cH / 2);
+          ctx.rotate(s.rotation || 0);
+          ctx.translate(-box.cx, -box.cy);
+
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = s.strokeWidth;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          drawShapePath(ctx, s.type, s.arrowType || 'standard', s.color, s.x, s.y, s.w, s.h, s.bgColor, s.points);
+
+          const dataUrl = c.toDataURL('image/png');
+          const imgBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (ch) => ch.charCodeAt(0));
+          const embedded = await this.pdfDoc.embedPng(imgBytes);
+
+          page.drawImage(embedded, {
+            x: box.cx - cW / 2,
+            y: height - box.cy - cH / 2,
+            width: cW,
+            height: cH,
+            rotate: degrees((-(s.rotation || 0) * 180) / Math.PI),
+          });
         }
       }
     }
@@ -669,8 +1213,9 @@ export class PEditor {
     if (this.numPages <= 1) return;
     this.pdfDoc.removePage(idx0);
     this.pdfBytes = await this.pdfDoc.save();
+    this.pdfBytesBase = new Uint8Array(this.pdfBytes!);
     const pdfjsLib = (window as any).pdfjsLib;
-    this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes }).promise;
+    this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes! }).promise;
     this.numPages = this.pdfJsDoc.numPages;
     // Cleanup annotations for deleted page
     this.texts = this.texts.filter((t) => t.pageIndex !== idx0 + 1);
@@ -678,10 +1223,10 @@ export class PEditor {
     this.shapes = this.shapes.filter((s) => s.pageIndex !== idx0 + 1);
     // Shift indices
     this.texts.forEach((t) => {
-      if (t.pageIndex > idx0 + 1) t.pageIndex--;
+      if (t.pageIndex && t.pageIndex > idx0 + 1) t.pageIndex--;
     });
     this.stickers.forEach((s) => {
-      if (s.pageIndex > idx0 + 1) s.pageIndex--;
+      if (s.pageIndex && s.pageIndex > idx0 + 1) s.pageIndex--;
     });
     this.shapes.forEach((s) => {
       if (s.pageIndex && s.pageIndex > idx0 + 1) s.pageIndex--;
@@ -704,12 +1249,14 @@ export class PEditor {
     this.pdfDoc.insertPage(target, page);
 
     this.pdfBytes = await this.pdfDoc.save();
+    this.pdfBytesBase = new Uint8Array(this.pdfBytes!);
     const pdfjsLib = (window as any).pdfjsLib;
-    this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes }).promise;
+    this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes! }).promise;
 
     // update annotation page indexes
     const shift = (arr: any[]) => {
       arr.forEach((a) => {
+        if (!a.pageIndex) return;
         const p = a.pageIndex - 1;
         if (p === from0) a.pageIndex = target + 1;
         else if (from0 < to0 && p > from0 && p <= to0) a.pageIndex = p; // shifted down
@@ -731,8 +1278,9 @@ export class PEditor {
       this.pdfDoc.insertPage(index, [595.28, 841.89]); // A4
 
       this.pdfBytes = await this.pdfDoc.save();
+      this.pdfBytesBase = new Uint8Array(this.pdfBytes!);
       const pdfjsLib = (window as any).pdfjsLib;
-      this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes }).promise;
+      this.pdfJsDoc = await pdfjsLib.getDocument({ data: this.pdfBytes! }).promise;
       this.numPages = this.pdfJsDoc.numPages;
 
       const shift = (arr: any[]) => {
@@ -761,9 +1309,19 @@ export class PEditor {
     }
   }
 
-  private async _zoom(f: number) {
-    this.zoom *= f;
-    await this._renderPage();
+  private _updateZoomSlider() {
+    if (this.zoomSliderRange && this.zoomSliderLabel) {
+      this.zoomSliderRange.value = String(this.zoom);
+      this.zoomSliderLabel.textContent = `${Math.round(this.zoom * 100)}%`;
+    }
+  }
+
+  private _zoom(delta: number) {
+    this.zoom = Math.max(0.3, Math.min(4, this.zoom + delta));
+    this._updateZoomSlider();
+    if (this.pdfDoc) {
+      this._renderPage();
+    }
   }
 
   // ─── Rendering ───────────────────────────────────────────────────────────────
@@ -857,61 +1415,139 @@ export class PEditor {
   private _textFontFn = (t: TextLayer) =>
     `${t.italic ? 'italic ' : ''}${t.bold ? 'bold ' : ''}${t.fontSize * this.zoom}px ${t.fontFamily}`;
 
+  private _unzoomedFontFn = (t: TextLayer) =>
+    `${t.italic ? 'italic ' : ''}${t.bold ? 'bold ' : ''}${t.fontSize}px ${t.fontFamily}`;
+
   private _drawFg() {
     this.ctxFg.clearRect(0, 0, this.canvasFg.width, this.canvasFg.height);
 
-    // Draw texts
     const pgTexts = this.texts.filter((t) => t.pageIndex === this.cp);
-    for (const t of pgTexts) {
-      this.ctxFg.save();
-      this.ctxFg.translate(t.x * this.zoom, t.y * this.zoom);
-      this.ctxFg.rotate(t.rotation);
-
-      if (t.tailActive) {
-        // draw speech bubble
-        this.ctxFg.fillStyle = 'rgba(230,230,230,0.85)';
-        this.ctxFg.strokeStyle = '#aaa';
-        this.ctxFg.lineWidth = 2;
-        this.ctxFg.beginPath();
-        // A simple path to mimic bubble
-        this.ctxFg.arc(0, -t.fontSize / 2, t.fontSize * t.text.length * 0.4, 0, Math.PI * 2);
-        this.ctxFg.fill();
-        this.ctxFg.stroke();
-      }
-
-      this.ctxFg.font = this._textFontFn(t);
-      this.ctxFg.fillStyle = t.color;
-      this.ctxFg.textAlign = 'center';
-      this.ctxFg.textBaseline = 'middle';
-      this.ctxFg.fillText(t.text, 0, 0);
-      this.ctxFg.restore();
-    }
-
-    // Draw stickers
     const pgStickers = this.stickers.filter((s) => s.pageIndex === this.cp);
-    for (const s of pgStickers) {
-      this.ctxFg.save();
-      this.ctxFg.translate(s.x * this.zoom, s.y * this.zoom);
-      this.ctxFg.rotate(s.rotation);
-      this.ctxFg.drawImage(s.img, (-s.w * this.zoom) / 2, (-s.h * this.zoom) / 2, s.w * this.zoom, s.h * this.zoom);
-      this.ctxFg.restore();
-    }
+    const pgShapes = this.shapes.filter((s) => s.pageIndex === this.cp);
 
-    // Draw shapes
-    const drawShp = (sh: ShapeLayer) => {
-      this.ctxFg.save();
-      this.ctxFg.strokeStyle = sh.color;
-      this.ctxFg.lineWidth = sh.strokeWidth * this.zoom;
-      this.ctxFg.lineCap = 'round';
-      this.ctxFg.lineJoin = 'round';
-      if (sh.type === 'pencil' && sh.points && sh.points.length > 0) {
-        this.ctxFg.beginPath();
-        this.ctxFg.moveTo(sh.points[0].x * this.zoom, sh.points[0].y * this.zoom);
-        for (let i = 1; i < sh.points.length; i++) {
-          this.ctxFg.lineTo(sh.points[i].x * this.zoom, sh.points[i].y * this.zoom);
+    const renderedIds = new Set<string>();
+    const pageObjects: { type: string; obj: any }[] = [];
+
+    this.renderOrder.forEach((id) => {
+      let obj: any = pgTexts.find((t) => t.id === id);
+      if (obj) {
+        pageObjects.push({ type: 'text', obj });
+        renderedIds.add(id);
+        return;
+      }
+      obj = pgStickers.find((s) => s.id === id);
+      if (obj) {
+        pageObjects.push({ type: 'sticker', obj });
+        renderedIds.add(id);
+        return;
+      }
+      obj = pgShapes.find((s) => s.id === id);
+      if (obj) {
+        pageObjects.push({ type: 'shape', obj });
+        renderedIds.add(id);
+        return;
+      }
+    });
+
+    pgTexts.forEach((t) => {
+      if (!renderedIds.has(t.id)) {
+        pageObjects.push({ type: 'text', obj: t });
+        this.renderOrder.push(t.id);
+      }
+    });
+    pgStickers.forEach((s) => {
+      if (!renderedIds.has(s.id)) {
+        pageObjects.push({ type: 'sticker', obj: s });
+        this.renderOrder.push(s.id);
+      }
+    });
+    pgShapes.forEach((s) => {
+      if (!renderedIds.has(s.id)) {
+        pageObjects.push({ type: 'shape', obj: s });
+        this.renderOrder.push(s.id);
+      }
+    });
+
+    for (const item of pageObjects) {
+      if (item.type === 'text') {
+        const t = item.obj as TextLayer;
+        const layout = computeTextLayout(this.ctxFg, t, (layer: any) => this._unzoomedFontFn(layer as TextLayer));
+        const tw = layout.actualW * this.zoom;
+        const th = layout.actualH * this.zoom;
+        const cx = t.x * this.zoom + tw / 2;
+        const cy = t.y * this.zoom;
+
+        let lx = 0,
+          ly = 0;
+        if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
+          const dx = t.tailX * this.zoom - cx;
+          const dy = t.tailY * this.zoom - cy;
+          const cos = Math.cos(-t.rotation);
+          const sin = Math.sin(-t.rotation);
+          lx = dx * cos - dy * sin;
+          ly = dx * sin + dy * cos;
         }
-        this.ctxFg.stroke();
-      } else if (sh.type !== 'pencil') {
+
+        this.ctxFg.save();
+        this.ctxFg.translate(cx, cy);
+        this.ctxFg.rotate(t.rotation);
+
+        this.ctxFg.font = this._textFontFn({ ...t, fontSize: layout.fs * this.zoom } as TextLayer);
+
+        if (t.bgColor || t.strokeWidth !== undefined) {
+          buildBubblePath(this.ctxFg, tw, th, lx, ly, !!t.tailActive);
+          if (t.bgColor) {
+            this.ctxFg.fillStyle = t.bgColor;
+            this.ctxFg.fill();
+          }
+          if (t.strokeWidth && t.strokeWidth > 0) {
+            this.ctxFg.setLineDash([]);
+            this.ctxFg.strokeStyle = t.strokeColor || '#000000';
+            this.ctxFg.lineWidth = t.strokeWidth * this.zoom;
+            this.ctxFg.lineJoin = 'round';
+            this.ctxFg.stroke();
+          } else if (t.strokeWidth === 0 && !this._isExporting) {
+            this.ctxFg.setLineDash([5, 5]);
+            this.ctxFg.strokeStyle = '#aaa';
+            this.ctxFg.lineWidth = 1;
+            this.ctxFg.lineJoin = 'round';
+            this.ctxFg.stroke();
+            this.ctxFg.setLineDash([]); // reset immediately
+          }
+        }
+
+        this.ctxFg.fillStyle = t.color;
+        this.ctxFg.textAlign = 'left';
+        this.ctxFg.textBaseline = 'middle';
+
+        const totalTextH = layout.lines.length * layout.lineHeight * this.zoom;
+        const startY = -th / 2 + (th - totalTextH) / 2 + (layout.lineHeight * this.zoom) / 2;
+        for (let i = 0; i < layout.lines.length; i++) {
+          this.ctxFg.fillText(layout.lines[i], -tw / 2, startY + i * layout.lineHeight * this.zoom);
+        }
+        this.ctxFg.restore();
+      } else if (item.type === 'sticker') {
+        const s = item.obj as StickerLayer;
+        this.ctxFg.save();
+        const cx = s.x + s.w / 2;
+        const cy = s.y + s.h / 2;
+        this.ctxFg.translate(cx * this.zoom, cy * this.zoom);
+        this.ctxFg.rotate(s.rotation);
+        this.ctxFg.drawImage(s.img, (-s.w / 2) * this.zoom, (-s.h / 2) * this.zoom, s.w * this.zoom, s.h * this.zoom);
+        this.ctxFg.restore();
+      } else if (item.type === 'shape') {
+        const sh = item.obj as ShapeLayer;
+        this.ctxFg.save();
+        const box = getShapeBoundingBox(sh as any);
+        this.ctxFg.translate(box.cx * this.zoom, box.cy * this.zoom);
+        this.ctxFg.rotate(sh.rotation || 0);
+        this.ctxFg.translate(-box.cx * this.zoom, -box.cy * this.zoom);
+
+        this.ctxFg.strokeStyle = sh.color;
+        this.ctxFg.lineWidth = sh.strokeWidth * this.zoom;
+        this.ctxFg.lineCap = 'round';
+        this.ctxFg.lineJoin = 'round';
+        const scaledPoints = sh.points ? sh.points.map((p) => ({ x: p.x * this.zoom, y: p.y * this.zoom })) : undefined;
         drawShapePath(
           this.ctxFg,
           sh.type,
@@ -920,18 +1556,44 @@ export class PEditor {
           sh.x * this.zoom,
           sh.y * this.zoom,
           sh.w * this.zoom,
-          sh.h * this.zoom
+          sh.h * this.zoom,
+          sh.bgColor,
+          scaledPoints
         );
+        this.ctxFg.restore();
       }
-      this.ctxFg.restore();
-    };
+    }
 
-    const pgShapes = this.shapes.filter((s) => s.pageIndex === this.cp);
-    pgShapes.forEach(drawShp);
-    if (this.activeShape) drawShp(this.activeShape);
+    if (this.activeShape) {
+      const sh = this.activeShape;
+      this.ctxFg.save();
+      const box = getShapeBoundingBox(sh as any);
+      this.ctxFg.translate(box.cx * this.zoom, box.cy * this.zoom);
+      this.ctxFg.rotate(sh.rotation || 0);
+      this.ctxFg.translate(-box.cx * this.zoom, -box.cy * this.zoom);
+
+      this.ctxFg.strokeStyle = sh.color;
+      this.ctxFg.lineWidth = sh.strokeWidth * this.zoom;
+      this.ctxFg.lineCap = 'round';
+      this.ctxFg.lineJoin = 'round';
+      const scaledPoints = sh.points ? sh.points.map((p) => ({ x: p.x * this.zoom, y: p.y * this.zoom })) : undefined;
+      drawShapePath(
+        this.ctxFg,
+        sh.type,
+        sh.arrowType || 'standard',
+        sh.color,
+        sh.x * this.zoom,
+        sh.y * this.zoom,
+        sh.w * this.zoom,
+        sh.h * this.zoom,
+        sh.bgColor,
+        scaledPoints
+      );
+      this.ctxFg.restore();
+    }
 
     // Handles
-    if (this.activeId && this.tool === 'select') {
+    if (this.activeId && this.tool === 'pan') {
       const txt = pgTexts.find((x) => x.id === this.activeId);
       if (txt) {
         const h = getTextHandles(txt as any, this.zoom, this.ctxFg, this._textFontFn as any);
@@ -970,6 +1632,15 @@ export class PEditor {
     if (h.del) {
       drawDeleteHandle(this.ctxFg, h.del.x * this.zoom, h.del.y * this.zoom, 10);
     }
+    if (h.tail) {
+      this.ctxFg.fillStyle = '#ffaa00';
+      this.ctxFg.strokeStyle = '#fff';
+      this.ctxFg.lineWidth = 1;
+      this.ctxFg.beginPath();
+      this.ctxFg.arc(h.tail.x * this.zoom, h.tail.y * this.zoom, 4, 0, Math.PI * 2);
+      this.ctxFg.fill();
+      this.ctxFg.stroke();
+    }
   }
 
   // ─── Events ──────────────────────────────────────────────────────────────────
@@ -981,6 +1652,7 @@ export class PEditor {
       startPanY = 0;
 
     cw.onmousedown = (e) => {
+      this.container.focus();
       if (this.textInput && this.textCommitFn) {
         this.textCommitFn();
         return;
@@ -991,37 +1663,64 @@ export class PEditor {
 
       if (this.tool === 'pan') {
         const area = this.container.querySelector('.pe-canvas-area')!;
-        isDragging = true;
-        startPanX = e.clientX + area.scrollLeft;
-        startPanY = e.clientY + area.scrollTop;
-        (area as HTMLElement).style.cursor = 'grabbing';
-      } else if (this.tool === 'select') {
         // hit detect
         const pgTexts = this.texts.filter((t) => t.pageIndex === this.cp);
         const pgStickers = this.stickers.filter((s) => s.pageIndex === this.cp);
         const pgShapes = this.shapes.filter((s) => s.pageIndex === this.cp);
 
         let hit = null;
+        let startedAction = false;
+
         if (this.activeId) {
           // check handles first
           const t = pgTexts.find((x) => x.id === this.activeId);
           if (t) {
-            const h = getTextHandles(t as any, this.zoom, this.ctxFg, this._textFontFn as any);
-            if (Math.abs(x - h.del.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.del.y) * this.zoom < HANDLE_SIZE) {
-              this.texts = this.texts.filter((tx) => tx.id !== this.activeId);
-              this.activeId = null;
-              this._drawFg();
-              return;
-            }
+            const h = getTextHandles(t as any, this.zoom, this.ctxFg, this._unzoomedFontFn as any);
             if (Math.abs(x - h.rot.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.rot.y) * this.zoom < HANDLE_SIZE) {
-              this.dragState = { type: 'rotT', obj: t, cx: t.x, cy: t.y };
+              this._pushUndo();
+              this.ctxFg.font = this._textFontFn(t as any);
+              const layout = computeTextLayout(this.ctxFg, t as any, this._unzoomedFontFn as any);
+              const cx = t.x + layout.actualW / 2;
+              const startAngle = Math.atan2(y - t.y, x - cx);
+              this.dragState = {
+                type: 'rotT',
+                obj: t,
+                cx,
+                cy: t.y,
+                startAngle,
+                startRotation: t.rotation || 0,
+              };
               return;
             }
             if (
               Math.abs(x - h.resize.x) * this.zoom < HANDLE_SIZE &&
               Math.abs(y - h.resize.y) * this.zoom < HANDLE_SIZE
             ) {
-              this.dragState = { type: 'resizeT', obj: t, startX: x, startY: y, origFontSize: t.fontSize };
+              this._pushUndo();
+              this.dragState = {
+                type: 'resizeT',
+                obj: t,
+                startX: x,
+                startY: y,
+                startW: t.w || 200,
+                startH: t.h || t.fontSize * 1.5,
+              };
+              return;
+            }
+            if (Math.abs(x - h.del.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.del.y) * this.zoom < HANDLE_SIZE) {
+              this._pushUndo();
+              this.texts = this.texts.filter((tx) => tx.id !== this.activeId);
+              this.activeId = null;
+              this._drawFg();
+              return;
+            }
+            if (
+              h.tail &&
+              Math.abs(x - h.tail.x) * this.zoom < HANDLE_SIZE &&
+              Math.abs(y - h.tail.y) * this.zoom < HANDLE_SIZE
+            ) {
+              this._pushUndo();
+              this.dragState = { type: 'dtail', obj: t, lastX: x, lastY: y };
               return;
             }
           }
@@ -1029,19 +1728,22 @@ export class PEditor {
           if (s) {
             const h = getStickerHandles(s as any, this.zoom);
             if (Math.abs(x - h.del.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.del.y) * this.zoom < HANDLE_SIZE) {
+              this._pushUndo();
               this.stickers = this.stickers.filter((sx) => sx.id !== this.activeId);
               this.activeId = null;
               this._drawFg();
               return;
             }
             if (Math.abs(x - h.rot.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.rot.y) * this.zoom < HANDLE_SIZE) {
-              this.dragState = { type: 'rotS', obj: s, cx: s.x, cy: s.y };
+              this._pushUndo();
+              this.dragState = { type: 'rotS', obj: s, cx: s.x + s.w / 2, cy: s.y + s.h / 2 };
               return;
             }
             if (
               Math.abs(x - h.resize.x) * this.zoom < HANDLE_SIZE &&
               Math.abs(y - h.resize.y) * this.zoom < HANDLE_SIZE
             ) {
+              this._pushUndo();
               this.dragState = { type: 'resizeS', obj: s, startX: x, startY: y, origW: s.w, origH: s.h };
               return;
             }
@@ -1050,12 +1752,14 @@ export class PEditor {
           if (shp) {
             const h = getShapeHandles(shp as any, this.zoom);
             if (Math.abs(x - h.del.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.del.y) * this.zoom < HANDLE_SIZE) {
+              this._pushUndo();
               this.shapes = this.shapes.filter((sx) => sx.id !== this.activeId);
               this.activeId = null;
               this._drawFg();
               return;
             }
             if (Math.abs(x - h.rot.x) * this.zoom < HANDLE_SIZE && Math.abs(y - h.rot.y) * this.zoom < HANDLE_SIZE) {
+              this._pushUndo();
               const box = getShapeBoundingBox(shp as any);
               this.dragState = { type: 'rotShp', obj: shp, cx: box.cx, cy: box.cy };
               return;
@@ -1064,6 +1768,7 @@ export class PEditor {
               Math.abs(x - h.resize.x) * this.zoom < HANDLE_SIZE &&
               Math.abs(y - h.resize.y) * this.zoom < HANDLE_SIZE
             ) {
+              this._pushUndo();
               const box = getShapeBoundingBox(shp as any);
               this.dragState = {
                 type: 'resizeShp',
@@ -1086,7 +1791,7 @@ export class PEditor {
         }
 
         for (let i = pgTexts.length - 1; i >= 0; i--) {
-          if (hitText({ x, y }, pgTexts[i] as any, this.ctxFg, this._textFontFn as any)) {
+          if (hitText({ x, y }, pgTexts[i] as any, this.ctxFg, this._unzoomedFontFn as any)) {
             hit = pgTexts[i];
             break;
           }
@@ -1109,16 +1814,27 @@ export class PEditor {
         }
 
         if (hit) {
+          this._pushUndo();
           this.activeId = hit.id;
           this.dragState = { type: 'move', obj: hit, ox: x - hit.x, oy: y - hit.y };
         } else {
           this.activeId = null;
+          isDragging = true;
+          startPanX = e.clientX + area.scrollLeft;
+          startPanY = e.clientY + area.scrollTop;
+          (area as HTMLElement).style.cursor = 'grabbing';
         }
         this._updateOpts();
         this._drawFg();
       } else if (this.tool === 'text') {
+        let boxW = Math.max(200, this._fontSize * 5);
+        let boxH = Math.max(50, this._fontSize * 1.5);
+        const initialRotation = this._tempRot;
+        this._tempRot = 0; // reset immediately
+
         const inp = document.createElement('textarea');
         inp.className = 'pe-text-input';
+        inp.placeholder = 'Type text... (Shift+Enter to newline)';
         inp.style.position = 'absolute';
         inp.style.left = x * this.zoom + 'px';
         inp.style.top = y * this.zoom + 'px';
@@ -1131,20 +1847,17 @@ export class PEditor {
         inp.style.border = '1px dashed #0af';
         inp.style.outline = 'none';
         inp.style.resize = 'none';
-        inp.style.overflow = 'hidden';
-        inp.style.whiteSpace = 'pre';
+        inp.style.overflow = 'auto'; // allow inner scroll
+        inp.style.whiteSpace = 'pre'; // prevent auto layout wrap while typing
         inp.style.lineHeight = '1.2';
         inp.style.padding = '4px';
-        inp.style.transform = 'translate(-50%, -50%)'; // center origin
+        inp.style.transform = `translate(0, -50%) rotate(${initialRotation}rad)`; // aligned origin
+        inp.style.transformOrigin = '50% 50%';
+        inp.dataset.rot = String(initialRotation);
+        inp.dataset.explicitw = 'false';
         inp.style.pointerEvents = 'auto'; // ensure click works
-
-        // Auto-resize
-        const adjustSize = () => {
-          inp.style.width = 'auto';
-          inp.style.height = 'auto';
-          inp.style.width = Math.max(50, inp.scrollWidth + 10) + 'px';
-          inp.style.height = inp.scrollHeight + 'px';
-        };
+        inp.style.width = boxW * this.zoom + 'px';
+        inp.style.height = boxH * this.zoom + 'px';
 
         this.wrap.appendChild(inp);
         this.textInput = inp;
@@ -1153,24 +1866,57 @@ export class PEditor {
           if (!this.textInput) return;
           const val = inp.value.trim();
           if (val) {
-            this.texts.push({
-              id: inp.dataset.editid || 't_' + Date.now(),
+            const newId = inp.dataset.editid || 't_' + Date.now();
+            const explicitW = inp.dataset.explicitw === 'true';
+            const uiA = parseFloat(inp.style.width) / this.zoom || 200;
+            const expectedBoxW = explicitW ? uiA : undefined;
+
+            const t: TextLayer = {
+              id: newId,
               pageIndex: this.cp,
               text: val,
               x,
               y,
+              w: undefined,
+              h: undefined,
               color: this.color,
+              bgColor: this.fillColor,
               fontSize: this._fontSize,
               fontFamily: this._fontFamily,
-              bold: false,
-              italic: false,
-              rotation: 0,
-              tailActive: false,
-            });
-            this.activeId = this.texts[this.texts.length - 1].id;
-            this._setTool('select');
+              bold: this._textBold,
+              italic: this._textItalic,
+              rotation: Number(inp.dataset.rot) || 0,
+              strokeColor: this._textStrokeColor,
+              strokeWidth: this._textStrokeWidth,
+              tailActive: this._textTailActive,
+            };
+
+            const layoutB = computeTextLayout(this.ctxFg, t, this._unzoomedFontFn.bind(this) as any);
+            const B = layoutB.actualW;
+
+            t.w = explicitW ? expectedBoxW : Math.min(B, uiA);
+            const layoutFinal = computeTextLayout(this.ctxFg, t, this._unzoomedFontFn.bind(this) as any);
+            t.h = layoutFinal.actualH;
+            t.fontSize = layoutFinal.fs;
+
+            if (t.tailActive && (t.tailX === undefined || t.tailY === undefined)) {
+              t.tailX = t.x;
+              t.tailY = t.y + t.fontSize * 1.5;
+            }
+
+            this._pushUndo();
+            this.texts.push(t);
+            if (!this.renderOrder.includes(newId)) this.renderOrder.push(newId);
+            this.activeId = newId;
+            this._setTool('pan', true);
           }
+
           if (this.textCancelFn) this.textCancelFn();
+
+          if (val) {
+            this._updateOpts();
+            this._drawFg();
+          }
         };
 
         this.textCancelFn = () => {
@@ -1182,9 +1928,6 @@ export class PEditor {
           }
         };
 
-        adjustSize();
-
-        inp.oninput = () => adjustSize();
         inp.onmousedown = (ev) => ev.stopPropagation(); // prevent re-triggering canvas mousedown
         inp.onkeydown = (e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
@@ -1198,11 +1941,13 @@ export class PEditor {
 
         setTimeout(() => inp.focus(), 50);
       } else if (this.tool === 'pencil') {
+        this._pushUndo();
         this.activeShape = {
           id: 'shp_' + Date.now(),
           pageIndex: this.cp,
           type: this._penMode,
           color: this.color,
+          bgColor: this.fillColor,
           strokeWidth: this._penSize,
           points: [{ x, y }],
           rotation: 0,
@@ -1228,10 +1973,57 @@ export class PEditor {
         const st = this.dragState;
 
         if (st.type === 'move') {
-          const newX = x - st.ox;
-          const newY = y - st.oy;
-          const dx = newX - st.obj.x;
-          const dy = newY - st.obj.y;
+          const pgW = this.canvasFg.width / this.zoom;
+          const pgH = this.canvasFg.height / this.zoom;
+          let bx: { cx: number; cy: number; w: number; h: number } | null = null;
+          if ((st.obj as any).text !== undefined) {
+            const layout = computeTextLayout(this.ctxFg, st.obj as TextLayer, (t: any) => this._unzoomedFontFn(t));
+            bx = {
+              cx: st.obj.x + layout.actualW / 2,
+              cy: st.obj.y,
+              w: layout.actualW,
+              h: layout.actualH,
+            };
+          } else if ((st.obj as any).img !== undefined) {
+            bx = { cx: st.obj.x + st.obj.w / 2, cy: st.obj.y + st.obj.h / 2, w: st.obj.w, h: st.obj.h };
+          } else if ((st.obj as any).type !== undefined) {
+            bx = getShapeBoundingBox(st.obj as any);
+          }
+
+          let dx = 0;
+          let dy = 0;
+
+          if (bx) {
+            const rightMax = Math.max(0, pgW - bx.w);
+            const bottomMax = Math.max(0, pgH - bx.h);
+
+            const targetDx = x - st.ox - st.obj.x;
+            const targetDy = y - st.oy - st.obj.y;
+
+            const targetLeft = bx.cx - bx.w / 2 + targetDx;
+            const targetTop = bx.cy - bx.h / 2 + targetDy;
+
+            const clampedLeft = Math.max(0, Math.min(targetLeft, rightMax));
+            const clampedTop = Math.max(0, Math.min(targetTop, bottomMax));
+
+            dx = clampedLeft - (bx.cx - bx.w / 2);
+            dy = clampedTop - (bx.cy - bx.h / 2);
+          } else {
+            dx = x - st.ox - st.obj.x;
+            dy = y - st.oy - st.obj.y;
+          }
+
+          const el = document.elementFromPoint(e.clientX, e.clientY);
+          const thumbWrap = el?.closest('.pe-thumb-wrap') as HTMLElement;
+          if (thumbWrap && thumbWrap.dataset.pageIndex) {
+            const hIdx = parseInt(thumbWrap.dataset.pageIndex, 10);
+            if (hIdx !== this.cp) {
+              this.cp = hIdx;
+              st.obj.pageIndex = hIdx;
+              this._renderSidebar();
+              this._renderPage();
+            }
+          }
 
           if (st.obj.type === 'pencil' && st.obj.points) {
             st.obj.points.forEach((p: any) => {
@@ -1242,13 +2034,37 @@ export class PEditor {
             st.obj.w += dx;
             st.obj.h += dy;
           }
-          st.obj.x = newX;
-          st.obj.y = newY;
+
+          st.obj.x += dx;
+          st.obj.y += dy;
+
+          if ((st.obj as any).text !== undefined && st.obj.tailActive) {
+            const t = st.obj as TextLayer;
+            if (t.tailX !== undefined) t.tailX += dx;
+            if (t.tailY !== undefined) t.tailY += dy;
+          }
+        } else if (st.type === 'dtail') {
+          const dx = x - st.lastX;
+          const dy = y - st.lastY;
+          const t = st.obj as TextLayer;
+          if (t.tailX !== undefined) t.tailX += dx;
+          if (t.tailY !== undefined) t.tailY += dy;
+          st.lastX = x;
+          st.lastY = y;
         } else if (st.type.startsWith('rot')) {
           st.obj.rotation = Math.atan2(y - st.cy, x - st.cx) + Math.PI / 2;
         } else if (st.type === 'resizeT') {
           const dx = x - st.startX;
-          st.obj.fontSize = Math.max(8, Math.round(st.origFontSize + dx));
+          const dy = y - st.startY;
+          const rot = st.obj.rotation || 0;
+          const cos = Math.cos(-rot);
+          const sin = Math.sin(-rot);
+
+          const unDx = dx * cos - dy * sin;
+          const unDy = dx * sin + dy * cos;
+
+          st.obj.w = Math.max(60, st.startW + unDx);
+          st.obj.h = Math.max(20, st.startH + unDy * 2);
         } else if (st.type === 'resizeS') {
           const dx = x - st.startX;
           const dy = y - st.startY;
@@ -1319,12 +2135,32 @@ export class PEditor {
         const area = this.container.querySelector('.pe-canvas-area') as HTMLElement;
         area.style.cursor = 'grab';
       }
+
+      let dragged = false;
+      if (this.dragState) dragged = true;
+
+      if (this.dragState && this.dragState.type === 'resizeT') {
+        const tObj = this.dragState.obj as any;
+        const layout = computeTextLayout(this.ctxFg, tObj, this._unzoomedFontFn.bind(this) as any);
+        tObj.fontSize = layout.fs;
+        this._fontSize = layout.fs;
+      }
+
       this.dragState = null;
+      let shapeCommitted = false;
       if (this.activeShape) {
         this.shapes.push(this.activeShape);
-        this.activeId = this.activeShape.id;
+        if (!this.renderOrder.includes(this.activeShape.id)) this.renderOrder.push(this.activeShape.id);
+        const newActive = this.activeShape.id;
         this.activeShape = null;
-        this._setTool('select');
+        this.activeId = newActive;
+        shapeCommitted = true;
+        this._setTool('pan', true);
+      }
+
+      const movedOrDrawn = dragged || shapeCommitted;
+      if (movedOrDrawn) {
+        this._drawFg();
       }
     });
 
@@ -1339,16 +2175,28 @@ export class PEditor {
         const t = pgTexts[i];
         if (hitText({ x, y }, t as any, this.ctxFg, this._textFontFn as any)) {
           // Re-edit text
+          this._pushUndo();
           this.texts = this.texts.filter((tx) => tx.id !== t.id); // Remove first
           this.activeId = null;
+
           this.color = t.color;
-          this._fontSize = t.fontSize;
+          const layout = computeTextLayout(this.ctxFg, t as any, this._unzoomedFontFn.bind(this) as any);
+          this._fontSize = layout.fs;
+          this.fillColor = t.bgColor;
+          this._textStrokeColor = t.strokeColor || '#000000';
+          this._textStrokeWidth = t.strokeWidth || 0;
+          this._textTailActive = !!t.tailActive;
+          this._textBold = !!t.bold;
+          this._textItalic = !!t.italic;
+          this._fontFamily = t.fontFamily || 'sans-serif';
+          this._updateOpts();
 
           // Simulate clicking to insert text
+          this._tempRot = t.rotation || 0;
           this._setTool('text');
           const mdev = new MouseEvent('mousedown', {
-            clientX: e.clientX,
-            clientY: e.clientY,
+            clientX: rect.left + t.x * this.zoom,
+            clientY: rect.top + t.y * this.zoom,
             bubbles: true,
           });
           cw.dispatchEvent(mdev);
@@ -1357,6 +2205,13 @@ export class PEditor {
             if (this.textInput) {
               this.textInput.value = t.text;
               this.textInput.dataset.editid = t.id;
+              this.textInput.dataset.rot = String(t.rotation || 0);
+              this.textInput.style.transform = `translate(0, -50%) rotate(${t.rotation || 0}rad)`;
+              if (t.w) {
+                this.textInput.style.width = String(t.w * this.zoom) + 'px';
+                this.textInput.dataset.explicitw = 'true';
+              }
+              if (t.h) this.textInput.style.height = String(t.h * this.zoom) + 'px';
               this.textInput.dispatchEvent(new Event('input'));
             }
           }, 0);
@@ -1364,5 +2219,259 @@ export class PEditor {
         }
       }
     });
+
+    this.container.addEventListener('keydown', (e) => {
+      // Undo / Redo Shortcuts
+      if ((e.ctrlKey || e.metaKey) && typeof e.key === 'string' && e.key.toLowerCase() === 'z') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          this.redo();
+        } else {
+          e.preventDefault();
+          this.undo();
+        }
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && typeof e.key === 'string' && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        this.redo();
+        return;
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c' || e.key === 'C') {
+          if (this.textInput || this.activeId === null) return;
+          this._copyInternalClipboard();
+        } else if (e.key === 'x' || e.key === 'X') {
+          if (this.textInput || this.activeId === null) return;
+          this._copyInternalClipboard();
+          this._pushUndo();
+          this.texts = this.texts.filter((t) => t.id !== this.activeId);
+          this.stickers = this.stickers.filter((s) => s.id !== this.activeId);
+          this.shapes = this.shapes.filter((s) => s.id !== this.activeId);
+          this.activeId = null;
+          this._updateOpts();
+          this._drawFg();
+        } else if (e.key === 'v' || e.key === 'V') {
+          if (this.textInput) return;
+          let _w: any = window;
+          try {
+            _w = window.top || window;
+          } catch (err) {}
+          const globalTime = _w.__lupine_clipboard_time || 0;
+          const globalImgTime = _w.__lupine_clipboard_img_time || 0;
+
+          if (globalTime > 0 || globalImgTime > 0 || this.internalClipboard) {
+            e.preventDefault();
+            this._pasteClipboard();
+          }
+        }
+      }
+
+      // Keyboard Delete
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (this.textInput || this.activeId === null) return;
+        this._pushUndo();
+        this.texts = this.texts.filter((t) => t.id !== this.activeId);
+        this.stickers = this.stickers.filter((s) => s.id !== this.activeId);
+        this.shapes = this.shapes.filter((s) => s.id !== this.activeId);
+        this.activeId = null;
+        this._updateOpts();
+        this._drawFg();
+      }
+    });
+
+    this.container.addEventListener('paste', (e) => {
+      // Do not intercept if user is typing in an input
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      // Prevent custom internal payloads (which Ctrl+V handles) from triggering external Image parsing natively
+      if (e.clipboardData?.types.includes('text/html')) {
+        const payloadFlag = e.clipboardData.getData('text/html');
+        if (payloadFlag && payloadFlag.includes('lupine-editor')) return;
+      }
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          e.preventDefault();
+          const file = items[i].getAsFile();
+          if (file) {
+            const img = new Image();
+            img.onload = () => {
+              this._pushUndo();
+              const maxDim = 200;
+              let nw = img.naturalWidth;
+              let nh = img.naturalHeight;
+              if (nw > maxDim || nh > maxDim) {
+                const ratio = Math.min(maxDim / nw, maxDim / nh);
+                nw *= ratio;
+                nh *= ratio;
+              }
+
+              const newSticker: StickerLayer = {
+                id: 's_' + Date.now(),
+                pageIndex: this.cp,
+                img,
+                x: 50 / this.zoom,
+                y: 50 / this.zoom,
+                w: nw / this.zoom,
+                h: nh / this.zoom,
+                rotation: 0,
+              };
+              this.stickers.push(newSticker);
+              if (!this.renderOrder.includes(newSticker.id)) this.renderOrder.push(newSticker.id);
+              this.activeId = newSticker.id;
+              this._setTool('pan', true);
+              this._drawFg();
+            };
+            img.src = URL.createObjectURL(file);
+          }
+          return;
+        }
+      }
+    });
+  }
+
+  private _copyInternalClipboard() {
+    if (!this.activeId) return;
+    const txt = this.texts.find((t) => t.id === this.activeId);
+    if (txt) {
+      const layout = computeTextLayout(this.ctxFg, txt as any, this._unzoomedFontFn.bind(this) as any);
+      this.internalClipboard = { type: 'text', data: { ...txt, w: layout.actualW, h: layout.actualH } };
+    } else {
+      const stk = this.stickers.find((s) => s.id === this.activeId);
+      if (stk) {
+        this.internalClipboard = { type: 'sticker', data: { ...stk } };
+      } else {
+        const shp = this.shapes.find((s) => s.id === this.activeId);
+        if (shp) {
+          this.internalClipboard = {
+            type: 'shape',
+            data: {
+              ...shp,
+              points: shp.points ? shp.points.map((p: any) => ({ ...p })) : undefined,
+            },
+          };
+        }
+      }
+    }
+
+    if (this.internalClipboard) {
+      this.internalClipboardTime = Date.now();
+      try {
+        const _w: any = window.top || window;
+        _w.__lupine_clipboard = this.internalClipboard;
+        _w.__lupine_clipboard_time = this.internalClipboardTime;
+      } catch (err) {}
+      exportToSystemClipboard(this.internalClipboard, (ctx, shifted) => {
+        if (this.internalClipboard!.type === 'text') {
+          renderTextLayer(ctx, shifted, this._unzoomedFontFn.bind(this) as any, 1, true);
+        } else if (this.internalClipboard!.type === 'shape') {
+          renderShapeLayer(ctx, shifted, 1);
+        } else if (this.internalClipboard!.type === 'sticker') {
+          renderStickerLayer(ctx, shifted, 1);
+        }
+      });
+    }
+  }
+
+  private _pasteClipboard() {
+    let _w: any = window;
+    try {
+      _w = window.top || window;
+    } catch (err) {}
+    const globalTime = _w.__lupine_clipboard_time || 0;
+    const globalImgTime = _w.__lupine_clipboard_img_time || 0;
+
+    const useImgGlobal = globalImgTime > 0;
+    const bestInternalTime = Math.max(globalTime, this.internalClipboardTime);
+
+    if (useImgGlobal && globalImgTime > bestInternalTime) {
+      const img = _w.__lupine_clipboard_img;
+      if (!img) return;
+      this._pushUndo();
+      const newId = `c_${Date.now()}`;
+      const s: StickerLayer = {
+        id: newId,
+        img,
+        pageIndex: this.cp,
+        x: 50 / this.zoom,
+        y: 50 / this.zoom,
+        w: img.naturalWidth / this.zoom,
+        h: img.naturalHeight / this.zoom,
+        rotation: 0,
+      };
+      this.stickers.push(s);
+      this.activeId = newId;
+      this._drawFg();
+      return;
+    }
+
+    const internal =
+      globalTime > this.internalClipboardTime ? _w.__lupine_clipboard : this.internalClipboard || _w.__lupine_clipboard;
+
+    if (!internal) return;
+    this._pushUndo();
+    const newId = `c_${Date.now()}`;
+    const offset = 20 / this.zoom;
+
+    const pgW = this.canvasFg.width / this.zoom;
+    const pgH = this.canvasFg.height / this.zoom;
+
+    if (internal.type === 'text') {
+      const t = { ...internal.data, id: newId, pageIndex: this.cp };
+      t.x += offset;
+      t.y += offset;
+      if (t.tailActive && t.tailX !== undefined && t.tailY !== undefined) {
+        t.tailX += offset;
+        t.tailY += offset;
+      }
+      enforceBounds(t, false, 0, 0, pgW, pgH, this.zoom);
+      this.texts.push(t);
+      this.activeId = newId;
+    } else if (internal.type === 'sticker') {
+      const s = { ...internal.data, id: newId, pageIndex: this.cp };
+      s.x += offset;
+      s.y += offset;
+      enforceBounds(s, false, 0, 0, pgW, pgH, this.zoom);
+      this.stickers.push(s);
+      this.activeId = newId;
+    } else if (internal.type === 'shape') {
+      const sh = {
+        ...internal.data,
+        id: newId,
+        pageIndex: this.cp,
+        points: internal.data.points ? internal.data.points.map((p: any) => ({ ...p })) : undefined,
+      };
+
+      if (sh.w === undefined && sh.endX !== undefined) sh.w = sh.endX;
+      if (sh.h === undefined && sh.endY !== undefined) sh.h = sh.endY;
+
+      sh.x += offset;
+      sh.y += offset;
+      if (sh.w !== undefined) sh.w += offset;
+      else if (sh.endX !== undefined) sh.endX += offset;
+      if (sh.h !== undefined) sh.h += offset;
+      else if (sh.endY !== undefined) sh.endY += offset;
+
+      if (sh.points) {
+        for (const p of sh.points) {
+          p.x += offset;
+          p.y += offset;
+        }
+      }
+      enforceBounds(sh, true, 0, 0, pgW, pgH, this.zoom);
+      this.shapes.push(sh);
+      this.activeId = newId;
+    }
+
+    if (this.activeId && !this.renderOrder.includes(this.activeId)) {
+      this.renderOrder.push(this.activeId);
+    }
+    this._setTool('pan', true);
+    this._drawFg();
   }
 }
