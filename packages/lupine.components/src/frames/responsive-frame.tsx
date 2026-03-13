@@ -80,9 +80,9 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
         '--auto-sidemenu-left-offset': '260px',
         paddingLeft: 'var(--auto-sidemenu-left-offset)',
         boxSizing: 'border-box',
-      },
-      '.mobile-top-sys-icon': {
-        display: 'none',
+        '.mobile-top-sys-icon': {
+          display: 'none',
+        },
       },
     },
   };

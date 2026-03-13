@@ -24,7 +24,6 @@ import { redirectDemo } from '../components/redirect-demo';
 import { textWaveDemo } from '../components/text-wave-demo';
 import { textScaleDemo } from '../components/text-scale-demo';
 import { textGlowDemo } from '../components/text-glow-demo';
-import { togglePlayButtonDemo } from '../components/toggle-play-button-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
 import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
@@ -60,8 +59,28 @@ import { pEditorDemo } from '../component-pool/p-editor';
 import { pdfViewerDemo } from '../component-pool/pdf-viewer';
 import { DemoPage } from './demo-page';
 import { responsiveFrameDemo } from '../frames/responsive-frame-demo';
+import {
+  pieChartDemo,
+  donutChartDemo,
+  columnChartDemo,
+  barChartDemo,
+  lineChartDemo,
+  areaChartDemo,
+  radarChartDemo,
+  gaugeChartDemo,
+  scatterChartDemo,
+} from '../component-pool/charts';
 
 const chineseMenuText: { text: string; zh: string }[] = [
+  { text: 'Basic Components', zh: '基础组件' },
+  { text: 'Form & Input', zh: '表单与输入' },
+  { text: 'Navigation & Menus', zh: '导航与菜单' },
+  { text: 'Data Display & Media', zh: '数据与多媒体' },
+  { text: 'Charts', zh: '图表' },
+  { text: 'Editors & Viewers', zh: '编辑器与预览' },
+  { text: 'Overlays & Feedback', zh: '反馈与浮层' },
+  { text: 'Layout & Frames', zh: '布局与框架' },
+  { text: 'Special FX & Utilities', zh: '特效与工具' },
   { text: 'Help', zh: '帮助' },
   { text: 'About', zh: '关于' },
 ];
@@ -123,8 +142,8 @@ export class DemoFrameHelper {
 
   demoTopMenu: NestMenuItemProps[] = [
     {
-      id: 'general-demo',
-      text: 'General',
+      id: 'basic-demo',
+      text: 'Basic Components',
       url: '',
       items: [
         {
@@ -140,40 +159,22 @@ export class DemoFrameHelper {
           js: () => this.addPanel(buttonPushAnimationDemo.text, <DemoPage story={buttonPushAnimationDemo} />),
         },
         {
-          id: inputNumberDemo.id,
-          text: inputNumberDemo.text,
-          url: '',
-          js: () => this.addPanel(inputNumberDemo.text, <DemoPage story={inputNumberDemo} />),
-        },
-        {
-          id: toggleSwitchDemo.id,
-          text: toggleSwitchDemo.text,
-          url: '',
-          js: () => this.addPanel(toggleSwitchDemo.text, <DemoPage story={toggleSwitchDemo} />),
-        },
-        {
           id: toggleButtonDemo.id,
           text: toggleButtonDemo.text,
           url: '',
           js: () => this.addPanel(toggleButtonDemo.text, <DemoPage story={toggleButtonDemo} />),
         },
         {
-          id: togglePlayButtonDemo.id,
-          text: togglePlayButtonDemo.text,
+          id: copyButtonDemo.id,
+          text: copyButtonDemo.text,
           url: '',
-          js: () => this.addPanel(togglePlayButtonDemo.text, <DemoPage story={togglePlayButtonDemo} />),
+          js: () => this.addPanel(copyButtonDemo.text, <DemoPage story={copyButtonDemo} />),
         },
         {
           id: badgeDemo.id,
           text: badgeDemo.text,
           url: '',
           js: () => this.addPanel(badgeDemo.text, <DemoPage story={badgeDemo} />),
-        },
-        {
-          id: copyButtonDemo.id,
-          text: copyButtonDemo.text,
-          url: '',
-          js: () => this.addPanel(copyButtonDemo.text, <DemoPage story={copyButtonDemo} />),
         },
         {
           id: spinnerDemo.id,
@@ -188,12 +189,6 @@ export class DemoFrameHelper {
           js: () => this.addPanel(starsDemo.text, <DemoPage story={starsDemo} />),
         },
         {
-          id: editableLabelDemo.id,
-          text: editableLabelDemo.text,
-          url: '',
-          js: () => this.addPanel(editableLabelDemo.text, <DemoPage story={editableLabelDemo} />),
-        },
-        {
           id: tooltipDemo.id,
           text: tooltipDemo.text,
           url: '',
@@ -202,39 +197,8 @@ export class DemoFrameHelper {
       ],
     },
     {
-      id: 'navigation-demo',
-      text: 'Navigation',
-      url: '',
-      items: [
-        {
-          id: mobileSideMenuDemo.id,
-          text: mobileSideMenuDemo.text,
-          url: '',
-          js: () => this.addPanel(mobileSideMenuDemo.text, <DemoPage story={mobileSideMenuDemo} />),
-        },
-        {
-          id: responsiveFrameDemo.id,
-          text: responsiveFrameDemo.text,
-          url: '',
-          js: () => this.addPanel(responsiveFrameDemo.text, <DemoPage story={responsiveFrameDemo} />),
-        },
-        {
-          id: floatingIconMenuDemo.id,
-          text: floatingIconMenuDemo.text,
-          url: '',
-          js: () => this.addPanel(floatingIconMenuDemo.text, <DemoPage story={floatingIconMenuDemo} />),
-        },
-        {
-          id: breadcrumbsDemo.id,
-          text: breadcrumbsDemo.text,
-          url: '',
-          js: () => this.addPanel(breadcrumbsDemo.text, <DemoPage story={breadcrumbsDemo} />),
-        },
-      ],
-    },
-    {
-      id: 'data-entry-demo',
-      text: 'Data Entry',
+      id: 'form-input-demo',
+      text: 'Form & Input',
       url: '',
       items: [
         {
@@ -242,6 +206,12 @@ export class DemoFrameHelper {
           text: inputWithTitleDemo.text,
           url: '',
           js: () => this.addPanel(inputWithTitleDemo.text, <DemoPage story={inputWithTitleDemo} />),
+        },
+        {
+          id: inputNumberDemo.id,
+          text: inputNumberDemo.text,
+          url: '',
+          js: () => this.addPanel(inputNumberDemo.text, <DemoPage story={inputNumberDemo} />),
         },
         {
           id: searchInputDemo.id,
@@ -256,34 +226,46 @@ export class DemoFrameHelper {
           js: () => this.addPanel(tagInputDemo.text, <DemoPage story={tagInputDemo} />),
         },
         {
-          id: hEditorDemo.id,
-          text: hEditorDemo.text,
+          id: editableLabelDemo.id,
+          text: editableLabelDemo.text,
           url: '',
-          js: () => this.addPanel(hEditorDemo.text, <DemoPage story={hEditorDemo} />),
+          js: () => this.addPanel(editableLabelDemo.text, <DemoPage story={editableLabelDemo} />),
         },
         {
-          id: iEditorDemo.id,
-          text: iEditorDemo.text,
+          id: radioLabelDemo.id,
+          text: radioLabelDemo.text,
           url: '',
-          js: () => this.addPanel(iEditorDemo.text, <DemoPage story={iEditorDemo} />),
+          js: () => this.addPanel(radioLabelDemo.text, <DemoPage story={radioLabelDemo} />),
         },
-        // {
-        //   id: pEditorDemo.id,
-        //   text: pEditorDemo.text,
-        //   url: '',
-        //   js: () => this.addPanel(pEditorDemo.text, <DemoPage story={pEditorDemo} />),
-        // },
         {
-          id: pdfViewerDemo.id,
-          text: pdfViewerDemo.text,
+          id: switchOptionDemo.id,
+          text: switchOptionDemo.text,
           url: '',
-          js: () => this.addPanel(pdfViewerDemo.text, <DemoPage story={pdfViewerDemo} />),
+          js: () => this.addPanel(switchOptionDemo.text, <DemoPage story={switchOptionDemo} />),
+        },
+        {
+          id: toggleSwitchDemo.id,
+          text: toggleSwitchDemo.text,
+          url: '',
+          js: () => this.addPanel(toggleSwitchDemo.text, <DemoPage story={toggleSwitchDemo} />),
         },
         {
           id: selectWithTitleDemo.id,
           text: selectWithTitleDemo.text,
           url: '',
           js: () => this.addPanel(selectWithTitleDemo.text, <DemoPage story={selectWithTitleDemo} />),
+        },
+        {
+          id: selectAngleDemo.id,
+          text: selectAngleDemo.text,
+          url: '',
+          js: () => this.addPanel(selectAngleDemo.text, <DemoPage story={selectAngleDemo} />),
+        },
+        {
+          id: cascaderDemo.id,
+          text: cascaderDemo.text,
+          url: '',
+          js: () => this.addPanel(cascaderDemo.text, <DemoPage story={cascaderDemo} />),
         },
         {
           id: rangeDemo.id,
@@ -296,24 +278,6 @@ export class DemoFrameHelper {
           text: gaugeDemo.text,
           url: '',
           js: () => this.addPanel(gaugeDemo.text, <DemoPage story={gaugeDemo} />),
-        },
-        {
-          id: radioLabelDemo.id,
-          text: radioLabelDemo.text,
-          url: '',
-          js: () => this.addPanel(radioLabelDemo.text, <DemoPage story={radioLabelDemo} />),
-        },
-        {
-          id: selectAngleDemo.id,
-          text: selectAngleDemo.text,
-          url: '',
-          js: () => this.addPanel(selectAngleDemo.text, <DemoPage story={selectAngleDemo} />),
-        },
-        {
-          id: switchOptionDemo.id,
-          text: switchOptionDemo.text,
-          url: '',
-          js: () => this.addPanel(switchOptionDemo.text, <DemoPage story={switchOptionDemo} />),
         },
         {
           id: timePickerDemo.id,
@@ -330,15 +294,82 @@ export class DemoFrameHelper {
       ],
     },
     {
-      id: 'data-display-demo',
-      text: 'Data Display',
+      id: 'navigation-menus-demo',
+      text: 'Navigation & Menus',
       url: '',
       items: [
+        {
+          id: popupMenuDemo.id,
+          text: popupMenuDemo.text,
+          url: '',
+          js: () => this.addPanel(popupMenuDemo.text, <DemoPage story={popupMenuDemo} />),
+        },
+        {
+          id: floatingIconMenuDemo.id,
+          text: floatingIconMenuDemo.text,
+          url: '',
+          js: () => this.addPanel(floatingIconMenuDemo.text, <DemoPage story={floatingIconMenuDemo} />),
+        },
+        {
+          id: mobileSideMenuDemo.id,
+          text: mobileSideMenuDemo.text,
+          url: '',
+          js: () => this.addPanel(mobileSideMenuDemo.text, <DemoPage story={mobileSideMenuDemo} />),
+        },
+        {
+          id: breadcrumbsDemo.id,
+          text: breadcrumbsDemo.text,
+          url: '',
+          js: () => this.addPanel(breadcrumbsDemo.text, <DemoPage story={breadcrumbsDemo} />),
+        },
+        {
+          id: tabsDemo.id,
+          text: tabsDemo.text,
+          url: '',
+          js: () => this.addPanel(tabsDemo.text, <DemoPage story={tabsDemo} />),
+        },
+        {
+          id: slideTabDemo.id,
+          text: slideTabDemo.text,
+          url: '',
+          js: () => this.addPanel(slideTabDemo.text, <DemoPage story={slideTabDemo} />),
+        },
         {
           id: pagingLinkDemo.id,
           text: pagingLinkDemo.text,
           url: '',
           js: () => this.addPanel(pagingLinkDemo.text, <DemoPage story={pagingLinkDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'data-display-demo',
+      text: 'Data Display & Media',
+      url: '',
+      items: [
+        {
+          id: cardDemo.id,
+          text: cardDemo.text,
+          url: '',
+          js: () => this.addPanel(cardDemo.text, <DemoPage story={cardDemo} />),
+        },
+        {
+          id: avatarDemo.id,
+          text: avatarDemo.text,
+          url: '',
+          js: () => this.addPanel(avatarDemo.text, <DemoPage story={avatarDemo} />),
+        },
+        {
+          id: carouselDemo.id,
+          text: carouselDemo.text,
+          url: '',
+          js: () => this.addPanel(carouselDemo.text, <DemoPage story={carouselDemo} />),
+        },
+        {
+          id: timelineDemo.id,
+          text: timelineDemo.text,
+          url: '',
+          js: () => this.addPanel(timelineDemo.text, <DemoPage story={timelineDemo} />),
         },
         {
           id: progressDemo.id,
@@ -353,52 +384,10 @@ export class DemoFrameHelper {
           js: () => this.addPanel(radialProgressDemo.text, <DemoPage story={radialProgressDemo} />),
         },
         {
-          id: timelineDemo.id,
-          text: timelineDemo.text,
-          url: '',
-          js: () => this.addPanel(timelineDemo.text, <DemoPage story={timelineDemo} />),
-        },
-        {
           id: skeletonDemo.id,
           text: skeletonDemo.text,
           url: '',
           js: () => this.addPanel(skeletonDemo.text, <DemoPage story={skeletonDemo} />),
-        },
-        {
-          id: avatarDemo.id,
-          text: avatarDemo.text,
-          url: '',
-          js: () => this.addPanel(avatarDemo.text, <DemoPage story={avatarDemo} />),
-        },
-        {
-          id: cardDemo.id,
-          text: cardDemo.text,
-          url: '',
-          js: () => this.addPanel(cardDemo.text, <DemoPage story={cardDemo} />),
-        },
-        {
-          id: carouselDemo.id,
-          text: carouselDemo.text,
-          url: '',
-          js: () => this.addPanel(carouselDemo.text, <DemoPage story={carouselDemo} />),
-        },
-        {
-          id: cascaderDemo.id,
-          text: cascaderDemo.text,
-          url: '',
-          js: () => this.addPanel(cascaderDemo.text, <DemoPage story={cascaderDemo} />),
-        },
-        {
-          id: slideTabDemo.id,
-          text: slideTabDemo.text,
-          url: '',
-          js: () => this.addPanel(slideTabDemo.text, <DemoPage story={slideTabDemo} />),
-        },
-        {
-          id: qrcodeDemo.id,
-          text: qrcodeDemo.text,
-          url: '',
-          js: () => this.addPanel(qrcodeDemo.text, <DemoPage story={qrcodeDemo} />),
         },
         {
           id: youtubePlayerDemo.id,
@@ -406,11 +395,109 @@ export class DemoFrameHelper {
           url: '',
           js: () => this.addPanel(youtubePlayerDemo.text, <DemoPage story={youtubePlayerDemo} />),
         },
+        {
+          id: qrcodeDemo.id,
+          text: qrcodeDemo.text,
+          url: '',
+          js: () => this.addPanel(qrcodeDemo.text, <DemoPage story={qrcodeDemo} />),
+        },
       ],
     },
     {
-      id: 'feedback-demo',
-      text: 'Feedback',
+      id: 'charts-demo',
+      text: 'Charts',
+      url: '',
+      items: [
+        {
+          id: pieChartDemo.id,
+          text: pieChartDemo.text,
+          url: '',
+          js: () => this.addPanel(pieChartDemo.text, <DemoPage story={pieChartDemo} />),
+        },
+        {
+          id: donutChartDemo.id,
+          text: donutChartDemo.text,
+          url: '',
+          js: () => this.addPanel(donutChartDemo.text, <DemoPage story={donutChartDemo} />),
+        },
+        {
+          id: columnChartDemo.id,
+          text: columnChartDemo.text,
+          url: '',
+          js: () => this.addPanel(columnChartDemo.text, <DemoPage story={columnChartDemo} />),
+        },
+        {
+          id: barChartDemo.id,
+          text: barChartDemo.text,
+          url: '',
+          js: () => this.addPanel(barChartDemo.text, <DemoPage story={barChartDemo} />),
+        },
+        {
+          id: lineChartDemo.id,
+          text: lineChartDemo.text,
+          url: '',
+          js: () => this.addPanel(lineChartDemo.text, <DemoPage story={lineChartDemo} />),
+        },
+        {
+          id: areaChartDemo.id,
+          text: areaChartDemo.text,
+          url: '',
+          js: () => this.addPanel(areaChartDemo.text, <DemoPage story={areaChartDemo} />),
+        },
+        {
+          id: radarChartDemo.id,
+          text: radarChartDemo.text,
+          url: '',
+          js: () => this.addPanel(radarChartDemo.text, <DemoPage story={radarChartDemo} />),
+        },
+        {
+          id: gaugeChartDemo.id,
+          text: gaugeChartDemo.text,
+          url: '',
+          js: () => this.addPanel(gaugeChartDemo.text, <DemoPage story={gaugeChartDemo} />),
+        },
+        {
+          id: scatterChartDemo.id,
+          text: scatterChartDemo.text,
+          url: '',
+          js: () => this.addPanel(scatterChartDemo.text, <DemoPage story={scatterChartDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'editors-viewers-demo',
+      text: 'Editors & Viewers',
+      url: '',
+      items: [
+        {
+          id: hEditorDemo.id,
+          text: hEditorDemo.text,
+          url: '',
+          js: () => this.addPanel(hEditorDemo.text, <DemoPage story={hEditorDemo} />),
+        },
+        {
+          id: iEditorDemo.id,
+          text: iEditorDemo.text,
+          url: '',
+          js: () => this.addPanel(iEditorDemo.text, <DemoPage story={iEditorDemo} />),
+        },
+        {
+          id: pEditorDemo.id,
+          text: pEditorDemo.text,
+          url: '',
+          js: () => this.addPanel(pEditorDemo.text, <DemoPage story={pEditorDemo} />),
+        },
+        {
+          id: pdfViewerDemo.id,
+          text: pdfViewerDemo.text,
+          url: '',
+          js: () => this.addPanel(pdfViewerDemo.text, <DemoPage story={pdfViewerDemo} />),
+        },
+      ],
+    },
+    {
+      id: 'overlays-feedback-demo',
+      text: 'Overlays & Feedback',
       url: '',
       items: [
         {
@@ -432,22 +519,10 @@ export class DemoFrameHelper {
           js: () => this.addPanel(actionSheetDemo.text, <DemoPage story={actionSheetDemo} />),
         },
         {
-          id: popupMenuDemo.id,
-          text: popupMenuDemo.text,
-          url: '',
-          js: () => this.addPanel(popupMenuDemo.text, <DemoPage story={popupMenuDemo} />),
-        },
-        {
           id: noticeMessageDemo.id,
           text: noticeMessageDemo.text,
           url: '',
           js: () => this.addPanel(noticeMessageDemo.text, <DemoPage story={noticeMessageDemo} />),
-        },
-        {
-          id: tourDemo.id,
-          text: tourDemo.text,
-          url: '',
-          js: () => this.addPanel(tourDemo.text, <DemoPage story={tourDemo} />),
         },
         {
           id: pullToRefreshDemo.id,
@@ -455,18 +530,30 @@ export class DemoFrameHelper {
           url: '',
           js: () => this.addPanel(pullToRefreshDemo.text, <DemoPage story={pullToRefreshDemo} />),
         },
+        {
+          id: tourDemo.id,
+          text: tourDemo.text,
+          url: '',
+          js: () => this.addPanel(tourDemo.text, <DemoPage story={tourDemo} />),
+        },
       ],
     },
     {
-      id: 'layout-demo',
-      text: 'Layout',
+      id: 'layout-frames-demo',
+      text: 'Layout & Frames',
       url: '',
       items: [
         {
-          id: tabsDemo.id,
-          text: tabsDemo.text,
+          id: responsiveFrameDemo.id,
+          text: responsiveFrameDemo.text,
           url: '',
-          js: () => this.addPanel(tabsDemo.text, <DemoPage story={tabsDemo} />),
+          js: () => this.addPanel(responsiveFrameDemo.text, <DemoPage story={responsiveFrameDemo} />),
+        },
+        {
+          id: sliderFrameDemo.id,
+          text: sliderFrameDemo.text,
+          url: '',
+          js: () => this.addPanel(sliderFrameDemo.text, <DemoPage story={sliderFrameDemo} />),
         },
         {
           id: resizableSplitterDemo.id,
@@ -480,25 +567,13 @@ export class DemoFrameHelper {
           url: '',
           js: () => this.addPanel(aspectRatioDemo.text, <DemoPage story={aspectRatioDemo} />),
         },
-        {
-          id: sliderFrameDemo.id,
-          text: sliderFrameDemo.text,
-          url: '',
-          js: () => this.addPanel(sliderFrameDemo.text, <DemoPage story={sliderFrameDemo} />),
-        },
       ],
     },
     {
-      id: 'advanced-demo',
-      text: 'Special FX',
+      id: 'special-fx-demo',
+      text: 'Special FX & Utilities',
       url: '',
       items: [
-        {
-          id: mapWrapperDemo.id,
-          text: mapWrapperDemo.text,
-          url: '',
-          js: () => this.addPanel(mapWrapperDemo.text, <DemoPage story={mapWrapperDemo} />),
-        },
         {
           id: textWaveDemo.id,
           text: textWaveDemo.text,
@@ -518,6 +593,12 @@ export class DemoFrameHelper {
           js: () => this.addPanel(textGlowDemo.text, <DemoPage story={textGlowDemo} />),
         },
         {
+          id: mapWrapperDemo.id,
+          text: mapWrapperDemo.text,
+          url: '',
+          js: () => this.addPanel(mapWrapperDemo.text, <DemoPage story={mapWrapperDemo} />),
+        },
+        {
           id: redirectDemo.id,
           text: redirectDemo.text,
           url: '',
@@ -525,7 +606,6 @@ export class DemoFrameHelper {
         },
       ],
     },
-
     {
       id: 'help',
       text: 'Help',
