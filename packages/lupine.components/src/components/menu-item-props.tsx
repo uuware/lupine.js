@@ -1,4 +1,7 @@
+import { VNode } from 'lupine.web';
+
 export type MenuItemProps = {
+  icon?: string | VNode<any>;
   id: string;
   text: string; // "-" for break line
   url: string;
