@@ -1,4 +1,4 @@
-import { CssProps, encodeHtml, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
+import { bindGlobalStyle, CssProps, encodeHtml, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
 import { demoRegistry } from './demo-registry';
 import { demoIconsCss } from './mock/demo-icons';
 
@@ -77,6 +77,7 @@ export const DemoRenderPage = async (props: PageProps) => {
     },
     ...demoIconsCss,
   };
+  bindGlobalStyle('demo-icons', demoIconsCss, false, true);
 
   return (
     <div css={css} class='demo-render-page'>

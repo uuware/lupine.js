@@ -56,6 +56,17 @@ import { iEditorDemo } from '../component-pool/i-editor';
 import { youtubePlayerDemo } from '../component-pool/youtube-player';
 import { pEditorDemo } from '../component-pool/p-editor';
 import { pdfViewerDemo } from '../component-pool/pdf-viewer';
+import {
+  pieChartDemo,
+  donutChartDemo,
+  columnChartDemo,
+  barChartDemo,
+  lineChartDemo,
+  areaChartDemo,
+  radarChartDemo,
+  gaugeChartDemo,
+  scatterChartDemo,
+} from '../component-pool/charts';
 
 export const demoRegistry: Record<string, DemoStory<any>> = {
   [buttonDemo.id]: buttonDemo,
@@ -116,4 +127,13 @@ export const demoRegistry: Record<string, DemoStory<any>> = {
   [youtubePlayerDemo.id]: youtubePlayerDemo,
   [pEditorDemo.id]: pEditorDemo,
   [pdfViewerDemo.id]: pdfViewerDemo,
+  [pieChartDemo.id]: pieChartDemo,
+  [donutChartDemo.id]: donutChartDemo,
+  [columnChartDemo.id]: columnChartDemo,
+  [barChartDemo.id]: barChartDemo,
+  [lineChartDemo.id]: lineChartDemo,
+  [areaChartDemo.id]: areaChartDemo,
+  [radarChartDemo.id]: radarChartDemo,
+  [gaugeChartDemo.id]: gaugeChartDemo,
+  [scatterChartDemo.id]: scatterChartDemo,
 };

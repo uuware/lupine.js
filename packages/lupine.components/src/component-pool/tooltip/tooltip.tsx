@@ -76,7 +76,7 @@ const tooltipCss: CssProps = {
 
 const TOOLTIP_INITIALIZED = '__tooltip_init';
 
-export class TooltipHelper {
+export class Tooltip {
   private static host: HTMLElement | null = null;
   private static ref: RefProps | null = null;
   private static closeTimer: any = null;
@@ -237,5 +237,3 @@ const TooltipContent = (props: {
     </div>
   );
 };
-
-export const Tooltip = TooltipHelper;
