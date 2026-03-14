@@ -5,30 +5,51 @@ Lupine.js is a full-featured web application that includes both frontend and bac
 # Hello World
 
 ```tsx
-const HelloPage = () => {
+const Counter = () => {
+  const [count, setCount] = useState(0);
   const css: CssProps = {
     padding: '20px',
     textAlign: 'center',
     h1: {
       color: 'blue',
-      '&:hover': {
-        color: 'red',
-      },
+      '&:hover': { color: 'red' },
     },
   };
-  const dom = new HtmlVar('0');
   return (
     <div css={css}>
       <h1>Hello World</h1>
-      <p>This is a simplified Lupine.js project.</p>
-      <p>{dom.node}</p>
-      <button onClick={() => (dom.value = (Number(dom.value) + 1).toString())}>Increment</button>
+      <p>count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
     </div>
   );
 };
 ```
 
-# Getting Started
+## Quick Start
+
+Ready to give it a try? You can scaffold a new project in seconds.
+
+### Step 1: Create a Project
+
+Use our CLI tool to create a new app.
+
+```bash
+npx create-lupine@latest my-awesome-app
+```
+
+### Step 2: Run it
+
+Enter the directory and start the dev server.
+
+```bash
+cd my-awesome-app
+npm install
+npm run dev
+```
+
+Visit `http://localhost:11080` and you'll see your first Lupine app running!
+
+## Learn more
 
 Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.github.io/lupine.js/zh/)
 
