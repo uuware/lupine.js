@@ -41,32 +41,32 @@ export const mountOuterComponent = async (selector: string | Element, jsxNodes: 
   }
 };
 
-// suggest to use HtmlVar.
-export const mountSiblingComponent = async (
-  selector: string | Element,
-  jsxNodes: VNode<any>,
-  position: 'before' | 'after' = 'after'
-) => {
-  await renderComponentAsync(jsxNodes.type, jsxNodes.props);
-  let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
-  if (el) {
-    // Can't do outerHTML directly because it will lose attributes
-    const template = document.createElement('template');
-    // template.innerHTML = jsxNodes.props._html.join("");
-    // call unload before releace innerHTML
-    await replaceInnerhtml(template, jsxNodes.props._html.join(''));
-    // renderComponent should only have one element
-    template.content.children.length > 1 &&
-      console.error('renderComponent should only have one element: ', template.content.children.length);
-    const newEl = template.content.firstChild as Element;
-    // el.replaceWith(newEl);
-    await callUnload(el);
-    if (el.nextSibling || position === 'before') {
-      el.parentNode?.insertBefore(newEl, position === 'after' ? el.nextSibling : el);
-    } else {
-      el.parentNode?.appendChild(newEl);
-    }
-    bindAttributes(newEl, jsxNodes.type, jsxNodes.props);
-    bindLinks(newEl);
-  }
-};
+// // suggest to use HtmlVar.
+// export const mountSiblingComponent = async (
+//   selector: string | Element,
+//   jsxNodes: VNode<any>,
+//   position: 'before' | 'after' = 'after'
+// ) => {
+//   await renderComponentAsync(jsxNodes.type, jsxNodes.props);
+//   let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
+//   if (el) {
+//     // Can't do outerHTML directly because it will lose attributes
+//     const template = document.createElement('template');
+//     // template.innerHTML = jsxNodes.props._html.join("");
+//     // call unload before releace innerHTML
+//     await replaceInnerhtml(template, jsxNodes.props._html.join(''));
+//     // renderComponent should only have one element
+//     template.content.children.length > 1 &&
+//       console.error('renderComponent should only have one element: ', template.content.children.length);
+//     const newEl = template.content.firstChild as Element;
+//     // el.replaceWith(newEl);
+//     await callUnload(el);
+//     if (el.nextSibling || position === 'before') {
+//       el.parentNode?.insertBefore(newEl, position === 'after' ? el.nextSibling : el);
+//     } else {
+//       el.parentNode?.appendChild(newEl);
+//     }
+//     bindAttributes(newEl, jsxNodes.type, jsxNodes.props);
+//     bindLinks(newEl);
+//   }
+// };

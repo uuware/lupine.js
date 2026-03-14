@@ -2,7 +2,6 @@ import { VNode } from '../jsx';
 import { isFrontEnd } from '../lib/is-frontend';
 import { PageProps } from './export-lupine';
 import { mountInnerComponent } from './mount-component';
-import { Logger } from '../lib/logger';
 
 export type PageRouterCallback = (props: PageProps) => Promise<VNode<any> | null>;
 
@@ -19,7 +18,6 @@ export type FramePageProps = {
 };
 
 export class PageRouter {
-  logger = new Logger('page-router');
   private routerData: PageRouterData[] = [];
   private filter: PageRouterCallback | undefined;
   private framePage: FramePageProps | undefined;
@@ -88,7 +86,7 @@ export class PageRouter {
       // logger.debug(`Processed path: ${path}`);
       return vNode;
     } catch (e: any) {
-      this.logger.error(`Processed path: ${path}, error: ${e.message}`);
+      console.error(`Processed path: ${path}, error: ${e.message}`);
       console.error(e.stack);
       // res.write(JSON.stringify({ status: 'error', message: `Processed path: ${path}, error: ${e.message}` }));
     }
