@@ -3,11 +3,11 @@ import {
   getRenderPageProps,
   RefProps,
   EditableLabel,
-  HtmlVar,
   ModalWindow,
   NotificationColor,
   NotificationMessage,
   PagingLink,
+  useState,
 } from 'lupine.components';
 
 export type TokenProps = {
@@ -163,6 +163,7 @@ export const TokenEditItem = (props: { item: TokenProps; update: TokenDataUpdate
 
 // show one item
 export const TokenShowItem = (props: { item: TokenProps }) => {
+  const [item, setItem] = useState(props.item);
   const ref: RefProps = {};
   const css: CssProps = {
     padding: '10px',
@@ -186,120 +187,93 @@ export const TokenShowItem = (props: { item: TokenProps }) => {
       wordBreak: 'break-all',
     },
   };
+
   const onEdit = (ev: any) => {
-    const update = (item: TokenProps) => {
-      dom.value = makeDom(item);
-    };
-    showTokenEditItem(props.item, update, false);
+    showTokenEditItem(item, (updatedItem) => setItem({ ...updatedItem }), false);
   };
+
   const onRemove = async (ev: any) => {
     if (!confirm('Are you sure you want to delete this token?')) {
       return;
     }
-    await removeTokenData(props.item.token);
-    ref.current.remove();
+    await removeTokenData(item.token);
+    ref.current!.remove();
   };
 
-  const makeDom = (item: TokenProps) => {
-    const saveText = (text: string) => {
-      item.description = text;
-      updateTokenData(item);
-      dom.value = makeDom(item);
-    };
-    return (
-      <div>
-        <div class='control-box'>
-          <button class='button-base button-ss' onClick={onEdit}>
-            Edit
-          </button>
-          <button class='button-base button-ss' onClick={onRemove}>
-            Delete
-          </button>
-        </div>
-        <div class='row-box'>
-          <div class='lable'>Token: </div>
-          <div class='token'>{item.token}</div>
-        </div>
-        <div class='row-box'>
-          <div class='lable'>Description: </div>
-          <div class='flex-1'>
-            <EditableLabel text={item.description} save={saveText} type='text' />
-          </div>
-        </div>
-        <div class='row-box'>
-          <div class='lable'>Timestamp: </div>
-          <div>{new Date(item.timestamp || 0).toLocaleString()}</div>
-        </div>
-      </div>
-    );
+  const saveText = (text: string) => {
+    const updated = { ...item, description: text };
+    updateTokenData(updated);
+    setItem(updated);
   };
 
-  const dom = new HtmlVar(makeDom(props.item));
   return (
     <div ref={ref} css={css} class='sample-data'>
-      {dom.node}
+      <div class='control-box'>
+        <button class='button-base button-ss' onClick={onEdit}>
+          Edit
+        </button>
+        <button class='button-base button-ss' onClick={onRemove}>
+          Delete
+        </button>
+      </div>
+      <div class='row-box'>
+        <div class='lable'>Token: </div>
+        <div class='token'>{item.token}</div>
+      </div>
+      <div class='row-box'>
+        <div class='lable'>Description: </div>
+        <div class='flex-1'>
+          <EditableLabel text={item.description} save={saveText} type='text' />
+        </div>
+      </div>
+      <div class='row-box'>
+        <div class='lable'>Timestamp: </div>
+        <div>{new Date(item.timestamp || 0).toLocaleString()}</div>
+      </div>
     </div>
   );
 };
 
 // show the list
+type TokenListState = {
+  pageIndex: number;
+  searchText: string;
+  data: Awaited<ReturnType<typeof getTokenData>> | null;
+};
 const TokenList = () => {
-  let currentIndex = 0;
-  let searchText = '';
-  let maxPages = 0;
+  const [state, setState] = useState<TokenListState>({ pageIndex: 0, searchText: '', data: null });
   const ref: RefProps = {
-    onLoad: async (self: Element) => {
-      await makeList(currentIndex);
+    onLoad: async () => {
+      const data = await getTokenData(0, '');
+      setState((prev) => ({ ...prev, data }));
     },
   };
+
   const onAdd = async () => {
-    const update = async (item: TokenProps) => {
-      // new item is added at the list end, so update the last page
-      await makeList(maxPages + 1);
-    };
     showTokenEditItem(
-      {
-        token: await generateToken(),
-        description: '',
+      { token: await generateToken(), description: '' },
+      async () => {
+        // navigate to last page after add
+        const fresh = await getTokenData(0, state.searchText);
+        const lastPage = Math.max(0, Math.floor((fresh.itemsCount - 1) / fresh.pageLimit));
+        const lastData = await getTokenData(lastPage, state.searchText);
+        setState({ pageIndex: lastPage, searchText: state.searchText, data: lastData });
       },
-      update,
       true
     );
   };
+
   const onSearch = async () => {
-    searchText = ref.$('input.search').value.trim();
-    await makeList(currentIndex);
+    const text = ref.$?.('input.search')?.value?.trim() ?? '';
+    const data = await getTokenData(0, text);
+    setState({ pageIndex: 0, searchText: text, data });
   };
-  const makeList = async (pageIndex: number) => {
-    const onLinkClick = async (index: number) => {
-      currentIndex = index;
-      await makeList(currentIndex);
-    };
-    const items = await getTokenData(pageIndex, searchText);
-    maxPages = Math.floor((items.itemsCount + 1) / items.pageLimit);
-    listDom.value = (
-      <div>
-        <PagingLink
-          itemsCount={items.itemsCount}
-          pageIndex={pageIndex}
-          pageLimit={items.pageLimit}
-          onClick={onLinkClick}
-          baseLink=''
-        ></PagingLink>
-        {items.result.map((item) => (
-          <TokenShowItem item={item}></TokenShowItem>
-        ))}
-        <PagingLink
-          itemsCount={items.itemsCount}
-          pageIndex={pageIndex}
-          pageLimit={items.pageLimit}
-          onClick={onLinkClick}
-          baseLink=''
-        ></PagingLink>
-      </div>
-    );
+
+  const onLinkClick = async (index: number) => {
+    const data = await getTokenData(index, state.searchText);
+    setState((prev) => ({ ...prev, pageIndex: index, data }));
   };
-  const listDom = new HtmlVar(<div></div>);
+
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -312,7 +286,7 @@ const TokenList = () => {
       <div>
         <div class='row-box'>
           <div class='label'>Search: </div>
-          <input type='text' class='input-base search' />
+          <input type='text' class='input-base search' value={state.searchText} />
           <button class='button-base mr-s' onClick={onSearch}>
             Search
           </button>
@@ -321,7 +295,29 @@ const TokenList = () => {
           </button>
         </div>
       </div>
-      <div class='list'>{listDom.node}</div>
+      <div class='list'>
+        {state.data && (
+          <>
+            <PagingLink
+              itemsCount={state.data.itemsCount}
+              pageIndex={state.data.pageIndex}
+              pageLimit={state.data.pageLimit}
+              onClick={onLinkClick}
+              baseLink=''
+            />
+            {state.data.result.map((item) => (
+              <TokenShowItem item={item} />
+            ))}
+            <PagingLink
+              itemsCount={state.data.itemsCount}
+              pageIndex={state.data.pageIndex}
+              pageLimit={state.data.pageLimit}
+              onClick={onLinkClick}
+              baseLink=''
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 };

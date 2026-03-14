@@ -14,5 +14,6 @@ export * from './render-component';
 export * from './replace-innerhtml';
 export * from './server-cookie';
 export * from './use-request-context';
+export * from './use-state';
 
 export * from './initialize';

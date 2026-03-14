@@ -2,7 +2,6 @@ import {
   CssProps,
   RefProps,
   EditableLabel,
-  HtmlVar,
   ModalWindow,
   NotificationColor,
   NotificationMessage,
@@ -10,6 +9,7 @@ import {
   ToggleBaseHookProps,
   ToggleSwitch,
   ToggleSwitchSize,
+  useState,
 } from 'lupine.components';
 
 type SampleDataProps = {
@@ -153,6 +153,7 @@ export const BookEditItem = (props: { item: SampleDataProps; update: SampleDataU
 
 // show one item
 export const BookShowItem = (props: { item: SampleDataProps }) => {
+  const [item, setItem] = useState(props.item);
   const ref: RefProps = {};
   const css: CssProps = {
     padding: '10px',
@@ -172,115 +173,79 @@ export const BookShowItem = (props: { item: SampleDataProps }) => {
       width: '70px',
     },
   };
+
   const onEdit = (ev: any) => {
-    const update = (item: SampleDataProps) => {
-      dom.value = makeDom(item);
-    };
-    showBookEditItem(props.item, update);
+    showBookEditItem(item, (updatedItem) => {
+      setItem({ ...updatedItem });
+    });
   };
+
   const onRemove = (ev: any) => {
-    removeSampleData(props.item.id);
-    ref.current.remove();
+    removeSampleData(item.id);
+    ref.current!.remove();
   };
 
-  const makeDom = (item: SampleDataProps) => {
-    const saveText = (text: string) => {
-      item.name = text;
-      updateSampleData(item);
-      dom.value = makeDom(item);
-    };
-    return (
-      <>
-        <div class='control-box'>
-          <button class='button-base button-ss' onClick={onEdit}>
-            Edit
-          </button>
-          <button class='button-base button-ss' onClick={onRemove}>
-            Delete
-          </button>
-        </div>
-        <div class='row-box'>
-          <div class='lable'>Name: </div>
-          <div>{item.name}</div>
-          <div class='px-m'>Double Click to edit: </div>
-          <EditableLabel text={item.name} save={saveText} type='text' />
-        </div>
-        <div class='row-box'>
-          <div class='lable'>Info: </div>
-          <div>{item.info}</div>
-        </div>
-        <div class='row-box'>
-          <div class='lable'>Checked: </div>
-          <div>{item.checked ? 'Yes' : 'No'}</div>
-        </div>
-      </>
-    );
+  const saveText = (text: string) => {
+    const updated = { ...item, name: text };
+    updateSampleData(updated);
+    setItem(updated);
   };
 
-  const dom = new HtmlVar(makeDom(props.item));
   return (
     <div ref={ref} css={css} class='sample-data'>
-      {dom.node}
+      <div class='control-box'>
+        <button class='button-base button-ss' onClick={onEdit}>
+          Edit
+        </button>
+        <button class='button-base button-ss' onClick={onRemove}>
+          Delete
+        </button>
+      </div>
+      <div class='row-box'>
+        <div class='lable'>Name: </div>
+        <div>{item.name}</div>
+        <div class='px-m'>Double Click to edit: </div>
+        <EditableLabel text={item.name} save={saveText} type='text' />
+      </div>
+      <div class='row-box'>
+        <div class='lable'>Info: </div>
+        <div>{item.info}</div>
+      </div>
+      <div class='row-box'>
+        <div class='lable'>Checked: </div>
+        <div>{item.checked ? 'Yes' : 'No'}</div>
+      </div>
     </div>
   );
 };
 
 // show the list
 export const BookList = () => {
-  let currentIndex = 0;
-  let searchTexts: string[] = [];
-  let items = getSampleData(currentIndex, searchTexts);
-  const ref: RefProps = { onLoad: async (self: Element) => {} };
+  const [pageIndex, setPageIndex] = useState(0);
+  const [searchTexts, setSearchTexts] = useState<string[]>([]);
+  const ref: RefProps = {};
+
+  const items = getSampleData(pageIndex, searchTexts);
+
   const onAdd = async () => {
-    const update = (item: SampleDataProps) => {
-      // new item is added at the list end, so update the last page
-      currentIndex = Math.floor((items.itemsCount + 1) / _DEFAULT_PAGE_LIMIT);
-      listDom.value = makeList(currentIndex);
-    };
-    showBookEditItem(
-      {
-        id: -1,
-        name: '',
-        info: '',
-        checked: false,
-      },
-      update
-    );
+    showBookEditItem({ id: -1, name: '', info: '', checked: false }, () => {
+      // navigate to last page after add (data is already saved by this point)
+      const newCount = getSampleData(0, searchTexts).itemsCount;
+      setPageIndex(Math.floor((newCount - 1) / _DEFAULT_PAGE_LIMIT));
+    });
   };
+
   const onSearch = () => {
-    searchTexts = ref.$('input.search').value.trim().split(' ');
-    items = getSampleData(currentIndex, searchTexts);
-    listDom.value = makeList(currentIndex);
+    const text = ref.$?.('input.search')?.value?.trim() ?? '';
+    const texts = text ? text.split(' ') : [];
+    setSearchTexts(texts);
+    setPageIndex(0);
   };
-  const makeList = (pageIndex: number) => {
-    const onLinkClick = (index: number) => {
-      currentIndex = index;
-      listDom.value = makeList(currentIndex);
-    };
-    const items = getSampleData(pageIndex, searchTexts);
-    return (
-      <div>
-        <PagingLink
-          itemsCount={items.itemsCount}
-          pageIndex={pageIndex}
-          pageLimit={_DEFAULT_PAGE_LIMIT}
-          onClick={onLinkClick}
-          baseLink=''
-        ></PagingLink>
-        {items.result.map((item) => (
-          <BookShowItem item={item}></BookShowItem>
-        ))}
-        <PagingLink
-          itemsCount={items.itemsCount}
-          pageIndex={pageIndex}
-          pageLimit={_DEFAULT_PAGE_LIMIT}
-          onClick={onLinkClick}
-          baseLink=''
-        ></PagingLink>
-      </div>
-    );
+
+  const onLinkClick = (index: number) => {
+    setPageIndex(index);
   };
-  const listDom = new HtmlVar(makeList(currentIndex));
+
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -293,7 +258,7 @@ export const BookList = () => {
       <div>
         <div class='row-box'>
           <div class='label'>Search: </div>
-          <input type='text' class='input-base search' />
+          <input type='text' class='input-base search' value={searchTexts.join(' ')} />
           <button class='button-base mr-s' onClick={onSearch}>
             Search
           </button>
@@ -302,7 +267,25 @@ export const BookList = () => {
           </button>
         </div>
       </div>
-      <div class='list'>{listDom.node}</div>
+      <div class='list'>
+        <PagingLink
+          itemsCount={items.itemsCount}
+          pageIndex={pageIndex}
+          pageLimit={_DEFAULT_PAGE_LIMIT}
+          onClick={onLinkClick}
+          baseLink=''
+        />
+        {items.result.map((item) => (
+          <BookShowItem item={item} />
+        ))}
+        <PagingLink
+          itemsCount={items.itemsCount}
+          pageIndex={pageIndex}
+          pageLimit={_DEFAULT_PAGE_LIMIT}
+          onClick={onLinkClick}
+          baseLink=''
+        />
+      </div>
     </div>
   );
 };

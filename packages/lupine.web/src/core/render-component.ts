@@ -1,10 +1,9 @@
-import { Logger } from '../lib/logger';
 import { uniqueIdGenerator } from '../lib/unique-id';
 import { processStyle } from './bind-styles';
 // import { bindPageResetEvent } from './page-reset-events';
 import { camelToHyphens } from './camel-to-hyphens';
+import { buildStateRef, clearCurrentStore, ComponentStateStore, setCurrentStore } from './use-state';
 
-const logger = new Logger('render-components');
 export const domUniqueId = uniqueIdGenerator('l'); // l means label
 // bindPageResetEvent(() => {
 //   // reset unique id
@@ -251,7 +250,7 @@ async function renderChildrenAsync(html: string[], children: any, uniqueClassNam
     html.push(...children.props._html);
     children.props._html.length = 0;
   } else {
-    logger.warn('Unexpected', children);
+    console.warn('Unexpected', children);
   }
 }
 
@@ -272,11 +271,31 @@ export const renderComponentAsync = async (type: any, props: any, uniqueClassNam
 
   props._html = [];
   if (typeof type === 'function') {
-    // Note: Components themselves are still synchronous functions, just their traversal is async
-    props._result = type.call(null, props);
-    if (props._result && typeof props._result.then === 'function') {
+    // Create a per-call state store and set the global pointer BEFORE calling the component.
+    // The pointer is cleared BEFORE any await so concurrent SSR requests stay isolated.
+    const store = new ComponentStateStore(type, props);
+    setCurrentStore(store);
+
+    // Note: Components themselves are still synchronous functions, just their traversal is async.
+    // useState hooks are called inside type.call() — synchronously — while store is set.
+    const resultMaybePromise = type.call(null, props);
+
+    // ← Clear global pointer BEFORE any await (Node.js single-thread guarantee keeps this safe)
+    clearCurrentStore();
+
+    if (resultMaybePromise && typeof resultMaybePromise.then === 'function') {
       // If component returns a Promise (Async Component), await it
-      props._result = await props._result;
+      props._result = await resultMaybePromise;
+    } else {
+      props._result = resultMaybePromise;
+    }
+
+    // If the component called useState, inject an internal _stateRef on the root element
+    // so the store can track the live DOM node for future rerenders.
+    if (store.hookIndex > 0 && props._result && props._result.props) {
+      const rootProps = props._result.props;
+      const existingRef = rootProps.ref;
+      rootProps.ref = buildStateRef(store, existingRef);
     }
 
     if (props._result === null || props._result === undefined || props._result === false) {
@@ -339,6 +358,6 @@ export const renderComponentAsync = async (type: any, props: any, uniqueClassNam
   } else if (newType.name === 'Fragment') {
     await renderChildrenAsync(props._html, newProps.children, uniqueClassName, globalCssId);
   } else {
-    logger.warn('Unknown type: ', type, props, newType, newProps);
+    console.warn('Unknown type: ', type, props, newType, newProps);
   }
 };
