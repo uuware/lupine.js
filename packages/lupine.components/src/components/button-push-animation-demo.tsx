@@ -1,6 +1,6 @@
 import { DemoStory } from '../demo/demo-types';
 import { ButtonPushAnimation, ButtonPushAnimationProps, ButtonPushAnimationSize } from './button-push-animation';
-import { HtmlVar } from './html-var';
+import { useState } from 'lupine.components';
 
 export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
   id: 'button-push-animation-demo',
@@ -20,57 +20,45 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
     disabled: { control: 'boolean', description: 'Whether the button is disabled' },
   },
   render: (args: ButtonPushAnimationProps) => {
-    const msg = new HtmlVar('');
-    return (
-      <div css={{ padding: '20px' }}>
-        <div class='mx-l my-l'>
-          <ButtonPushAnimation {...args} onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)} />
-        </div>
-        <hr />
+    const ButtonPushAnimationDemoContent = () => {
+      const [msg, setMsg] = useState('');
+      const pushMsg = () => setMsg(`Pushed at ${new Date().toLocaleTimeString()}`);
+      return (
+        <div css={{ padding: '20px' }}>
+          <div class='mx-l my-l'>
+            <ButtonPushAnimation {...args} onClick={pushMsg} />
+          </div>
+          <hr />
 
-        <div class='mx-l my-l'>
-          <ButtonPushAnimation
-            size={ButtonPushAnimationSize.SmallSmall}
-            text='SmallSmall Button'
-            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <ButtonPushAnimation
-            size={ButtonPushAnimationSize.Small}
-            text='Small Button'
-            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <ButtonPushAnimation
-            size={ButtonPushAnimationSize.Medium}
-            text={
-              <>
-                <i class='icon ifc-icon ma-account-cog-outline mr-m'></i>Button
-              </>
-            }
-            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <ButtonPushAnimation
-            size={ButtonPushAnimationSize.Large}
-            text='Large Button'
-            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <ButtonPushAnimation
-            size={ButtonPushAnimationSize.LargeLarge}
-            text='LargeLarge Button'
-            onClick={() => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`)}
-          />
-        </div>
+          <div class='mx-l my-l'>
+            <ButtonPushAnimation size={ButtonPushAnimationSize.SmallSmall} text='SmallSmall Button' onClick={pushMsg} />
+          </div>
+          <div class='mx-l my-l'>
+            <ButtonPushAnimation size={ButtonPushAnimationSize.Small} text='Small Button' onClick={pushMsg} />
+          </div>
+          <div class='mx-l my-l'>
+            <ButtonPushAnimation
+              size={ButtonPushAnimationSize.Medium}
+              text={
+                <>
+                  <i class='icon ifc-icon ma-account-cog-outline mr-m'></i>Button
+                </>
+              }
+              onClick={pushMsg}
+            />
+          </div>
+          <div class='mx-l my-l'>
+            <ButtonPushAnimation size={ButtonPushAnimationSize.Large} text='Large Button' onClick={pushMsg} />
+          </div>
+          <div class='mx-l my-l'>
+            <ButtonPushAnimation size={ButtonPushAnimationSize.LargeLarge} text='LargeLarge Button' onClick={pushMsg} />
+          </div>
 
-        <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
-      </div>
-    );
+          <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg}</div>
+        </div>
+      );
+    };
+    return <ButtonPushAnimationDemoContent />;
   },
   code: `import { ButtonPushAnimation, ButtonPushAnimationSize } from 'lupine.components/components/button-push-animation';
 

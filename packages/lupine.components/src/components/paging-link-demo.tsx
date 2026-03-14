@@ -1,12 +1,12 @@
-import { CssProps, RefProps, mountInnerComponent } from 'lupine.web';
+import { CssProps, RefProps } from 'lupine.web';
 import {
-  HtmlVar,
   NotificationColor,
   NotificationMessage,
   ActionSheetSelect,
   PagingLink,
   ModalWindow,
   getDefaultPageLimit,
+  useState,
 } from 'lupine.components';
 import { DemoStory } from '../demo/demo-types';
 import { SearchInput } from '../component-pool/search-input';
@@ -284,14 +284,18 @@ const ContentOneRow = (props: {
 // -------------------------------------------------------------
 // 4. Main Page Component
 // -------------------------------------------------------------
+type PageListState = {
+  searchValue: string;
+  pageIndex: number;
+  data: Awaited<ReturnType<typeof mockApi.getList>> | null;
+};
+
 export const PagingLinkPage = () => {
-  let searchValue: string = '';
-  let pageIndex = 0;
-  const listDom = new HtmlVar('');
+  const [state, setState] = useState<PageListState>({ searchValue: '', pageIndex: 0, data: null });
 
   const ref: RefProps = {
     onLoad: async () => {
-      await onSearch('');
+      await loadAndSet('', 0);
     },
   };
 
@@ -323,100 +327,30 @@ export const PagingLinkPage = () => {
     },
   };
 
+  const loadAndSet = async (search: string, page: number) => {
+    const pageLimit = getDefaultPageLimit();
+    const result = await mockApi.getList(search, page, pageLimit);
+    setState({ searchValue: search, pageIndex: result.pageIndex, data: result });
+  };
+
   const onSearch = async (search?: string) => {
-    searchValue = (search || '').trim();
-    pageIndex = 0; // reset to first page on new search
-    listDom.value = await makeList();
+    await loadAndSet((search || '').trim(), 0);
   };
 
   const onPageClick = async (index: number) => {
-    pageIndex = index;
-    listDom.value = await makeList();
+    await loadAndSet(state.searchValue, index);
   };
 
   const onAdd = async () => {
-    const newItem: MockUserRecord = {
-      id: -1,
-      name: '',
-      email: '',
-      role: 'User',
-      status: 'Active',
-    };
-
-    const update = async () => {
-      // Re-fetch the list to show the new record on top
-      listDom.value = await makeList();
+    const newItem: MockUserRecord = { id: -1, name: '', email: '', role: 'User', status: 'Active' };
+    showEditModal(newItem, async () => {
+      await loadAndSet(state.searchValue, state.pageIndex);
       NotificationMessage.sendMessage('User added successfully.', NotificationColor.Success);
-    };
-
-    showEditModal(newItem, update);
+    });
   };
 
-  // Callback to refresh the list from children
   const refreshList = async () => {
-    listDom.value = await makeList();
-  };
-
-  const makeList = async () => {
-    const pageLimit = getDefaultPageLimit();
-    const result = await mockApi.getList(searchValue, pageIndex, pageLimit);
-    if (result.status !== 'ok') {
-      return <div>Error loading data.</div>;
-    }
-
-    pageIndex = result.pageIndex;
-
-    if (result.results.length === 0) {
-      return <div style={{ padding: '20px', textAlign: 'center' }}>No results found.</div>;
-    }
-
-    return (
-      <div>
-        {/* Pagination Controls */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <PagingLink
-            itemsCount={result.count}
-            pageIndex={pageIndex}
-            baseLink=''
-            onClick={onPageClick}
-            textPage='Page'
-            textPerpage='items per page'
-            textTo='Go to'
-            textOk='OK'
-            showControl={true}
-          />
-        </div>
-
-        <table class='pg-main-tbl'>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-          {result.results.map((item) => (
-            <ContentOneRow item={item} onRefreshList={refreshList} />
-          ))}
-        </table>
-
-        {/* Pagination Controls */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <PagingLink
-            itemsCount={result.count}
-            pageIndex={pageIndex}
-            baseLink=''
-            onClick={onPageClick}
-            textPage='Page'
-            textPerpage='items per page'
-            textTo='Go to'
-            textOk='OK'
-            showControl={true}
-          />
-        </div>
-      </div>
-    );
+    await loadAndSet(state.searchValue, state.pageIndex);
   };
 
   return (
@@ -427,7 +361,57 @@ export const PagingLinkPage = () => {
           Add User
         </button>
       </div>
-      <div class='list'>{listDom.node}</div>
+      <div class='list'>
+        {state.data && (
+          <>
+            {state.data.results.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center' }}>No results found.</div>
+            ) : (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <PagingLink
+                    itemsCount={state.data.count}
+                    pageIndex={state.pageIndex}
+                    baseLink=''
+                    onClick={onPageClick}
+                    textPage='Page'
+                    textPerpage='items per page'
+                    textTo='Go to'
+                    textOk='OK'
+                    showControl={true}
+                  />
+                </div>
+                <table class='pg-main-tbl'>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                  {state.data.results.map((item) => (
+                    <ContentOneRow item={item} onRefreshList={refreshList} />
+                  ))}
+                </table>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <PagingLink
+                    itemsCount={state.data.count}
+                    pageIndex={state.pageIndex}
+                    baseLink=''
+                    onClick={onPageClick}
+                    textPage='Page'
+                    textPerpage='items per page'
+                    textTo='Go to'
+                    textOk='OK'
+                    showControl={true}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import { DemoStory } from '../../demo/demo-types';
 import { RadialProgress, RadialProgressProps } from './radial-progress';
 import { Button, ButtonSize } from '../../components/button';
-import { bindRef } from 'lupine.web';
 
 export const radialProgressDemo: DemoStory<RadialProgressProps> = {
   id: 'radial-progress',

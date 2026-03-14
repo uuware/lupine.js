@@ -1,6 +1,6 @@
 import { DemoStory } from '../demo/demo-types';
 import { Button, ButtonProps, ButtonSize } from './button';
-import { HtmlVar } from './html-var';
+import { useState } from 'lupine.components';
 
 export const buttonDemo: DemoStory<ButtonProps> = {
   id: 'button-demo',
@@ -20,71 +20,74 @@ export const buttonDemo: DemoStory<ButtonProps> = {
     disabled: { control: 'boolean', description: 'Whether the button is disabled' },
   },
   render: (args: ButtonProps) => {
-    const msg = new HtmlVar('');
-    return (
-      <div css={{ padding: '20px' }}>
-        <div class='mx-l my-l'>
-          <Button
-            {...args}
-            onClick={() => {
-              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-            }}
-          />
-        </div>
-        <hr />
+    const ButtonDemoContent = () => {
+      const [msg, setMsg] = useState('');
+      return (
+        <div css={{ padding: '20px' }}>
+          <div class='mx-l my-l'>
+            <Button
+              {...args}
+              onClick={() => {
+                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+              }}
+            />
+          </div>
+          <hr />
 
-        <div class='mx-l my-l'>
-          <Button
-            size={ButtonSize.SmallSmall}
-            text='SmallSmall Button'
-            onClick={() => {
-              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-            }}
-          />
+          <div class='mx-l my-l'>
+            <Button
+              size={ButtonSize.SmallSmall}
+              text='SmallSmall Button'
+              onClick={() => {
+                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+              }}
+            />
+          </div>
+          <div class='mx-l my-l'>
+            <Button
+              size={ButtonSize.Small}
+              text='Small Button'
+              onClick={() => {
+                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+              }}
+            />
+          </div>
+          <div class='mx-l my-l'>
+            <Button
+              size={ButtonSize.Medium}
+              text={
+                <>
+                  <i class='icon ifc-icon ma-account-cog-outline mr-m'></i>Button
+                </>
+              }
+              onClick={() => {
+                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+              }}
+            />
+          </div>
+          <div class='mx-l my-l'>
+            <Button
+              size={ButtonSize.Large}
+              text='Large Button'
+              onClick={() => {
+                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+              }}
+            />
+          </div>
+          <div class='mx-l my-l'>
+            <Button
+              size={ButtonSize.LargeLarge}
+              text='Large Button'
+              onClick={() => {
+                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+              }}
+            />
+          </div>
+          <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg}</div>
         </div>
-        <div class='mx-l my-l'>
-          <Button
-            size={ButtonSize.Small}
-            text='Small Button'
-            onClick={() => {
-              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-            }}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <Button
-            size={ButtonSize.Medium}
-            text={
-              <>
-                <i class='icon ifc-icon ma-account-cog-outline mr-m'></i>Button
-              </>
-            }
-            onClick={() => {
-              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-            }}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <Button
-            size={ButtonSize.Large}
-            text='Large Button'
-            onClick={() => {
-              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-            }}
-          />
-        </div>
-        <div class='mx-l my-l'>
-          <Button
-            size={ButtonSize.LargeLarge}
-            text='Large Button'
-            onClick={() => {
-              msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
-            }}
-          />
-        </div>
-        <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
-      </div>
-    );
+      );
+    };
+    return <ButtonDemoContent />;
   },
   code: `import { Button, ButtonSize } from 'lupine.components/components/button';
 

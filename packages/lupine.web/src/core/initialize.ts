@@ -1,4 +1,3 @@
-import { Logger } from '../lib/logger';
 import { generateAllGlobalStyles } from './bind-styles';
 import { getCurrentTheme, updateTheme } from './bind-theme';
 import { mountInnerComponent } from './mount-component';
@@ -16,7 +15,6 @@ import { WebConfig } from '../lib/web-config';
 import { bindRequestContext } from './use-request-context';
 import { CssProps } from '../jsx';
 
-const logger = new Logger('initialize');
 
 const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
   if (_lupineJs.router instanceof PageRouter) {
@@ -85,7 +83,7 @@ export const initializePage = async (newUrl?: string) => {
 
   const currentPageInitialized = _initSaved.pageInitialized;
   _initSaved.pageInitialized = true;
-  logger.log('initializePage: ', newUrl);
+  console.log('initializePage: ', newUrl);
   if (newUrl) {
     window.history.pushState({ urlPath: newUrl }, '', newUrl);
     // prevents browser from storing history with each change:
