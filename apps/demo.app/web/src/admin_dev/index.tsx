@@ -10,6 +10,7 @@ import {
   bindRouter,
   bindTheme,
   debugWatch,
+  demoPageRouter,
   isFrontEnd,
   PageProps,
   PageRouter,
@@ -62,5 +63,6 @@ patchAdminFrame();
 const pageRouter = new PageRouter();
 // devadmin and appadmin can access
 devAdminPageRouter.setFilter(checkDevAndAppAuth);
+pageRouter.use('/admin_dev/demo', demoPageRouter);
 pageRouter.use('/admin_dev', devAdminPageRouter);
 bindRouter(pageRouter);
