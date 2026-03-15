@@ -72,6 +72,22 @@ const TEMPLATES = [
     color: green,
     needsPress: true,
   },
+  {
+    name: 'responsive-starter-tabs',
+    dir: 'responsive-starter',
+    layout: 'tabs',
+    display: 'Responsive Starter (tabs)',
+    itemType: 'frontend',
+    color: green,
+  },
+  {
+    name: 'responsive-starter-sidemenu',
+    dir: 'responsive-starter',
+    layout: 'sidemenu',
+    display: 'Responsive Starter (sidemenu)',
+    itemType: 'frontend',
+    color: green,
+  },
 ];
 
 async function init() {
@@ -136,7 +152,10 @@ async function init() {
     template = selected.name;
   }
 
-  const templateDir = path.resolve(fileURLToPath(import.meta.url), '../templates', template);
+  const templateObj = TEMPLATES.find((t) => t.name === template);
+  const templateDirName = templateObj?.dir || template;
+
+  const templateDir = path.resolve(fileURLToPath(import.meta.url), '../templates', templateDirName);
   const commonDir = path.resolve(fileURLToPath(import.meta.url), '../templates', 'common');
 
   // ... (copy logic remains same)
@@ -156,6 +175,18 @@ async function init() {
   const targetAppDir = path.join(appsDir, appName);
 
   copyDir(templateDir, targetAppDir);
+
+  if (templateObj?.layout) {
+    const frameFile = path.join(targetAppDir, 'web/src/frames/app-responsive-frame.tsx');
+    if (fs.existsSync(frameFile)) {
+      let content = fs.readFileSync(frameFile, 'utf-8');
+      content = content.replace(
+        /const DEFAULT_LAYOUT = '.*';/,
+        `const DEFAULT_LAYOUT = '${templateObj.layout}';`
+      );
+      fs.writeFileSync(frameFile, content);
+    }
+  }
 
   changePkgName(path.join(targetAppDir, 'lupine.json'), appName);
   changePkgName(path.join(targetAppDir, 'api', 'package.json'), appName + '-api');
@@ -209,7 +240,6 @@ async function init() {
     'lupine.web': latestWeb,
   };
 
-  const templateObj = TEMPLATES.find((t) => t.name === template);
   if (templateObj && templateObj.needsPress) {
     pkg.dependencies['lupine.press'] = latestPress;
     pkg.devDependencies['gray-matter'] = '^4.0.3';

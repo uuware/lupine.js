@@ -17,6 +17,7 @@ import {
   PageProps,
   isFrontEnd,
   Redirect,
+  demoPageRouter,
 } from 'lupine.components';
 import { baseUrl, fetchData } from './services/fetch-data';
 import { themes } from './styles/theme';
@@ -141,6 +142,7 @@ pageRouter.setFramePage({
 });
 
 // pageRouter.use('/admin-dev', devAdminPageRouter);
+pageRouter.use('/demo', demoPageRouter);
 pageRouter.use('/admin', adminPageRouter);
 pageRouter.use('/user', userPageRouter);
 pageRouter.use('/frame1', frame1PageRouter);
