@@ -31,7 +31,7 @@ Ready to give it a try? You can scaffold a new project in seconds.
 
 ### Step 1: Create a Project
 
-Use our CLI tool to create a new app.
+Use our CLI tool to create a new app, and select a template.
 
 ```bash
 npx create-lupine@latest my-awesome-app
@@ -48,6 +48,7 @@ npm run dev
 ```
 
 Visit `http://localhost:11080` and you'll see your first Lupine app running!
+To enable HTTPS locally (e.g., https://localhost:11083), you'll need to generate a local certificate using mkcert. See [mkcert](https://github.com/FiloSottile/mkcert).
 
 ## Learn more
 
@@ -55,11 +56,75 @@ Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.gi
 
 ## Lupine.components Demo
 
+Lupine.components offers a rich collection of out-of-the-box components, including:
+
+- **Basic Components**: Various buttons, Toggle Button, Badge, Spinner, Stars Input, and Tooltip.
+- **Form & Input**: Various inputs (e.g., Number, Search, Tag), Editable Label, Toggle Switch, Cascader, Range Input, Gauge or Dial, Time Picker, and Date Picker.
+- **Navigation & Menu**: Popup Menu, Floating Menu, Mobile Side Menu, Breadcrumbs, Tabs, Slide Tabs, and Paging Link.
+- **Data Display & Media**: Card, Avatar, Carousel, Timeline, Progress, Radial Progress, Skeleton, YouTube Player, Google Map Wrapper, and QR Code Generator.
+- **Charts**: Pie, Donut, Column, Bar, Line, Area, Radar, Gauge, and Scatter charts.
+- **Editors & Viewers**: Rich Text (HTML) Editor, Image Editor, PDF Editor, and PDF Viewer.
+- **Overlays & Feedback**: Modal Window, Message Box, Action Sheet, Notice Message, Pull to Refresh, and Tour.
+- **Layout & Frames**: Responsive Frame, Slider Frame, Resizable Splitter, and Aspect Ratio.
+- **Special FX & Utilities**: Text Effects, Redirect, and more!
+
 - **Live Demo**: [https://uuware.github.io/lupine.js/demo](https://uuware.github.io/lupine.js/?redirect=/lupine.js/demo)
+
+## Lupine Image Editor
+
+**Image Editor**, an image editing template built on **Lupine.js**. It provides a lightweight yet feature-rich image manipulation experience directly in the browser. You can draw freely with a pencil tool, use various built-in shapes, add text and stickers, or even crop, rotate, and scale images.
+
+You can view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-image-editor/](https://uuware.github.io/lupine-image-editor/)
+
+The is the source repository:
+
+- **Source Repository**: [https://github.com/uuware/lupine-image-editor](https://github.com/uuware/lupine-image-editor)
+
+## Lupine PDF Editor
+
+**PDF Editor**, a dedicated PDF editing template built on **Lupine.js**. It delivers a streamlined and high-performance PDF manipulation experience directly in the browser. You can draw freely with a pencil tool, use various built-in shapes, add text and stickers, and remove or add pages.
+
+You can view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-pdf-editor/](https://uuware.github.io/lupine-pdf-editor/)
+
+The is the source repository:
+
+- **Source Repository**: [https://github.com/uuware/lupine-pdf-editor](https://github.com/uuware/lupine-pdf-editor)
+
+## Lupine Notes and Tools
+
+**Notes and Tools**, a versatile workspace application template built on **Lupine.js**. It is designed to act as a robust foundation for building note-taking software and handy utility tools.
+
+You can view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-notes-and-tools/](https://uuware.github.io/lupine-notes-and-tools/)
+
+The is the source repository:
+
+- **Source Repository**: [https://github.com/uuware/lupine-notes-and-tools](https://github.com/uuware/lupine-notes-and-tools)
+
+## Template: Responsive Starter
+
+**Responsive Starter**, a clean and adaptable starter template provided by **Lupine.js**. It offers a solid foundation with modern responsive layouts (like tabs and side menus), ensuring your application looks great on both mobile and desktop screens. Using this template alongside AI, you can rapidly build and deploy cross-platform applications.
+
+You can select this template when creating a new project with the `create-lupine` CLI.
+
+You can view the live demo here:
+
+- **Live Demo**: [https://uuware.github.io/lupine-template-responsive-starter/](https://uuware.github.io/lupine-template-responsive-starter/)
+
+The is the source repository:
+
+- **Source Repository**: [https://github.com/uuware/lupine-template-responsive-starter](https://github.com/uuware/lupine-template-responsive-starter)
 
 ## Template: Doc Starter
 
 **Doc Starter**, a documentation framework (Lupine.press) built on **Lupine.js**, inheriting the latter's **"ultra-lightweight"** and **"high-performance"** DNA. It lets you build professional, responsive, and multi-language documentation sites with simple Markdown, and can be **hosted for free on GitHub Pages**.
+
+You can select this template when creating a new project with the `create-lupine` CLI.
 
 You can view the live demo here:
 
@@ -72,6 +137,8 @@ The is the source repository:
 ## Template: CV Starter
 
 **CV Starter** template provided by the **Lupine.js** framework to generate a beautiful, responsive resume website just by writing simple Markdown files. It comes with black and white theme switching, multi-language support, and can be **hosted for free on GitHub Pages**.
+
+You can select this template when creating a new project with the `create-lupine` CLI.
 
 You can view the live demo here:
 
