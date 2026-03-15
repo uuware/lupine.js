@@ -1,0 +1,54 @@
+<h1 id="前端也能轻松接手-重活-lupine-image-editor-开源图片编辑器体验"><a class="header-anchor" href="#前端也能轻松接手-重活-lupine-image-editor-开源图片编辑器体验">#</a>前端也能轻松接手“重活”？Lupine Image Editor 开源图片编辑器体验</h1><p>在前端开发中，如果有产品经理走过来和你说：“我们需要在网页里加上一个图片编辑器，能裁剪、涂鸦、加文字、加贴纸就行……对了，要轻量一点，别引入太大的库。” 相信很多前端同学心里都会“咯噔”一下。</p>
+<p>图片处理、Canvas 状态管理、撤销/重做逻辑、以及那一堆复杂的工具栏 UI，从头手搓简直是噩梦。而市面上成熟的库往往体积庞大，或者与现有的框架（比如 React/Vue）难以无缝融合。</p>
+<p>今天，给大家推荐一个基于 <strong>Lupine.js</strong> 构建的开源轻量级图片编辑应用模板 —— <strong>Lupine Image Editor</strong>。它不仅功能齐全，而且得益于 Lupine.js 的超轻量特性，性能极其优异。</p>
+<hr>
+<h2 id="核心功能亮点速览"><a class="header-anchor" href="#核心功能亮点速览">#</a>🎨 核心功能亮点速览</h2><p>Lupine Image Editor 致力于在浏览器中提供流畅的图片操作体验。你可以毫不费力地把它作为一个独立应用，或者直接抽取其中的核心组件 <code>iEditor</code> 嵌入到你自己的业务项目中。</p>
+<h3 id="1-画布基础操作"><a class="header-anchor" href="#1-画布基础操作">#</a>1. 🖼️ 画布基础操作</h3><p>支持直接上传本地图片进行编辑，或者新建一个纯色/透明的空白画布。所有的操作都在前端离线完成，保护用户隐私的同时，保证了“丝滑”的响应速度。</p>
+<h3 id="2-裁剪-缩放与旋转"><a class="header-anchor" href="#2-裁剪-缩放与旋转">#</a>2. ✂️ 裁剪、缩放与旋转</h3><p><img src="/lupine.js/assets/ieditor-rotate.png" alt="Lupine.Press"></p>
+<p>涵盖了图片编辑最刚需的功能：</p>
+<ul>
+<li><strong>自由裁剪</strong>与<strong>按比例裁剪</strong>：拖拽选框，随心构图。</li>
+<li><strong>旋转与镜像翻转</strong>：一键调整图片到正确的方向。</li>
+<li><strong>任意缩放</strong>：不丢失核心细节。</li>
+</ul>
+<h3 id="3-自由涂鸦与强大形状工具"><a class="header-anchor" href="#3-自由涂鸦与强大形状工具">#</a>3. ✏️ 自由涂鸦与强大形状工具</h3><p><img src="/lupine.js/assets/ieditor-draw.png" alt="Lupine.Press"></p>
+<p>内置了完善的绘图系统：</p>
+<ul>
+<li><strong>铅笔工具</strong>：支持自由手绘，做标记、写字非常方便。</li>
+<li><strong>几何形状</strong>：内置直线、箭头、矩形、圆形、椭圆等常用形状。</li>
+<li><strong>样式自定义</strong>：你可以自由调整线条粗细、颜色、甚至透明度，满足各种批注和作图需求。</li>
+</ul>
+<h3 id="4-丰富的文字与贴纸套件"><a class="header-anchor" href="#4-丰富的文字与贴纸套件">#</a>4. 📝 丰富的文字与贴纸套件</h3><p><img src="/lupine.js/assets/ieditor-text.png" alt="Lupine.Press"></p>
+<p>给图片加点“灵魂”：</p>
+<ul>
+<li><strong>文本输入</strong>：支持多行文本输入，自由调整字体颜色、背景色和大小。点哪里写哪里。</li>
+<li><strong>贴纸功能</strong>：内置丰富的表情和标签贴纸，不仅能让图片更有趣，还能用于产品演示图的遮挡与标注。</li>
+</ul>
+<h3 id="5-历史记录-撤销-重做"><a class="header-anchor" href="#5-历史记录-撤销-重做">#</a>5. ⏳ 历史记录（撤销/重做）</h3><p>手滑画错了？不存在的。编辑器内置了完整的撤销（Undo）与重做（Redo）栈，让你可以放心大胆地进行任何尝试。</p>
+<hr>
+<h2 id="为什么选择基于-lupine-js"><a class="header-anchor" href="#为什么选择基于-lupine-js">#</a>🚀 为什么选择基于 Lupine.js？</h2><p>可能有些同学会问，<strong>Lupine.js</strong> 是什么？</p>
+<p>Lupine.js 是一个 <strong>兼具 React 般前端体验 与 Express 般后端能力</strong> 的全栈超轻量 Web 框架。它的核心压缩后仅仅只有 <strong>7kb</strong>，但却原生提供了：</p>
+<ul>
+<li>完整的组件化开发（TSX 支持）</li>
+<li>细粒度的状态响应式系统</li>
+<li>开箱即用的 CSS-in-JS 与主题切换</li>
+<li>SSR（服务端渲染）与文件系统路由</li>
+</ul>
+<p>因为没有携带沉重的虚拟 DOM 和复杂的调度器历史包袱，在 Lupine.js 之上构建复杂的富交互应用（如图形编辑器、各种图表等），性能表现尤为突出。</p>
+<p>而 <code>Lupine Image Editor</code> 仅仅是 Lupine 丰富组件库 <code>Lupine.components</code> 中的冰山一角。</p>
+<hr>
+<h2 id="如何快速体验"><a class="header-anchor" href="#如何快速体验">#</a>📦 如何快速体验？</h2><p>百闻不如一试，你可以直接通过以下链接在线体验，或者一键初始化到本地：</p>
+<ul>
+<li>🎮 <strong>在线 Live Demo</strong>：<a href="https://uuware.github.io/lupine-image-editor/">https://uuware.github.io/lupine-image-editor/</a></li>
+<li>💻 <strong>源码仓库 (GitHub)</strong>：<a href="https://github.com/uuware/lupine-image-editor">https://github.com/uuware/lupine-image-editor</a></li>
+</ul>
+<p><strong>本地一键初始化：</strong></p>
+<p>克隆项目后，你可以在一分钟内把这个图片编辑器跑在你的本地：</p>
+<pre><code class="language-bash">npm install
+npm run dev
+</code></pre>
+<hr>
+<h2 id="结语"><a class="header-anchor" href="#结语">#</a>结语</h2><p>如果你正在寻找一个轻量级、无依赖包袱的网页端图片编辑器，或者你对这套拥有 7kb 极简内核的 <strong>Lupine.js</strong> 框架感兴趣，不妨点进项目去看看源码。</p>
+<blockquote>
+<p>🌈 开源不易，如果这个项目有帮助到你，欢迎在 <a href="https://github.com/uuware/lupine.js">GitHub - Lupine.js</a> 留下你的 ⭐ <strong>Star</strong>！这会是对作者最大的鼓励！</p>
+</blockquote>
