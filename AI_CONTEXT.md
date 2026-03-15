@@ -4,17 +4,27 @@
 
 **🛑 CRITICAL WARNINGS 🛑**
 
-1.  **NO REACT HOOKS**: `useState`, `useEffect`, `useReducer`, `useCallback`, `useContext` **DO NOT EXIST**.
-2.  **NO VIRTUAL DOM STATE**: Changing a variable DOES NOT re-render the component. You must manually update `HtmlVar.value`.
+1.  **`useState` EXISTS but rerenders the whole component**: Use it for simple/small components. For complex or large components, prefer `HtmlVar` for surgical, partial updates.
+2.  **NO VIRTUAL DOM STATE by default**: Without `useState`, changing a variable DOES NOT re-render the component. You must manually update `HtmlVar.value`.
 3.  **NO CONTROLLED INPUTS**: Do not bind `value={state}`. Read values from DOM on submit.
 
 ---
 
 ## 1. Core Philosophy & Reactivity
 
-- **`HtmlVar` is the "State"**:
+- **`useState` — React-style local state (small/simple components)**:
+  - Import: `import { useState } from 'lupine.components';`
+  - Syntax: `const [value, setValue] = useState(initial);` — calling `setValue(...)` rerenders the **entire** component.
+  - ✅ **Use when**: The component is small, state drives most of the UI, and the React-style patterns feel natural.
+  - ⚠️ **Avoid when**: The component is large/complex, or only a tiny portion of the UI needs to change (e.g. a progress counter, a list inside a page) — repeated full rerenders are wasteful.
+  - **`ref.onLoad` + useState**: `onLoad` is called **only on initial mount** (not on rerenders). It's the right place for async data fetch that populates state.
+
+- **`HtmlVar` — Surgical partial updates (large/complex components)**:
   - Use `HtmlVar` to wrap dynamic sections (lists, conditional renderings, async content).
-  - **Pattern**: `const dom = new HtmlVar(initialContent);` -> JSX `{dom.node}` -> `dom.value = updatedContent`.
+  - **Pattern**: `const dom = new HtmlVar(initialContent);` → JSX `{dom.node}` → `dom.value = updatedContent`.
+  - ✅ **Use when**: Only a small part of a large component changes (e.g. list inside a page, progress text), or state is updated by external hooks (`props.hook.onProgress`), or high-frequency updates (file upload progress).
+  - The rest of the component DOM is never touched — highly efficient.
+
 - **Direct DOM Access**:
   - Use `RefProps` to get reference to the component root.
   - Use `ref.$(selector)` to find the first element, `ref.$all(selector)` to find all elements (inputs, containers).
@@ -123,6 +133,7 @@ export const MyComponent = () => {
     - `'.&-item'` applies to _descendant_ elements that have `class="&-item"`.
 2.  **In JSX `class` attributes**: Add `class="&-item"`. You can still mix native classes: `class="row-box &-item"`.
 3.  **In DOM Queries**:
+    - **🚨 NEVER use `document.querySelector('.&-item')` or `element.querySelector('.&-item')`**. Standard browser APIs DO NOT understand the `&` symbol and will fail to find the element.
     - Use **`ref.$('.&-item')`** (WITH leading dot) to get the first matching element. The underlying logic simply replaces `&` with the generated ID (e.g. `l1234`), so this correctly translates to querying `.l1234 .l1234-item` which safely finds descendants within the current component's isolated namespace.
     - Use **`ref.$all('.&-item')`** to get a `NodeList` of all matching descendants within the component.
 
@@ -382,7 +393,7 @@ const Parent = () => {
 
 ## 6. Coding Standards & Gotchas
 
-- **❌ React Hooks**: `useState`, `useEffect` **DO NOT EXIST**. Use `HtmlVar` and `RefProps`.
+- **`useState` vs `HtmlVar`**: `useState` exists (`import { useState } from 'lupine.components'`) and is elegant for small components. But it rerenders the **entire** component — for large/complex components or high-frequency updates, prefer `HtmlVar` for surgical partial updates. `useEffect`, `useReducer`, `useCallback`, `useContext` **do NOT exist**.
 - **❌ `className`**: Use standard HTML `class`.
 - **⚠️ `style={{}}`**: **Allowed** for simple or dynamic inline styles (e.g., `style={{ border: '1px solid red' }}`), but **prefer `css={CssProps}`** for structural/theme styling.
 - **✅ Native Events**: `onClick`, `onChange`, `onInput`, `onMouseMove` etc. are standard HTML events and **ARE ALLOWED**. Use them for triggering logic or callbacks (e.g., `onInput={(e) => updateOtherThing(e.target.value)}`).
