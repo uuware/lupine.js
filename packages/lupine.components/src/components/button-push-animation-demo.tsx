@@ -1,6 +1,6 @@
 import { DemoStory } from '../demo/demo-types';
 import { ButtonPushAnimation, ButtonPushAnimationProps, ButtonPushAnimationSize } from './button-push-animation';
-import { useState } from 'lupine.components';
+import { HtmlVar } from 'lupine.components';
 
 export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
   id: 'button-push-animation-demo',
@@ -21,8 +21,8 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
   },
   render: (args: ButtonPushAnimationProps) => {
     const ButtonPushAnimationDemoContent = () => {
-      const [msg, setMsg] = useState('');
-      const pushMsg = () => setMsg(`Pushed at ${new Date().toLocaleTimeString()}`);
+      const msg = new HtmlVar('');
+      const pushMsg = () => (msg.value = `Pushed at ${new Date().toLocaleTimeString()}`);
       return (
         <div css={{ padding: '20px' }}>
           <div class='mx-l my-l'>
@@ -54,7 +54,7 @@ export const buttonPushAnimationDemo: DemoStory<ButtonPushAnimationProps> = {
             <ButtonPushAnimation size={ButtonPushAnimationSize.LargeLarge} text='LargeLarge Button' onClick={pushMsg} />
           </div>
 
-          <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg}</div>
+          <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
         </div>
       );
     };

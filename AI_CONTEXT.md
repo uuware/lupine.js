@@ -4,7 +4,7 @@
 
 **🛑 CRITICAL WARNINGS 🛑**
 
-1.  **`useState` EXISTS but rerenders the whole component**: Use it for simple/small components. For complex or large components, prefer `HtmlVar` for surgical, partial updates.
+1.  **`useState` EXISTS but rerenders the whole component**: Use it for simple/small components. For complex or large components, prefer `HtmlVar` for surgical, partial updates. **WARNING**: Because `useState` causes the entire parent component to re-render, any uncontrolled inner components/DOM elements that haven't explicitly saved their transient state will be abruptly reset to their default props. If you encounter bugs where interactive components (like toggles, inputs, animations) unexpectedly revert to their original state and lose data upon clicking or typing elsewhere, always check if a `useState` trigger in the parent is causing an unintended full reload.
 2.  **NO VIRTUAL DOM STATE by default**: Without `useState`, changing a variable DOES NOT re-render the component. You must manually update `HtmlVar.value`.
 3.  **NO CONTROLLED INPUTS**: Do not bind `value={state}`. Read values from DOM on submit.
 
@@ -13,6 +13,7 @@
 ## 1. Core Philosophy & Reactivity
 
 - **`useState` — React-style local state (small/simple components)**:
+
   - Import: `import { useState } from 'lupine.components';`
   - Syntax: `const [value, setValue] = useState(initial);` — calling `setValue(...)` rerenders the **entire** component.
   - ✅ **Use when**: The component is small, state drives most of the UI, and the React-style patterns feel natural.
@@ -20,6 +21,7 @@
   - **`ref.onLoad` + useState**: `onLoad` is called **only on initial mount** (not on rerenders). It's the right place for async data fetch that populates state.
 
 - **`HtmlVar` — Surgical partial updates (large/complex components)**:
+
   - Use `HtmlVar` to wrap dynamic sections (lists, conditional renderings, async content).
   - **Pattern**: `const dom = new HtmlVar(initialContent);` → JSX `{dom.node}` → `dom.value = updatedContent`.
   - ✅ **Use when**: Only a small part of a large component changes (e.g. list inside a page, progress text), or state is updated by external hooks (`props.hook.onProgress`), or high-frequency updates (file upload progress).
@@ -426,12 +428,13 @@ export const DemoIcons = {
 ```
 
 **2. Override the specific `.ifc-icon` via CSS Masking:**
-Use the `maskImage` property wrapped in `url()` to apply the SVG data to the icon class. This ensures it inherits colors (`currentColor`) properly.
+Use the `-webkit-mask-image` and `maskImage` property wrapped in `url()` to apply the SVG data to the icon class. This ensures it inherits colors (`currentColor`) properly.
 
 ```typescript
 const css: CssProps = {
   // Target the specific system icon class you wish to override
   '.ifc-icon.ma-close': {
+    '-webkit-mask-image': `url("${DemoIcons['ma-close']}")`,
     maskImage: `url("${DemoIcons['ma-close']}")`,
     // If needed, specify mask sizing properties:
     // maskRepeat: 'no-repeat',
@@ -446,7 +449,7 @@ const css: CssProps = {
 When creating a new Cross-Platform App using `lupine.js`, follow this standard procedure for scaffolding the entry point, navigation, and icons:
 
 1. **Custom Navigation Icons (`app-icons.ts`)**:
-   Instead of using the default icon font, you should export SVG Data URIs for your app's specific icons from `app-icons.ts`. Use a `reduce` function to generate the appropriate `CssProps` with `maskImage: 'url("' + svg + '")'` to override the `.ifc-icon.[icon-name]` classes. Avoid using backticks (\"\`\") when injecting SVG variables inside the maskImage URL to prevent escaping issues.
+   Instead of using the default icon font, you should export SVG Data URIs for your app's specific icons from `app-icons.ts`. Use a `reduce` function to generate the appropriate `CssProps` with `-webkit-mask-image: url("' + svg + '")'` and `maskImage: 'url("' + svg + '")'` to override the `.ifc-icon.[icon-name]` classes. Avoid using backticks (\"\`\") when injecting SVG variables inside the maskImage URL to prevent escaping issues.
 
 2. **Base Styles (`base-css.ts`)**:
    Create a `styles/base-css.ts` file that imports the dynamic icon styles (from `app-icons.ts`), and defines any placeholder wrappers (e.g., `.user-page-placeholder` having `width: '100%', height: '100%'`). Use `bindGlobalStyle('comm-css', baseCss, false, true)` in the index file to register these.

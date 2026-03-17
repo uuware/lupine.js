@@ -1,0 +1,38 @@
+{
+  "name": "lupine-template-doc-starter",
+  "markdownEntryPoints": {
+    "indir": "web/markdown",
+    "outdir": "web/src/markdown-built"
+  },
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    },
+    {
+      "index": "web/src/lupine-template-doc-starter/index.tsx",
+      "html": "web/src/lupine-template-doc-starter/index.html",
+      "outdir": "/lupine-template-doc-starter"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "watchFiles": ["web/markdown/**/*.md"],
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    },
+    {
+      "type": "web",
+      "from": "web/src/lupine-template-doc-starter/404.html",
+      "to": "lupine-template-doc-starter/404.html"
+    },
+    {
+      "type": "data",
+      "from": "api/resources",
+      "to": "resources"
+    }
+  ]
+}

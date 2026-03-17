@@ -258,6 +258,7 @@ export class ActionSheetSelect {
 
 export type ActionSheetMessageProps = Omit<ActionSheetShowProps, 'children' | 'handleClicked' | 'closeEvent'> & {
   message: string | VNode<any>;
+  closeWhenClickMessage?: boolean;
 };
 export class ActionSheetMessage {
   static async show({
@@ -269,13 +270,14 @@ export class ActionSheetMessage {
     confirmButtonText,
     handleConfirmClicked,
     cancelButtonText = '',
+    closeWhenClickMessage = true,
   }: ActionSheetMessageProps): Promise<ActionSheetCloseProps> {
     const handleClose = await ActionSheet.show({
       title,
       children: (
         <div
           css={{ padding: '8px', borderTop: '1px solid var(--primary-border-color)' }}
-          onClick={() => handleClose('select')}
+          onClick={() => closeWhenClickMessage && handleClose('select')}
         >
           {message}
         </div>

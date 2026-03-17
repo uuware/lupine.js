@@ -1,14 +1,18 @@
 const copyFolder = require('./cp-folder');
 
-copyFolder('apps/hello-world', 'packages/create-lupine/templates/hello-world');
-copyFolder('apps/doc-starter', 'packages/create-lupine/templates/doc-starter');
-copyFolder('apps/cv-starter', 'packages/create-lupine/templates/cv-starter');
-copyFolder('apps/responsive-starter', 'packages/create-lupine/templates/responsive-starter');
 copyFolder('AI_CONTEXT.md', 'packages/create-lupine/templates/common/AI_CONTEXT.md');
 copyFolder('dev/dev-watch.js', 'packages/create-lupine/templates/common/dev/dev-watch.js');
 copyFolder('dev/cp-folder.js', 'packages/create-lupine/templates/common/dev/cp-folder.js');
+copyFolder('apps/lupine-template-cv-starter', 'packages/create-lupine/templates/lupine-template-cv-starter');
+copyFolder('apps/lupine-template-doc-starter', 'packages/create-lupine/templates/lupine-template-doc-starter');
+copyFolder('apps/lupine-template-hello-world', 'packages/create-lupine/templates/lupine-template-hello-world');
+copyFolder(
+  'apps/lupine-template-responsive-starter',
+  'packages/create-lupine/templates/lupine-template-responsive-starter'
+);
+copyFolder('apps/server', 'packages/create-lupine/templates/common/apps/server');
 
-// copyFolder('apps/cv-starter', 'dev/github/lupine-template-cv-starter');
+// lupine-template-cv-starter
 copyFolder('AI_CONTEXT.md', 'dev/github/lupine-template-cv-starter/AI_CONTEXT.md');
 copyFolder('dev/dev-watch.js', 'dev/github/lupine-template-cv-starter/dev/dev-watch.js');
 copyFolder('dev/cp-folder.js', 'dev/github/lupine-template-cv-starter/dev/cp-folder.js');
@@ -16,20 +20,26 @@ copyFolder(
   'apps/cv-starter/web/markdown',
   'dev/github/lupine-template-cv-starter/apps/lupine-template-cv-starter/web/markdown'
 );
+copyFolder('apps/lupine-template-cv-starter', 'dev/github/lupine-template-cv-starter/apps/lupine-template-cv-starter');
 
-// copyFolder('apps/doc-starter', 'dev/github/lupine-template-doc-starter');
+// lupine-template-doc-starter
 copyFolder('AI_CONTEXT.md', 'dev/github/lupine-template-doc-starter/AI_CONTEXT.md');
 copyFolder('dev/dev-watch.js', 'dev/github/lupine-template-doc-starter/dev/dev-watch.js');
 copyFolder('dev/cp-folder.js', 'dev/github/lupine-template-doc-starter/dev/cp-folder.js');
 copyFolder(
-  'apps/doc-starter/web/markdown',
+  'apps/cv-starter/web/markdown',
   'dev/github/lupine-template-doc-starter/apps/lupine-template-doc-starter/web/markdown'
 );
+copyFolder(
+  'apps/lupine-template-doc-starter',
+  'dev/github/lupine-template-doc-starter/apps/lupine-template-doc-starter'
+);
 
-// lupine-notes-and-tools
-copyFolder('AI_CONTEXT.md', 'dev/github/lupine-notes-and-tools/AI_CONTEXT.md');
-copyFolder('dev/dev-watch.js', 'dev/github/lupine-notes-and-tools/dev/dev-watch.js');
-copyFolder('dev/cp-folder.js', 'dev/github/lupine-notes-and-tools/dev/cp-folder.js');
-copyFolder('apps/lupine-notes-and-tools/api', 'dev/github/lupine-notes-and-tools/apps/lupine-notes-and-tools/api');
-copyFolder('apps/lupine-notes-and-tools/web', 'dev/github/lupine-notes-and-tools/apps/lupine-notes-and-tools/web');
-copyFolder('apps/server', 'dev/github/lupine-notes-and-tools/apps/server');
+// lupine-template-responsive-starter
+copyFolder('AI_CONTEXT.md', 'dev/github/lupine-template-responsive-starter/AI_CONTEXT.md');
+copyFolder('dev/dev-watch.js', 'dev/github/lupine-template-responsive-starter/dev/dev-watch.js');
+copyFolder('dev/cp-folder.js', 'dev/github/lupine-template-responsive-starter/dev/cp-folder.js');
+copyFolder(
+  'apps/lupine-template-responsive-starter',
+  'dev/github/lupine-template-responsive-starter/apps/lupine-template-responsive-starter'
+);

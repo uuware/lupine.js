@@ -1,0 +1,33 @@
+{
+  "name": "lupine-template-responsive-starter",
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    },
+    {
+      "index": "web/src/lupine-template-responsive-starter/index.tsx",
+      "html": "web/src/lupine-template-responsive-starter/index.html",
+      "outdir": "/lupine-template-responsive-starter"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    },
+    {
+      "type": "web",
+      "from": "web/src/lupine-template-responsive-starter/404.html",
+      "to": "lupine-template-responsive-starter/404.html"
+    },
+    {
+      "type": "data",
+      "from": "api/resources",
+      "to": "resources"
+    }
+  ]
+}

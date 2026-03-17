@@ -2,7 +2,7 @@
 sliderFrameHook is for slider frame from right or bottom used in side-menu
 */
 
-import { VNode, CssProps, MediaQueryRange, SliderFrameHookProps, SliderFrame } from 'lupine.components';
+import { VNode, CssProps, MediaQueryRange, SliderFrameHookProps, SliderFrame, RefProps } from 'lupine.components';
 import { MobileFooterMenu } from '../components/mobile-components/mobile-footer-menu';
 import { DesktopFooter } from '../components/desktop-footer';
 import { DesktopHeader } from '../components/desktop-header';
@@ -21,6 +21,7 @@ export interface ResponsiveFrameProps {
   sharedContents: VNode<any>;
   maxWidth?: string;
   autoExtendSidemenu?: boolean;
+  onLoad?: () => Promise<void>;
 }
 export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
   const cssContainer: CssProps = {
@@ -34,6 +35,8 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     borderLeft: props.maxWidth ? '1px solid var(--primary-border-color)' : 'none',
     margin: '0 auto',
     overflowX: 'hidden',
+    'padding-top ': 'constant(safe-area-inset-top)',
+    'padding-top': 'env(safe-area-inset-top)',
     '.frame-top-menu': {
       display: 'flex',
       flexDirection: 'column',
@@ -87,9 +90,13 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     },
   };
 
+  const ref: RefProps = {
+    onLoad: props.onLoad ? props.onLoad : undefined,
+  };
   return (
     <div
       css={cssContainer}
+      ref={ref}
       class={['responsive-frame', props.autoExtendSidemenu ? 'auto-extend' : ''].join(' ').trim()}
     >
       {props.sharedContents}
