@@ -24,6 +24,7 @@ import { textScaleDemo } from '../components/text-scale-demo';
 import { textGlowDemo } from '../components/text-glow-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
+import { loadingSpinDemo } from '../components/loading-spin-demo';
 import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
 import { responsiveFrameDemo } from '../frames/responsive-frame-demo';
 import { sliderFrameDemo } from '../components/slider-frame-demo';
@@ -97,6 +98,7 @@ export const demoRegistry: Record<string, DemoStory<any>> = {
   [textGlowDemo.id]: textGlowDemo,
   [toggleButtonDemo.id]: toggleButtonDemo,
   [messageBoxDemo.id]: messageBoxDemo,
+  [loadingSpinDemo.id]: loadingSpinDemo,
   [sliderFrameDemo.id]: sliderFrameDemo,
   [rangeDemo.id]: rangeDemo,
   [gaugeDemo.id]: gaugeDemo,

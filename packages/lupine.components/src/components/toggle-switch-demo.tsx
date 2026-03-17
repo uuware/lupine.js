@@ -6,7 +6,7 @@ import {
   ToggleSwitchProps,
   ToggleSwitchSize,
 } from './toggle-switch';
-import { useState } from 'lupine.components';
+import { HtmlVar } from 'lupine.components';
 
 export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
   id: 'toggle-switch-demo',
@@ -32,14 +32,14 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
     // Note: We don't expose 'text' as a simple control because our current demo system
     // handles primitives. But the user can see how it works with the default args.
     const ToggleSwitchDemoContent = () => {
-      const [msg, setMsg] = useState('');
+      const msg = new HtmlVar('');
       return (
         <div css={{ padding: '20px' }}>
           <div class='mx-l my-l'>
             <ToggleSwitch
               {...args}
               onClick={(c) => {
-                setMsg(`Interactive Switch checked: ${c}`);
+                msg.value = `Interactive Switch checked: ${c}`;
               }}
             />
           </div>
@@ -51,7 +51,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
               text={{ on: 'ON', off: 'OFF' }}
               textWidth='30px'
               onClick={(c) => {
-                setMsg(`SmallSmall Switch checked: ${c}`);
+                msg.value = `SmallSmall Switch checked: ${c}`;
               }}
             />
           </div>
@@ -61,7 +61,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
               text={{ on: 'ON', off: 'OFF' }}
               textWidth='30px'
               onClick={(c) => {
-                setMsg(`Small Switch checked: ${c}`);
+                msg.value = `Small Switch checked: ${c}`;
               }}
             />
           </div>
@@ -71,7 +71,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
               text={{ on: 'ON', off: 'OFF' }}
               textWidth='30px'
               onClick={(c) => {
-                setMsg(`Medium Switch checked: ${c}`);
+                msg.value = `Medium Switch checked: ${c}`;
               }}
             />
           </div>
@@ -93,7 +93,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
               textWidth='50px'
               checked={true}
               onClick={(c) => {
-                setMsg(`Large Switch checked: ${c}`);
+                msg.value = `Large Switch checked: ${c}`;
               }}
             />
           </div>
@@ -103,7 +103,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
               text={{ on: 'ON', off: 'OFF' }}
               textWidth='50px'
               onClick={(c) => {
-                setMsg(`LargeLarge Switch checked: ${c}`);
+                msg.value = `LargeLarge Switch checked: ${c}`;
               }}
             />
           </div>
@@ -208,7 +208,7 @@ export const toggleSwitchDemo: DemoStory<ToggleSwitchProps> = {
               onClick={(c) => console.log(`LargeLarge ToggleSwitchIcon checked: ${c}`)}
             />
           </div>
-          <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg}</div>
+          <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
         </div>
       );
     };

@@ -1,0 +1,38 @@
+{
+  "name": "lupine-template-cv-starter",
+  "markdownEntryPoints": {
+    "indir": "web/markdown",
+    "outdir": "web/src/markdown-built"
+  },
+  "webEntryPoints": [
+    {
+      "index": "web/src/index.tsx",
+      "html": "web/src/index.html",
+      "outdir": "/"
+    },
+    {
+      "index": "web/src/lupine-template-cv-starter/index.tsx",
+      "html": "web/src/lupine-template-cv-starter/index.html",
+      "outdir": "/lupine-template-cv-starter"
+    }
+  ],
+  "apiEntryPoint": "api/src/index.ts",
+  "watchFiles": ["web/markdown/**/*.md"],
+  "copyFiles": [
+    {
+      "type": "web",
+      "from": "web/assets",
+      "to": "assets"
+    },
+    {
+      "type": "web",
+      "from": "web/src/lupine-template-cv-starter/404.html",
+      "to": "lupine-template-cv-starter/404.html"
+    },
+    {
+      "type": "data",
+      "from": "api/resources",
+      "to": "resources"
+    }
+  ]
+}

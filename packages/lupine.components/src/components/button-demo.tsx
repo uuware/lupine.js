@@ -1,6 +1,6 @@
 import { DemoStory } from '../demo/demo-types';
 import { Button, ButtonProps, ButtonSize } from './button';
-import { useState } from 'lupine.components';
+import { HtmlVar } from 'lupine.components';
 
 export const buttonDemo: DemoStory<ButtonProps> = {
   id: 'button-demo',
@@ -21,14 +21,14 @@ export const buttonDemo: DemoStory<ButtonProps> = {
   },
   render: (args: ButtonProps) => {
     const ButtonDemoContent = () => {
-      const [msg, setMsg] = useState('');
+      const msg = new HtmlVar('');
       return (
         <div css={{ padding: '20px' }}>
           <div class='mx-l my-l'>
             <Button
               {...args}
               onClick={() => {
-                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+                msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
               }}
             />
           </div>
@@ -39,7 +39,7 @@ export const buttonDemo: DemoStory<ButtonProps> = {
               size={ButtonSize.SmallSmall}
               text='SmallSmall Button'
               onClick={() => {
-                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+                msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
               }}
             />
           </div>
@@ -48,7 +48,7 @@ export const buttonDemo: DemoStory<ButtonProps> = {
               size={ButtonSize.Small}
               text='Small Button'
               onClick={() => {
-                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+                msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
               }}
             />
           </div>
@@ -61,7 +61,7 @@ export const buttonDemo: DemoStory<ButtonProps> = {
                 </>
               }
               onClick={() => {
-                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+                msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
               }}
             />
           </div>
@@ -70,7 +70,7 @@ export const buttonDemo: DemoStory<ButtonProps> = {
               size={ButtonSize.Large}
               text='Large Button'
               onClick={() => {
-                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+                msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
               }}
             />
           </div>
@@ -79,11 +79,11 @@ export const buttonDemo: DemoStory<ButtonProps> = {
               size={ButtonSize.LargeLarge}
               text='Large Button'
               onClick={() => {
-                setMsg(`Clicked at ${new Date().toLocaleTimeString()}`);
+                msg.value = `Clicked at ${new Date().toLocaleTimeString()}`;
               }}
             />
           </div>
-          <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg}</div>
+          <div css={{ marginTop: '10px', fontSize: '13px', color: 'var(--secondary-color, #999)' }}>{msg.node}</div>
         </div>
       );
     };

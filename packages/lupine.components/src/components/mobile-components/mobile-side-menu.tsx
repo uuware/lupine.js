@@ -3,8 +3,11 @@ import { backActionHelper, CssProps, RefProps, VNode, MediaQueryRange } from 'lu
 export class MobileSideMenuHelper {
   static show() {
     const ref = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
-    if (!ref || ref.clientWidth > 100) return;
+    if (!ref) return;
+    if (window.getComputedStyle(ref).pointerEvents === 'none') return; // Prevent show in desktop auto-extend mode
+    if (ref.classList.contains('animate-show')) return; // Already fully open
 
+    const isPreShown = ref.classList.contains('show');
     ref.classList.add('show');
 
     const menuDom = ref.querySelector('.mobile-side-menu') as HTMLDivElement;
@@ -14,9 +17,10 @@ export class MobileSideMenuHelper {
     }
     ref.style.backgroundColor = '';
 
-    // Force a browser reflow to apply 'display: flex' and 'translateX(-100%)'
-    // before we apply the target class that triggers the CSS transition.
-    void ref.offsetWidth;
+    // Force a browser reflow ONLY if not pre-shown
+    if (!isPreShown) {
+      void ref.offsetWidth;
+    }
 
     ref.classList.add('animate-show');
 
@@ -27,6 +31,7 @@ export class MobileSideMenuHelper {
   static hide() {
     const ref = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
     if (!ref) return;
+    if (window.getComputedStyle(ref).pointerEvents === 'none') return; // Prevent hide in desktop auto-extend mode
 
     ref.removeAttribute('data-back-action');
 
@@ -44,7 +49,7 @@ export class MobileSideMenuHelper {
   }
 
   static isTouchEventAdded = false;
-  static addTouchEvent(maskDom: HTMLDivElement) {
+  static addTouchEvent(_maskDom: HTMLDivElement) {
     if (this.isTouchEventAdded) {
       return;
     }
@@ -55,16 +60,20 @@ export class MobileSideMenuHelper {
     let direction = '';
     let moveStart = false;
     let isOpen = false;
-    let menuDom: HTMLDivElement | null = null;
     let menuWidth = 0;
 
     document.addEventListener('touchstart', (e) => {
+      const maskDom = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
+      if (!maskDom) return;
+      if (window.getComputedStyle(maskDom).pointerEvents === 'none') return;
+
       touchstartY = e.touches[0].clientY;
       touchstartX = e.touches[0].clientX;
       direction = '';
       moveStart = false;
-      isOpen = maskDom?.classList.contains('show');
-      menuDom = document.querySelector('.mobile-side-menu') as HTMLDivElement;
+      isOpen = maskDom.classList.contains('show');
+      
+      const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
       if (menuDom) {
         menuWidth = menuDom.offsetWidth || 210; // Fallback width roughly 70% of 300px
       }
@@ -80,7 +89,7 @@ export class MobileSideMenuHelper {
         if (touchstartX < 40) {
           moveStart = true;
           // Pre-show the mask to allow rendering the menu while dragging
-          maskDom?.classList.add('show');
+          maskDom.classList.add('show');
           if (menuDom) {
             menuDom.style.transition = 'none'; // Disable transition for 1:1 finger tracking
             menuDom.style.transform = `translateX(-100%)`; // Start fully hidden left
@@ -94,6 +103,9 @@ export class MobileSideMenuHelper {
         return;
       }
 
+      const maskDom = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
+      if (!maskDom) return;
+
       const currentX = e.touches[0].clientX;
       const deltaX = currentX - touchstartX;
 
@@ -106,6 +118,7 @@ export class MobileSideMenuHelper {
         }
       }
 
+      const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
       if (menuDom) {
         // We override the transition to track the finger precisely
         menuDom.style.transition = 'none';
@@ -136,11 +149,15 @@ export class MobileSideMenuHelper {
     document.addEventListener('touchend', (e) => {
       if (!moveStart) return;
 
+      const maskDom = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
+      if (!maskDom) return;
+
       const currentX = e.changedTouches[0].clientX;
       const deltaX = currentX - touchstartX;
       moveStart = false;
       direction = '';
 
+      const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
       if (menuDom) {
         // Clear manual inline styles to restore CSS control
         menuDom.style.transition = '';

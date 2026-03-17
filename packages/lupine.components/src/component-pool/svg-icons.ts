@@ -67,7 +67,7 @@ export const loadSvgIconStyles = () => {
   if (typeof document === 'undefined' || document.getElementById(LJ_SVG_ICON_STYLE_ID)) return;
   let iconStyles = '';
   for (const key of Object.keys(SvgIconData)) {
-    iconStyles += `.${LJ_SVG_ICON_CLASS}_${key} { mask-image: url("${SvgIconData[key]}"); }\n`;
+    iconStyles += `.${LJ_SVG_ICON_CLASS}_${key} { -webkit-mask-image: url("${SvgIconData[key]}"); mask-image: url("${SvgIconData[key]}"); }\n`;
   }
 
   const style = document.createElement('style');
@@ -78,6 +78,8 @@ export const loadSvgIconStyles = () => {
         width: 24px;
         height: 24px;
         vertical-align: middle;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
         mask-repeat: no-repeat;
         mask-position: center;
         background-color: var(--primary-color, #ccc);

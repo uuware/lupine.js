@@ -16,6 +16,7 @@ export * from './input-number';
 export * from './input-with-title';
 export * from './link-item';
 export * from './link-list';
+export * from './loading-spin';
 export * from './menu-bar';
 export * from './menu-item-props';
 export * from './menu-sidebar';

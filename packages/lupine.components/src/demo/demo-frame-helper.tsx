@@ -26,6 +26,7 @@ import { textScaleDemo } from '../components/text-scale-demo';
 import { textGlowDemo } from '../components/text-glow-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
+import { loadingSpinDemo } from '../components/loading-spin-demo';
 import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
 import { sliderFrameDemo } from '../components/slider-frame-demo';
 import { rangeDemo, gaugeDemo } from '../component-pool/range';
@@ -535,6 +536,12 @@ export class DemoFrameHelper {
           text: tourDemo.text,
           url: '',
           js: () => this.addPanel(tourDemo.text, <DemoPage story={tourDemo} />),
+        },
+        {
+          id: loadingSpinDemo.id,
+          text: loadingSpinDemo.text,
+          url: '',
+          js: () => this.addPanel(loadingSpinDemo.text, <DemoPage story={loadingSpinDemo} />),
         },
       ],
     },

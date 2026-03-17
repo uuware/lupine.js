@@ -49,6 +49,9 @@ export const demoIconsCss: CssProps = {
     maskRepeat: 'no-repeat',
     maskPosition: 'center',
     maskSize: 'contain',
+    '-webkit-mask-repeat': 'no-repeat',
+    '-webkit-mask-position': 'center',
+    '-webkit-mask-size': 'contain',
     WebkitMaskRepeat: 'no-repeat',
     WebkitMaskPosition: 'center',
     WebkitMaskSize: 'contain',
@@ -60,6 +63,7 @@ export const demoIconsCss: CssProps = {
       // Make sure it takes the intended color (using CSS mask if we wanted variable colors,
       // but since stroke is currentColor in the SVG, if we want it to adapt color properly
       // without JS, mask-image is best.)
+      '-webkit-mask-image': `url("${svg}")`,
       maskImage: `url("${svg}")`,
     };
     return acc;

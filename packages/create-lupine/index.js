@@ -54,12 +54,14 @@ const cwd = process.cwd();
 const TEMPLATES = [
   {
     name: 'hello-world',
+    dir: 'lupine-template-hello-world',
     display: 'Hello World',
     itemType: 'frontend',
     color: green,
   },
   {
     name: 'doc-starter',
+    dir: 'lupine-template-doc-starter',
     display: 'Documentation Starter',
     itemType: 'frontend',
     color: green,
@@ -67,6 +69,7 @@ const TEMPLATES = [
   },
   {
     name: 'cv-starter',
+    dir: 'lupine-template-cv-starter',
     display: 'CV Starter',
     itemType: 'frontend',
     color: green,
@@ -74,7 +77,7 @@ const TEMPLATES = [
   },
   {
     name: 'responsive-starter-tabs',
-    dir: 'responsive-starter',
+    dir: 'lupine-template-responsive-starter',
     layout: 'tabs',
     display: 'Responsive Starter (tabs)',
     itemType: 'frontend',
@@ -82,7 +85,7 @@ const TEMPLATES = [
   },
   {
     name: 'responsive-starter-sidemenu',
-    dir: 'responsive-starter',
+    dir: 'lupine-template-responsive-starter',
     layout: 'sidemenu',
     display: 'Responsive Starter (sidemenu)',
     itemType: 'frontend',
@@ -174,16 +177,42 @@ async function init() {
   const appName = path.basename(root);
   const targetAppDir = path.join(appsDir, appName);
 
+  function replaceStr(filepath, fromToArr) {
+    let content = fs.readFileSync(filepath, 'utf-8');
+    for (const { from, to } of fromToArr) {
+      content = content.replace(new RegExp(from, 'g'), to);
+    }
+    fs.writeFileSync(filepath, content);
+  }
+
   copyDir(templateDir, targetAppDir);
+  // if templateDir\web\src\appName exists, rename it to github-pj-name
+  const githubName = path.join(targetAppDir, `web/src/${templateObj?.dir}`);
+  if (templateObj?.dir && fs.existsSync(githubName)) {
+    fs.renameSync(githubName, path.join(targetAppDir, 'web/src/github-pj-name'));
+    replaceStr(path.join(targetAppDir, 'web/src/github-pj-name/index.tsx'), [
+      { from: `/${templateObj?.dir}`, to: '/github-pj-name' },
+      { from: `${templateObj?.dir}/`, to: 'github-pj-name/' },
+    ]);
+    replaceStr(path.join(targetAppDir, 'web/src/github-pj-name/index.html'), [
+      { from: `/${templateObj?.dir}`, to: '/github-pj-name' },
+      { from: `${templateObj?.dir}/`, to: 'github-pj-name/' },
+    ]);
+    replaceStr(path.join(targetAppDir, 'web/src/github-pj-name/404.html'), [
+      { from: `/${templateObj?.dir}`, to: '/github-pj-name' },
+      { from: `${templateObj?.dir}/`, to: 'github-pj-name/' },
+    ]);
+    replaceStr(path.join(targetAppDir, 'lupine.json'), [
+      { from: `/${templateObj?.dir}`, to: '/github-pj-name' },
+      { from: `${templateObj?.dir}/`, to: 'github-pj-name/' },
+    ]);
+  }
 
   if (templateObj?.layout) {
     const frameFile = path.join(targetAppDir, 'web/src/frames/app-responsive-frame.tsx');
     if (fs.existsSync(frameFile)) {
       let content = fs.readFileSync(frameFile, 'utf-8');
-      content = content.replace(
-        /const DEFAULT_LAYOUT = '.*';/,
-        `const DEFAULT_LAYOUT = '${templateObj.layout}';`
-      );
+      content = content.replace(/const DEFAULT_LAYOUT = '.*';/, `const DEFAULT_LAYOUT = '${templateObj.layout}';`);
       fs.writeFileSync(frameFile, content);
     }
   }

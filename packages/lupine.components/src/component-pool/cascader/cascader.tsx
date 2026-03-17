@@ -12,6 +12,8 @@ export type CascaderProps = {
   defaultOpen?: boolean;
   showCircle?: boolean; // New prop for circular button styling
   children?: any;
+  key?: string;
+  onClick?: () => void;
 };
 
 const cascaderCss: CssProps = {
@@ -137,6 +139,7 @@ export const Cascader = (props: CascaderProps) => {
     if (!el) return;
 
     const nextState = !el.classList.contains('open');
+    if (props.onClick) props.onClick();
 
     if (nextState && props.group) {
       const others = document.querySelectorAll(`[data-cascader-group="${props.group}"]`);

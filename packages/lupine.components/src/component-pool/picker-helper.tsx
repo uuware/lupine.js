@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
+import { CssProps, RefProps, VNode, mountInnerComponent, uniqueIdGenerator } from 'lupine.web';
 
 export type PickerPosition = 'top' | 'bottom';
 
@@ -67,6 +67,10 @@ export class PickerHelper {
   private static host: HTMLElement | null = null;
   private static currentRef: RefProps | null = null;
   private static closeCallback: (() => void) | null = null;
+  private static getUuid = uniqueIdGenerator('picker');
+  private static currentInstanceId = '';
+  private static closeTimer: any = null;
+  private static currentTarget: HTMLElement | null = null;
 
   private static initHost() {
     if (this.host) return;
@@ -75,16 +79,50 @@ export class PickerHelper {
     document.body.appendChild(this.host);
   }
 
+  private static documentPointerDownHandler = (e: Event) => {
+    if (!this.currentRef?.current) return;
+    const pickerEl = this.currentRef.current as HTMLElement;
+    const target = e.target as HTMLElement;
+
+    // Do not close if clicking inside the picker itself
+    if (pickerEl.contains(target)) return;
+    
+    // Do not close if clicking the original trigger element
+    if (this.currentTarget && this.currentTarget.contains(target)) return;
+
+    this.hide();
+  };
+
   static async show(
     target: HTMLElement,
     content: VNode<any>,
     options: { onRef?: (ref: RefProps) => void; onHide?: () => void } = {}
   ) {
     this.initHost();
+
+    const instanceId = this.getUuid();
+    this.currentInstanceId = instanceId;
+    this.currentTarget = target;
     this.closeCallback = options.onHide || null;
+
+    if (this.closeTimer) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
+
+    // Remove old listener if any
+    document.removeEventListener('pointerdown', this.documentPointerDownHandler);
+    
+    // Defer adding listener so it doesn't trigger from the very click that invoked show()
+    setTimeout(() => {
+      document.addEventListener('pointerdown', this.documentPointerDownHandler);
+    }, 10);
 
     const ref: RefProps = {
       onLoad: async () => {
+        // If another instance was requested while we were rendering, abort taking over ref
+        if (this.currentInstanceId !== instanceId) return;
+
         this.currentRef = ref;
         options.onRef?.(ref);
         this.updatePosition(target);
@@ -98,24 +136,8 @@ export class PickerHelper {
       },
     };
 
-    const onBlur = (e: FocusEvent) => {
-      const refAtBlur = this.currentRef;
-      const relatedTarget = e.relatedTarget as HTMLElement;
-      // Use setTimeout to allow click events inside the picker to be processed first
-      setTimeout(() => {
-        // Only hide if the current picker is still the one that blurred
-        if (
-          this.currentRef === refAtBlur &&
-          this.currentRef?.current &&
-          !this.currentRef.current.contains(relatedTarget)
-        ) {
-          this.hide();
-        }
-      }, 100);
-    };
-
     const component = (
-      <div ref={ref} css={pickerContainerCss} tabIndex={-1} onBlur={onBlur}>
+      <div ref={ref} css={pickerContainerCss} tabIndex={-1}>
         {content}
       </div>
     );
@@ -173,11 +195,18 @@ export class PickerHelper {
   }
 
   static hide() {
+    document.removeEventListener('pointerdown', this.documentPointerDownHandler);
+    
     if (!this.currentRef?.current) return;
     const pickerEl = this.currentRef.current as HTMLElement;
     pickerEl.classList.remove('open');
 
-    setTimeout(() => {
+    const reqInstanceId = this.currentInstanceId;
+
+    this.closeTimer = setTimeout(() => {
+      // Re-verify instance in case another picker opened during the 200ms fade-out
+      if (reqInstanceId !== this.currentInstanceId) return;
+
       if (this.host) {
         this.host.innerHTML = '';
       }
@@ -186,6 +215,8 @@ export class PickerHelper {
         this.closeCallback = null;
       }
       this.currentRef = null;
+      this.currentTarget = null;
     }, 200);
   }
 }
+
