@@ -29,6 +29,7 @@ export type RefProps = {
   $all?: any; // (selector: string) => undefined | Element,
   mountInnerComponent?: (content: string | VNode<any>) => Promise<void>;
   mountOuterComponent?: (content: VNode<any>) => Promise<void>;
+  refresh?: () => Promise<void>;
 };
 
 export interface ClassAttributes<T> extends Attributes {

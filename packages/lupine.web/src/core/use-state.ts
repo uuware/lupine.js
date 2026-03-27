@@ -170,5 +170,11 @@ export const buildStateRef = (store: ComponentStateStore, existingRef?: RefProps
     };
   }
 
+  // Bind the programmatic functional component refresh trigger
+  target.refresh = async () => {
+    store.domRef.current = target.current; // ensure the store has the latest DOM node reference from the ref
+    await store.rerender();
+  };
+
   return target;
 };

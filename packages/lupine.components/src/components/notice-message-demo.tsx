@@ -1,5 +1,5 @@
 import { DemoStory } from '../demo/demo-types';
-import { NotificationMessage, NotificationColor } from './notice-message';
+import { NotificationMessage, NotificationColor, NotificationLocation, notificationColorFromValue } from './notice-message';
 import { Button, ButtonSize } from './button';
 
 export const noticeMessageDemo: DemoStory<any> = {
@@ -7,11 +7,15 @@ export const noticeMessageDemo: DemoStory<any> = {
   text: 'Notice Message Demo',
   args: {
     message: 'Action completed successfully!',
+    type: 'Info',
+    location: 'top-right',
     permanent: false,
     showTime: 3000,
   },
   argTypes: {
     message: { control: 'text', description: 'Message content' },
+    type: { control: 'select', options: ['Info', 'Success', 'Warning', 'Error'], description: 'Notification type' },
+    location: { control: 'select', options: ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'], description: 'Notification location' },
     permanent: { control: 'boolean', description: 'If true, stays until manually closed' },
     showTime: { control: 'number', description: 'Time in ms to show (if not permanent)' },
   },
@@ -19,31 +23,16 @@ export const noticeMessageDemo: DemoStory<any> = {
     return (
       <div style={{ padding: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <Button
-          text='Show Info'
+          text='Show Notification'
           size={ButtonSize.Medium}
           onClick={() =>
-            NotificationMessage.sendMessage(args.message, NotificationColor.Info, args.permanent, args.showTime)
-          }
-        />
-        <Button
-          text='Show Success'
-          size={ButtonSize.Medium}
-          onClick={() =>
-            NotificationMessage.sendMessage(args.message, NotificationColor.Success, args.permanent, args.showTime)
-          }
-        />
-        <Button
-          text='Show Warning'
-          size={ButtonSize.Medium}
-          onClick={() =>
-            NotificationMessage.sendMessage(args.message, NotificationColor.Warning, args.permanent, args.showTime)
-          }
-        />
-        <Button
-          text='Show Error'
-          size={ButtonSize.Medium}
-          onClick={() =>
-            NotificationMessage.sendMessage(args.message, NotificationColor.Error, args.permanent, args.showTime)
+            NotificationMessage.show({
+              message: args.message,
+              location: args.location as NotificationLocation,
+              backgroundColor: notificationColorFromValue(args.type),
+              permanent: args.permanent,
+              showTime: args.showTime,
+            })
           }
         />
       </div>
@@ -56,5 +45,13 @@ NotificationMessage.sendMessage('Action completed successfully!', NotificationCo
 
 // Show Success (permanent)
 NotificationMessage.sendMessage('Action completed successfully!', NotificationColor.Success, true);
+
+// Show via detailed object with Location
+NotificationMessage.show({
+  message: 'Bottom Center Message',
+  location: 'bottom-center',
+  backgroundColor: NotificationColor.Warning,
+  showTime: 3000
+});
 `,
 };

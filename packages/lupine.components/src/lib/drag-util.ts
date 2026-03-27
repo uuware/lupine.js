@@ -25,8 +25,9 @@ export const createDragUtil = () => {
   let isDragging = false;
   let initialX = 0;
   let initialY = 0;
+  let initialDirection: 'none' | 'vertical' | 'horizontal' = 'none';
   let draggingDom: HTMLDivElement | null = null;
-  let onMoveCallback: (clientX: number, clientY: number, movedX: number, movedY: number) => void = () => {};
+  let onMoveCallback: (clientX: number, clientY: number, movedX: number, movedY: number, initialDirection: 'none' | 'vertical' | 'horizontal') => void = () => {};
   let onMoveEndCallback: () => void = () => {};
   let onScaleCallback: (scale: number) => void = () => {};
 
@@ -43,9 +44,10 @@ export const createDragUtil = () => {
     isDragging = false;
     isZooming = false;
     draggingDom = null;
+    initialDirection = 'none';
   };
   return {
-    setOnMoveCallback: (callback: (clientX: number, clientY: number, movedX: number, movedY: number) => void) => {
+    setOnMoveCallback: (callback: (clientX: number, clientY: number, movedX: number, movedY: number, initialDirection: 'none' | 'vertical' | 'horizontal') => void) => {
       onMoveCallback = callback;
     },
     setOnMoveEndCallback: (callback: () => void) => {
@@ -54,6 +56,7 @@ export const createDragUtil = () => {
     setOnScaleCallback: (callback: (scale: number) => void) => {
       onScaleCallback = callback;
     },
+    getDirection: () => initialDirection,
     getDistance,
     getDraggingDom: () => draggingDom,
     onMouseDown: (event: MouseEvent) => {
@@ -68,6 +71,7 @@ export const createDragUtil = () => {
       draggingDom = event.currentTarget as HTMLDivElement;
       initialX = event.clientX;
       initialY = event.clientY;
+      initialDirection = 'none';
     },
     onMouseMove: (event: MouseEvent) => {
       if (event.buttons === 0 && isDragging) {
@@ -76,9 +80,17 @@ export const createDragUtil = () => {
       if (event.buttons === 0 || !draggingDom) {
         isDragging = false;
         draggingDom = null;
+        initialDirection = 'none';
         return;
       }
-      onMoveCallback(event.clientX, event.clientY, event.clientX - initialX, event.clientY - initialY);
+      const movedX = event.clientX - initialX;
+      const movedY = event.clientY - initialY;
+      if (initialDirection === 'none') {
+        if (Math.abs(movedX) > 5 || Math.abs(movedY) > 5) {
+          initialDirection = Math.abs(movedX) > Math.abs(movedY) ? 'horizontal' : 'vertical';
+        }
+      }
+      onMoveCallback(event.clientX, event.clientY, movedX, movedY, initialDirection);
     },
     onMouseUp: onMoveEnd,
 
@@ -89,6 +101,7 @@ export const createDragUtil = () => {
         draggingDom = event.currentTarget as HTMLDivElement;
         initialX = event.touches[0].clientX;
         initialY = event.touches[0].clientY;
+        initialDirection = 'none';
       } else if (event.touches.length === 2) {
         initialDistance = getDistance(event.touches[0], event.touches[1]);
         isDragging = false;
@@ -96,6 +109,7 @@ export const createDragUtil = () => {
       } else {
         isDragging = false;
         draggingDom = null;
+        initialDirection = 'none';
       }
     },
     onTouchMove: (event: TouchEvent) => {
@@ -117,13 +131,22 @@ export const createDragUtil = () => {
       if (event.touches.length === 0 || !draggingDom) {
         isDragging = false;
         draggingDom = null;
+        initialDirection = 'none';
         return;
+      }
+      const movedX = event.touches[0].clientX - initialX;
+      const movedY = event.touches[0].clientY - initialY;
+      if (initialDirection === 'none') {
+        if (Math.abs(movedX) > 5 || Math.abs(movedY) > 5) {
+          initialDirection = Math.abs(movedX) > Math.abs(movedY) ? 'horizontal' : 'vertical';
+        }
       }
       onMoveCallback(
         event.touches[0].clientX,
         event.touches[0].clientY,
-        event.touches[0].clientX - initialX,
-        event.touches[0].clientY - initialY
+        movedX,
+        movedY,
+        initialDirection
       );
     },
     onTouchEnd: onMoveEnd,

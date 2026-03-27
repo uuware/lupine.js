@@ -22,30 +22,42 @@ export const notificationColorFromValue = (value: string) => {
   }
   return NotificationColor.Info;
 };
+export type NotificationLocation =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right';
+
+export interface NotificationOptions {
+  message: string;
+  backgroundColor?: NotificationColor | string;
+  permanent?: boolean;
+  showTime?: number;
+  location?: NotificationLocation;
+}
+
 export class NotificationMessage {
   // public static readonly Color = NotificationColor;
 
   private static initialized = false;
-  private static container: HTMLElement;
+  private static containers: Record<string, HTMLElement> = {};
 
   static init() {
     /* styles for resizable splitter */
     const css: CssProps = {
       position: 'fixed',
-      top: 0,
-      right: 0,
       height: 'auto',
       overflowY: 'auto',
       maxHeight: '100%',
       width: '100%',
       maxWidth: '400px',
-      // cursor: 'pointer',
-      // backgroundColor: '#fefefe',
       padding: '0 10px',
       zIndex: 'var(--layer-notice)',
-      // borderRadius: '6px',
-      // boxShadow: '0px 0px 2px #000',
+      pointerEvents: 'none',
       '>div': {
+        pointerEvents: 'auto',
         color: 'var(--notice-color-with-bg)',
         padding: '10px 8px',
         margin: '16px 0',
@@ -55,6 +67,14 @@ export class NotificationMessage {
         transform: 'scale(0.1)',
         opacity: 0,
       },
+      /* Location Modifiers */
+      '&.top-left': { top: 0, left: 0 },
+      '&.top-center': { top: 0, left: '50%', transform: 'translateX(-50%)' },
+      '&.top-right': { top: 0, right: 0 },
+      '&.bottom-left': { bottom: 0, left: 0 },
+      '&.bottom-center': { bottom: 0, left: '50%', transform: 'translateX(-50%)' },
+      '&.bottom-right': { bottom: 0, right: 0 },
+      '&.top-center > div, &.bottom-center > div': { justifySelf: 'center' },
       '.close-btn': {
         position: 'absolute',
         top: '-2px',
@@ -72,26 +92,53 @@ export class NotificationMessage {
       },
     };
     bindGlobalStyle('lj_notification', css);
-
-    let container = document.querySelector('.lj_notification');
-    if (!container) {
-      container = document.createElement('div');
-      container.className = 'lj_notification';
-      document.body.appendChild(container);
-      this.container = container as HTMLElement;
-    }
   }
 
-  static sendMessage(message: string, backgroundColor = NotificationColor.Info, permanent = false, showTime = 3000) {
+  private static getContainer(location: NotificationLocation): HTMLElement {
+    if (!this.containers[location]) {
+      const container = document.createElement('div');
+      container.className = `lj_notification ${location}`;
+      document.body.appendChild(container);
+      this.containers[location] = container;
+    }
+    return this.containers[location];
+  }
+
+  static show(options: NotificationOptions) {
+    this.sendMessage(
+      options.message,
+      options.backgroundColor || NotificationColor.Info,
+      options.permanent || false,
+      options.showTime || 3000,
+      options.location || 'top-right'
+    );
+  }
+
+  static sendMessage(
+    message: string,
+    backgroundColor: NotificationColor | string = NotificationColor.Info,
+    permanent = false,
+    showTime = 3000,
+    location: NotificationLocation = 'top-right'
+  ) {
     if (!this.initialized) {
       this.initialized = true;
       this.init();
     }
-    this.container.scrollTop = 0;
+
+    const targetContainer = this.getContainer(location);
+    targetContainer.scrollTop = 0;
+
     const div = document.createElement('div');
     div.innerHTML = message;
     div.style.backgroundColor = backgroundColor;
-    this.container.insertBefore(div, this.container.firstChild);
+
+    // For top, new elements prepend (pushing others down). For bottom, append.
+    if (location.startsWith('top')) {
+      targetContainer.insertBefore(div, targetContainer.firstChild);
+    } else {
+      targetContainer.appendChild(div);
+    }
     setTimeout(() => {
       div.style.opacity = '1';
       div.style.transform = 'scale(1)';
@@ -103,14 +150,16 @@ export class NotificationMessage {
       closeBtn.className = 'close-btn';
       div.appendChild(closeBtn);
       closeBtn.onclick = () => {
-        this.container.removeChild(div);
+        targetContainer.removeChild(div);
       };
     } else {
       setTimeout(() => {
         div.style.opacity = '0';
         div.style.transform = 'scale(0.1)';
         setTimeout(() => {
-          this.container.removeChild(div);
+          if (targetContainer.contains(div)) {
+            targetContainer.removeChild(div);
+          }
         }, 1000);
       }, showTime);
     }

@@ -300,6 +300,7 @@ export type ActionSheetMessagePromiseProps = {
   contentMaxHeight?: string;
   closeWhenClickOutside?: boolean;
   confirmButtonText?: string;
+  cancelButtonText?: string;
   zIndex?: string;
 };
 export const ActionSheetMessagePromise = async ({
@@ -309,6 +310,7 @@ export const ActionSheetMessagePromise = async ({
   contentMaxHeight,
   closeWhenClickOutside = true,
   confirmButtonText,
+  cancelButtonText = '',
   zIndex,
 }: ActionSheetMessagePromiseProps): Promise<void> => {
   return new Promise(async (resolve, reject) => {
@@ -321,6 +323,7 @@ export const ActionSheetMessagePromise = async ({
       contentMaxWidth,
       contentMaxHeight,
       confirmButtonText,
+      cancelButtonText,
       closeEvent,
       closeWhenClickOutside,
       zIndex,
@@ -432,6 +435,7 @@ export type ActionSheetSelectPromiseProps = {
   closeWhenClickOutside?: boolean;
   cancelButtonText?: string;
   zIndex?: string;
+  itemWidth?: string;
 };
 export const ActionSheetSelectPromise = async ({
   title,
@@ -481,6 +485,7 @@ export const ActionSheetSelectWrapPromise = async ({
   closeWhenClickOutside = true,
   cancelButtonText = 'Cancel',
   zIndex,
+  itemWidth,
 }: ActionSheetSelectPromiseProps): Promise<number> => {
   return new Promise(async (resolve, reject) => {
     const handleClicked = async (index: number, close: ActionSheetCloseProps) => {
@@ -497,7 +502,12 @@ export const ActionSheetSelectWrapPromise = async ({
       children: (
         <div class='act-sheet-wrap-container'>
           {options.map((option, index) => (
-            <div class='act-sheet-wrap-item' key={index} onClick={() => handleClicked(index, handleClose)}>
+            <div
+              class='act-sheet-wrap-item'
+              style={{ width: itemWidth }}
+              key={index}
+              onClick={() => handleClicked(index, handleClose)}
+            >
               {option}
             </div>
           ))}
