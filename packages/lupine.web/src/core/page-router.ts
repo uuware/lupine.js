@@ -38,10 +38,11 @@ export class PageRouter {
     this.framePage = framePage;
   }
 
-  // the path should start with / and end without /, and it can be
+  // The path should start with / and end without /, and it can be
   //    /aaa/:bbb/ccc/:ddd (ccc is a fixed section)
   //    /aaa/:bbb/ccc/?ddd/?eee (from ddd, all sections are optional)
-  //    /aaa/:?bbb/ccc/ (from bbb, all sections are optional)
+  //    /aaa/?bbb/ccc/ (from bbb, all sections are optional)
+  // The value can be accessed in a page as props.urlParameters['bbb']
   private storeRouter(path: string, handler: (PageRouterCallback | PageRouter)[]) {
     let fixedPath;
     if (path === '*' || path === '' || path === '/*') {
@@ -82,13 +83,13 @@ export class PageRouter {
 
   private async callHandle(handle: PageRouterCallback, path: string, props: PageProps): Promise<VNode<any> | null> {
     try {
-      const vNode = await handle(props);
-      // logger.debug(`Processed path: ${path}`);
-      return vNode;
+      // Instead of executing the component directly, we construct a VNode
+      // This delegates execution to renderComponentAsync, where ComponentStateStore 
+      // accurately tracks hooks and binds ref.refresh for the page components.
+      return { type: handle as any, props: { ...props, children: [] }, html: [] };
     } catch (e: any) {
       console.error(`Processed path: ${path}, error: ${e.message}`);
       console.error(e.stack);
-      // res.write(JSON.stringify({ status: 'error', message: `Processed path: ${path}, error: ${e.message}` }));
     }
     return null;
   }

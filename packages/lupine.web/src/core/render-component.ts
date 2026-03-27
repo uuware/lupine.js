@@ -290,9 +290,7 @@ export const renderComponentAsync = async (type: any, props: any, uniqueClassNam
       props._result = resultMaybePromise;
     }
 
-    // If the component called useState, inject an internal _stateRef on the root element
-    // so the store can track the live DOM node for future rerenders.
-    if (store.hookIndex > 0 && props._result && props._result.props) {
+    if (props._result && props._result.props && (store.hookIndex > 0 || props._result.props.ref)) {
       const rootProps = props._result.props;
       const existingRef = rootProps.ref;
       rootProps.ref = buildStateRef(store, existingRef);
@@ -316,11 +314,13 @@ export const renderComponentAsync = async (type: any, props: any, uniqueClassNam
   const newProps = (props._result && props._result.props) || props;
 
   if (typeof newType === 'string') {
-    if (newProps._id) {
-      // console.warn('This component reference is used more than once:', newProps);
-    }
+    // if (newProps._id) {
+    //   console.warn('This component reference is used more than once:', newProps);
+    // }
 
     let newUniqueClassName = uniqueClassName;
+    // if having css, we need to replace & for mapping css and classnames
+    // if having ref, we still need to replace & for searching
     if (newProps['css'] || newProps['ref']) {
       newUniqueClassName = genUniqueId(newProps);
       if (!newProps['class'] && !newProps['className']) newProps['class'] = newUniqueClassName;
@@ -341,7 +341,9 @@ export const renderComponentAsync = async (type: any, props: any, uniqueClassNam
       }
 
       if (newProps['css']) {
-        const cssText = processStyle(newUniqueClassName!, newProps['css']).join('');
+        // notice: if globalCssId is provided, it will be used to replace & in css
+        const realCssId = newProps['ref']?.globalCssId || newUniqueClassName;
+        const cssText = processStyle(realCssId, newProps['css']).join('');
         props._html.push(`<style id="sty-${newUniqueClassName}">${cssText}</style>`);
       }
 
