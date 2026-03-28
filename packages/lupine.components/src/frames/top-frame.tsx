@@ -16,8 +16,10 @@ export const TopFrame = async (placeholderClassname: string, vnode: VNode<any>) 
       flexDirection: 'column',
       height: '100%',
       // trick: to put two padding-top properties
+    '@supports (-webkit-touch-callout: none)': {
       'padding-top ': 'constant(safe-area-inset-top)',
       'padding-top': 'env(safe-area-inset-top)',
+    },
     },
   };
 

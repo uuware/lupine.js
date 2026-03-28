@@ -95,8 +95,10 @@ export const PressFrame = (props: PressFrameProps) => {
       maxWidth: MediaQueryMaxWidth.DesktopMax,
       margin: 'auto',
       // trick: to put two padding-top properties
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
+      '@supports (-webkit-touch-callout: none)': {
+        'padding-top ': 'constant(safe-area-inset-top)',
+        'padding-top': 'env(safe-area-inset-top)',
+      },
     },
     '.press-frame-header': {
       display: 'flex',
