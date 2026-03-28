@@ -223,8 +223,10 @@ export const MobileSideMenu = (props: { children: VNode<any>; autoExtend?: boole
       overflowY: 'auto',
       transform: 'translateX(-100%)',
       boxShadow: 'var(--cover-box-shadow)',
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
+      '@supports (-webkit-touch-callout: none)': {
+        'padding-top ': 'constant(safe-area-inset-top)',
+        'padding-top': 'env(safe-area-inset-top)',
+      },
     },
     [MediaQueryRange.TabletAbove]: {
       '&.auto-extend .mobile-side-menu-mask': {
