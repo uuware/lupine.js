@@ -72,10 +72,8 @@ export const SliderFrame = (props: SliderFrameProps) => {
     transition: 'transform 0.4s ease-in-out',
     backgroundColor: 'var(--primary-bg-color)',
     // trick: to put two padding-top properties
-    '@supports (-webkit-touch-callout: none)': {
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
-    },
+    'padding-top ': 'constant(safe-area-inset-top)',
+    'padding-top': 'env(safe-area-inset-top)',
     '&.show': {
       transform: props.direction === 'bottom' ? 'translateY(0)' : 'translateX(0)',
     },
