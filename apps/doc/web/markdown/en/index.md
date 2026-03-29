@@ -44,6 +44,8 @@ sidebar:
       - /en/articles/cv-generator
       - /en/articles/lupine-components
       - /en/articles/lupine-image-editor
+      - /en/articles/lupine-pdf-editor
+      - /en/articles/lupine-notes-and-tools
   - submenu: /en/essentials
   - submenu: /en/lupine.web
   - submenu: /en/lupine.components
