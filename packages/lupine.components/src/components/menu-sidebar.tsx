@@ -1,5 +1,5 @@
 import { bindGlobalStyle, CssProps, getRenderPageProps, RefProps } from 'lupine.web';
-import { stopPropagation } from '../lib';
+import { stopPropagation, backActionHelper } from '../lib';
 import { MediaQueryMaxWidth } from '../styles';
 import { NestMenuItemProps } from './menu-item-props';
 
@@ -277,7 +277,13 @@ export const MenuSidebar = ({
     menu.classList.toggle('active');
     const topMenu = ref.$('.menu-sidebar-top');
     topMenu.classList.toggle('open');
-    ref.current.classList.toggle('open');
+    const isOpen = ref.current.classList.toggle('open');
+    
+    if (isOpen) {
+      ref.current.setAttribute('data-back-action', backActionHelper.genBackActionId());
+    } else {
+      ref.current.removeAttribute('data-back-action');
+    }
   };
   const onItemToggleClick = (ref: RefProps) => {
     // if (event.target != ref.current && (event.target as any).parentNode != ref.current) {

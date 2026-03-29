@@ -1,5 +1,5 @@
 import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
-import { stopPropagation } from '../lib';
+import { stopPropagation, backActionHelper } from '../lib';
 
 export type FloatWindowCloseProps = () => void;
 
@@ -163,7 +163,7 @@ export class FloatWindow {
         <div ref={ref} class='fwin-body' onMouseDown={onMousedown}>
           <div class='fwin-title'>
             {title}
-            <span class='fwin-close' onClick={handleClose}>
+            <span class='fwin-close' onClick={handleClose} data-back-action={backActionHelper.genBackActionId()}>
               ×
             </span>
           </div>

@@ -17,7 +17,13 @@ export const HeaderWithBackFrameLeft = ({ onClick }: { onClick: (event: Event) =
 };
 
 export const HeaderWithBackFrameRight = ({ onClick }: { onClick: (event: Event) => void }) => {
-  return <i class='ifc-icon ma-close header-back-right-icon' onClick={(event) => onClick(event)}></i>;
+  return (
+    <i
+      class='ifc-icon ma-close header-back-right-icon'
+      data-back-action={backActionHelper.genBackActionId()}
+      onClick={(event) => onClick(event)}
+    ></i>
+  );
 };
 
 export const HeaderWithBackFrameEmpty = () => {
