@@ -16,7 +16,13 @@ export const MobileHeadeBackIcon = ({ onClick }: { onClick: (event: Event) => vo
 };
 
 export const MobileHeadeCloseIcon = ({ onClick }: { onClick: (event: Event) => void }) => {
-  return <i class='ifc-icon ma-close mhti-close-icon' onClick={(event) => onClick(event)}></i>;
+  return (
+    <i
+      class='ifc-icon ma-close mhti-close-icon'
+      data-back-action={backActionHelper.genBackActionId()}
+      onClick={(event) => onClick(event)}
+    ></i>
+  );
 };
 
 export const MobileHeaderEmptyIcon = () => {
