@@ -289,8 +289,8 @@ const start = async () => {
   const isMobile = process.argv.find((i) => i === '--mobile=1'); // when this changed, need to rebuild index.html
   const isObfuscate = !isDev && process.argv.find((i) => i === '--obfuscate=1');
   // this is for esbuild conditional compile
-  ifPluginVars.DEV = isDev ? '1' : '0';
-  ifPluginVars.MOBILE = isMobile ? '1' : '0';
+  ifPluginVars.DEV = isDev ? '1' : '';
+  ifPluginVars.MOBILE = isMobile ? '1' : '';
 
   // All apps should be defined in .env file like this:
   // APPS=domain1.com,domain2.com
