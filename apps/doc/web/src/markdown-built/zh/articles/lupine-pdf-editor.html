@@ -1,0 +1,44 @@
+<h1 id="告别笨重的-pdf-软件-lupine-pdf-editor-开源-pdf-编辑器体验"><a class="header-anchor" href="#告别笨重的-pdf-软件-lupine-pdf-editor-开源-pdf-编辑器体验">#</a>告别笨重的 PDF 软件？Lupine PDF Editor 开源 PDF 编辑器体验</h1><p>在日常工作和开发中，处理 PDF 文件常常让人头疼。如果是简单的打个勾、签个字或者画个重点，打开体积庞大的专业 PDF 软件不仅缓慢，而且显得“杀鸡用牛刀”。而如果想在网页端直接集成 PDF 编辑功能，市面上的库往往学习成本极高且难以灵活定制。</p>
+<p>基于 <strong>Lupine.js</strong> 的超轻量级特性，我们带来了一款能够在浏览器中流畅运行的开源应用 —— <strong>Lupine PDF Editor</strong>。</p>
+<hr>
+<h2 id="核心功能亮点速览"><a class="header-anchor" href="#核心功能亮点速览">#</a>🎨 核心功能亮点速览</h2><p>Lupine PDF Editor 提供了一套完整的 PDF 预览与编辑体验。你不仅可以在线把它当做日常工具使用，还可以提取其中的核心组件 <code>PEditor</code> 极速集成到任何前端项目中。</p>
+<h3 id="1-流畅的-pdf-渲染与基础操作"><a class="header-anchor" href="#1-流畅的-pdf-渲染与基础操作">#</a>1. 📄 流畅的 PDF 渲染与基础操作</h3><p>无论多大的 PDF 文件，都能通过纯前端离线加载，有效保护隐私数据。支持多页平滑滚动预览、随意放大缩小，保障极佳的基础阅读和浏览体验。</p>
+<h3 id="2-自由涂鸦与强大形状工具"><a class="header-anchor" href="#2-自由涂鸦与强大形状工具">#</a>2. ✏️ 自由涂鸦与强大形状工具</h3><p><img src="/lupine.js/assets/peditor-draw.png" alt="Lupine.Press"></p>
+<p>正如它兄弟项目那般强大，它内置了极其完善的绘图与批注系统：</p>
+<ul>
+<li><strong>铅笔工具</strong>：支持自由手绘，做标记、写字非常方便。在报告上画圈、划重点，手感丝滑。</li>
+<li><strong>几何形状</strong>：内置直线、箭头、矩形、圆形、椭圆等常用形状，做图示、指引毫无压力。</li>
+<li><strong>样式自定义</strong>：你可以自由调整线条粗细、颜色、甚至透明度，满足各种批注和作图需求。</li>
+</ul>
+<h3 id="3-丰富的文字批注套件"><a class="header-anchor" href="#3-丰富的文字批注套件">#</a>3. 📝 丰富的文字批注套件</h3><p><img src="/lupine.js/assets/peditor-text.png" alt="Lupine.Press"></p>
+<p>给 PDF 增加额外说明？太简单了：</p>
+<ul>
+<li><strong>文本输入</strong>：支持多行文字输入，任意拖拽位置，自由调整字体颜色、大小和背景。填表、加备注一气呵成，点哪里就能写哪里。</li>
+<li><strong>贴纸与图章</strong>：可以快速添加内置丰富的标签贴纸，不仅能让文档标注更直观，甚至也能灵活用于简易的电子印章遮挡。</li>
+</ul>
+<h3 id="4-历史记录-撤销-重做"><a class="header-anchor" href="#4-历史记录-撤销-重做">#</a>4. ⏳ 历史记录（撤销/重做）</h3><p>全栈的状态管理保证了你的每一步编辑都可追溯。画错一笔？或者撤销过度？全靠内置的撤销（Undo）与重做（Redo）栈，让你每一次文档处理都充满自信。</p>
+<hr>
+<h2 id="为什么选择基于-lupine-js"><a class="header-anchor" href="#为什么选择基于-lupine-js">#</a>🚀 为什么选择基于 Lupine.js？</h2><p>与 <code>Lupine Image Editor</code> 一脉相承，<strong>Lupine.js</strong> 给 PDF 编辑器注入了超轻量的灵魂。</p>
+<p>作为一款核心仅 <strong>7kb</strong> 的全栈微框架：</p>
+<ul>
+<li>摒弃了沉重的虚拟 DOM 历史包袱，极大提升了大量 Canvas 图形交互、叠加元素的性能表现。</li>
+<li>极简的组件化（TSX）让像 <code>PEditor</code> 这样复杂的富交互应用代码依然保持清晰易读。</li>
+<li>真正做到“即插即用”，开箱即用的响应式系统让它轻松适配移动端和桌面端。</li>
+</ul>
+<hr>
+<h2 id="如何快速体验"><a class="header-anchor" href="#如何快速体验">#</a>📦 如何快速体验？</h2><p>百闻不如一试，快来试试在网页里零负担批注 PDF 的快感吧：</p>
+<ul>
+<li>🎮 <strong>在线 Live Demo</strong>：<a href="https://uuware.github.io/lupine-pdf-editor/">https://uuware.github.io/lupine-pdf-editor/</a></li>
+<li>💻 <strong>源码仓库 (GitHub)</strong>：<a href="https://github.com/uuware/lupine-pdf-editor">https://github.com/uuware/lupine-pdf-editor</a></li>
+</ul>
+<p><strong>本地一键运行跑起来：</strong></p>
+<pre><code class="language-bash">git clone https://github.com/uuware/lupine-pdf-editor.git
+cd lupine-pdf-editor
+npm install
+npm run dev
+</code></pre>
+<hr>
+<h2 id="结语"><a class="header-anchor" href="#结语">#</a>结语</h2><p>如果你正在寻找一个轻量级、无依赖包袱的网页端 PDF 编辑器，或者你对这套拥有 7kb 极简内核的 <strong>Lupine.js</strong> 框架感兴趣，不妨点进项目去看看源码。</p>
+<blockquote>
+<p>🌈 开源不易，如果这个项目有帮助到你，欢迎在 <a href="https://github.com/uuware/lupine.js">GitHub - Lupine.js</a> 留下你的 ⭐ <strong>Star</strong>！这会是对作者最大的鼓励！</p>
+</blockquote>
