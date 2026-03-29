@@ -563,3 +563,31 @@ For interactive lists, `createDragUtil()` from `lupine.components` handles compl
    - `ActionSheetMultiSelectPromise`: For multiple checkbox selections.
    - `ActionSheetTimePicker`: For selecting a time.
    - `ActionSheetDatePicker`: For selecting a date.
+
+### F. Hardware Back Button Handling (`data-back-action`)
+
+When building mobile interfaces, users expect the physical hardware "Back" button (or swipe-from-edge gesture) to gracefully dismiss overlays, dialogs, sliders, or menus—similar to pressing the `ESC` key on a desktop.
+
+**The Rule**: Whenever you implement a cancel button, a close icon (`X`), or a back chevron (`<`) in a mobile overlay or frame, you **MUST** attach the `data-back-action` attribute using the `backActionHelper`.
+
+```typescript
+import { backActionHelper } from 'lupine.components';
+
+export const MyCloseButton = ({ onClose }) => {
+  return (
+    <i 
+      class="ifc-icon ma-close"
+      // Generate a unique ID for the back stack
+      data-back-action={backActionHelper.genBackActionId()} 
+      onClick={onClose}
+    ></i>
+  );
+};
+```
+
+**How it works**:
+- When the hardware back button is pressed, the underlying system automatically queries the DOM for all elements with `[data-back-action^="bb-"]`.
+- It finds the most recently created component (the top-most overlay) and automatically triggers a `.click()` event on it.
+- **Dynamic Mounting vs Static**: 
+  - For components that are injected and removed dynamically (like `<ActionSheet />` or `<FloatWindow />`), simply attaching the property to the React/JSX node is sufficient.
+  - For static components that always remain in the DOM but toggle visibility (like an off-canvas sidebar), you must dynamically add/remove the attribute in Javascript (`el.setAttribute` / `el.removeAttribute`) to prevent the back button from intercepting events when the menu is actually closed.
