@@ -35,10 +35,8 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     borderLeft: props.maxWidth ? '1px solid var(--primary-border-color)' : 'none',
     margin: '0 auto',
     overflowX: 'hidden',
-    '@supports (-webkit-touch-callout: none)': {
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
-    },
+    'padding-top ': 'constant(safe-area-inset-top)',
+    'padding-top': 'env(safe-area-inset-top)',
     '.frame-top-menu': {
       display: 'flex',
       flexDirection: 'column',
