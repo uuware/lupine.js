@@ -94,20 +94,20 @@ const TEMPLATES = [
 ];
 
 async function init() {
+  console.log('Fetching latest versions...');
+  const versions = {
+    'lupine.api': getLatestVersion('lupine.api', '^1.0.1'),
+    'lupine.web': getLatestVersion('lupine.web', '^1.0.1'),
+    'lupine.components': getLatestVersion('lupine.components', '^1.0.1'),
+    'lupine.press': getLatestVersion('lupine.press', '^1.0.1')
+  };
+
   if (argv['update-version']) {
     const targetPkgPath = path.join(cwd, 'package.json');
     if (!fs.existsSync(targetPkgPath)) {
       console.log(red('✖ No package.json found in current directory.'));
       return;
     }
-
-    console.log('Fetching latest versions...');
-    const versions = {
-      'lupine.api': getLatestVersion('lupine.api', '^1.0.1'),
-      'lupine.web': getLatestVersion('lupine.web', '^1.0.1'),
-      'lupine.components': getLatestVersion('lupine.components', '^1.0.1'),
-      'lupine.press': getLatestVersion('lupine.press', '^1.0.1')
-    };
 
     let pkg;
     try {
@@ -306,20 +306,14 @@ async function init() {
     },
   };
 
-  console.log('Fetching latest versions...');
-  const latestApi = getLatestVersion('lupine.api', '^1.0.1');
-  const latestWeb = getLatestVersion('lupine.web', '^1.0.1');
-  const latestComponents = getLatestVersion('lupine.components', '^1.0.1');
-  const latestPress = getLatestVersion('lupine.press', '^1.0.1');
-
   pkg.dependencies = {
-    'lupine.api': latestApi,
-    'lupine.components': latestComponents,
-    'lupine.web': latestWeb,
+    'lupine.api': versions['lupine.api'],
+    'lupine.components': versions['lupine.components'],
+    'lupine.web': versions['lupine.web'],
   };
 
   if (templateObj && templateObj.needsPress) {
-    pkg.dependencies['lupine.press'] = latestPress;
+    pkg.dependencies['lupine.press'] = versions['lupine.press'];
     pkg.devDependencies['gray-matter'] = '^4.0.3';
     pkg.devDependencies['marked'] = '^17.0.1';
     pkg.scripts['cp-docs'] = `node dev/cp-folder.js dist/server_root/${appName}_web/github-pj-name docs`;
