@@ -1,4 +1,4 @@
-import { _lupineJs } from './export-lupine';
+import { _lupineJs } from './lupine-instance';
 
 export function bindLinks(el: Element | Document) {
   const links = el.getElementsByTagName('a');

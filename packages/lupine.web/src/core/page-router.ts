@@ -1,23 +1,11 @@
 import { VNode } from '../jsx';
 import { isFrontEnd } from '../lib/is-frontend';
-import { PageProps } from './export-lupine';
+import { PageProps } from '../models/page-props';
 import { mountInnerComponent } from './mount-component';
+import { ComponentStateStore, evaluateComponentWithStore } from './use-state';
+import { IPageRouter, PageRouterCallback, PageRouterData, FramePageProps } from '../models/page-router-props';
 
-export type PageRouterCallback = (props: PageProps) => Promise<VNode<any> | null>;
-
-export type PageRouterData = {
-  path: string;
-  handler: (PageRouterCallback | PageRouter)[];
-  parameterVariables: string[];
-  parameterLength: number;
-};
-
-export type FramePageProps = {
-  component: (placeholderClassname: string, vnode: VNode<any>) => Promise<VNode<any>>;
-  placeholderClassname: string;
-};
-
-export class PageRouter {
+export class PageRouter implements IPageRouter {
   private routerData: PageRouterData[] = [];
   private filter: PageRouterCallback | undefined;
   private framePage: FramePageProps | undefined;
@@ -43,7 +31,7 @@ export class PageRouter {
   //    /aaa/:bbb/ccc/?ddd/?eee (from ddd, all sections are optional)
   //    /aaa/?bbb/ccc/ (from bbb, all sections are optional)
   // The value can be accessed in a page as props.urlParameters['bbb']
-  private storeRouter(path: string, handler: (PageRouterCallback | PageRouter)[]) {
+  private storeRouter(path: string, handler: (PageRouterCallback | IPageRouter)[]) {
     let fixedPath;
     if (path === '*' || path === '' || path === '/*') {
       // removed path === '/' ||
@@ -77,16 +65,15 @@ export class PageRouter {
     });
   }
 
-  use(path: string, ...handler: (PageRouterCallback | PageRouter)[]) {
+  use(path: string, ...handler: (PageRouterCallback | IPageRouter)[]) {
     this.storeRouter(path, handler);
   }
 
   private async callHandle(handle: PageRouterCallback, path: string, props: PageProps): Promise<VNode<any> | null> {
     try {
-      // Instead of executing the component directly, we construct a VNode
-      // This delegates execution to renderComponentAsync, where ComponentStateStore 
-      // accurately tracks hooks and binds ref.refresh for the page components.
-      return { type: handle as any, props: { ...props, children: [] }, html: [] };
+      const store = new ComponentStateStore<PageProps>(handle, props);
+      const dom = await evaluateComponentWithStore(store);
+      return dom ? dom : null;
     } catch (e: any) {
       console.error(`Processed path: ${path}, error: ${e.message}`);
       console.error(e.stack);
@@ -126,7 +113,7 @@ export class PageRouter {
 
         if (meet) {
           for (let j = 0, router; (router = routerList.handler[j]); j++) {
-            if (router instanceof PageRouter) {
+            if (typeof router !== 'function') {
               // it's a sub-level router
               const nextPath =
                 routerList.path === '*' || (url === '/' && routerList.path === '/')
@@ -138,8 +125,6 @@ export class PageRouter {
                 return vNode;
               }
             } else {
-              // it should be a function
-              // the query's url should match the api's path
               const dom = await this.callHandle(router, url, props);
               if (dom) {
                 return dom;
