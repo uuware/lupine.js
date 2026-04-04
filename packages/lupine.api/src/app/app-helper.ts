@@ -50,7 +50,7 @@ class AppHelper {
     // TODO: call unloadApi?
     const apiPath = path.join(process.cwd(), 'dist/server_root', appConfig.appName + '_api/index.js');
     for (const path in require.cache) {
-      if (path.endsWith('.js') && path.indexOf(apiPath) <= 0) {
+      if (path.endsWith('.js') && path.indexOf(apiPath) >= 0) {
         console.log(`${process.pid} - clear cache: ${path}`);
         delete require.cache[path];
       }
