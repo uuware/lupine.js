@@ -1,6 +1,6 @@
 {
   "name": "lupine.api",
-  "version": "1.1.82",
+  "version": "1.1.83",
   "license": "MIT",
   "author": "uuware.com",
   "homepage": "https://github.com/uuware/lupine.js",
@@ -30,6 +30,11 @@
     },
     "./dev": {
       "require": "./dev/index.js"
+    },
+    "./app-loader": {
+      "types": "./src/app-loader/app-loader.ts",
+      "import": "./src/app-loader/app-loader.ts",
+      "require": "./src/app-loader/app-loader.ts" 
     }
   },
   "keywords": [
@@ -39,7 +44,10 @@
   "scripts": {
     "note": "echo 'build is not needed as the typescript code is supposed to be referred directly from other projects'",
     "npm-publish": "npm publish --access public",
-    "build": "tsc"
+    "build": "tsc",
+    "test:build": "npx esbuild src/**/*.test.ts --outdir=dist-test --platform=node --bundle --format=cjs --jsx=automatic --jsx-import-source=lupine.web",
+    "test:run": "node --test dist-test/**/*.test.js",
+    "test": "npm run test:build && npm run test:run"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",

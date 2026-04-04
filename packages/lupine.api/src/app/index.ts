@@ -2,6 +2,7 @@ export * from './app-cache';
 export * from './app-helper';
 export * from './app-message';
 export * from './app-shared-storage';
+export * from './app-load-roots';
 export * from './app-start';
 export * from './cleanup-exit';
 export * from './host-to-path';

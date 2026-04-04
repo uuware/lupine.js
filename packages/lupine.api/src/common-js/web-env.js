@@ -30,14 +30,14 @@ exports.parseEnv = async (envFile) => {
       } else if (key.endsWith('*')) {
         // if the line is like [key*=LINE_MARKER] then it's a multiline string, ending with "LINE_MARKER"
         const LINE_MARKER = line[1].trim();
-        line[1] = '';
+        const blockLines = [];
         for (i++; i < lines.length; i++) {
           if (lines[i].trim() === LINE_MARKER) {
             break;
           }
-          line[1] += lines[i] + '\n';
+          blockLines.push(lines[i]);
         }
-        obj[key.substring(0, key.length - 1)] = line[1];
+        obj[key.substring(0, key.length - 1)] = blockLines.join('\n');
       } else {
         obj[key] = line[1] || ''; // .replace(/\\n/g, '\n').replace(/\\r/g, '\r')
       }
@@ -52,6 +52,10 @@ exports.parseEnv = async (envFile) => {
   return obj;
 };
 
+/**
+ * @param {Record<string, string>} envObject
+ * @param {boolean} [overrideEnv]
+ */
 exports.copyToProcessEnv = (envObject, overrideEnv) => {
   for (const key of Object.keys(envObject)) {
     if (overrideEnv || typeof process.env[key] === 'undefined') {
@@ -60,15 +64,23 @@ exports.copyToProcessEnv = (envObject, overrideEnv) => {
   }
 };
 
+/**
+ * @param {string} envFile
+ * @param {boolean} [overrideEnv]
+ */
 exports.loadEnv = async (envFile, overrideEnv = false) => {
   console.log(`Load env from: ${envFile}`);
   const envObject = await exports.parseEnv(envFile);
   exports.copyToProcessEnv(envObject, overrideEnv);
 };
 
+/**
+ * @param {string} appName
+ * @returns {Record<string, string|undefined>}
+ */
 exports.getWebEnv = (appName) => {
   const envWeb = {};
-  for (const envName in process.env) {
+  for (const envName of Object.keys(process.env)) {
     if (envName.startsWith(`WEB.`)) {
       envWeb[envName.substring(4)] = process.env[envName];
     } else if (envName.startsWith(`${appName}.WEB.`)) {
@@ -80,9 +92,14 @@ exports.getWebEnv = (appName) => {
 
 // defined app-shared-storage-props.ts
 const AppSharedStorageWebPrefix = 'WEB.';
+
+/**
+ * @param {Record<string, any>} allConfig
+ * @returns {Record<string, any>}
+ */
 exports.getWebConfig = (allConfig) => {
   const result = {};
-  for (let key in allConfig) {
+  for (const key of Object.keys(allConfig)) {
     if (key.startsWith(AppSharedStorageWebPrefix)) {
       result[key.substring(AppSharedStorageWebPrefix.length)] = allConfig[key];
     }

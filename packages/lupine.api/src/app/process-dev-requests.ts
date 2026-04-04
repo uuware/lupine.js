@@ -1,7 +1,6 @@
 import cluster from 'cluster';
 import { Logger } from '../lib/logger';
 import { ServerResponse } from 'http';
-import { AddressInfo } from 'net';
 import { appHelper } from './app-helper';
 import { DebugService } from '../api/debug-service';
 import { AppCacheGlobal, AppCacheKeys, getAppCache, ServerRequest } from '../models';
@@ -10,17 +9,17 @@ import { ShellService } from '../api/shell-service';
 import { handler200 } from '../api';
 const logger = new Logger('process-dev-requests');
 
-function deleteRequireCache(moduleName: string) {
-  var solvedName = require.resolve(moduleName),
-    nodeModule = require.cache[solvedName];
-  if (nodeModule) {
-    for (var i = 0; i < nodeModule.children.length; i++) {
-      var child = nodeModule.children[i];
-      deleteRequireCache(child.filename);
-    }
-    delete require.cache[solvedName];
-  }
-}
+// function deleteRequireCache(moduleName: string) {
+//   var solvedName = require.resolve(moduleName),
+//     nodeModule = require.cache[solvedName];
+//   if (nodeModule) {
+//     for (var i = 0; i < nodeModule.children.length; i++) {
+//       var child = nodeModule.children[i];
+//       deleteRequireCache(child.filename);
+//     }
+//     delete require.cache[solvedName];
+//   }
+// }
 
 // this is a worker and msg is from Primary
 // when debug is on, it's in primary, but it shouldn't receive those msgs

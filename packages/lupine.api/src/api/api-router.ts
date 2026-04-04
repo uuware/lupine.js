@@ -91,7 +91,7 @@ export class ApiRouter implements IApiRouter {
       }
     } catch (e: any) {
       logger.error(`Processed path: ${path}, error: ${e.message}`);
-      res.writeHead(500, { 'Content-Type': 'text/html' });
+      res.writeHead(500, { 'Content-Type': 'application/json' });
       res.write(
         JSON.stringify({
           status: 'error',
@@ -114,7 +114,7 @@ export class ApiRouter implements IApiRouter {
         let meet = true;
         if (routerList.parameterVariables.length > 0) {
           meet = false;
-          const restPath = url.substring(routerList.path.length + 1).split('/');
+          const restPath = url.substring(routerList.path.length + 1).split('/').filter(Boolean);
           // the path must have mandatory parameters but some parameters can be optional
           if (
             restPath.length >= routerList.parameterLength &&
@@ -150,19 +150,20 @@ export class ApiRouter implements IApiRouter {
               }
             }
           }
-        }
-
-        if (handleNotFound) {
-          // no match under this path
-          logger.debug(`Processed path: ${url}, router path: ${routerList.path}`);
-          const html = JSON.stringify({
-            status: 'error',
-            message: `Can't find any matches under router ${routerList.path} for path: ${url}.`,
-          });
-          handler404(res, html);
-          return true;
+        // Do not throw 404 early here. Allow subsequent router rules in the loop a chance to match!
         }
       }
+    }
+
+    if (handleNotFound && !res.writableEnded) {
+      // no match entirely in this router scope
+      logger.debug(`Processed path under 404: ${url}`);
+      const html = JSON.stringify({
+        status: 'error',
+        message: `Can't find any matches for path: ${url}.`,
+      });
+      handler404(res, html, 'application/json');
+      return true;
     }
     return false;
   }

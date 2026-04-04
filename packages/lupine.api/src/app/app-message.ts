@@ -84,12 +84,25 @@ export const processMessageFromWorker = (msgObject: AppMessageProps) => {
     } else if (msgObject.message === 'refresh') {
       broadcast(msgObject);
     } else if (msgObject.message === 'shutdown') {
-      broadcast(msgObject);
-      // if it's shutdown, the primary process will exit
-      setTimeout(async () => {
-        console.log(`[server primary] Received shutdown command.`, cluster.workers);
+      // Create a trackable flush queue for the broadcast
+      const flushPromises: Promise<void>[] = [];
+      for (let i in cluster.workers) {
+        const worker = cluster.workers[i];
+        if (worker) {
+          flushPromises.push(
+            new Promise((resolve) => worker.send(msgObject, undefined, undefined, () => resolve()))
+          );
+        }
+      }
+
+      // We wait gracefully for all IPC pipes to completely flush the shutdown command.
+      // But we prevent an infinite hang by injecting a 500ms race timeout if IPC is frozen.
+      const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 500));
+      
+      Promise.race([Promise.all(flushPromises), timeoutPromise]).finally(async () => {
+        console.log(`[server primary] Received shutdown command, broadcasting completed (or timed out).`);
         await cleanupAndExit();
-      }, 100);
+      });
     } else {
       logger.warn(`Unknown message: ${msgObject.id}`);
     }

@@ -4,6 +4,7 @@ import { appHelper } from './app-helper';
 import { processMessageFromPrimary, processMessageFromWorker } from './app-message';
 import { WebServer } from './web-server';
 import { processDevRequests } from './process-dev-requests';
+import { DebugService } from '../api/debug-service';
 import { appCache } from './app-cache';
 import { AppStartProps, InitStartProps, AppCacheGlobal, AppCacheKeys, ServerRequest } from '../models';
 import { appStorage } from './app-shared-storage';
@@ -11,6 +12,7 @@ import { HostToPath } from './host-to-path';
 import { _exitApp, cleanupAndExit } from './cleanup-exit';
 import { receiveMessageFromLoader } from './app-message';
 import { ServerResponse } from 'http';
+import { loadSsrRoots } from './app-load-roots';
 
 // Don't use logger before set process message
 class AppStart {
@@ -29,6 +31,7 @@ class AppStart {
     }
 
     this.debug = props.debug;
+    appStorage.initializeIPC();
     this.bindProcess();
 
     appCache.set(AppCacheGlobal, AppCacheKeys.APP_DEBUG, props.debug);
@@ -39,6 +42,16 @@ class AppStart {
     appCache.set(AppCacheGlobal, AppCacheKeys.APP_LIST, appsList);
 
     this.webServer = webServer || new WebServer();
+    appCache.set(AppCacheGlobal, AppCacheKeys.WEB_SERVER, this.webServer);
+
+    const sslRootsMap = new Map<string, Set<string>>();
+    console.log(`Loading SSR roots for ${process.pid}`);
+    for (let appConfig of props.apiConfig.webHostMap) {
+      const roots = new Set<string>();
+      await loadSsrRoots(appConfig.webPath, roots);
+      sslRootsMap.set(appConfig.webPath, roots);
+    }
+    appCache.set(AppCacheGlobal, AppCacheKeys.SSR_ROOTS, sslRootsMap);
 
     // call the Logger after initLog
     console.log(
@@ -125,6 +138,7 @@ class AppStart {
         await processDevRequests(req, res, rootUrl || '', this.debug, devToken);
         return true;
       });
+      this.webServer!.onUpgrade('/debug', DebugService.handleUpgrade.bind(DebugService));
     }
 
     const httpServer = httpPort && this.webServer!.startHttp(httpPort, bindIp);

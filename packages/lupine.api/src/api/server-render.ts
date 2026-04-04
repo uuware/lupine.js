@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ServerResponse } from 'http';
-import { FsUtils, Logger } from '../lib';
+import { Logger } from '../lib';
 import { getWebEnv } from '../lib';
 import { ServerRequest } from '../models/locals-props';
 import { ToClientDelivery } from './to-client-delivery';
 import { IToClientDelivery } from '../models/to-client-delivery-props';
 import { JsonObject } from '../models/json-object';
 import { getTemplateCache, apiCache } from './api-cache';
+import { getAppCache, AppCacheGlobal, AppCacheKeys } from '../models/app-cache-props';
 import { apiStorage } from './api-shared-storage';
 import { RuntimeRequire } from '../lib/runtime-require';
 import { IRequestContextProps } from '../models';
@@ -78,8 +79,7 @@ export const isServerSideRenderUrl = (urlWithoutQuery: string) => {
   return ext === '' || ext === 'html';
 };
 
-// If the folder contains index.html and index.js, then the js will be used to render
-const findNearestRoot = async (cachedHtml: any, webRoot: string, urlWithoutQuery: string) => {
+const findNearestRootSync = (webRoot: string, urlWithoutQuery: string) => {
   if (urlWithoutQuery === '/' || urlWithoutQuery === '/index.html') {
     return webRoot;
   }
@@ -87,34 +87,20 @@ const findNearestRoot = async (cachedHtml: any, webRoot: string, urlWithoutQuery
     urlWithoutQuery = urlWithoutQuery.slice(0, -1);
   }
 
-  // cache sub folders whether it has both index.html and js, or virtual path
-  if (!cachedHtml['_sub_:' + webRoot]) {
-    cachedHtml['_sub_:' + webRoot] = {};
-  }
-
-  const cacheRoots = cachedHtml['_sub_:' + webRoot];
   let nearRoot = path.join(webRoot, urlWithoutQuery);
-  if (cacheRoots[nearRoot] === '1') {
-    return nearRoot;
+
+  const ssrRootsMap = getAppCache().get(AppCacheGlobal, AppCacheKeys.SSR_ROOTS) as Map<string, Set<string>>;
+  const validRoots = ssrRootsMap?.get(webRoot);
+
+  while (nearRoot.length > webRoot.length) {
+    if (validRoots && validRoots.has(nearRoot)) {
+      return nearRoot;
+    }
+    // Bubble upwards towards webroot until we find the parent SSR handler
+    nearRoot = path.dirname(nearRoot);
   }
 
-  while (
-    cacheRoots[nearRoot] === '0' ||
-    !(await FsUtils.pathExist(path.join(nearRoot, 'index.html'))) ||
-    !(await FsUtils.pathExist(path.join(nearRoot, 'index.js')))
-  ) {
-    cacheRoots[nearRoot] = '0';
-    nearRoot = path.dirname(nearRoot);
-    if (cacheRoots[nearRoot] === '1' || nearRoot.length <= webRoot.length) {
-      break;
-    }
-  }
-  if (nearRoot.length <= webRoot.length) {
-    nearRoot = webRoot;
-  } else {
-    cacheRoots[nearRoot] = '1';
-  }
-  return nearRoot;
+  return webRoot;
 };
 
 const titleText = '<!--META-TITLE-->';
@@ -131,6 +117,8 @@ type CachedHtmlProps = {
   containerIndex: number;
   _lupineJs: _LupineJs;
 };
+const pendingSsrLoads = new Map<string, Promise<CachedHtmlProps>>();
+
 export const serverSideRenderPage = async (
   appName: string,
   webRoot: string,
@@ -144,37 +132,48 @@ export const serverSideRenderPage = async (
   // cache multiple folders
   const cachedHtml = getTemplateCache();
 
-  // in order to support virtual path and also sub folders, here needs to find nearest sub folder which contains index.js
-  const nearRoot = await findNearestRoot(cachedHtml, webRoot, urlWithoutQuery);
+  // in order to support virtual path and also sub folders, find nearest sub folder synchronously from pre-cached physical SSR roots
+  const nearRoot = findNearestRootSync(webRoot, urlWithoutQuery);
 
+  // Address Cache Stampede Concurrency Vulnerability natively
   if (!cachedHtml[nearRoot]) {
-    // the FE code needs to export _lupineJs
-    // const lupinJs = await import(webRoot + '/index.js');
-    // if error happens during the SSR, then send index.html
-    const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
-    let _lupineJs;
-    try {
-      const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { _lupineJs: null });
-      // const lupinJs = require(path.join(nearRoot, 'index.js'));
-      if (!gThis || !gThis._lupineJs) {
-        throw new Error('_lupineJs is not defined');
-      }
-      // console.log(`=========load lupine: `, gThis);
-      _lupineJs = gThis._lupineJs() as _LupineJs;
-    } catch (e: any) {
-      logger.error(e.message);
-    }
+    if (!pendingSsrLoads.has(nearRoot)) {
+      const loadPromise = (async () => {
+        try {
+          const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
+          let _lupineJs;
+          try {
+            const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { _lupineJs: null });
+            if (!gThis || !gThis._lupineJs) {
+              throw new Error('_lupineJs is not defined');
+            }
+            _lupineJs = gThis._lupineJs() as _LupineJs;
+          } catch (e: any) {
+            logger.error(e.message);
+          }
 
-    const contentWithEnv = content.toString();
-    cachedHtml[nearRoot] = {
-      content: contentWithEnv,
-      webEnv: getWebEnv(appName),
-      titleIndex: contentWithEnv.indexOf(titleText),
-      metaIndexStart: contentWithEnv.indexOf(metaTextStart),
-      metaIndexEnd: contentWithEnv.indexOf(metaTextEnd),
-      containerIndex: contentWithEnv.indexOf(containerText),
-      _lupineJs: _lupineJs,
-    } as CachedHtmlProps;
+          const contentWithEnv = content.toString();
+          return {
+            content: contentWithEnv,
+            webEnv: getWebEnv(appName),
+            titleIndex: contentWithEnv.indexOf(titleText),
+            metaIndexStart: contentWithEnv.indexOf(metaTextStart),
+            metaIndexEnd: contentWithEnv.indexOf(metaTextEnd),
+            containerIndex: contentWithEnv.indexOf(containerText),
+            _lupineJs: _lupineJs,
+          } as CachedHtmlProps;
+        } finally {
+          // Promise self-cleanup pattern guarantees cleanup safely 
+          // to prevent permanent blockage across all future API calls 
+          // regardless if readFile succceeded or rejected
+          pendingSsrLoads.delete(nearRoot);
+        }
+      })();
+      pendingSsrLoads.set(nearRoot, loadPromise);
+    }
+    
+    // Await either the fresh logic above, or lock onto existing synchronous Promise!
+    cachedHtml[nearRoot] = await pendingSsrLoads.get(nearRoot);
   }
 
   const props = {

@@ -13,10 +13,12 @@ import {
   apiStorage,
   processRestartApp,
   processShell,
+  WebServer,
 } from 'lupine.api';
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
 import { adminTokenHelper } from './admin-token-helper';
+import { AppCacheGlobal, AppCacheKeys, getAppCache } from '../models';
 
 const releaseProgress = 'admin-release-progress';
 export class AdminRelease implements IApiBase {
@@ -39,6 +41,7 @@ export class AdminRelease implements IApiBase {
     // called online or by clients
     this.router.use('/refresh-cache', needDevAdminSession, this.refreshCache.bind(this));
     this.router.use('/restart-app', needDevAdminSession, this.restartApp.bind(this));
+    this.router.use('/reload-certs', needDevAdminSession, this.reloadCerts.bind(this));
 
     this.router.use('/shell', needDevAdminSession, this.shell.bind(this));
 
@@ -47,6 +50,7 @@ export class AdminRelease implements IApiBase {
     this.router.use('/byClientUpdate', this.byClientUpdate.bind(this));
     this.router.use('/byClientRefreshCache', this.byClientRefreshCache.bind(this));
     this.router.use('/byClientRestartApp', this.byClientRestartApp.bind(this));
+    this.router.use('/byClientReloadCerts', this.byClientReloadCerts.bind(this));
     this.router.use('/byClientViewLog', this.byClientViewLog.bind(this));
 
     this.router.use('/byClientShell', this.byClientShell.bind(this));
@@ -175,6 +179,41 @@ export class AdminRelease implements IApiBase {
     return true;
   }
 
+  async reloadCerts(req: ServerRequest, res: ServerResponse) {
+    const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
+    const jsonData = req.locals.json();
+    if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
+      this.executeReloadCerts(req, res);
+      return true;
+    }
+
+    const data = await this.chkData(jsonData, req, res, true);
+    if (!data) return true;
+
+    let targetUrl = data.targetUrl as string;
+    if (targetUrl.endsWith('/')) {
+      targetUrl = targetUrl.slice(0, -1);
+    }
+    const remoteData = await fetch(targetUrl + '/api/admin/release/byClientReloadCerts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    const resultText = await remoteData.text();
+    let remoteResult: any;
+    try {
+      remoteResult = JSON.parse(resultText);
+    } catch (e: any) {
+      remoteResult = { status: 'error', message: resultText };
+    }
+    const response = {
+      status: 'ok',
+      message: 'check.',
+      ...remoteResult,
+    };
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
   async shell(req: ServerRequest, res: ServerResponse) {
     // check whether it's from online admin
     const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
@@ -231,7 +270,8 @@ export class AdminRelease implements IApiBase {
       if (await adminTokenHelper.validateToken(data.accessToken)) {
         return data;
       } else if (
-        process.env['DEV_ADMIN_PASS'] !== '' &&
+        process.env['DEV_ADMIN_PASS'] &&
+        process.env['DEV_ADMIN_USER'] &&
         (data.accessToken === `${process.env['DEV_ADMIN_USER']}@${process.env['DEV_ADMIN_PASS']}` ||
           data.accessToken === `${process.env['DEV_ADMIN_USER']}:${process.env['DEV_ADMIN_PASS']}`)
       ) {
@@ -687,6 +727,33 @@ export class AdminRelease implements IApiBase {
     };
     ApiHelper.sendJson(req, res, response);
     return true;
+  }
+
+  async byClientReloadCerts(req: ServerRequest, res: ServerResponse) {
+    const jsonData = req.locals.json();
+    const data = await this.chkData(jsonData, req, res, true);
+    if (!data) return true;
+
+    this.executeReloadCerts(req, res);
+    return true;
+  }
+
+  private executeReloadCerts(req: ServerRequest, res: ServerResponse) {
+    const webServer = getAppCache().get(AppCacheGlobal, AppCacheKeys.WEB_SERVER) as WebServer;
+    if (webServer) {
+      webServer.reloadCertificates();
+      const response = {
+        status: 'ok',
+        message: langHelper.getLang('shared:operation_success') || 'Certificates reloaded successfully.',
+      };
+      ApiHelper.sendJson(req, res, response);
+    } else {
+      const response = {
+        status: 'error',
+        message: 'WebServer is not running to accept reloads',
+      };
+      ApiHelper.sendJson(req, res, response);
+    }
   }
 
   async byClientShell(req: ServerRequest, res: ServerResponse) {
