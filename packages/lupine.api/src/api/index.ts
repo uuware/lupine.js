@@ -13,3 +13,4 @@ export * from './server-render';
 export * from './simple-storage';
 export * from './static-server';
 export * from './to-client-delivery';
+export * from './shell-service';

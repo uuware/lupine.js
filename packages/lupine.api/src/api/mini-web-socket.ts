@@ -56,7 +56,14 @@ export class MiniWebSocket {
 
     // buffer for cumulative data, parse frame; first append head (possible residual data)
     let buffer = head && head.length ? Buffer.from(head) : Buffer.alloc(0);
+    const MAX_WS_PAYLOAD = 10 * 1024 * 1024; // 10MB limit to prevent Heap OOM
+
     const onData = (chunk: Buffer) => {
+      if (buffer.length + chunk.length > MAX_WS_PAYLOAD) {
+        this.sendClose(socket, 1009); // Message too big
+        cleanup(socket, 'Payload too large');
+        return;
+      }
       buffer = Buffer.concat([buffer, chunk]);
       // try to parse as many complete frames as possible
       parseFrames();

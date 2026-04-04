@@ -8,25 +8,42 @@ import * as tls from 'tls';
 import { IncomingMessage, ServerResponse } from 'http';
 import { Duplex } from 'stream';
 import { WebProcessor } from './web-processor';
-import { DebugService } from '../api/debug-service';
 import cluster from 'cluster';
 const logger = new Logger('web-server');
 
 export class WebServer {
   webListener: WebListener;
+  private httpsServer: https.Server | undefined;
+  private httpsServerConfig: { 
+     sslKeyPath?: string, 
+     sslCrtPath?: string, 
+     domainCerts?: Record<string, { key: string; cert: string }> 
+  } = {};
+  private secureContexts: Record<string, tls.SecureContext> = {};
+  private upgradeHandlers: { path: string; handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => void }[] = [];
+
   constructor(webListener?: WebListener) {
     this.webListener = webListener || new WebListener(new WebProcessor());
   }
 
+  onUpgrade(path: string, handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => void) {
+    this.upgradeHandlers.push({ path, handler });
+  }
+
   handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
     const clientIp = `${(socket as any).remoteAddress}:${(socket as any).remotePort}`;
-    if (req.url?.startsWith('/debug') && socket.readable && socket.writable) {
-      logger.debug(`Upgrade WebSocket access: ${req.url} from ${clientIp}.`);
-      DebugService.handleUpgrade(req, socket, head);
-    } else {
-      logger.error(`Unexpected web socket access: ${req.url} from ${clientIp}`);
-      socket.write('HTTP/1.1 404 Not Found\r\n\r\n');
-      socket.destroy();
+    let matched = false;
+    for (const item of this.upgradeHandlers) {
+      if (req.url && (item.path === '*' || req.url === item.path || req.url.startsWith(item.path + '/'))) {
+        logger.debug(`Upgrade WebSocket access: ${req.url} from ${clientIp} matched ${item.path}.`);
+        item.handler(req, socket, head);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      logger.debug(`Unexpected web socket access: ${req.url} from ${clientIp}`);
+      if (!socket.destroyed) socket.destroy();
     }
   }
 
@@ -35,7 +52,7 @@ export class WebServer {
       await this.webListener.listener.bind(this.webListener)(reqOrigin, res);
     } catch (err) {
       console.error('Request error:', err);
-      if (!res.headersSent) {
+      if (!res.headersSent && !res.destroyed && res.writable) {
         res.statusCode = 500;
         res.end('Internal Server Error');
       }
@@ -66,6 +83,54 @@ export class WebServer {
   //     cert: fs.readFileSync(sslCrtPath, 'utf8'),
   //   },
   // };
+  reloadCertificates() {
+    const { sslKeyPath, sslCrtPath, domainCerts } = this.httpsServerConfig;
+    
+    // 1. Reload default context
+    if (this.httpsServer && sslKeyPath && fs.existsSync(sslKeyPath) && sslCrtPath && fs.existsSync(sslCrtPath)) {
+      try {
+        const key = fs.readFileSync(sslKeyPath, 'utf8');
+        const cert = fs.readFileSync(sslCrtPath, 'utf8');
+        this.httpsServer.setSecureContext({ key, cert });
+        logger.info('Reloaded default SSL certificate manually via hot context rendering.');
+      } catch (err) {
+        logger.error('Failed to reload default certificate', err as any);
+      }
+    }
+
+    // 2. Reload domain SNI Contexts
+    if (domainCerts) {
+      const start = Date.now();
+      let certCount = 0;
+      const fileCache = new Map<string, string>();
+
+      const getFileContent = (path: string) => {
+        if (!fileCache.has(path)) {
+          fileCache.set(path, fs.readFileSync(path, 'utf8'));
+        }
+        return fileCache.get(path)!;
+      };
+
+      const newSecureContexts: Record<string, tls.SecureContext> = {};
+      for (const [domain, paths] of Object.entries(domainCerts)) {
+        if (paths.key && paths.cert && fs.existsSync(paths.key) && fs.existsSync(paths.cert)) {
+          try {
+            const key = getFileContent(paths.key);
+            const cert = getFileContent(paths.cert);
+            newSecureContexts[domain] = tls.createSecureContext({ key, cert });
+            certCount++;
+          } catch (err) {
+            logger.error(`Failed to load cert for ${domain}`, err as any);
+          }
+        }
+      }
+      this.secureContexts = newSecureContexts;
+      logger.info(`Loaded ${certCount} domain scopes into thermal TLS cache in ${Date.now() - start}ms`);
+    } else {
+      this.secureContexts = {};
+    }
+  }
+
   startHttps(
     httpsPort: number,
     bindIp?: string,
@@ -74,7 +139,9 @@ export class WebServer {
     domainCerts?: Record<string, { key: string; cert: string }>,
     timeout?: number
   ) {
+    this.httpsServerConfig = { sslKeyPath, sslCrtPath, domainCerts };
     const httpsOptions: ServerOptions = {};
+
     if (sslKeyPath && fs.existsSync(sslKeyPath) && sslCrtPath && fs.existsSync(sslCrtPath)) {
       logger.info('Load site ssl certificate.');
       // The options to https.createServer must include key and cert as they are required.
@@ -82,44 +149,15 @@ export class WebServer {
       httpsOptions['key'] = fs.readFileSync(sslKeyPath, 'utf8');
       httpsOptions['cert'] = fs.readFileSync(sslCrtPath, 'utf8');
 
-      // load domain certificates
-      const secureContexts: Record<string, tls.SecureContext> = {};
-      if (domainCerts) {
-        const start = Date.now();
-        let certCount = 0;
-        const fileCache = new Map<string, string>();
-
-        const getFileContent = (path: string) => {
-          if (!fileCache.has(path)) {
-            fileCache.set(path, fs.readFileSync(path, 'utf8'));
-          }
-          return fileCache.get(path)!;
-        };
-
-        for (const [domain, paths] of Object.entries(domainCerts)) {
-          if (paths.key && paths.cert && fs.existsSync(paths.key) && fs.existsSync(paths.cert)) {
-            try {
-              const key = getFileContent(paths.key);
-              const cert = getFileContent(paths.cert);
-              secureContexts[domain] = tls.createSecureContext({ key, cert });
-              certCount++;
-            } catch (err) {
-              logger.error(`Failed to load cert for ${domain}`, err as any);
-            }
-          }
-        }
-        logger.info(`Loaded ${certCount} domain scopes in ${Date.now() - start}ms`);
-      }
-
       httpsOptions.SNICallback = (domain, cb) => {
-        let ctx: tls.SecureContext | undefined = secureContexts[domain];
+        let ctx: tls.SecureContext | undefined = this.secureContexts[domain];
         if (!ctx) {
           // find the closest domain
           const parts = domain.split('.');
           while (parts.length > 0 && !ctx) {
             parts.shift();
             const parent = parts.join('.');
-            if (parent) ctx = secureContexts[parent];
+            if (parent) ctx = this.secureContexts[parent];
           }
         }
         // Fallback or exact
@@ -137,6 +175,11 @@ export class WebServer {
     }
 
     const httpsServer = https.createServer(httpsOptions, this.listenerWrap.bind(this));
+    this.httpsServer = httpsServer;
+    
+    // Auto-populate multidomain SNI certs initially
+    this.reloadCertificates();
+
     httpsServer.on('upgrade', this.handleUpgrade.bind(this));
 
     if (typeof timeout === 'number') {

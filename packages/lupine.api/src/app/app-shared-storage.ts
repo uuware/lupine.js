@@ -30,23 +30,23 @@ export class AppSharedStorage implements IAppSharedStorage {
   public static getInstance(): IAppSharedStorage {
     if (!AppSharedStorage.instance) {
       AppSharedStorage.instance = new AppSharedStorage();
-      // register app message handlers
-      registerMessageHandlerFromPrimary(
-        AppSharedStorageMessageId,
-        AppSharedStorage.instance.messageFromPrimaryProcess.bind(AppSharedStorage.instance)
-      );
-      registerMessageHandlerFromWorker(
-        AppSharedStorageMessageId,
-        AppSharedStorage.instance.messageFromSubProcess.bind(AppSharedStorage.instance)
-      );
     }
     return AppSharedStorage.instance;
   }
 
+  public initializeIPC() {
+    registerMessageHandlerFromPrimary(
+      AppSharedStorageMessageId,
+      this.messageFromPrimaryProcess.bind(this) as any
+    );
+    registerMessageHandlerFromWorker(
+      AppSharedStorageMessageId,
+      this.messageFromSubProcess.bind(this) as any
+    );
+  }
+
   private getWorker(workerId: number) {
-    for (let i in cluster.workers) {
-      if (cluster.workers[i]?.id === workerId) return cluster.workers[i];
-    }
+    return cluster.workers?.[workerId];
   }
 
   private getStorageMap(appName: string) {
@@ -62,7 +62,8 @@ export class AppSharedStorage implements IAppSharedStorage {
   }
 
   // this is primary, msg is from a client
-  messageFromSubProcess(msgObject: StorageMessageFromSubProcess) {
+  messageFromSubProcess(msg: any) {
+    const msgObject = msg as StorageMessageFromSubProcess;
     if (!cluster.isPrimary || !msgObject.action || !msgObject.key || !msgObject.appName || !msgObject.workerId) {
       console.error('AppStorage got wrong message: ', msgObject);
       return;
@@ -85,8 +86,6 @@ export class AppSharedStorage implements IAppSharedStorage {
     } else if (msgObject.action === 'getWithPrefix') {
       const storage = this.getStorage(msgObject.appName);
       const value = storage.getWithPrefix(msgObject.key);
-      // console.log(`AppStorage getWithPrefix from ${msgObject.pid} in ${process.pid}, for key: ${msgObject.key}`);
-      // send message back to the worker from the worker id
       const worker = this.getWorker(msgObject.workerId);
       if (!worker) {
         console.error("AppStorage can' find the worker: ", msgObject);
@@ -100,9 +99,13 @@ export class AppSharedStorage implements IAppSharedStorage {
       const storage = this.getStorage(msgObject.appName);
       storage.set(msgObject.key, msgObject.value);
     } else if (msgObject.action === 'load') {
-      this.load(msgObject.appName, msgObject.rootPath || '');
+      this.load(msgObject.appName, msgObject.rootPath || '').catch(e => {
+        this.logger.error(`Load error: ${e.message}`);
+      });
     } else if (msgObject.action === 'save') {
-      this.save(msgObject.appName);
+      this.save(msgObject.appName).catch(e => {
+        this.logger.error(`Save error: ${e.message}`);
+      });
     } else {
       this.logger.warn(`Unknown message: ${msgObject.action}`);
     }
@@ -111,8 +114,8 @@ export class AppSharedStorage implements IAppSharedStorage {
   // this is a worker and msg is from Primary
   // when debug is on, it's in primary, but it shouldn't receive those msgs
   // mainly for get (a worker requests a get, primaary sends the value back to here)
-  messageFromPrimaryProcess(msgObject: StorageMessageFromSubProcess) {
-    AppSharedStorageWorker.messageFromPrimaryProcess(msgObject);
+  messageFromPrimaryProcess(msg: any) {
+    AppSharedStorageWorker.messageFromPrimaryProcess(msg as StorageMessageFromSubProcess);
   }
 
   // should be only called from primary when the app is starting
@@ -144,6 +147,8 @@ export class AppSharedStorage implements IAppSharedStorage {
     }
   }
 
+  private saveLocks: { [appName: string]: Promise<void> } = {};
+
   // called from primary before exit, or from api to save changes
   async save(appName?: string, exit?: boolean) {
     if (!cluster.isPrimary) {
@@ -160,7 +165,6 @@ export class AppSharedStorage implements IAppSharedStorage {
           const stats = await fs.stat(tempPath);
           if (stats.size > 0) {
             await fs.rename(tempPath, map.fPath);
-            // console.log(`Saved config to ${map.fPath}`);
           } else {
             this.logger.error(`Saved temp config is empty, aborting save for ${map.fPath}`);
           }
@@ -170,14 +174,17 @@ export class AppSharedStorage implements IAppSharedStorage {
       }
     };
 
-    // console.log(`${process.pid} - AppStorage save, appName: ${appName}, exit: ${exit}`);
     if (appName) {
-      await saveMap(this.configMap[appName]);
+      const lock = this.saveLocks[appName] || Promise.resolve();
+      this.saveLocks[appName] = lock.then(() => saveMap(this.configMap[appName])).catch(e => this.logger.error(e));
+      await this.saveLocks[appName];
     } else {
-      // save all data
-      for (let appName in this.configMap) {
-        await saveMap(this.configMap[appName]);
-      }
+      const promises = Object.keys(this.configMap).map(app => {
+        const lock = this.saveLocks[app] || Promise.resolve();
+        this.saveLocks[app] = lock.then(() => saveMap(this.configMap[app])).catch(e => this.logger.error(e));
+        return this.saveLocks[app];
+      });
+      await Promise.all(promises);
     }
   }
 
@@ -244,42 +251,41 @@ export class AppSharedStorage implements IAppSharedStorage {
   }
 }
 
-type AppSharedStorageWorkerMap = { [key: string]: any };
+type AppSharedStorageWorkerMap = { [key: string]: { resolve: (val: any) => void; reject: (err: any) => void; timer?: NodeJS.Timeout } };
 class AppSharedStorageWorker {
   static handleMap: AppSharedStorageWorkerMap = {};
   static logger = new Logger('server-config');
 
-  static messageFromPrimaryProcess(msgObject: StorageMessageFromSubProcess) {
+  static messageFromPrimaryProcess(msg: any) {
+    const msgObject = msg as StorageMessageFromSubProcess;
     if (cluster.isPrimary || !msgObject.action || !msgObject.key || !msgObject.uniqueKey) {
       console.error('AppSharedStorageWorker got wrong message: ', msgObject);
       return;
     }
 
-    if (msgObject.action === 'get') {
-      // console.log(`${process.pid} - AppStorage get value end for key: ${msgObject.key}`);
+    const map = this.handleMap[msgObject.uniqueKey];
+    delete this.handleMap[msgObject.uniqueKey];
 
-      const value = msgObject.value;
-      // how to pass the value to the caller
-      const map = this.handleMap[msgObject.uniqueKey];
-      delete this.handleMap[msgObject.uniqueKey];
-      if (map) {
-        map.resolve(value);
-      } else {
-        throw new Error(`Unknown uniqueKey: ${msgObject.uniqueKey}`);
-      }
+    if (!map) {
+      this.logger.warn(`Unknown or already resolved uniqueKey: ${msgObject.uniqueKey}`);
+      return;
+    }
+
+    if (map.timer) {
+      clearTimeout(map.timer);
+    }
+
+    if (msgObject.error) {
+      map.reject(new Error(msgObject.error));
+      return;
+    }
+
+    if (msgObject.action === 'get') {
+      map.resolve(msgObject.value);
     } else if (msgObject.action === 'getWithPrefix') {
-      console.log(`${process.pid} - AppStorage get value end for key: ${msgObject.key}`);
-      const value = JSON.parse(msgObject.value);
-      // how to pass the value to the caller
-      const map = this.handleMap[msgObject.uniqueKey];
-      delete this.handleMap[msgObject.uniqueKey];
-      if (map) {
-        map.resolve(value);
-      } else {
-        throw new Error(`Unknown uniqueKey: ${msgObject.uniqueKey}`);
-      }
+      map.resolve(JSON.parse(msgObject.value || '{}'));
     } else {
-      this.logger.warn(`Unknown message: ${msgObject.action}`);
+      this.logger.warn(`Unknown message action: ${msgObject.action}`);
     }
   }
 
@@ -319,7 +325,17 @@ class AppSharedStorageWorker {
       throw new Error('AppSharedStorageWorker should be only called from workers');
     }
     const uniqueKey = key + ':' + crypto.randomUUID();
-    AppSharedStorageWorker.handleMap[uniqueKey] = { resolve, reject };
+    
+    // Auto timeout leak prevention
+    const timer = setTimeout(() => {
+      const map = AppSharedStorageWorker.handleMap[uniqueKey];
+      if (map) {
+        delete AppSharedStorageWorker.handleMap[uniqueKey];
+        reject(new Error(`IPC Timeout fetching key: ${key}`));
+      }
+    }, 5000);
+
+    AppSharedStorageWorker.handleMap[uniqueKey] = { resolve, reject, timer };
     const obj: StorageMessageFromSubProcess = {
       id: AppSharedStorageMessageId,
       pid: process.pid,
@@ -342,7 +358,16 @@ class AppSharedStorageWorker {
       throw new Error('AppSharedStorageWorker should be only called from workers');
     }
     const uniqueKey = prefixKey + ':' + crypto.randomUUID();
-    AppSharedStorageWorker.handleMap[uniqueKey] = { resolve, reject };
+
+    const timer = setTimeout(() => {
+      const map = AppSharedStorageWorker.handleMap[uniqueKey];
+      if (map) {
+        delete AppSharedStorageWorker.handleMap[uniqueKey];
+        reject(new Error(`IPC Prefix Timeout fetching key: ${prefixKey}`));
+      }
+    }, 5000);
+
+    AppSharedStorageWorker.handleMap[uniqueKey] = { resolve, reject, timer };
     const obj: StorageMessageFromSubProcess = {
       id: AppSharedStorageMessageId,
       pid: process.pid,

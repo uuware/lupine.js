@@ -12,6 +12,7 @@ export interface StorageMessageFromSubProcess {
   prefixKey?: string;
   value?: any;
   uniqueKey?: string;
+  error?: string;
   appName: string;
   rootPath?: string;
 }
@@ -21,6 +22,7 @@ export const AppSharedStorageWebPrefix = 'WEB.';
 export const AppSharedStorageApiPrefix = 'API.';
 
 export interface IAppSharedStorage {
+  initializeIPC(): void;
   // this is a worker and msg is from Primary (but when debug is on, it's primary)
   messageFromPrimaryProcess(msgObject: any): void;
   // this is primary, msg is from a client
