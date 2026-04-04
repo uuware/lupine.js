@@ -303,9 +303,16 @@ export class WebListener {
 
         res.setHeader('Server', SERVER_NAME);
         if (accessControlAllowHosts.includes(host)) {
-          const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';
-          res.setHeader('Access-Control-Allow-Origin', allowOrigin);
-          res.setHeader('Access-Control-Allow-Credentials', 'true');
+          const originHeader = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : null;
+          if (originHeader) {
+            // Reflect the real Origin and allow credentials (cookie/auth headers)
+            res.setHeader('Access-Control-Allow-Origin', originHeader);
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+          } else {
+            // No Origin header (e.g. direct curl/tool requests) - use wildcard but no credentials
+            // Browsers reject '*' + credentials:true, so omit the credentials header here
+            res.setHeader('Access-Control-Allow-Origin', '*');
+          }
         }
 
         const store: AsyncStorageProps = {

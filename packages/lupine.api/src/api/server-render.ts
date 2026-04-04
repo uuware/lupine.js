@@ -217,8 +217,13 @@ export const serverSideRenderPage = async (
 
   // console.log(`=========load lupin: `, content);
 
-  const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';
-  res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  const originHeader = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : null;
+  if (originHeader) {
+    res.setHeader('Access-Control-Allow-Origin', originHeader);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.writeHead(200, { 'Content-Type': 'text/html' });
   // res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' });
 

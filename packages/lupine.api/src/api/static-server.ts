@@ -134,8 +134,13 @@ export class StaticServer {
 
       // now we need to send finalPath file. If finalPath doesn't exist, it will cause error and jump to serverSideRenderPage
       try {
-        const allowOrigin = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : '*';
-        res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+        const originHeader = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : null;
+        if (originHeader) {
+          res.setHeader('Access-Control-Allow-Origin', originHeader);
+          res.setHeader('Access-Control-Allow-Credentials', 'true');
+        } else {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+        }
 
         await this.sendFile(finalPath, urlSplit[0], res);
       } catch (err: any) {
