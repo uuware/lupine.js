@@ -43,3 +43,18 @@ copyFolder(
   'apps/lupine-template-responsive-starter',
   'dev/github/lupine-template-responsive-starter/apps/lupine-template-responsive-starter'
 );
+
+// lupine-image-editor
+copyFolder('AI_CONTEXT.md', 'dev/github/lupine-image-editor/AI_CONTEXT.md');
+copyFolder('dev/dev-watch.js', 'dev/github/lupine-image-editor/dev/dev-watch.js');
+copyFolder('dev/cp-folder.js', 'dev/github/lupine-image-editor/dev/cp-folder.js');
+
+// lupine-pdf-editor
+copyFolder('AI_CONTEXT.md', 'dev/github/lupine-pdf-editor/AI_CONTEXT.md');
+copyFolder('dev/dev-watch.js', 'dev/github/lupine-pdf-editor/dev/dev-watch.js');
+copyFolder('dev/cp-folder.js', 'dev/github/lupine-pdf-editor/dev/cp-folder.js');
+
+// lupine-notes-and-tools
+copyFolder('AI_CONTEXT.md', 'dev/github/lupine-notes-and-tools/AI_CONTEXT.md');
+copyFolder('dev/dev-watch.js', 'dev/github/lupine-notes-and-tools/dev/dev-watch.js');
+copyFolder('dev/cp-folder.js', 'dev/github/lupine-notes-and-tools/dev/cp-folder.js');
