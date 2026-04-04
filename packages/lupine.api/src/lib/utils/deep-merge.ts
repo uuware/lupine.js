@@ -19,6 +19,9 @@ export const deepMerge = (target: any, ...sources: any[]): any => {
 
   if (needMerge(target) && needMerge(source)) {
     for (const key in source) {
+      // Prevent Prototype Pollution
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+
       if (needMerge(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} });
         deepMerge(target[key], source[key]);

@@ -14,6 +14,8 @@ export enum AppCacheKeys {
   RENDER_PAGE_FUNCTIONS = 'RENDER_PAGE_FUNCTIONS',
 
   START_TIME = 'START_TIME',
+  WEB_SERVER = 'WEB_SERVER',
+  SSR_ROOTS = 'SSR_ROOTS',
 }
 
 export interface IAppCache {

@@ -334,6 +334,44 @@ export const AdminReleasePage = () => {
     NotificationMessage.sendMessage('Restart App successfully', NotificationColor.Success);
   };
 
+  const onReloadCertsLocal = async () => {
+    return onReloadCerts(true);
+  };
+  const onReloadCertsRemote = async () => {
+    return onReloadCerts(false);
+  };
+  const onReloadCerts = async (isLocal?: boolean) => {
+    const data = getDomData();
+    if (!isLocal) {
+      if (!data.targetUrl || !data.accessToken) {
+        NotificationMessage.sendMessage('Please fill in all fields', NotificationColor.Error);
+        return;
+      }
+    }
+
+    const index = await ActionSheetSelectPromise({
+      title: 'Reload Certificates Zero-Downtime?',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (index !== 0) {
+      return;
+    }
+
+    const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/reload-certs', {
+      ...data,
+      isLocal,
+    });
+    const dataResponse = await response.json;
+    console.log('reload-certs', dataResponse);
+    if (!dataResponse || dataResponse.status !== 'ok') {
+      NotificationMessage.sendMessage(dataResponse.message || 'Failed to Reload Certs', NotificationColor.Error);
+      return;
+    }
+    domLog.value = <pre>{JSON.stringify(dataResponse, null, 2)}</pre>;
+    NotificationMessage.sendMessage('Reload Certs successfully', NotificationColor.Success);
+  };
+
   const onShellLocal = async () => {
     return onShell(true);
   };
@@ -401,13 +439,19 @@ export const AdminReleasePage = () => {
         <button onClick={onRefreshCacheRemote} class='button-base mr-m'>
           Refresh Cache (Remote)
         </button>
+        <button onClick={onReloadCertsRemote} class='button-base mr-m'>
+          Reload Certs (Remote)
+        </button>
         <button onClick={onRestartAppRemote} class='button-base mr-m color-red'>
           Restart App (Remote)
         </button>
         <button onClick={onRefreshCacheLocal} class='button-base mr-m'>
           Refresh Cache (Local)
         </button>
-        <button onClick={onRestartAppLocal} class='button-base color-red'>
+        <button onClick={onReloadCertsLocal} class='button-base mr-m'>
+          Reload Certs (Local)
+        </button>
+        <button onClick={onRestartAppLocal} class='button-base mr-m color-red'>
           Restart App (Local)
         </button>
       </div>

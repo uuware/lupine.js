@@ -37,8 +37,22 @@ export class ApiHelper {
     statusCode = 200,
     headers?: { [key: string]: string }
   ) {
-    res.writeHead(statusCode, Object.assign({ 'Content-Type': 'application/octet-stream' }, headers));
-    fs.createReadStream(filepath).pipe(res);
+    const stream = fs.createReadStream(filepath);
+    stream.on('open', () => {
+      if (!res.headersSent) {
+        res.writeHead(statusCode, Object.assign({ 'Content-Type': 'application/octet-stream' }, headers));
+      }
+      stream.pipe(res);
+    });
+    stream.on('error', (err: any) => {
+      // File missing or access denied
+      if (!res.headersSent) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('File not found or access denied');
+      } else {
+        res.end(); // Fallback if stream broke mid-transmit
+      }
+    });
     return true;
   }
 }
