@@ -1,6 +1,6 @@
-import { CssProps } from 'lupine.components';
+import { CssProps, PageProps } from 'lupine.components';
 
-export const DemoAboutPage = () => {
+export const DemoAboutPage = async (props: PageProps) => {
   const css: CssProps = {};
 
   return (
