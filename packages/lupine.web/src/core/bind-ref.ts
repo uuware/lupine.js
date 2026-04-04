@@ -1,8 +1,8 @@
 import { VNode } from '../jsx';
-import { mountInnerComponent, mountOuterComponent } from './mount-component';
 import { replaceInnerhtml } from './replace-innerhtml';
+import { MounterProps } from '../models/mounter-props';
 
-export const bindRef = (type: any, newProps: any, el: Element) => {
+export const bindRef = (type: any, newProps: any, el: Element, mounters: MounterProps) => {
   // console.log('========', newProps, el);
   const id = newProps._id;
   // newProps["ref"].id = id; // this is set at bindAttributes
@@ -58,13 +58,13 @@ export const bindRef = (type: any, newProps: any, el: Element) => {
 
   newProps['ref'].mountInnerComponent = async (content: string | VNode<any>) => {
     if (typeof content === 'object' && content.type && content.props) {
-      await mountInnerComponent(el, content);
+      mounters.mountInnerComponent && await mounters.mountInnerComponent(el, content);
     } else {
       await replaceInnerhtml(el, content as string);
     }
   };
   newProps['ref'].mountOuterComponent = async (content: VNode<any>) => {
-    await mountOuterComponent(el, content);
+    mounters.mountOuterComponent && await mounters.mountOuterComponent(el, content);
   };
 
   if (!newProps['ref'].refresh) {
