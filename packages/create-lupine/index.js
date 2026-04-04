@@ -94,6 +94,55 @@ const TEMPLATES = [
 ];
 
 async function init() {
+  if (argv['update-version']) {
+    const targetPkgPath = path.join(cwd, 'package.json');
+    if (!fs.existsSync(targetPkgPath)) {
+      console.log(red('✖ No package.json found in current directory.'));
+      return;
+    }
+
+    console.log('Fetching latest versions...');
+    const versions = {
+      'lupine.api': getLatestVersion('lupine.api', '^1.0.1'),
+      'lupine.web': getLatestVersion('lupine.web', '^1.0.1'),
+      'lupine.components': getLatestVersion('lupine.components', '^1.0.1'),
+      'lupine.press': getLatestVersion('lupine.press', '^1.0.1')
+    };
+
+    let pkg;
+    try {
+      pkg = JSON.parse(fs.readFileSync(targetPkgPath, 'utf-8'));
+    } catch (e) {
+      console.log(red('✖ Failed to parse package.json.'));
+      return;
+    }
+
+    let updated = false;
+    ['dependencies', 'devDependencies', 'peerDependencies'].forEach(depType => {
+      if (pkg[depType]) {
+        for (const [name, latestVer] of Object.entries(versions)) {
+          if (pkg[depType][name]) {
+            if (pkg[depType][name] !== latestVer) {
+              console.log(`${green('Upgrading')} ${name}: ${pkg[depType][name]} -> ${latestVer}`);
+              pkg[depType][name] = latestVer;
+              updated = true;
+            } else {
+              console.log(`${name} is already at latest version (${latestVer}).`);
+            }
+          }
+        }
+      }
+    });
+
+    if (updated) {
+      fs.writeFileSync(targetPkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      console.log(green('\n✔ package.json updated successfully. Please run "npm install" to apply changes.'));
+    } else {
+      console.log(green('\n✔ All target packages are already up-to-date.'));
+    }
+    return;
+  }
+
   let targetDir = argv._[0];
   let template = argv.template || argv.t;
 
