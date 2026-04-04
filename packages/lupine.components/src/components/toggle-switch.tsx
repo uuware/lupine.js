@@ -274,6 +274,16 @@ export const ToggleSwitch = (props: ToggleSwitchProps) => {
   // bindGlobalStyle('toggle-switch-theme', cssTheme, false, true);
   bindGlobalStyle('toggle-switch-component', css);
 
+  const cssTheme: CssProps = {
+    '[data-theme="light" i]': {
+      '--toggle-background-color': '#e6e6e6',
+    },
+    '[data-theme="dark" i]': {
+      '--toggle-background-color': '#232323',
+    },
+  };
+  bindGlobalStyle('toggle-switch-theme', cssTheme, false, true);
+
   const cssSize: CssProps = {
     '& .ts-on-text, & .ts-off-text': {
       display: 'none',
