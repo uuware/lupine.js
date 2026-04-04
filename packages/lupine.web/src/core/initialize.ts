@@ -3,21 +3,22 @@ import { getCurrentTheme, updateTheme } from './bind-theme';
 import { mountInnerComponent } from './mount-component';
 import { renderComponentAsync } from './render-component';
 // import { callPageResetEvent } from './page-reset-events';
-import { PageRouter } from './page-router';
 import { callPageLoadedEvent } from './page-loaded-event';
 import { initServerCookies } from './server-cookie';
 import { IRequestContextProps, IToClientDelivery } from '../models';
 import { getMetaDataObject, getMetaDataTags, getPageTitle } from './bind-meta';
 import { initWebEnv } from '../lib/web-env';
-import { _lupineJs, PageProps, PageResultType, setRenderPageProps } from './export-lupine';
+import { PageProps, PageResultType } from '../models/page-props';
+import { setRenderPageProps } from './export-lupine';
 import { isFrontEnd } from '../lib/is-frontend';
 import { WebConfig } from '../lib/web-config';
 import { bindRequestContext } from './use-request-context';
 import { CssProps } from '../jsx';
+import { _lupineJs } from './lupine-instance';
 
 
 const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
-  if (_lupineJs.router instanceof PageRouter) {
+  if (typeof _lupineJs.router !== 'function') {
     return _lupineJs.router.handleRoute(props.url, props, renderPartPage);
   }
   return await _lupineJs.router(props);

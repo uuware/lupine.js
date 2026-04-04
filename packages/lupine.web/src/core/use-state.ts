@@ -1,16 +1,16 @@
 import { isFrontEnd } from '../lib/is-frontend';
-import { RefProps, VNode } from '../jsx';
+import { RefProps } from '../jsx';
 import { mountOuterComponent } from './mount-component';
 
 // ─────────────────────────────────────────────
 // ComponentStateStore
 // ─────────────────────────────────────────────
 
-export class ComponentStateStore {
+export class ComponentStateStore<P = any> {
   states: any[] = [];
   hookIndex = 0;
-  componentFn: Function;
-  componentProps: any;
+  componentFn: (props: P) => any;
+  componentProps: P;
   /** The internal ref that tracks the component's root DOM element */
   domRef: RefProps = {};
   /** Prevent concurrent rerenders from stacking */
@@ -21,7 +21,7 @@ export class ComponentStateStore {
   _userOnLoad?: ((el: Element) => Promise<void>) | null;
   _userOnUnload?: ((el: Element) => Promise<void>) | null;
 
-  constructor(componentFn: Function, componentProps: any) {
+  constructor(componentFn: (props: P) => any, componentProps: P) {
     this.componentFn = componentFn;
     this.componentProps = componentProps;
   }
@@ -30,25 +30,7 @@ export class ComponentStateStore {
     if (!this.domRef.current) return;
     const el = this.domRef.current as Element;
 
-    // Reset hook index so hooks run in the same order (states[] values are preserved).
-    this.hookIndex = 0;
-
-    // ① Set _currentStore so that useState() calls inside componentFn read
-    //    from THIS store (not a new one). Cleared before any await — same
-    //    single-thread guarantee as in renderComponentAsync.
-    setCurrentStore(this);
-    const resultMaybePromise = this.componentFn.call(null, this.componentProps);
-    clearCurrentStore(); // ← BEFORE await
-
-    const newVNode: VNode<any> = resultMaybePromise?.then ? await resultMaybePromise : resultMaybePromise;
-
-    // ② Re-inject stateRef onto the new root element so that after
-    //    mountOuterComponent replaces the old DOM node, store.domRef.current
-    //    is updated to the NEW element via the new ref's onLoad.
-    if (newVNode && newVNode.props) {
-      const existingRef = newVNode.props.ref;
-      newVNode.props.ref = buildStateRef(this, existingRef);
-    }
+    const newVNode = await evaluateComponentWithStore(this);
 
     await mountOuterComponent(el, newVNode);
   }
@@ -178,3 +160,43 @@ export const buildStateRef = (store: ComponentStateStore, existingRef?: RefProps
 
   return target;
 };
+
+// ─────────────────────────────────────────────
+// Unified Component Execution Engine
+// Safely executes a component with its StateStore, resolving promises,
+// and injecting lifecycle refs onto the returned VNode.
+// ─────────────────────────────────────────────
+export async function evaluateComponentWithStore(store: ComponentStateStore<any>): Promise<any> {
+  // Reset hook index so hooks run in the same order (states[] values are preserved).
+  store.hookIndex = 0;
+
+  // ① Set _currentStore so that useState() calls inside componentFn read from THIS store.
+  setCurrentStore(store);
+  const resultMaybePromise = store.componentFn.call(null, store.componentProps);
+  
+  // ← Clear global pointer BEFORE any await (Node.js single-thread guarantee keeps this safe)
+  clearCurrentStore(); 
+
+  let dom: any = null;
+  if (
+    resultMaybePromise &&
+    typeof resultMaybePromise === 'object' &&
+    'then' in resultMaybePromise &&
+    typeof (resultMaybePromise as any).then === 'function'
+  ) {
+    dom = await resultMaybePromise;
+  } else {
+    dom = resultMaybePromise;
+  }
+
+  // ② Re-inject stateRef onto the new root element so that after it mounts,
+  //    store.domRef.current is updated to the NEW element via the new ref's onLoad.
+  if (dom && typeof dom === 'object' && !Array.isArray(dom)) {
+    if (!dom.props) dom.props = {};
+    if (store.hookIndex > 0 || dom.props.ref) {
+      dom.props.ref = buildStateRef(store, dom.props.ref);
+    }
+  }
+
+  return dom;
+}

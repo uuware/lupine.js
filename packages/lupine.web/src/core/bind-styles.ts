@@ -1,5 +1,5 @@
 import { CssProps } from '../jsx';
-import { uniqueIdGenerator } from '../lib';
+import { uniqueIdGenerator } from '../lib/unique-id';
 import { getCurrentTheme, themeCookieName } from './bind-theme';
 import { camelToHyphens } from './camel-to-hyphens';
 // import { bindPageResetEvent } from './page-reset-events';
@@ -21,9 +21,10 @@ const processStyleValue = (style: CssProps) => {
     .map((key) => key.trim())
     .map((key) => {
       const noOutput =
-        (style[key] != null && typeof style[key] === 'object') ||
+        style[key] === null ||
         typeof style[key] === 'undefined' ||
-        style[key] === '';
+        style[key] === '' ||
+        typeof style[key] === 'object';
       return noOutput ? '' : `${camelToHyphens(key)}:${style[key]};`;
     })
     .join('');
@@ -55,7 +56,7 @@ const processStyleSub = (
   for (let i in style) {
     const value = style[i];
     if (value === null || typeof value !== 'object') {
-      if (value !== '' && typeof value !== 'undefined') {
+      if (value !== '' && value !== null && typeof value !== 'undefined') {
         if (!classSelector) {
           console.warn(`No className is defined for: ${camelToHyphens(i)}:${value};`);
         }

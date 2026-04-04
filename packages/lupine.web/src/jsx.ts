@@ -84,16 +84,19 @@ export type RenderableProps<P, RefProps = any> = P &
   Readonly<Attributes & { children?: ComponentChildren; ref?: Ref<RefProps> }>;
 
 export interface FunctionComponent<P = {}> {
-  (props: RenderableProps<P>, context?: any): VNode<any> | null;
+  (props: RenderableProps<P>, context?: any): VNode<any> | null | Promise<VNode<any> | null>;
   displayName?: string;
   defaultProps?: Partial<P>;
 }
 
 export type ComponentType<P = {}> = /*ComponentClass<P> |*/ FunctionComponent<P>;
 
+export type VNodeType<P = {}> = ComponentType<P> | string;
+export type VNodeProps<P = {}> = P & { children: ComponentChildren };
+
 export interface VNode<P = {}> {
-  type: ComponentType<P> | string;
-  props: P & { children: ComponentChildren };
+  type: VNodeType<P>;
+  props: VNodeProps<P>;
   html: string[];
   // key: Key;
   /**

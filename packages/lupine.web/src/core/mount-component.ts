@@ -4,7 +4,7 @@ import { bindLinks } from './bind-links';
 // import { bindPageResetEvent } from './page-reset-events';
 import { callUnload, replaceInnerhtml } from './replace-innerhtml';
 import { renderComponentAsync } from './render-component';
-import { VNode } from 'lupine.components';
+import { VNode } from '../jsx';
 
 // const logger = new Logger('mount-components');
 export const mountInnerComponent = async (selector: string | null | Element, jsxNodes: VNode<any>) => {
@@ -14,7 +14,7 @@ export const mountInnerComponent = async (selector: string | null | Element, jsx
     // call unload before releace innerHTML
     await replaceInnerhtml(el, jsxNodes.props._html.join(''));
 
-    bindAttributes(el, jsxNodes.type, jsxNodes.props);
+    bindAttributes(el, jsxNodes.type, jsxNodes.props, { mountInnerComponent, mountOuterComponent });
     bindLinks(el);
   }
 };
@@ -36,7 +36,7 @@ export const mountOuterComponent = async (selector: string | Element, jsxNodes: 
     // el.replaceWith(newEl);
     await callUnload(el);
     el.parentNode?.replaceChild(newEl, el);
-    bindAttributes(newEl, jsxNodes.type, jsxNodes.props);
+    bindAttributes(newEl, jsxNodes.type, jsxNodes.props, { mountInnerComponent, mountOuterComponent });
     bindLinks(newEl);
   }
 };

@@ -25,9 +25,19 @@
 
 export function uniqueIdGenerator(preKey: string) {
   let count = 0;
-  const baseTime = Math.round(Date.now() / 1000);
+  let baseTime = 0;
   let lastKey = '';
-  return function (): string {
+  return function (reset = false): string {
+    if (reset) {
+      count = 0;
+      baseTime = 0;
+      lastKey = '';
+      return '';
+    }
+    // for test to mock Date.now()
+    if (baseTime === 0) {
+      baseTime = Math.round(Date.now() / 1000);
+    }
     const key = Math.round(Date.now() / 1000 - baseTime).toString(36);
     if (key !== lastKey) {
       count = 0;
