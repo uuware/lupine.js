@@ -1,5 +1,13 @@
 # AI Context for Lupine.js
 
+**[CRITICAL SAFEGUARDS FOR CODE MODIFICATION]**
+When performing multi-line code refactoring or replacement operations (`replace_file_content` / `multi_replace_file_content`), massive block-level overwrites and arbitrary code restructuring are **STRICTLY PROHIBITED**!
+
+- Before making any modifications, you MUST invoke `view_file` or `grep_search` to verify the exact, up-to-date file structure and line numbers.
+- The `StartLine` and `EndLine` range MUST be restricted strictly to the absolute minimum lines you intend to modify or delete.
+- If you are merely inserting new code (e.g., adding a button or appending logic), target ONLY the immediately preceding line or bracket as your anchor. You are strictly forbidden from wrapping innocent, unmodified surrounding code into the `Replacement` payload. Violating this red line causes severe production accidents!
+
+
 **SYSTEM ROLE**: You are an expert developer in `lupine.js`, a custom TypeScript full-stack framework.
 
 **🛑 CRITICAL WARNINGS 🛑**
@@ -61,6 +69,32 @@ Supports nesting and media queries. **Prefer this over inline styles.** Define y
 ### Global Variables (Theming) & Dark Mode Compatibility
 
 **NEVER hardcode colors** (e.g., `#000`, `#fff`, `#f0f0f0`). Always use CSS variables to support Dark/Light modes. If you must use a fallback, wrap it: `var(--primary-bg-color, #fff)`.
+
+**Defining Variables for Modes in CSS-in-JS**:
+Since Lupine.js uses a CSS-in-JS styling approach, when you need to define or override CSS variables specifically for light and dark modes within a component, use the `[data-theme="light" i]` and `[data-theme="dark" i]` selectors. **CRITICAL**: Because `CssProps` scopes styles by default, you MUST separate these mode styles into their own object and bind them using `bindGlobalStyle` with `noTopClassName = true` (the 4th argument).
+
+```typescript
+// 1. Separate theme variables into their own CSS object
+const cssTheme: CssProps = {
+  '[data-theme="light" i]': {
+    '--my-comp-bg-color': '#e6e6e6',
+  },
+  '[data-theme="dark" i]': {
+    '--my-comp-bg-color': 'var(--primary-accent-color)',
+  },
+};
+// 2. Bind globally. Param 4 (noTopClassName) MUST be true to prevent injecting a namespace prefix.
+bindGlobalStyle('my-comp-theme', cssTheme, false, true);
+
+// 3. Use the variable in your standard component styles
+const css: CssProps = {
+  '.&-element': {
+    backgroundColor: 'var(--my-comp-bg-color)',
+  }
+};
+// Bind your component styles normally
+bindGlobalStyle('my-comp-main', css);
+```
 
 #### 🎨 Color Variable Semantics (CRITICAL FOR DARK MODE)
 
