@@ -141,8 +141,11 @@ class AppStart {
       this.webServer!.onUpgrade('/debug', DebugService.handleUpgrade.bind(DebugService));
     }
 
-    const httpServer = httpPort && this.webServer!.startHttp(httpPort, bindIp);
-    const heepsServer = httpsPort && this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath, domainCerts);
+    const httpServer = httpPort && httpPort !== 0 && this.webServer!.startHttp(httpPort, bindIp);
+    const heepsServer =
+      httpsPort &&
+      httpsPort !== 0 &&
+      this.webServer!.startHttps(httpsPort, bindIp, sslKeyPath, sslCrtPath, domainCerts);
 
     process.on('SIGTERM', () => {
       console.log(`${process.pid} - Worker closing servers...`);
