@@ -2571,116 +2571,116 @@ const Header = () =&gt; (
 import { TestThemes } from &#39;lupine.api/admin&#39;;
 </code></pre>
 <p>This component renders a grid showing how your defined colors look across different themes, helping you find the right keys and contrast.</p>
-`;var xv=`<h1 id="installation2"><a class="header-anchor" href="#installation2">#</a>Installation2</h1><p>Lupine.js is a full-featured web application framework that includes both frontend and backend. The frontend, Lupine.web, is an extremely lightweight framework using React TSX syntax. The backend, Lupine.api, is a highly efficient and minimalistic framework similar to Express.</p>
-<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><h3 id="1-create-a-project"><a class="header-anchor" href="#1-create-a-project">#</a>1. Create a Project</h3><p>The simplest way is to use the <code>create-lupine</code> command to create a new application. You can choose a template during creation.</p>
-<pre><code class="language-bash">npx create-lupine@latest my-app
-</code></pre>
-<p>If you want to understand lupine.js more deeply, you can clone the repository from github, which makes it easier to view the core code locally.</p>
-<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
-</code></pre>
-<h3 id="2-install-dependencies"><a class="header-anchor" href="#2-install-dependencies">#</a>2. Install dependencies</h3><pre><code class="language-bash">npm install
-</code></pre>
-<h3 id="3-configure-environment"><a class="header-anchor" href="#3-configure-environment">#</a>3. Configure Environment</h3><p>If you created the project using <code>create-lupine</code>, the <code>.env</code> file is already generated.</p>
-<p>If you created the project using <code>git clone</code>, you need to configure the environment.</p>
-<p>Copy the <code>.env.sample</code> file to a new file named <code>.env</code>.</p>
-<p>For projects created using <code>git clone</code>, you also need to use the sample script in the <code>.env</code> file to generate keys for the following variables:</p>
-<pre><code class="language-properties">ADMIN_PASS=
-CRYPTO_KEY=
-DEV_ADMIN_PASS=
-DEV_CRYPTO_KEY=
-</code></pre>
-<h3 id="4-run-the-development-application"><a class="header-anchor" href="#4-run-the-development-application">#</a>4. Run the development application</h3><pre><code class="language-bash">npm run dev
-</code></pre>
-<p>You can now verify the development application at <a href="http://localhost:11080">http://localhost:11080</a>.</p>
-<hr>
-<h2 id="local-https-setup"><a class="header-anchor" href="#local-https-setup">#</a>Local HTTPS Setup</h2><p>For local HTTPS support, we recommend using <a href="https://github.com/FiloSottile/mkcert">mkcert</a>.</p>
-<ol>
-<li>Download <code>mkcert</code> (e.g., <code>mkcert-v1.4.4-windows-amd64.exe</code>).</li>
-<li>Open an admin console and run:<pre><code class="language-bash">./mkcert-v1.4.4-windows-amd64 -install
-</code></pre>
-</li>
-<li>Generate the certificate (for new setups):<pre><code class="language-bash">mkcert example.com &quot;*.example.com&quot; localhost 127.0.0.1 ::1
-</code></pre>
-</li>
-<li>Copy the generated certificate files to the <code>/dev</code> folder.</li>
-<li>Update your <code>.env</code> file to allow local API calls with self-signed certificates:<pre><code class="language-properties">NODE_TLS_REJECT_UNAUTHORIZED=0
-</code></pre>
-</li>
-</ol>
-<h3 id="alternative-self-signed-certificate-via-openssl"><a class="header-anchor" href="#alternative-self-signed-certificate-via-openssl">#</a>Alternative: Self-Signed Certificate via OpenSSL</h3><p>If you prefer OpenSSL:</p>
-<pre><code class="language-bash">openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout cert.key -out cert.pem -sha256
-</code></pre>
-<p>On Windows, you might use:
-<code>&quot;C:\\Program Files\\Git\\usr\\bin\\openssl.exe&quot;</code></p>
-<hr>
-<h2 id="debugging"><a class="header-anchor" href="#debugging">#</a>Debugging</h2><h3 id="debug-backend-only"><a class="header-anchor" href="#debug-backend-only">#</a>Debug Backend Only</h3><p>Open a <strong>Javascript Debug Terminal</strong> in VS Code and run:</p>
-<pre><code class="language-bash">npm run dev
-</code></pre>
-<h3 id="debug-frontend-backend"><a class="header-anchor" href="#debug-frontend-backend">#</a>Debug Frontend &amp; Backend</h3><ol>
-<li>Go to the <strong>Run and Debug</strong> sidebar in VS Code.</li>
-<li>Select <strong>&quot;Lupine.js: Frontend &amp; Backend&quot;</strong> from the dropdown.</li>
-<li>Set breakpoints in your FE or BE code and start debugging.</li>
-</ol>
-<hr>
-<h2 id="adding-a-new-app"><a class="header-anchor" href="#adding-a-new-app">#</a>Adding a New App</h2><p>Lupine can run multiple apps under the same port. To add a new app locally:</p>
-<ol>
-<li><strong>Copy</strong>: Duplicate any app folder under <code>/apps</code> and rename it.</li>
-<li><strong>Update Config</strong>: Update the <code>apps\\&lt;your-app&gt;\\lupine.json</code> file with the new app name.</li>
-<li><strong>Register App</strong>: Add the new app name to <code>APPS=</code> in your <code>.env</code> file.</li>
-<li><strong>Virtual Domain</strong>: Add a virtual domain for the app in <code>DOMAINS@[APP-NAME]=</code> in your <code>.env</code> file.</li>
-<li><strong>Build</strong>: The new app&#39;s source will be built to <code>dist\\server_root</code>.</li>
-</ol>
-<h3 id="local-virtual-domain-setup"><a class="header-anchor" href="#local-virtual-domain-setup">#</a>Local Virtual Domain Setup</h3><p>To access multiple apps on the same port (e.g., <code>app1.sample-domain.com</code>), modify your hosts file:</p>
-<pre><code class="language-text">127.0.0.1 app1.sample-domain.com
-</code></pre>
-<p><strong>Hosts file location:</strong></p>
-<ul>
-<li><strong>Windows</strong>: <code>C:\\Windows\\System32\\Drivers\\etc\\hosts</code></li>
-<li><strong>Linux/macOS</strong>: <code>/etc/hosts</code></li>
-</ul>
-<h3 id="creating-a-sub-folder-app"><a class="header-anchor" href="#creating-a-sub-folder-app">#</a>Creating a Sub-folder App</h3><p>To create a sub-application within an existing app (e.g., <code>admin_dev</code>):</p>
-<ol>
-<li>Create a folder: <code>apps\\[your-app-name]\\web\\src\\admin_dev</code></li>
-<li>Add <code>index.html</code> and <code>index.tsx</code>.</li>
-<li>Update <code>apps\\[your-app-name]\\lupine.json</code> entries:<pre><code class="language-json">{
-  &quot;index&quot;: &quot;web/src/admin_dev/index.tsx&quot;,
-  &quot;html&quot;: &quot;web/src/admin_dev/index.html&quot;,
-  &quot;outdir&quot;: &quot;/admin_dev&quot;
-}
-</code></pre>
-</li>
-</ol>
-<hr>
-<h2 id="important-global-variables-in-ssr"><a class="header-anchor" href="#important-global-variables-in-ssr">#</a>Important: Global Variables in SSR</h2><p>Since Lupine uses Server Side Rendering (SSR), global variables in frontend code are <strong>shared by all users</strong>. Use them with extreme caution.</p>
-<p><strong>Bad Practice:</strong>
-The following code is dangerous because <code>cacheUser</code> is shared:</p>
-<pre><code class="language-typescript">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
-export const getUserInfo = (refresh?: boolean): Promise&lt;UserInfoType | null&gt; =&gt; {
-  if (!cacheUser.user || refresh) {
-    cacheUser.user = new Promise(async (resolve, reject) =&gt; {
-      // ...
-    });
-  }
-  return cacheUser.user;
-};
-</code></pre>
-<p><strong>Good Practice:</strong>
-Initialize user-specific data within component lifecycle events (like <code>onLoad</code>) which only execute on the client-side.</p>
-<pre><code class="language-tsx">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
-export const UserInfo = (props?: any) =&gt; {
-  const ref: RefProps = {
-    onLoad: async () =&gt; {
-      // Safe to assign here for the client
-      cacheUser.user = ...
-    },
-  };
-  return (
-    &lt;div css={css} class=&#39;user-info-box&#39; ref={ref}&gt;
-      ...
-    &lt;/div&gt;
-  );
-};
-</code></pre>
+`;var xv=`<h1 id="installation2"><a class="header-anchor" href="#installation2">#</a>Installation2</h1><p>Lupine.js is a full-featured web application framework that includes both frontend and backend. The frontend, Lupine.web, is an extremely lightweight framework using React TSX syntax. The backend, Lupine.api, is a highly efficient and minimalistic framework similar to Express.</p>\r
+<h2 id="quick-start"><a class="header-anchor" href="#quick-start">#</a>Quick Start</h2><h3 id="1-create-a-project"><a class="header-anchor" href="#1-create-a-project">#</a>1. Create a Project</h3><p>The simplest way is to use the <code>create-lupine</code> command to create a new application. You can choose a template during creation.</p>\r
+<pre><code class="language-bash">npx create-lupine@latest my-app\r
+</code></pre>\r
+<p>If you want to understand lupine.js more deeply, you can clone the repository from github, which makes it easier to view the core code locally.</p>\r
+<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git\r
+</code></pre>\r
+<h3 id="2-install-dependencies"><a class="header-anchor" href="#2-install-dependencies">#</a>2. Install dependencies</h3><pre><code class="language-bash">npm install\r
+</code></pre>\r
+<h3 id="3-configure-environment"><a class="header-anchor" href="#3-configure-environment">#</a>3. Configure Environment</h3><p>If you created the project using <code>create-lupine</code>, the <code>.env</code> file is already generated.</p>\r
+<p>If you created the project using <code>git clone</code>, you need to configure the environment.</p>\r
+<p>Copy the <code>.env.sample</code> file to a new file named <code>.env</code>.</p>\r
+<p>For projects created using <code>git clone</code>, you also need to use the sample script in the <code>.env</code> file to generate keys for the following variables:</p>\r
+<pre><code class="language-properties">ADMIN_PASS=\r
+CRYPTO_KEY=\r
+DEV_ADMIN_PASS=\r
+DEV_CRYPTO_KEY=\r
+</code></pre>\r
+<h3 id="4-run-the-development-application"><a class="header-anchor" href="#4-run-the-development-application">#</a>4. Run the development application</h3><pre><code class="language-bash">npm run dev\r
+</code></pre>\r
+<p>You can now verify the development application at <a href="http://localhost:11080">http://localhost:11080</a>.</p>\r
+<hr>\r
+<h2 id="local-https-setup"><a class="header-anchor" href="#local-https-setup">#</a>Local HTTPS Setup</h2><p>For local HTTPS support, we recommend using <a href="https://github.com/FiloSottile/mkcert">mkcert</a>.</p>\r
+<ol>\r
+<li>Download <code>mkcert</code> (e.g., <code>mkcert-v1.4.4-windows-amd64.exe</code>).</li>\r
+<li>Open an admin console and run:<pre><code class="language-bash">./mkcert-v1.4.4-windows-amd64 -install\r
+</code></pre>\r
+</li>\r
+<li>Generate the certificate (for new setups):<pre><code class="language-bash">mkcert example.com &quot;*.example.com&quot; localhost 127.0.0.1 ::1\r
+</code></pre>\r
+</li>\r
+<li>Copy the generated certificate files to the <code>/dev</code> folder.</li>\r
+<li>Update your <code>.env</code> file to allow local API calls with self-signed certificates:<pre><code class="language-properties">NODE_TLS_REJECT_UNAUTHORIZED=0\r
+</code></pre>\r
+</li>\r
+</ol>\r
+<h3 id="alternative-self-signed-certificate-via-openssl"><a class="header-anchor" href="#alternative-self-signed-certificate-via-openssl">#</a>Alternative: Self-Signed Certificate via OpenSSL</h3><p>If you prefer OpenSSL:</p>\r
+<pre><code class="language-bash">openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout cert.key -out cert.pem -sha256\r
+</code></pre>\r
+<p>On Windows, you might use:\r
+<code>&quot;C:\\Program Files\\Git\\usr\\bin\\openssl.exe&quot;</code></p>\r
+<hr>\r
+<h2 id="debugging"><a class="header-anchor" href="#debugging">#</a>Debugging</h2><h3 id="debug-backend-only"><a class="header-anchor" href="#debug-backend-only">#</a>Debug Backend Only</h3><p>Open a <strong>Javascript Debug Terminal</strong> in VS Code and run:</p>\r
+<pre><code class="language-bash">npm run dev\r
+</code></pre>\r
+<h3 id="debug-frontend-backend"><a class="header-anchor" href="#debug-frontend-backend">#</a>Debug Frontend &amp; Backend</h3><ol>\r
+<li>Go to the <strong>Run and Debug</strong> sidebar in VS Code.</li>\r
+<li>Select <strong>&quot;Lupine.js: Frontend &amp; Backend&quot;</strong> from the dropdown.</li>\r
+<li>Set breakpoints in your FE or BE code and start debugging.</li>\r
+</ol>\r
+<hr>\r
+<h2 id="adding-a-new-app"><a class="header-anchor" href="#adding-a-new-app">#</a>Adding a New App</h2><p>Lupine can run multiple apps under the same port. To add a new app locally:</p>\r
+<ol>\r
+<li><strong>Copy</strong>: Duplicate any app folder under <code>/apps</code> and rename it.</li>\r
+<li><strong>Update Config</strong>: Update the <code>apps\\&lt;your-app&gt;\\lupine.json</code> file with the new app name.</li>\r
+<li><strong>Register App</strong>: Add the new app name to <code>APPS=</code> in your <code>.env</code> file.</li>\r
+<li><strong>Virtual Domain</strong>: Add a virtual domain for the app in <code>DOMAINS@[APP-NAME]=</code> in your <code>.env</code> file.</li>\r
+<li><strong>Build</strong>: The new app&#39;s source will be built to <code>dist\\server_root</code>.</li>\r
+</ol>\r
+<h3 id="local-virtual-domain-setup"><a class="header-anchor" href="#local-virtual-domain-setup">#</a>Local Virtual Domain Setup</h3><p>To access multiple apps on the same port (e.g., <code>app1.sample-domain.com</code>), modify your hosts file:</p>\r
+<pre><code class="language-text">127.0.0.1 app1.sample-domain.com\r
+</code></pre>\r
+<p><strong>Hosts file location:</strong></p>\r
+<ul>\r
+<li><strong>Windows</strong>: <code>C:\\Windows\\System32\\Drivers\\etc\\hosts</code></li>\r
+<li><strong>Linux/macOS</strong>: <code>/etc/hosts</code></li>\r
+</ul>\r
+<h3 id="creating-a-sub-folder-app"><a class="header-anchor" href="#creating-a-sub-folder-app">#</a>Creating a Sub-folder App</h3><p>To create a sub-application within an existing app (e.g., <code>admin_dev</code>):</p>\r
+<ol>\r
+<li>Create a folder: <code>apps\\[your-app-name]\\web\\src\\admin_dev</code></li>\r
+<li>Add <code>index.html</code> and <code>index.tsx</code>.</li>\r
+<li>Update <code>apps\\[your-app-name]\\lupine.json</code> entries:<pre><code class="language-json">{\r
+  &quot;index&quot;: &quot;web/src/admin_dev/index.tsx&quot;,\r
+  &quot;html&quot;: &quot;web/src/admin_dev/index.html&quot;,\r
+  &quot;outdir&quot;: &quot;/admin_dev&quot;\r
+}\r
+</code></pre>\r
+</li>\r
+</ol>\r
+<hr>\r
+<h2 id="important-global-variables-in-ssr"><a class="header-anchor" href="#important-global-variables-in-ssr">#</a>Important: Global Variables in SSR</h2><p>Since Lupine uses Server Side Rendering (SSR), global variables in frontend code are <strong>shared by all users</strong>. Use them with extreme caution.</p>\r
+<p><strong>Bad Practice:</strong>\r
+The following code is dangerous because <code>cacheUser</code> is shared:</p>\r
+<pre><code class="language-typescript">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };\r
+export const getUserInfo = (refresh?: boolean): Promise&lt;UserInfoType | null&gt; =&gt; {\r
+  if (!cacheUser.user || refresh) {\r
+    cacheUser.user = new Promise(async (resolve, reject) =&gt; {\r
+      // ...\r
+    });\r
+  }\r
+  return cacheUser.user;\r
+};\r
+</code></pre>\r
+<p><strong>Good Practice:</strong>\r
+Initialize user-specific data within component lifecycle events (like <code>onLoad</code>) which only execute on the client-side.</p>\r
+<pre><code class="language-tsx">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };\r
+export const UserInfo = (props?: any) =&gt; {\r
+  const ref: RefProps = {\r
+    onLoad: async () =&gt; {\r
+      // Safe to assign here for the client\r
+      cacheUser.user = ...\r
+    },\r
+  };\r
+  return (\r
+    &lt;div css={css} class=&#39;user-info-box&#39; ref={ref}&gt;\r
+      ...\r
+    &lt;/div&gt;\r
+  );\r
+};\r
+</code></pre>\r
 `;var vv=`<h1 id="introduction-to-lupine-js"><a class="header-anchor" href="#introduction-to-lupine-js">#</a>Introduction to Lupine.js</h1><p>Lupine.js is a full-featured web application framework that includes both Front-End and Back-End services.</p>
 <ul>
 <li><strong>Front-End</strong>: <code>lupine.web</code> is an extremely lightweight framework using React TSX syntax, allowing React developers to get started with zero learning curve.</li>
@@ -5060,116 +5060,116 @@ const Header = () =&gt; (
 import { TestThemes } from &#39;lupine.api/admin&#39;;
 </code></pre>
 <p>\u6B64\u7EC4\u4EF6\u6E32\u67D3\u4E00\u4E2A\u7F51\u683C\uFF0C\u663E\u793A\u4F60\u5B9A\u4E49\u7684\u989C\u8272\u5728\u4E0D\u540C\u4E3B\u9898\u4E0B\u7684\u5916\u89C2\uFF0C\u5E2E\u52A9\u4F60\u627E\u5230\u6B63\u786E\u7684\u952E\u503C\u548C\u5BF9\u6BD4\u5EA6\u3002</p>
-`;var Ny=`<h1 id="\u5B89\u88C5\u8BF4\u660E"><a class="header-anchor" href="#\u5B89\u88C5\u8BF4\u660E">#</a>\u5B89\u88C5\u8BF4\u660E</h1><p>Lupine.js \u662F\u4E00\u4E2A\u529F\u80FD\u9F50\u5168\u7684 Web \u5E94\u7528\u7A0B\u5E8F\u6846\u67B6\uFF0C\u5305\u542B\u524D\u7AEF\u548C\u540E\u7AEF\u3002\u524D\u7AEF Lupine.web \u662F\u4E00\u4E2A\u6781\u5176\u8F7B\u91CF\u7EA7\u7684\u6846\u67B6\uFF0C\u4F7F\u7528 React TSX \u8BED\u6CD5\u3002\u540E\u7AEF Lupine.api \u662F\u4E00\u4E2A\u7C7B\u4F3C Express \u7684\u9AD8\u6548\u6781\u7B80\u6846\u67B6\u3002</p>
-<h2 id="\u5FEB\u901F\u5F00\u59CB"><a class="header-anchor" href="#\u5FEB\u901F\u5F00\u59CB">#</a>\u5FEB\u901F\u5F00\u59CB</h2><h3 id="1-\u521B\u5EFA\u9879\u76EE"><a class="header-anchor" href="#1-\u521B\u5EFA\u9879\u76EE">#</a>1. \u521B\u5EFA\u9879\u76EE</h3><p>\u6700\u7B80\u5355\u7684\u65B9\u5F0F\u5C31\u662F\u4F7F\u7528 <code>create-lupine</code> \u547D\u4EE4\u6765\u521B\u5EFA\u4E00\u4E2A\u65B0\u7684\u5E94\u7528\u7A0B\u5E8F\u3002\u5728\u521B\u5EFA\u7684\u65F6\u5019\u60A8\u53EF\u4EE5\u9009\u62E9\u6A21\u7248\u3002</p>
-<pre><code class="language-bash">npx create-lupine@latest my-app
-</code></pre>
-<p>\u5982\u679C\u60A8\u50CF\u66F4\u6DF1\u5165\u7684\u4E86\u89E3 lupine.js\uFF0C\u60A8\u53EF\u4EE5\u4ECE github \u4E0A\u514B\u9686\u4ED3\u5E93\uFF0C\u8FD9\u6837\u66F4\u65B9\u4FBF\u7684\u672C\u5730\u67E5\u770B\u6838\u5FC3\u4EE3\u7801\u3002</p>
-<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git
-</code></pre>
-<h3 id="2-\u5B89\u88C5\u4F9D\u8D56"><a class="header-anchor" href="#2-\u5B89\u88C5\u4F9D\u8D56">#</a>2. \u5B89\u88C5\u4F9D\u8D56</h3><pre><code class="language-bash">npm install
-</code></pre>
-<h3 id="3-\u914D\u7F6E\u73AF\u5883"><a class="header-anchor" href="#3-\u914D\u7F6E\u73AF\u5883">#</a>3. \u914D\u7F6E\u73AF\u5883</h3><p>\u5982\u679C\u4F7F\u7528 <code>create-lupine</code> \u521B\u5EFA\u7684\u9879\u76EE\uFF0C <code>.env</code> \u6587\u4EF6\u5DF2\u7ECF\u751F\u6210\u3002</p>
-<p>\u5982\u679C\u4F7F\u7528 <code>git clone</code> \u521B\u5EFA\u7684\u9879\u76EE\uFF0C\u5219\u9700\u8981\u914D\u7F6E\u73AF\u5883\u3002</p>
-<p>\u5C06 <code>.env.sample</code> \u6587\u4EF6\u590D\u5236\u4E3A\u540D\u4E3A <code>.env</code> \u7684\u65B0\u6587\u4EF6\u3002</p>
-<p>\u4F7F\u7528 <code>git clone</code> \u521B\u5EFA\u7684\u9879\u76EE\uFF0C\u8FD8\u9700\u8981\u4F7F\u7528 <code>.env</code> \u6587\u4EF6\u4E2D\u7684\u793A\u4F8B\u811A\u672C\u4E3A\u4EE5\u4E0B\u53D8\u91CF\u751F\u6210\u5BC6\u94A5\uFF1A</p>
-<pre><code class="language-properties">ADMIN_PASS=
-CRYPTO_KEY=
-DEV_ADMIN_PASS=
-DEV_CRYPTO_KEY=
-</code></pre>
-<h3 id="4-\u8FD0\u884C\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F"><a class="header-anchor" href="#4-\u8FD0\u884C\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F">#</a>4. \u8FD0\u884C\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F</h3><pre><code class="language-bash">npm run dev
-</code></pre>
-<p>\u73B0\u5728\uFF0C\u60A8\u53EF\u4EE5\u901A\u8FC7 <a href="http://localhost:11080">http://localhost:11080</a> \u8BBF\u95EE\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F\u3002</p>
-<hr>
-<h2 id="\u672C\u5730-https-\u8BBE\u7F6E"><a class="header-anchor" href="#\u672C\u5730-https-\u8BBE\u7F6E">#</a>\u672C\u5730 HTTPS \u8BBE\u7F6E</h2><p>\u5BF9\u4E8E\u672C\u5730 HTTPS \u652F\u6301\uFF0C\u5EFA\u8BAE\u4F7F\u7528 <a href="https://github.com/FiloSottile/mkcert">mkcert</a>\u3002</p>
-<ol>
-<li>\u4E0B\u8F7D <code>mkcert</code> (\u4F8B\u5982 <code>mkcert-v1.4.4-windows-amd64.exe</code>)\u3002</li>
-<li>\u6253\u5F00\u7BA1\u7406\u5458\u63A7\u5236\u53F0\u5E76\u8FD0\u884C\uFF1A<pre><code class="language-bash">./mkcert-v1.4.4-windows-amd64 -install
-</code></pre>
-</li>
-<li>\u751F\u6210\u8BC1\u4E66\uFF08\u9488\u5BF9\u65B0\u8BBE\u7F6E\uFF09\uFF1A<pre><code class="language-bash">mkcert example.com &quot;*.example.com&quot; localhost 127.0.0.1 ::1
-</code></pre>
-</li>
-<li>\u5C06\u751F\u6210\u7684\u8BC1\u4E66\u6587\u4EF6\u590D\u5236\u5230 <code>/dev</code> \u6587\u4EF6\u5939\u3002</li>
-<li>\u66F4\u65B0\u60A8\u7684 <code>.env</code> \u6587\u4EF6\uFF0C\u4EE5\u5141\u8BB8\u4F7F\u7528\u81EA\u7B7E\u540D\u8BC1\u4E66\u8FDB\u884C\u672C\u5730 API \u8C03\u7528\uFF1A<pre><code class="language-properties">NODE_TLS_REJECT_UNAUTHORIZED=0
-</code></pre>
-</li>
-</ol>
-<h3 id="\u66FF\u4EE3\u65B9\u6848-\u901A\u8FC7-openssl-\u751F\u6210\u81EA\u7B7E\u540D\u8BC1\u4E66"><a class="header-anchor" href="#\u66FF\u4EE3\u65B9\u6848-\u901A\u8FC7-openssl-\u751F\u6210\u81EA\u7B7E\u540D\u8BC1\u4E66">#</a>\u66FF\u4EE3\u65B9\u6848\uFF1A\u901A\u8FC7 OpenSSL \u751F\u6210\u81EA\u7B7E\u540D\u8BC1\u4E66</h3><p>\u5982\u679C\u60A8\u66F4\u559C\u6B22 OpenSSL\uFF1A</p>
-<pre><code class="language-bash">openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout cert.key -out cert.pem -sha256
-</code></pre>
-<p>\u5728 Windows \u4E0A\uFF0C\u60A8\u53EF\u80FD\u9700\u8981\u4F7F\u7528\uFF1A
-<code>&quot;C:\\Program Files\\Git\\usr\\bin\\openssl.exe&quot;</code></p>
-<hr>
-<h2 id="\u8C03\u8BD5"><a class="header-anchor" href="#\u8C03\u8BD5">#</a>\u8C03\u8BD5</h2><h3 id="\u4EC5\u8C03\u8BD5\u540E\u7AEF"><a class="header-anchor" href="#\u4EC5\u8C03\u8BD5\u540E\u7AEF">#</a>\u4EC5\u8C03\u8BD5\u540E\u7AEF</h3><p>\u5728 VS Code \u4E2D\u6253\u5F00 <strong>Javascript Debug Terminal</strong> \u5E76\u8FD0\u884C\uFF1A</p>
-<pre><code class="language-bash">npm run dev
-</code></pre>
-<h3 id="\u8C03\u8BD5\u524D\u7AEF\u548C\u540E\u7AEF"><a class="header-anchor" href="#\u8C03\u8BD5\u524D\u7AEF\u548C\u540E\u7AEF">#</a>\u8C03\u8BD5\u524D\u7AEF\u548C\u540E\u7AEF</h3><ol>
-<li>\u8F6C\u5230 VS Code \u4E2D\u7684 <strong>Run and Debug</strong> \u4FA7\u8FB9\u680F\u3002</li>
-<li>\u4ECE\u4E0B\u62C9\u5217\u8868\u4E2D\u9009\u62E9 <strong>&quot;Lupine.js: Frontend &amp; Backend&quot;</strong>\u3002</li>
-<li>\u5728\u60A8\u7684\u524D\u7AEF\u6216\u540E\u7AEF\u4EE3\u7801\u4E2D\u8BBE\u7F6E\u65AD\u70B9\u5E76\u5F00\u59CB\u8C03\u8BD5\u3002</li>
-</ol>
-<hr>
-<h2 id="\u6DFB\u52A0\u65B0\u5E94\u7528"><a class="header-anchor" href="#\u6DFB\u52A0\u65B0\u5E94\u7528">#</a>\u6DFB\u52A0\u65B0\u5E94\u7528</h2><p>Lupine \u53EF\u4EE5\u5728\u540C\u4E00\u7AEF\u53E3\u4E0B\u8FD0\u884C\u591A\u4E2A\u5E94\u7528\u7A0B\u5E8F\u3002\u8981\u5728\u672C\u5730\u6DFB\u52A0\u65B0\u5E94\u7528\uFF1A</p>
-<ol>
-<li><strong>\u590D\u5236</strong>\uFF1A\u590D\u5236 <code>/apps</code> \u4E0B\u7684\u4EFB\u4F55\u5E94\u7528\u6587\u4EF6\u5939\u5E76\u91CD\u547D\u540D\u3002</li>
-<li><strong>\u66F4\u65B0\u914D\u7F6E</strong>\uFF1A\u4F7F\u7528\u65B0\u5E94\u7528\u540D\u79F0\u66F4\u65B0 <code>apps\\&lt;your-app&gt;\\lupine.json</code> \u6587\u4EF6\u3002</li>
-<li><strong>\u6CE8\u518C\u5E94\u7528</strong>\uFF1A\u5C06\u65B0\u5E94\u7528\u540D\u79F0\u6DFB\u52A0\u5230 <code>.env</code> \u6587\u4EF6\u4E2D\u7684 <code>APPS=</code>\u3002</li>
-<li><strong>\u865A\u62DF\u57DF\u540D</strong>\uFF1A\u5728 <code>.env</code> \u6587\u4EF6\u4E2D\u7684 <code>DOMAINS@[APP-NAME]=</code> \u6DFB\u52A0\u8BE5\u5E94\u7528\u7684\u865A\u62DF\u57DF\u540D\u3002</li>
-<li><strong>\u6784\u5EFA</strong>\uFF1A\u65B0\u5E94\u7528\u7684\u6E90\u4EE3\u7801\u5C06\u6784\u5EFA\u5230 <code>dist\\server_root</code>\u3002</li>
-</ol>
-<h3 id="\u672C\u5730\u865A\u62DF\u57DF\u540D\u8BBE\u7F6E"><a class="header-anchor" href="#\u672C\u5730\u865A\u62DF\u57DF\u540D\u8BBE\u7F6E">#</a>\u672C\u5730\u865A\u62DF\u57DF\u540D\u8BBE\u7F6E</h3><p>\u8981\u5728\u540C\u4E00\u7AEF\u53E3\u8BBF\u95EE\u591A\u4E2A\u5E94\u7528\uFF08\u4F8B\u5982 <code>app1.sample-domain.com</code>\uFF09\uFF0C\u8BF7\u4FEE\u6539\u60A8\u7684 hosts \u6587\u4EF6\uFF1A</p>
-<pre><code class="language-text">127.0.0.1 app1.sample-domain.com
-</code></pre>
-<p><strong>Hosts \u6587\u4EF6\u4F4D\u7F6E\uFF1A</strong></p>
-<ul>
-<li><strong>Windows</strong>: <code>C:\\Windows\\System32\\Drivers\\etc\\hosts</code></li>
-<li><strong>Linux/macOS</strong>: <code>/etc/hosts</code></li>
-</ul>
-<h3 id="\u521B\u5EFA\u5B50\u6587\u4EF6\u5939\u5E94\u7528"><a class="header-anchor" href="#\u521B\u5EFA\u5B50\u6587\u4EF6\u5939\u5E94\u7528">#</a>\u521B\u5EFA\u5B50\u6587\u4EF6\u5939\u5E94\u7528</h3><p>\u8981\u5728\u73B0\u6709\u5E94\u7528\u4E2D\u521B\u5EFA\u5B50\u5E94\u7528\u7A0B\u5E8F\uFF08\u4F8B\u5982 <code>admin_dev</code>\uFF09\uFF1A</p>
-<ol>
-<li>\u521B\u5EFA\u6587\u4EF6\u5939\uFF1A<code>apps\\[your-app-name]\\web\\src\\admin_dev</code></li>
-<li>\u6DFB\u52A0 <code>index.html</code> \u548C <code>index.tsx</code>\u3002</li>
-<li>\u66F4\u65B0 <code>apps\\[your-app-name]\\lupine.json</code> \u6761\u76EE\uFF1A<pre><code class="language-json">{
-  &quot;index&quot;: &quot;web/src/admin_dev/index.tsx&quot;,
-  &quot;html&quot;: &quot;web/src/admin_dev/index.html&quot;,
-  &quot;outdir&quot;: &quot;/admin_dev&quot;
-}
-</code></pre>
-</li>
-</ol>
-<hr>
-<h2 id="\u91CD\u8981\u63D0\u793A-ssr-\u4E2D\u7684\u5168\u5C40\u53D8\u91CF"><a class="header-anchor" href="#\u91CD\u8981\u63D0\u793A-ssr-\u4E2D\u7684\u5168\u5C40\u53D8\u91CF">#</a>\u91CD\u8981\u63D0\u793A\uFF1ASSR \u4E2D\u7684\u5168\u5C40\u53D8\u91CF</h2><p>\u7531\u4E8E Lupine \u4F7F\u7528\u670D\u52A1\u5668\u7AEF\u6E32\u67D3 (SSR)\uFF0C\u524D\u7AEF\u4EE3\u7801\u4E2D\u7684\u5168\u5C40\u53D8\u91CF\u7531<strong>\u6240\u6709\u7528\u6237\u5171\u4EAB</strong>\u3002\u8BF7\u6781\u5176\u8C28\u614E\u5730\u4F7F\u7528\u5B83\u4EEC\u3002</p>
-<p><strong>\u9519\u8BEF\u505A\u6CD5\uFF1A</strong>
-\u4EE5\u4E0B\u4EE3\u7801\u5F88\u5371\u9669\uFF0C\u56E0\u4E3A <code>cacheUser</code> \u662F\u5171\u4EAB\u7684\uFF1A</p>
-<pre><code class="language-typescript">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
-export const getUserInfo = (refresh?: boolean): Promise&lt;UserInfoType | null&gt; =&gt; {
-  if (!cacheUser.user || refresh) {
-    cacheUser.user = new Promise(async (resolve, reject) =&gt; {
-      // ...
-    });
-  }
-  return cacheUser.user;
-};
-</code></pre>
-<p><strong>\u6B63\u786E\u505A\u6CD5\uFF1A</strong>
-\u5728\u7EC4\u4EF6\u751F\u547D\u5468\u671F\u4E8B\u4EF6\uFF08\u5982 <code>onLoad</code>\uFF09\u4E2D\u521D\u59CB\u5316\u7279\u5B9A\u4E8E\u7528\u6237\u7684\u6570\u636E\uFF0C\u8FD9\u4E9B\u4E8B\u4EF6\u4EC5\u5728\u5BA2\u6237\u7AEF\u6267\u884C\u3002</p>
-<pre><code class="language-tsx">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };
-export const UserInfo = (props?: any) =&gt; {
-  const ref: RefProps = {
-    onLoad: async () =&gt; {
-      // \u5728\u6B64\u5904\u8D4B\u503C\u5BF9\u4E8E\u5BA2\u6237\u7AEF\u662F\u5B89\u5168\u7684
-      cacheUser.user = ...
-    },
-  };
-  return (
-    &lt;div css={css} class=&#39;user-info-box&#39; ref={ref}&gt;
-      ...
-    &lt;/div&gt;
-  );
-};
-</code></pre>
+`;var Ny=`<h1 id="\u5B89\u88C5\u8BF4\u660E"><a class="header-anchor" href="#\u5B89\u88C5\u8BF4\u660E">#</a>\u5B89\u88C5\u8BF4\u660E</h1><p>Lupine.js \u662F\u4E00\u4E2A\u529F\u80FD\u9F50\u5168\u7684 Web \u5E94\u7528\u7A0B\u5E8F\u6846\u67B6\uFF0C\u5305\u542B\u524D\u7AEF\u548C\u540E\u7AEF\u3002\u524D\u7AEF Lupine.web \u662F\u4E00\u4E2A\u6781\u5176\u8F7B\u91CF\u7EA7\u7684\u6846\u67B6\uFF0C\u4F7F\u7528 React TSX \u8BED\u6CD5\u3002\u540E\u7AEF Lupine.api \u662F\u4E00\u4E2A\u7C7B\u4F3C Express \u7684\u9AD8\u6548\u6781\u7B80\u6846\u67B6\u3002</p>\r
+<h2 id="\u5FEB\u901F\u5F00\u59CB"><a class="header-anchor" href="#\u5FEB\u901F\u5F00\u59CB">#</a>\u5FEB\u901F\u5F00\u59CB</h2><h3 id="1-\u521B\u5EFA\u9879\u76EE"><a class="header-anchor" href="#1-\u521B\u5EFA\u9879\u76EE">#</a>1. \u521B\u5EFA\u9879\u76EE</h3><p>\u6700\u7B80\u5355\u7684\u65B9\u5F0F\u5C31\u662F\u4F7F\u7528 <code>create-lupine</code> \u547D\u4EE4\u6765\u521B\u5EFA\u4E00\u4E2A\u65B0\u7684\u5E94\u7528\u7A0B\u5E8F\u3002\u5728\u521B\u5EFA\u7684\u65F6\u5019\u60A8\u53EF\u4EE5\u9009\u62E9\u6A21\u7248\u3002</p>\r
+<pre><code class="language-bash">npx create-lupine@latest my-app\r
+</code></pre>\r
+<p>\u5982\u679C\u60A8\u50CF\u66F4\u6DF1\u5165\u7684\u4E86\u89E3 lupine.js\uFF0C\u60A8\u53EF\u4EE5\u4ECE github \u4E0A\u514B\u9686\u4ED3\u5E93\uFF0C\u8FD9\u6837\u66F4\u65B9\u4FBF\u7684\u672C\u5730\u67E5\u770B\u6838\u5FC3\u4EE3\u7801\u3002</p>\r
+<pre><code class="language-bash">git clone https://github.com/uuware/lupine.js.git\r
+</code></pre>\r
+<h3 id="2-\u5B89\u88C5\u4F9D\u8D56"><a class="header-anchor" href="#2-\u5B89\u88C5\u4F9D\u8D56">#</a>2. \u5B89\u88C5\u4F9D\u8D56</h3><pre><code class="language-bash">npm install\r
+</code></pre>\r
+<h3 id="3-\u914D\u7F6E\u73AF\u5883"><a class="header-anchor" href="#3-\u914D\u7F6E\u73AF\u5883">#</a>3. \u914D\u7F6E\u73AF\u5883</h3><p>\u5982\u679C\u4F7F\u7528 <code>create-lupine</code> \u521B\u5EFA\u7684\u9879\u76EE\uFF0C <code>.env</code> \u6587\u4EF6\u5DF2\u7ECF\u751F\u6210\u3002</p>\r
+<p>\u5982\u679C\u4F7F\u7528 <code>git clone</code> \u521B\u5EFA\u7684\u9879\u76EE\uFF0C\u5219\u9700\u8981\u914D\u7F6E\u73AF\u5883\u3002</p>\r
+<p>\u5C06 <code>.env.sample</code> \u6587\u4EF6\u590D\u5236\u4E3A\u540D\u4E3A <code>.env</code> \u7684\u65B0\u6587\u4EF6\u3002</p>\r
+<p>\u4F7F\u7528 <code>git clone</code> \u521B\u5EFA\u7684\u9879\u76EE\uFF0C\u8FD8\u9700\u8981\u4F7F\u7528 <code>.env</code> \u6587\u4EF6\u4E2D\u7684\u793A\u4F8B\u811A\u672C\u4E3A\u4EE5\u4E0B\u53D8\u91CF\u751F\u6210\u5BC6\u94A5\uFF1A</p>\r
+<pre><code class="language-properties">ADMIN_PASS=\r
+CRYPTO_KEY=\r
+DEV_ADMIN_PASS=\r
+DEV_CRYPTO_KEY=\r
+</code></pre>\r
+<h3 id="4-\u8FD0\u884C\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F"><a class="header-anchor" href="#4-\u8FD0\u884C\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F">#</a>4. \u8FD0\u884C\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F</h3><pre><code class="language-bash">npm run dev\r
+</code></pre>\r
+<p>\u73B0\u5728\uFF0C\u60A8\u53EF\u4EE5\u901A\u8FC7 <a href="http://localhost:11080">http://localhost:11080</a> \u8BBF\u95EE\u5F00\u53D1\u5E94\u7528\u7A0B\u5E8F\u3002</p>\r
+<hr>\r
+<h2 id="\u672C\u5730-https-\u8BBE\u7F6E"><a class="header-anchor" href="#\u672C\u5730-https-\u8BBE\u7F6E">#</a>\u672C\u5730 HTTPS \u8BBE\u7F6E</h2><p>\u5BF9\u4E8E\u672C\u5730 HTTPS \u652F\u6301\uFF0C\u5EFA\u8BAE\u4F7F\u7528 <a href="https://github.com/FiloSottile/mkcert">mkcert</a>\u3002</p>\r
+<ol>\r
+<li>\u4E0B\u8F7D <code>mkcert</code> (\u4F8B\u5982 <code>mkcert-v1.4.4-windows-amd64.exe</code>)\u3002</li>\r
+<li>\u6253\u5F00\u7BA1\u7406\u5458\u63A7\u5236\u53F0\u5E76\u8FD0\u884C\uFF1A<pre><code class="language-bash">./mkcert-v1.4.4-windows-amd64 -install\r
+</code></pre>\r
+</li>\r
+<li>\u751F\u6210\u8BC1\u4E66\uFF08\u9488\u5BF9\u65B0\u8BBE\u7F6E\uFF09\uFF1A<pre><code class="language-bash">mkcert example.com &quot;*.example.com&quot; localhost 127.0.0.1 ::1\r
+</code></pre>\r
+</li>\r
+<li>\u5C06\u751F\u6210\u7684\u8BC1\u4E66\u6587\u4EF6\u590D\u5236\u5230 <code>/dev</code> \u6587\u4EF6\u5939\u3002</li>\r
+<li>\u66F4\u65B0\u60A8\u7684 <code>.env</code> \u6587\u4EF6\uFF0C\u4EE5\u5141\u8BB8\u4F7F\u7528\u81EA\u7B7E\u540D\u8BC1\u4E66\u8FDB\u884C\u672C\u5730 API \u8C03\u7528\uFF1A<pre><code class="language-properties">NODE_TLS_REJECT_UNAUTHORIZED=0\r
+</code></pre>\r
+</li>\r
+</ol>\r
+<h3 id="\u66FF\u4EE3\u65B9\u6848-\u901A\u8FC7-openssl-\u751F\u6210\u81EA\u7B7E\u540D\u8BC1\u4E66"><a class="header-anchor" href="#\u66FF\u4EE3\u65B9\u6848-\u901A\u8FC7-openssl-\u751F\u6210\u81EA\u7B7E\u540D\u8BC1\u4E66">#</a>\u66FF\u4EE3\u65B9\u6848\uFF1A\u901A\u8FC7 OpenSSL \u751F\u6210\u81EA\u7B7E\u540D\u8BC1\u4E66</h3><p>\u5982\u679C\u60A8\u66F4\u559C\u6B22 OpenSSL\uFF1A</p>\r
+<pre><code class="language-bash">openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout cert.key -out cert.pem -sha256\r
+</code></pre>\r
+<p>\u5728 Windows \u4E0A\uFF0C\u60A8\u53EF\u80FD\u9700\u8981\u4F7F\u7528\uFF1A\r
+<code>&quot;C:\\Program Files\\Git\\usr\\bin\\openssl.exe&quot;</code></p>\r
+<hr>\r
+<h2 id="\u8C03\u8BD5"><a class="header-anchor" href="#\u8C03\u8BD5">#</a>\u8C03\u8BD5</h2><h3 id="\u4EC5\u8C03\u8BD5\u540E\u7AEF"><a class="header-anchor" href="#\u4EC5\u8C03\u8BD5\u540E\u7AEF">#</a>\u4EC5\u8C03\u8BD5\u540E\u7AEF</h3><p>\u5728 VS Code \u4E2D\u6253\u5F00 <strong>Javascript Debug Terminal</strong> \u5E76\u8FD0\u884C\uFF1A</p>\r
+<pre><code class="language-bash">npm run dev\r
+</code></pre>\r
+<h3 id="\u8C03\u8BD5\u524D\u7AEF\u548C\u540E\u7AEF"><a class="header-anchor" href="#\u8C03\u8BD5\u524D\u7AEF\u548C\u540E\u7AEF">#</a>\u8C03\u8BD5\u524D\u7AEF\u548C\u540E\u7AEF</h3><ol>\r
+<li>\u8F6C\u5230 VS Code \u4E2D\u7684 <strong>Run and Debug</strong> \u4FA7\u8FB9\u680F\u3002</li>\r
+<li>\u4ECE\u4E0B\u62C9\u5217\u8868\u4E2D\u9009\u62E9 <strong>&quot;Lupine.js: Frontend &amp; Backend&quot;</strong>\u3002</li>\r
+<li>\u5728\u60A8\u7684\u524D\u7AEF\u6216\u540E\u7AEF\u4EE3\u7801\u4E2D\u8BBE\u7F6E\u65AD\u70B9\u5E76\u5F00\u59CB\u8C03\u8BD5\u3002</li>\r
+</ol>\r
+<hr>\r
+<h2 id="\u6DFB\u52A0\u65B0\u5E94\u7528"><a class="header-anchor" href="#\u6DFB\u52A0\u65B0\u5E94\u7528">#</a>\u6DFB\u52A0\u65B0\u5E94\u7528</h2><p>Lupine \u53EF\u4EE5\u5728\u540C\u4E00\u7AEF\u53E3\u4E0B\u8FD0\u884C\u591A\u4E2A\u5E94\u7528\u7A0B\u5E8F\u3002\u8981\u5728\u672C\u5730\u6DFB\u52A0\u65B0\u5E94\u7528\uFF1A</p>\r
+<ol>\r
+<li><strong>\u590D\u5236</strong>\uFF1A\u590D\u5236 <code>/apps</code> \u4E0B\u7684\u4EFB\u4F55\u5E94\u7528\u6587\u4EF6\u5939\u5E76\u91CD\u547D\u540D\u3002</li>\r
+<li><strong>\u66F4\u65B0\u914D\u7F6E</strong>\uFF1A\u4F7F\u7528\u65B0\u5E94\u7528\u540D\u79F0\u66F4\u65B0 <code>apps\\&lt;your-app&gt;\\lupine.json</code> \u6587\u4EF6\u3002</li>\r
+<li><strong>\u6CE8\u518C\u5E94\u7528</strong>\uFF1A\u5C06\u65B0\u5E94\u7528\u540D\u79F0\u6DFB\u52A0\u5230 <code>.env</code> \u6587\u4EF6\u4E2D\u7684 <code>APPS=</code>\u3002</li>\r
+<li><strong>\u865A\u62DF\u57DF\u540D</strong>\uFF1A\u5728 <code>.env</code> \u6587\u4EF6\u4E2D\u7684 <code>DOMAINS@[APP-NAME]=</code> \u6DFB\u52A0\u8BE5\u5E94\u7528\u7684\u865A\u62DF\u57DF\u540D\u3002</li>\r
+<li><strong>\u6784\u5EFA</strong>\uFF1A\u65B0\u5E94\u7528\u7684\u6E90\u4EE3\u7801\u5C06\u6784\u5EFA\u5230 <code>dist\\server_root</code>\u3002</li>\r
+</ol>\r
+<h3 id="\u672C\u5730\u865A\u62DF\u57DF\u540D\u8BBE\u7F6E"><a class="header-anchor" href="#\u672C\u5730\u865A\u62DF\u57DF\u540D\u8BBE\u7F6E">#</a>\u672C\u5730\u865A\u62DF\u57DF\u540D\u8BBE\u7F6E</h3><p>\u8981\u5728\u540C\u4E00\u7AEF\u53E3\u8BBF\u95EE\u591A\u4E2A\u5E94\u7528\uFF08\u4F8B\u5982 <code>app1.sample-domain.com</code>\uFF09\uFF0C\u8BF7\u4FEE\u6539\u60A8\u7684 hosts \u6587\u4EF6\uFF1A</p>\r
+<pre><code class="language-text">127.0.0.1 app1.sample-domain.com\r
+</code></pre>\r
+<p><strong>Hosts \u6587\u4EF6\u4F4D\u7F6E\uFF1A</strong></p>\r
+<ul>\r
+<li><strong>Windows</strong>: <code>C:\\Windows\\System32\\Drivers\\etc\\hosts</code></li>\r
+<li><strong>Linux/macOS</strong>: <code>/etc/hosts</code></li>\r
+</ul>\r
+<h3 id="\u521B\u5EFA\u5B50\u6587\u4EF6\u5939\u5E94\u7528"><a class="header-anchor" href="#\u521B\u5EFA\u5B50\u6587\u4EF6\u5939\u5E94\u7528">#</a>\u521B\u5EFA\u5B50\u6587\u4EF6\u5939\u5E94\u7528</h3><p>\u8981\u5728\u73B0\u6709\u5E94\u7528\u4E2D\u521B\u5EFA\u5B50\u5E94\u7528\u7A0B\u5E8F\uFF08\u4F8B\u5982 <code>admin_dev</code>\uFF09\uFF1A</p>\r
+<ol>\r
+<li>\u521B\u5EFA\u6587\u4EF6\u5939\uFF1A<code>apps\\[your-app-name]\\web\\src\\admin_dev</code></li>\r
+<li>\u6DFB\u52A0 <code>index.html</code> \u548C <code>index.tsx</code>\u3002</li>\r
+<li>\u66F4\u65B0 <code>apps\\[your-app-name]\\lupine.json</code> \u6761\u76EE\uFF1A<pre><code class="language-json">{\r
+  &quot;index&quot;: &quot;web/src/admin_dev/index.tsx&quot;,\r
+  &quot;html&quot;: &quot;web/src/admin_dev/index.html&quot;,\r
+  &quot;outdir&quot;: &quot;/admin_dev&quot;\r
+}\r
+</code></pre>\r
+</li>\r
+</ol>\r
+<hr>\r
+<h2 id="\u91CD\u8981\u63D0\u793A-ssr-\u4E2D\u7684\u5168\u5C40\u53D8\u91CF"><a class="header-anchor" href="#\u91CD\u8981\u63D0\u793A-ssr-\u4E2D\u7684\u5168\u5C40\u53D8\u91CF">#</a>\u91CD\u8981\u63D0\u793A\uFF1ASSR \u4E2D\u7684\u5168\u5C40\u53D8\u91CF</h2><p>\u7531\u4E8E Lupine \u4F7F\u7528\u670D\u52A1\u5668\u7AEF\u6E32\u67D3 (SSR)\uFF0C\u524D\u7AEF\u4EE3\u7801\u4E2D\u7684\u5168\u5C40\u53D8\u91CF\u7531<strong>\u6240\u6709\u7528\u6237\u5171\u4EAB</strong>\u3002\u8BF7\u6781\u5176\u8C28\u614E\u5730\u4F7F\u7528\u5B83\u4EEC\u3002</p>\r
+<p><strong>\u9519\u8BEF\u505A\u6CD5\uFF1A</strong>\r
+\u4EE5\u4E0B\u4EE3\u7801\u5F88\u5371\u9669\uFF0C\u56E0\u4E3A <code>cacheUser</code> \u662F\u5171\u4EAB\u7684\uFF1A</p>\r
+<pre><code class="language-typescript">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };\r
+export const getUserInfo = (refresh?: boolean): Promise&lt;UserInfoType | null&gt; =&gt; {\r
+  if (!cacheUser.user || refresh) {\r
+    cacheUser.user = new Promise(async (resolve, reject) =&gt; {\r
+      // ...\r
+    });\r
+  }\r
+  return cacheUser.user;\r
+};\r
+</code></pre>\r
+<p><strong>\u6B63\u786E\u505A\u6CD5\uFF1A</strong>\r
+\u5728\u7EC4\u4EF6\u751F\u547D\u5468\u671F\u4E8B\u4EF6\uFF08\u5982 <code>onLoad</code>\uFF09\u4E2D\u521D\u59CB\u5316\u7279\u5B9A\u4E8E\u7528\u6237\u7684\u6570\u636E\uFF0C\u8FD9\u4E9B\u4E8B\u4EF6\u4EC5\u5728\u5BA2\u6237\u7AEF\u6267\u884C\u3002</p>\r
+<pre><code class="language-tsx">const cacheUser: { user: null | Promise&lt;UserInfoType | null&gt; } = { user: null };\r
+export const UserInfo = (props?: any) =&gt; {\r
+  const ref: RefProps = {\r
+    onLoad: async () =&gt; {\r
+      // \u5728\u6B64\u5904\u8D4B\u503C\u5BF9\u4E8E\u5BA2\u6237\u7AEF\u662F\u5B89\u5168\u7684\r
+      cacheUser.user = ...\r
+    },\r
+  };\r
+  return (\r
+    &lt;div css={css} class=&#39;user-info-box&#39; ref={ref}&gt;\r
+      ...\r
+    &lt;/div&gt;\r
+  );\r
+};\r
+</code></pre>\r
 `;var $y=`<h1 id="\u4E86\u89E3-lupine-js"><a class="header-anchor" href="#\u4E86\u89E3-lupine-js">#</a>\u4E86\u89E3 Lupine.js</h1><p>Lupine.js \u662F\u4E00\u4E2A\u5305\u542B\u524D\u540E\u7AEF\u670D\u52A1\u7684\u5168\u529F\u80FD Web \u5E94\u7528\u7A0B\u5E8F\u6846\u67B6\u3002</p>
 <ul>
 <li><strong>\u524D\u7AEF (Front-End)</strong>: <code>lupine.web</code> \u662F\u4E00\u4E2A\u6781\u5176\u8F7B\u91CF\u7EA7\u7684\u6846\u67B6\uFF0C\u4F7F\u7528 React TSX \u8BED\u6CD5\uFF0C\u8BA9\u719F\u6089 React \u7684\u5F00\u53D1\u8005\u96F6\u6210\u672C\u4E0A\u624B\u3002</li>

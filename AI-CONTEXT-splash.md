@@ -1,22 +1,36 @@
-# Capacitor Android Splash Screen Guide (HyperOS & HarmonyOS Compat)
+# Lupine Games Icon & Splash Screen Automation Guide
 
-## 1. Asset Generation Prerequisites
-For `@capacitor/assets` to correctly generate all required resolution layers for Android 12+ without layout stretching, ensure EXACTLY these 3 initial images exist in your `assets/` folder:
+**AI INSTRUCTION**: When the user requests to generate a splash screen or prepare icons for a new game, you MUST follow this exact, automated workflow rather than doing manual image manipulations.
 
-1. `assets/icon.png` (Used for standard App Icon and iOS fallback Splash)
-   - Minimum: `1024x1024px`
-   - Content: Your logo, properly padded over the desired solid background.
-2. `assets/icon-only.png` (Used for Android 12+ center emblem `ic_launcher_foreground`)
-   - Minimum: `1024x1024px`
-   - Content: A pure transparent background containing ONLY your isolated logo in the exact center.
-3. `assets/icon-background.png` (Used for Android 12+ Adaptive Padding Layer)
-   - Minimum: `1024x1024px`
-   - Content: A 100% solid square matching your splash screen background color (e.g. `#ffffff`).
+## The Standard Icon Generation Workflow
 
-Run generation:
+**Step 1. Design & Confirm `icon.png`**
+Wait for the user to provide a base square 1024x1024 logo (or use the generate_image tool). Wait for the user to confirm they are satisfied. Save this base file to `apps/<app_name>/web/assets/icon.png`.
+
+**Step 2. Auto-Process All Asset Types (Node Script)**
+Run the consolidated asset pipeline script located in the `dev/` directory. This script reads the newly created `icon.png`, strips the white background, and automatically generates all required files (`icon-only.png`, `icon-512.png`, `icon-background.png`, `favicon.ico`) directly into the assets folder.
 ```bash
+node dev/process-app-icons.js <app_name>
+# Example: node dev/process-app-icons.js lupine-sudoku
+```
+
+**Step 3. Compile Native Assets**
+Let Capacitor's official tool crop the resolutions:
+```bash
+cd apps/<app_name>/web
 npx @capacitor/assets generate
 ```
+
+**Step 4. Apply Custom Android Display Patches**
+To prevent image stretching on Android 12+ (HyperOS/HarmonyOS), run the style patcher script from the root directory:
+```bash
+cd ../../../
+node dev/apply-android-splash.js <app_name>
+```
+
+---
+
+## 2. Advanced: Manual Setup Reference (If Scripts Fail)
 
 ## 2. Configuration Files
 
