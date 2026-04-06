@@ -14,7 +14,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-example.com*
+example.com+*
 
 # local env files
 .env
@@ -24,4 +24,3 @@ example.com*
 
 # build
 /dist
-
