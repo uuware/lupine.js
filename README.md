@@ -51,7 +51,7 @@ Visit `http://localhost:11080` and you'll see your first Lupine app running!
 To enable HTTPS locally (e.g., https://localhost:11083), you'll need to generate a local certificate using mkcert. See [mkcert](https://github.com/FiloSottile/mkcert).
 Here is a sample command:
 ```
-mkcert example.com "*.example.com" localhost "*.dev.local" 127.0.0.1 ::1
+mkcert example.com "*.example.com" localhost 127.0.0.1 ::1
 ```
 
 ## Learn more
