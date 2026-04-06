@@ -4,7 +4,16 @@ export function bindLinks(el: Element | Document) {
   const links = el.getElementsByTagName('a');
   for (var i = 0, l = links.length; i < l; i++) {
     let originalHref = links[i].getAttribute('href');
-    if (!originalHref || originalHref.startsWith('javascript:')) continue;
+    if (
+      !originalHref ||
+      originalHref.startsWith('javascript:') ||
+      originalHref.startsWith('mailto:') ||
+      links[i].hasAttribute('download') ||
+      links[i].getAttribute('target') === '_blank' ||
+      links[i].getAttribute('rel') === 'external' ||
+      links[i].hasAttribute('data-bypass')
+    )
+      continue;
     if (originalHref.startsWith('#')) {
       links[i].onclick = () => {
         const id = decodeURIComponent(originalHref!.substring(1));
