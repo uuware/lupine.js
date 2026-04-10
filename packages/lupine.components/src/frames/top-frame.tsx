@@ -3,7 +3,16 @@ place to set safe-area-inset-top and other common styles
 */
 import { VNode, CssProps } from 'lupine.components';
 
-export const TopFrame = async (placeholderClassname: string, vnode: VNode<any>) => {
+// TopFrame and ResponsiveFrame both contain safe-area-inset-top, so can't use them togother
+export const TopFrame = async ({
+  placeholderClassname,
+  vnode,
+  noSafeAreaTop,
+}: {
+  placeholderClassname: string;
+  vnode: VNode<any>;
+  noSafeAreaTop?: boolean;
+}) => {
   const cssContainer: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -16,8 +25,12 @@ export const TopFrame = async (placeholderClassname: string, vnode: VNode<any>) 
       flexDirection: 'column',
       height: '100%',
       // trick: to put two padding-top properties
-    'padding-top ': 'constant(safe-area-inset-top)',
-    'padding-top': 'env(safe-area-inset-top)',
+      ...(!noSafeAreaTop
+        ? {
+            'padding-top ': 'constant(safe-area-inset-top)',
+            'padding-top': 'env(safe-area-inset-top)',
+          }
+        : {}),
     },
   };
 

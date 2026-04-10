@@ -32,6 +32,7 @@
     "cp-temps": "node dev/cp-temps.js",
     "start-dev": "node dist/server_root/server/app-loader.js --env=.env.development",
     "start-production": "node dist/server_root/server/app-loader.js --env=.env.production",
+    "rm-map": "node dev/rm-map.js",
     "format": "prettier --write \"**/*.{js,json,css,scss,md,html,yaml,ts,jsx,tsx}\""
   },
   "dependencies": {
