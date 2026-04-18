@@ -1,5 +1,4 @@
-import { apiStorage } from '../api';
-import { CryptoUtils, Logger } from '../lib';
+import { apiStorage, CryptoUtils, Logger } from 'lupine.api';
 import { adminApiHelper } from './admin-api-helper';
 
 export type TokenProps = {

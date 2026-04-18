@@ -1,7 +1,5 @@
 import { ServerResponse } from 'http';
-import { ApiHelper } from '../api';
-import { CryptoUtils, Logger } from '../lib';
-import { ServerRequest } from '../models';
+import { ApiHelper, CryptoUtils, Logger, ServerRequest } from 'lupine.api';
 
 /*
 dev-admin uses different authentication method from frontend.

@@ -1,3 +1,5 @@
+import { ISimpleStorage } from './simple-storage-props';
+
 export type StylesProps = Map<string, { topUniqueClassName: string; noTopClassName: boolean; style: any }>;
 export interface IRequestContextProps {
   pageTitle: string;
@@ -8,4 +10,5 @@ export interface IRequestContextProps {
   globalStyleIds: Map<any, string>;
   coreData: { [key: string]: any }; // for core development
   devData: { [key: string]: any }; // for secondary development
+  serverCookies?: ISimpleStorage; // per-request cookies for SSR (concurrency safe)
 }

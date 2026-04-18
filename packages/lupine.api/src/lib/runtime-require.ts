@@ -32,6 +32,9 @@ export class RuntimeRequire {
     };
     vm.createContext(context);
     // for debug in Javascript Debug Terminal
+    // const safeSourceUrl = `file:///${path.replace(/\\/g, '/')}`;
+    // const codeWithUrl = code; // + `\n//# sourceURL=${safeSourceUrl}\n`;
+    
     const script = new vm.Script(code, {
       filename: path,
       lineOffset: 0,

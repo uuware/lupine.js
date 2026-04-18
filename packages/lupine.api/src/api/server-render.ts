@@ -12,6 +12,10 @@ import { getAppCache, AppCacheGlobal, AppCacheKeys } from '../models/app-cache-p
 import { apiStorage } from './api-shared-storage';
 import { RuntimeRequire } from '../lib/runtime-require';
 import { IRequestContextProps } from '../models';
+import { getRenderPageFunctions } from './render-page-functions';
+import { asyncLocalStorage } from './async-storage';
+import zlib from 'zlib';
+import { getEnableResponseGzip } from './api-helper';
 
 const getRequestContext = () => {
   try {
@@ -36,23 +40,6 @@ const getRequestContext = () => {
 };
 
 const logger = new Logger('server-render');
-
-export type RenderPageFunctionsType = {
-  fetchData: (url: string, postData: string | JsonObject) => Promise<any>;
-  [key: string]: Function;
-};
-let renderPageFunctions: RenderPageFunctionsType = {
-  fetchData: async (url: string, postData: string | JsonObject) => {
-    throw new Error('Method not implemented');
-  },
-};
-export const getRenderPageFunctions = () => renderPageFunctions;
-// for the FE code to fetch data in SSR
-export const bindRenderPageFunctions = (calls: RenderPageFunctionsType) => {
-  for (let k in calls) {
-    renderPageFunctions[k] = calls[k];
-  }
-};
 
 export type PageResultType = {
   content: string;
@@ -103,14 +90,64 @@ const findNearestRootSync = (webRoot: string, urlWithoutQuery: string) => {
   return webRoot;
 };
 
-const titleText = '<!--META-TITLE-->';
-const metaTextStart = '<!--META-ENV-START-->';
-const metaTextEnd = '<!--META-ENV-END-->';
-const containerText = '<div class="lupine-root">'; // '</div>'
+export const titleText = '<!--META-TITLE-->';
+export const metaTextStart = '<!--META-ENV-START-->';
+export const metaTextEnd = '<!--META-ENV-END-->';
+export const containerText = '<div class="lupine-root">'; // '</div>'
+
+export const getHtmlTemplateIndices = (contentWithEnv: string) => {
+  return {
+    titleIndex: contentWithEnv.indexOf(titleText),
+    metaIndexStart: contentWithEnv.indexOf(metaTextStart),
+    metaIndexEnd: contentWithEnv.indexOf(metaTextEnd),
+    containerIndex: contentWithEnv.indexOf(containerText),
+  };
+};
+
+export const outputHtmlToResponse = (
+  req: ServerRequest,
+  res: ServerResponse,
+  currentCache: any,
+  page: PageResultType,
+  webSetting: any
+) => {
+  const enableGzip = getEnableResponseGzip();
+  const acceptEncoding = typeof req.headers['accept-encoding'] === 'string' ? req.headers['accept-encoding'] : '';
+  const shouldGzip = enableGzip && acceptEncoding.includes('gzip');
+
+  let outputStream: { write: (str: string | Buffer) => void; end: () => void } = res;
+
+  if (shouldGzip) {
+    res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' });
+    const z = zlib.createGzip();
+    z.pipe(res);
+    outputStream = z;
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+  }
+
+  outputStream.write(currentCache.content.substring(0, currentCache.titleIndex).replace('<!--META-THEME-->', page.themeName));
+  outputStream.write(page.title);
+  outputStream.write(currentCache.content.substring(currentCache.titleIndex + titleText.length, currentCache.metaIndexStart));
+  outputStream.write(page.metaData);
+  outputStream.write(page.globalCss);
+  outputStream.write('<script id="web-env" type="application/json">' + JSON.stringify(currentCache.webEnv) + '</script>');
+  outputStream.write('<script id="web-setting" type="application/json">' + JSON.stringify(webSetting) + '</script>');
+  outputStream.write(
+    currentCache.content.substring(
+      currentCache.metaIndexEnd + metaTextEnd.length,
+      currentCache.containerIndex + containerText.length
+    )
+  );
+  outputStream.write(page.content);
+  outputStream.write(currentCache.content.substring(currentCache.containerIndex + containerText.length));
+
+  outputStream.end();
+};
+
 type CachedHtmlProps = {
   content: string;
   webEnv: { [k: string]: string };
-  // serverConfig: { [k: string]: any };
   titleIndex: number;
   metaIndexStart: number;
   metaIndexEnd: number;
@@ -143,7 +180,10 @@ export const serverSideRenderPage = async (
           const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
           let _lupineJs;
           try {
-            const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { _lupineJs: null });
+            const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { 
+              _lupineJs: null,
+              __SSR_ALS_PROPS__: asyncLocalStorage
+            });
             if (!gThis || !gThis._lupineJs) {
               throw new Error('_lupineJs is not defined');
             }
@@ -153,18 +193,17 @@ export const serverSideRenderPage = async (
           }
 
           const contentWithEnv = content.toString();
+          const indices = getHtmlTemplateIndices(contentWithEnv);
+
           return {
             content: contentWithEnv,
             webEnv: getWebEnv(appName),
-            titleIndex: contentWithEnv.indexOf(titleText),
-            metaIndexStart: contentWithEnv.indexOf(metaTextStart),
-            metaIndexEnd: contentWithEnv.indexOf(metaTextEnd),
-            containerIndex: contentWithEnv.indexOf(containerText),
+            ...indices,
             _lupineJs: _lupineJs,
           } as CachedHtmlProps;
         } finally {
-          // Promise self-cleanup pattern guarantees cleanup safely 
-          // to prevent permanent blockage across all future API calls 
+          // Promise self-cleanup pattern guarantees cleanup safely
+          // to prevent permanent blockage across all future API calls
           // regardless if readFile succceeded or rejected
           pendingSsrLoads.delete(nearRoot);
         }
@@ -178,26 +217,22 @@ export const serverSideRenderPage = async (
 
   const props = {
     url: urlWithoutQuery,
-    // urlSections: urlWithoutQuery.split('/').filter((i) => !!i),
     query: Object.fromEntries(new URLSearchParams(urlQuery || '')), //new URLSearchParams(urlQuery || ''),
     urlParameters: {},
-    renderPageFunctions: renderPageFunctions,
+    renderPageFunctions: getRenderPageFunctions(),
   };
 
   const _lupineJs = cachedHtml[nearRoot]._lupineJs;
   const currentCache = cachedHtml[nearRoot] as CachedHtmlProps;
   const webSetting = await apiStorage.getWebAll();
-  // const webSettingShortKey: SimpleStorageDataProps = {};
-  // for (let item of Object.keys(webSetting)) {
-  //   const newItem = item.substring(4);
-  //   webSettingShortKey[newItem] = webSetting[item];
-  // }
-  // const webSetting = AppConfig.get(AppConfig.WEB_SETTINGS_KEY) || {};
+  const requestContext = getRequestContext();
+  requestContext.coreData = requestContext.coreData || {};
+  requestContext.serverCookies = req.locals.cookies();
+
   const clientDelivery = new ToClientDelivery(
     currentCache.webEnv,
     webSetting,
-    req.locals.cookies(),
-    getRequestContext()
+    requestContext
   );
 
   let page = {
@@ -209,13 +244,18 @@ export const serverSideRenderPage = async (
   };
   if (_lupineJs) {
     try {
+      // Inject Frontend-required data properties onto the unique, per-request backend Store
+      const store = asyncLocalStorage.getStore();
+      if (store) {
+        store.renderPageProps = props;
+        store.requestContext = clientDelivery.getRequestContext();
+      }
+
       page = await _lupineJs.generatePage(props, clientDelivery);
     } catch (e: any) {
       logger.error(e.message);
     }
   }
-
-  // console.log(`=========load lupin: `, content);
 
   const originHeader = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : null;
   if (originHeader) {
@@ -224,46 +264,6 @@ export const serverSideRenderPage = async (
   } else {
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  // res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' });
 
-  // const s = zlib.createGzip();
-  // stream.pipeline(s, res, (err) => {
-  //   s.write(cachedHtml.content.substring(0, cachedHtml.titleIndex).replace('<!--META-THEME-->', page.themeName));
-  //   s.write(page.title);
-  //   s.write(cachedHtml.content.substring(cachedHtml.titleIndex + titleText.length, cachedHtml.metaIndex));
-  //   s.write(page.metaData);
-  //   s.write(page.globalCss);
-  //   s.write(
-  //     cachedHtml.content.substring(cachedHtml.metaIndex + metaText.length, cachedHtml.containerIndex + containerText.length)
-  //   )
-  //   s.write(page.content);
-  //   s.write(cachedHtml.content.substring(cachedHtml.containerIndex + containerText.length), (err) => {
-  //     s.flush();
-  //     res.end();
-  //   });
-  // });
-
-  // data-theme and title
-  res.write(currentCache.content.substring(0, currentCache.titleIndex).replace('<!--META-THEME-->', page.themeName));
-  res.write(page.title);
-  res.write(currentCache.content.substring(currentCache.titleIndex + titleText.length, currentCache.metaIndexStart));
-  // meta data
-  res.write(page.metaData);
-  res.write(page.globalCss);
-  res.write('<script id="web-env" type="application/json">' + JSON.stringify(currentCache.webEnv) + '</script>');
-  res.write('<script id="web-setting" type="application/json">' + JSON.stringify(webSetting) + '</script>');
-  res.write(
-    currentCache.content.substring(
-      currentCache.metaIndexEnd + metaTextEnd.length,
-      currentCache.containerIndex + containerText.length
-    )
-  );
-  // content
-  res.write(page.content);
-  res.write(currentCache.content.substring(currentCache.containerIndex + containerText.length));
-
-  // const html = index.toString().replace('<div class="lupine-root"></div>', content);
-  // handler200(res, html);
-  res.end();
+  outputHtmlToResponse(req, res, currentCache, page, webSetting);
 };

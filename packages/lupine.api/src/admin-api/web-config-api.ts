@@ -1,8 +1,5 @@
 import { ServerResponse } from 'http';
-import { Logger } from '../lib';
-import { ServerRequest } from '../models';
-import { langHelper } from '../lang';
-import { ApiHelper, apiStorage } from '../api';
+import { Logger, ServerRequest, langHelper, ApiHelper, apiStorage } from 'lupine.api';
 
 // only used by mobile app. For web, it's injected in the html by server-side render
 const logger = new Logger('web-cfg-api');

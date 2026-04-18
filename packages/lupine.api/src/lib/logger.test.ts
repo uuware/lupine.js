@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import fs from 'fs';
+import type * as FsType from 'fs';
+const fs: typeof FsType = require('fs');
 import cluster from 'node:cluster';
+
 import { Logger, LogWriter, LogWriterMessageId } from './logger';
 import { LogLevels } from '../models/logger-props';
 
@@ -38,6 +40,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
   t.mock.method(fs, 'unlinkSync', () => {});
   t.mock.method(fs, 'writeFileSync', (fd: number, buf: any) => {
     writeLogs.push(buf.toString());
+    fstatResult.size += buf.length;
   });
 
   // Intercept IPC process messaging out to master
@@ -78,7 +81,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: true,
       outToConsole: false,
-      level: 'DEBUG',
+      level: 'debug',
     });
 
     assert.strictEqual(mkdirCalls.length, 1);
@@ -100,7 +103,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: true,
       outToConsole: false,
-      level: 'DEBUG',
+      level: 'debug',
     });
 
     // Check sizes validation logically kicked rotation routines:
@@ -121,7 +124,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: true,
       outToConsole: false,
-      level: 'DEBUG',
+      level: 'debug',
     });
 
     // Send 9 bytes footprint
@@ -147,7 +150,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: true,
       outToConsole: false,
-      level: 'DEBUG',
+      level: 'debug',
     });
 
     logger.debug(
@@ -177,7 +180,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: true,
       outToConsole: false,
-      level: 'INFO', 
+      level: 'info', 
     });
 
     logger.debug('unseen_debug_signal');
@@ -203,7 +206,7 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: true,
       outToConsole: false,
-      level: 'DEBUG',
+      level: 'debug',
     });
 
     // Mock dropping into a clustered Worker scenario
@@ -228,12 +231,12 @@ test('Logger Unit Tests (Native Node Runner)', async (t) => {
       maxCount: 5,
       outToFile: false,
       outToConsole: true, // we skip console mocking to avoid terminal noise
-      level: 'DEBUG',
+      level: 'debug',
     });
 
     logger.debug('debug console output');
     
     // File hooks should remain dead silent.
-    assert.strictEqual(writeLogs.length, 0); 
+    console.log('writeLogs contents:', writeLogs); assert.strictEqual(writeLogs.length, 0); 
   });
 });

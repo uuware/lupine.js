@@ -2,7 +2,7 @@ import { IncomingMessage } from 'http';
 import { HostToPathProps } from './host-to-path-props';
 import { JsonObject } from './json-object';
 import { ISimpleStorage } from './simple-storage-props';
-
+import { ParsedFormData } from '../lib/utils/form-data-parser';
 export type SetCookieProps = {
   expireDays: number;
   path?: string;
@@ -23,6 +23,8 @@ export type LocalsProps = {
   urlParameters: ISimpleStorage;
   body: Buffer | undefined;
   json: () => JsonObject | undefined;
+  text: () => Promise<string>;
+  formData: () => Promise<ParsedFormData>;
   cookies: () => ISimpleStorage;
   setCookie: (name: string, value: string, options: SetCookieProps) => void;
   clearCookie: (name: string) => void;

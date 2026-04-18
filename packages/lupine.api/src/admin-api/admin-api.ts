@@ -8,10 +8,9 @@ import { AdminRelease } from './admin-release';
 import { AdminResources } from './admin-resources';
 import { AdminTokens } from './admin-tokens';
 import { AdminConfig } from './admin-config';
-import { Logger } from '../lib';
-import { IApiBase, ServerRequest } from '../models';
-import { ApiRouter } from '../api';
+import { Logger, IApiBase, ServerRequest, ApiRouter } from 'lupine.api';
 import { readWebConfig } from './web-config-api';
+import { AdminPage } from './admin-page';
 
 const logger = new Logger('admin-api');
 
@@ -54,6 +53,9 @@ export class AdminApi implements IApiBase {
 
     const adminTokens = new AdminTokens();
     this.router.use('/tokens', needDevAdminSession, adminTokens.getRouter());
+
+    const adminPage = new AdminPage();
+    this.router.use('/page', needDevAdminSession, adminPage.getRouter());
 
     this.router.use('/auth', async (req: ServerRequest, res: ServerResponse) => {
       return devAdminAuth(req, res);

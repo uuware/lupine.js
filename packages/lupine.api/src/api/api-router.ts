@@ -1,9 +1,10 @@
 import { ServerResponse } from 'http';
 import { Logger } from '../lib';
 import { ServerRequest } from '../models/locals-props';
-import { handler404 } from './handle-status';
-import { SimpleStorage } from './simple-storage';
+import { handler404 } from '../shared/handle-status';
+import { SimpleStorage } from '../shared/simple-storage';
 import { ApiRouterCallback, ApiRouterData, ApiRouterMethod, IApiRouter } from '../models/api-router-props';
+import { HttpException } from '../shared/http-exceptions';
 const logger = new Logger('api-router');
 
 /*
@@ -90,14 +91,27 @@ export class ApiRouter implements IApiRouter {
         return true;
       }
     } catch (e: any) {
-      logger.error(`Processed path: ${path}, error: ${e.message}`);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.write(
-        JSON.stringify({
-          status: 'error',
-          message: `Processed path: ${path}, error: ${e.message}`,
-        })
-      );
+      if (e instanceof HttpException) {
+        logger.debug(`Processed path ${path} intercepted by API Boundary: [${e.statusCode}] ${e.message}`);
+        res.writeHead(e.statusCode, { 'Content-Type': 'application/json' });
+        res.write(
+          JSON.stringify({
+            status: 'error',
+            statusCode: e.statusCode,
+            message: e.message,
+          })
+        );
+      } else {
+        logger.error(`Processed path: ${path}, error: ${e.message}`);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.write(
+          JSON.stringify({
+            status: 'error',
+            statusCode: 500,
+            message: `Processed path: ${path}, error: ${e.message}`,
+          })
+        );
+      }
       res.end();
       return true;
     }
@@ -114,7 +128,10 @@ export class ApiRouter implements IApiRouter {
         let meet = true;
         if (routerList.parameterVariables.length > 0) {
           meet = false;
-          const restPath = url.substring(routerList.path.length + 1).split('/').filter(Boolean);
+          const restPath = url
+            .substring(routerList.path.length + 1)
+            .split('/')
+            .filter(Boolean);
           // the path must have mandatory parameters but some parameters can be optional
           if (
             restPath.length >= routerList.parameterLength &&
@@ -150,7 +167,7 @@ export class ApiRouter implements IApiRouter {
               }
             }
           }
-        // Do not throw 404 early here. Allow subsequent router rules in the loop a chance to match!
+          // Do not throw 404 early here. Allow subsequent router rules in the loop a chance to match!
         }
       }
     }

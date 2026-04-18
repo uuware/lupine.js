@@ -72,3 +72,6 @@ export class ShellService {
     });
   }
 }
+
+import { DevServiceProxy } from './dev-service-proxy';
+DevServiceProxy.shellDirectCmd = ShellService.directCmd.bind(ShellService);

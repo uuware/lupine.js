@@ -11,8 +11,20 @@ exports.copyFolder = async (copyCache, src, dest, isDev) => {
       await exports.copyFolder(copyCache, path.join(src, childItemName), path.join(dest, childItemName), isDev);
     }
   } else if (stat.isFile()) {
-    const statDest = copyCache.get(src);
-    if (!statDest || stat.size !== statDest.size || stat.mtime.getTime() !== statDest.mtime.getTime()) {
+    let statDest = copyCache.get(src);
+    let isDestMissing = false;
+
+    if (!statDest) {
+      try {
+        await fs.access(dest);
+        copyCache.set(src, stat);
+        statDest = stat;
+      } catch (err) {
+        isDestMissing = true;
+      }
+    }
+
+    if (isDestMissing || stat.size !== statDest.size || stat.mtime.getTime() !== statDest.mtime.getTime()) {
       try {
         const destDir = path.dirname(dest);
         await fs.mkdir(destDir, { recursive: true });
