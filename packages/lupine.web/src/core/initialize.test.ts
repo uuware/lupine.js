@@ -16,7 +16,6 @@ describe('Server Side Component Engine (SSR) - generatePage', () => {
     mockClientDelivery = {
       isSystemMobile: () => false,
       getClientCookie: () => ({ get: () => '' } as any),
-      getServerCookie: () => ({ get: () => '', setCookie: () => {}, set: () => {}, getCookies: () => [] } as any),
       getRequestContext: () => ({
         pageTitle: 'SSR Title',
         metaData: { original: 'true' },
@@ -26,6 +25,7 @@ describe('Server Side Component Engine (SSR) - generatePage', () => {
         globalStyleIds: new Map(),
         coreData: {},
         devData: {},
+        serverCookies: { get: () => '', set: () => {}, contains: () => false, getInt: () => 0, getBoolean: () => false, getJson: () => ({}) } as any,
       } as IRequestContextProps),
       getWebSetting: () => ({ apiUrl: 'http://localhost' }),
       getWebEnv: () => ({ env: 'test' }),

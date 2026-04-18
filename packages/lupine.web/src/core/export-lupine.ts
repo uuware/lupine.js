@@ -21,6 +21,15 @@ export const setRenderPageProps = (props: PageProps) => {
 };
 // this is used by the code to get url info when it's executed in the FE or in the server side.
 export const getRenderPageProps = (): PageProps => {
+  // this is from SSR
+  const gThis = globalThis as any;
+  if (gThis.__SSR_ALS_PROPS__) {
+    const store = gThis.__SSR_ALS_PROPS__.getStore();
+    if (store && store.renderPageProps) {
+      return store.renderPageProps;
+    }
+  }
+  // this is from FE
   return _lupineJs.renderPageProps;
 };
 

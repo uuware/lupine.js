@@ -1,5 +1,6 @@
 import { CssProps } from '../jsx';
 import { ThemesProps } from '../models';
+import { ISimpleStorage } from './simple-storage-props';
 
 export type LangProps = { [key: string]: string };
 export type LangsProps = { [key: string]: LangProps };
@@ -34,4 +35,5 @@ export interface IRequestContextProps {
   globalStyleIds: Map<CssProps, string>;
   coreData: { [key: string]: any }; // for core development
   devData: { [key: string]: any }; // for secondary development
+  serverCookies?: ISimpleStorage; // per-request cookies for SSR (concurrency safe)
 }
