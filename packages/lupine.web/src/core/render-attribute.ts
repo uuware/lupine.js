@@ -3,6 +3,13 @@ import { camelToHyphens } from './camel-to-hyphens';
 
 export const domUniqueId = uniqueIdGenerator('l'); // l means label
 
+const escapeAttr = (val: any) => {
+  if (typeof val === 'string') {
+    return val.replace(/"/g, '&quot;');
+  }
+  return val;
+};
+
 export const genUniqueId = (props: any) => {
   if (!props._id) {
     props._id = domUniqueId();
@@ -35,12 +42,12 @@ export const renderAttribute = (type: any, props: any, jsxNodes: any, uniqueClas
         if (typeof props[i] === 'object') {
           let attrs = `${i}="`;
           for (let j in props[i]) {
-            attrs += `${camelToHyphens(j)}:${props[i][j]};`;
+            attrs += `${camelToHyphens(j)}:${escapeAttr(props[i][j])};`;
           }
           attrs += `"`;
           html.push(attrs);
         } else {
-          html.push(`${i}="${props[i]}"`);
+          html.push(`${i}="${escapeAttr(props[i])}"`);
         }
       } else if (i === 'css') {
         // css is a <style> tag, and is the first element in html
@@ -54,7 +61,7 @@ export const renderAttribute = (type: any, props: any, jsxNodes: any, uniqueClas
         }
       } else if (i === 'readonly' || i === 'disabled' || i === 'selected' || i === 'checked') {
         if (props[i] !== undefined && props[i] !== false && props[i] !== 'false') {
-          html.push(`${i}="${props[i]}"`);
+          html.push(`${i}="${escapeAttr(props[i])}"`);
         }
       } else if (i === 'class' || i === 'className') {
         let classNameList = props[i].split(' ').filter((item: string) => item && item !== '');
@@ -81,7 +88,7 @@ export const renderAttribute = (type: any, props: any, jsxNodes: any, uniqueClas
         }
         html.push(`class="${classNameList.join(' ')}"`);
       } else if (i !== 'dangerouslySetInnerHTML') {
-        html.push(`${i}="${props[i]}"`);
+        html.push(`${i}="${escapeAttr(props[i])}"`);
       }
     }
   }

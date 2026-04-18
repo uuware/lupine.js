@@ -4,7 +4,7 @@ import { mountInnerComponent } from './mount-component';
 import { renderComponentAsync } from './render-component';
 // import { callPageResetEvent } from './page-reset-events';
 import { callPageLoadedEvent } from './page-loaded-event';
-import { initServerCookies } from './server-cookie';
+
 import { IRequestContextProps, IToClientDelivery } from '../models';
 import { getMetaDataObject, getMetaDataTags, getPageTitle } from './bind-meta';
 import { initWebEnv } from '../lib/web-env';
@@ -16,7 +16,6 @@ import { bindRequestContext } from './use-request-context';
 import { CssProps } from '../jsx';
 import { _lupineJs } from './lupine-instance';
 
-
 const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
   if (typeof _lupineJs.router !== 'function') {
     return _lupineJs.router.handleRoute(props.url, props, renderPartPage);
@@ -26,13 +25,20 @@ const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
 
 // this is called by server side for SSR (server-side-rendering)
 const generatePage = async (props: PageProps, toClientDelivery: IToClientDelivery): Promise<PageResultType> => {
-  setRenderPageProps(props);
+  const gThis = globalThis as any;
+  if (!gThis.__SSR_ALS_PROPS__) {
+    throw new Error('__SSR_ALS_PROPS__ is not defined');
+  }
+  // Provide isolated tracking for this branch of execution against the shared V8 script Object memory
+  // not thread-safe
+  // setRenderPageProps(props);
 
-  bindRequestContext(() => toClientDelivery.getRequestContext());
+  // can't do bindRequestContext, because it's not thread-safe
+  // bindRequestContext(() => toClientDelivery.getRequestContext());
   initWebEnv(toClientDelivery.getWebEnv());
   WebConfig.initFromData(toClientDelivery.getWebSetting());
   // initWebSetting(toClientDelivery.getWebSetting());
-  initServerCookies(toClientDelivery.getServerCookie());
+
   // callPageResetEvent();
   callPageLoadedEvent();
 
@@ -58,6 +64,7 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
     metaData: getMetaDataTags(),
     globalCss: cssText,
     themeName: currentTheme.themeName,
+    // metaObject: getMetaDataObject(),
   };
 };
 _lupineJs.generatePage = generatePage;
