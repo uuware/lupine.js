@@ -18,7 +18,7 @@ const sampleIndexHtmlContent = `<!DOCTYPE html>
     <!--META-ENV-END-->
     <link rel="stylesheet" type="text/css" href="/assets/icons-font/style.css?t={hash}" />
     <link rel="stylesheet" type="text/css" href="{SUBDIR}/index.css?t={hash}" />
-    <script defer src="{SUBDIR}/index.js#t={hash}"></script>
+    <script defer src="{SUBDIR}/index.js?t={hash}"></script>
   </head>
   <body>
     <div class="lupine-root"></div>
