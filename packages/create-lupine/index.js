@@ -6,17 +6,23 @@ import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
 import { execSync } from 'node:child_process';
 
-function getLatestVersion(pkgName, fallback) {
-  try {
-    const version = execSync(`npm view ${pkgName} version`, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 3000,
-    }).trim();
-    return version ? `^${version}` : fallback;
-  } catch (e) {
-    return fallback;
+function getLatestVersion(pkgName, fallback, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const version = execSync(`npm view ${pkgName} version`, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 5000,
+      }).trim();
+      return version ? `^${version}` : fallback;
+    } catch (e) {
+      if (i === retries) {
+        console.warn(`\x1b[33mWarning: Failed to fetch latest version for ${pkgName}. Using fallback ${fallback}\x1b[0m`);
+        return fallback;
+      }
+    }
   }
+  return fallback;
 }
 
 function generateRandomString(length) {
@@ -289,8 +295,8 @@ async function init() {
       dev: 'node ./dev/dev-watch --env=.env.development --dev=1 --cmd=start-dev',
       build: 'node ./dev/dev-watch --env=.env.production --dev=0 --obfuscate=0',
       'build-mobile': 'node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1',
-      'start-dev': 'node dist/server_root/server/app-loader.js --env=.env.development',
-      'start-production': 'node dist/server_root/server/app-loader.js --env=.env.production',
+      'start-dev': 'node dist/server_root/server/server-loader.js --env=.env.development',
+      'start-production': 'node dist/server_root/server/server-loader.js --env=.env.production',
       format: 'prettier --write "**/*.{js,json,css,scss,md,html,yaml,ts,jsx,tsx}"',
     },
     dependencies: {

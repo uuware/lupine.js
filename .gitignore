@@ -24,3 +24,14 @@ example.com+*
 
 # build
 /dist
+/dist-test
+
+apps/xiaotiqinpu.com
+apps/cms
+.vscode/settings.json
+
+
+# dev/github
+dev/github/make-english-study-video
+dev/github/make-english-study-video-slow
+dev/github/mini-react
