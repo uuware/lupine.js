@@ -287,23 +287,7 @@ export class WebListener {
         await this.processor.processRequest(store, req, res);
       } catch (err: any) {
         logger.error(`Error terminating processRequest loop for url ${url}: `, err);
-      } // Finally block for manual REQUEST_COUNT removed
-      // await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // asyncLocalStorage.run(store, async () => {
-      //   try {
-      //     await onEnd();
-      //   } catch (error: any) {
-      //     logger.error(`url: ${url}, Request end error: `, error.message);
-      //   }
-
-      //   lastRequestTime = new Date().getTime();
-      //   const requestEnd = process.hrtime.bigint();
-      //   REQUEST_COUNT--;
-      //   logger.debug(
-      //     `Request finished. Count: ${REQUEST_COUNT}, url: ${url}, time: ${new Date().toISOString()}, duration: ${Number(requestEnd - requestStart) / 1000000} ms`
-      //   );
-      // });
+      }
     });
   }
 }
