@@ -1,17 +1,6 @@
-import { CssProps, isFrontEnd, PageProps } from 'lupine.web';
-import { DesignBlockBox } from './design-block-box';
-import { dragData, findTopBlock } from './drag-data';
-import { BlockGrid } from './block-grid';
-import { BlockTitle } from './block-title';
-import { BlockParagraph } from './block-paragraph';
-
-const fetchLogin = async (props: PageProps, username: string, password: string) => {
-  const data = await props.renderPageFunctions.fetchData('/api/admin/auth', {
-    u: username,
-    p: password,
-  });
-  return data.json;
-};
+import { CssProps, HtmlVar, isFrontEnd, PageProps, RefProps } from 'lupine.components';
+import { DesignStore, getDesignStore } from './design-store';
+import { DesignRenderer } from './design-renderer';
 
 export const AdminDesignPage = async (props: PageProps) => {
   if (!isFrontEnd()) {
@@ -21,154 +10,78 @@ export const AdminDesignPage = async (props: PageProps) => {
     return <div>This page should be running in an iframe.</div>;
   }
 
-  let dragStarted = false;
-  let dragEl: any = null;
-  let dragOverEl: any = null;
-  // set an object for parent to commutate
-  const msgSender = ((window as any)._lj_design = {
-    toIframe: (cmd: string, data: any) => {
-      console.log('iframe window', cmd, data);
-      if (cmd === 'drag-started') {
-        dragStarted = true;
-        dragEl = data.el;
-      }
-      if (cmd === 'drag-ended') {
-        dragData.resetDragOver();
-      }
+  const rootDom = new HtmlVar(<div>Loading Design...</div>);
 
-      if (cmd === 'add-block') {
-        console.log('addBlock', data);
+  const renderTree = () => {
+    // Top-level styling that enforces min-height and padding for the entire document canvas
+    rootDom.value = (
+      <div 
+        className="canvas-root" 
+        style={{ minHeight: '100vh', boxSizing: 'border-box' }}
+        onClick={(e) => {
+           // Clicking on empty space deselects everything
+           if (e.target === e.currentTarget) {
+              store.selectNode(null);
+           }
+        }}
+      >
+        <DesignRenderer node={store.tree} />
+      </div>
+    );
+  };
+
+  let store: DesignStore;
+  let isUnmounted = false;
+
+  const ref: RefProps = {
+    onLoad: async () => {
+      const initStoreEvents = (resolvedStore: DesignStore) => {
+        if (isUnmounted) return; // Prevent phantom mounts if iframe unloaded before onload
+
+        // Consolidate 'Source of Truth' assignment 
+        store = resolvedStore;
+        (window as any)._lj_designStore = resolvedStore;
+
+        store.on('TREE_UPDATE', renderTree);
+        store.on('NODE_SELECTED', renderTree);
+        store.on('PREVIEW_TOGGLED', renderTree);
+        // Initial render
+        renderTree();
+      };
+
+      const existingStore = getDesignStore();
+      if (existingStore) {
+        initStoreEvents(existingStore);
+      } else {
+        // Fallback for Race Condition: if iframe loads faster than parent injects it
+        (window as any)._lj_designInit = (injectedStore: DesignStore) => {
+          initStoreEvents(injectedStore);
+        };
       }
     },
-  });
-
-  dragData.resetDragOver = () => {
-    if (dragData.overBlock) {
-      dragData.overBlock.classList.remove('drag-over');
-      dragData.overBlock.classList.remove('drag-over-top');
-      dragData.overBlock.classList.remove('drag-over-bottom');
-      dragData.overBlock = null;
+    onUnload: async () => {
+      isUnmounted = true;
+      if (store) {
+        store.off('TREE_UPDATE', renderTree);
+        store.off('NODE_SELECTED', renderTree);
+        store.off('PREVIEW_TOGGLED', renderTree);
+      }
     }
   };
+
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
     height: '100%',
     minHeight: '100%',
-    overflowY: 'auto',
-    '>.design-container': {
-      flexDirection: 'column',
-    },
-    '.design-container': {
-      display: 'flex',
-      flex: '1',
-      flexWrap: 'wrap',
-    },
-  };
-
-  const drop = (ev: any) => {
-    dragStarted = false;
-    ev.preventDefault();
-    const data = ev.dataTransfer.getData('text/plain');
-    console.log('drop', ev, data);
-    // ev.target.appendChild(document.getElementById(data));
-    if (data === 'block-paragraph') {
-      const newBlock = document.createElement('div');
-      newBlock.innerHTML = 'new block';
-      newBlock.classList.add('design-block-box');
-      newBlock.classList.add('dragging');
-      newBlock.draggable = true;
-      newBlock.addEventListener('dragend', dragData.resetDragOver);
-      ev.target.appendChild(newBlock);
-    }
-
-    if (dragOverEl && dragEl) {
-      // let dragEl = dragData.dragBlock;
-      // if (props.isNewBlock) {
-      //   dragEl = dragData.dragBlock.clone();
-      // }
-
-      // a design-container without children
-      if (dragOverEl.classList.contains('design-container') && dragOverEl.children.length === 1) {
-        dragOverEl.appendChild(dragEl);
-        return;
-      }
-      if (dragData.position == 'top') {
-        dragOverEl.parentNode.insertBefore(dragEl, dragOverEl);
-      } else {
-        dragOverEl.parentNode.insertBefore(dragEl, dragOverEl.nextSibling);
-      }
-    }
-  };
-  const dragOver = (ev: any) => {
-    ev.preventDefault();
-    console.log('dragData', ev, dragStarted);
-    if (!dragStarted) {
-      return;
-    }
-
-    // whether inside design-container without any children (only style)
-    const overContainer = findTopBlock(ev.target, 'design-container');
-    console.log('overContainer', overContainer);
-    dragOverEl = overContainer;
-    if (overContainer && overContainer.children.length === 1) {
-      dragData.resetDragOver();
-      dragData.overBlock = overContainer;
-      overContainer.classList.add('drag-over');
-      return;
-    }
-
-    // over another design-block-box
-    const overEl = findTopBlock(ev.target, 'design-block-box');
-    if (!overEl || overEl.classList.contains('dragging')) {
-      return;
-    }
-
-    dragOverEl = overEl;
-    dragData.resetDragOver();
-    dragData.overBlock = overEl;
-    const rect = overEl.getBoundingClientRect();
-    const y = ev.clientY - rect.top;
-    if (y < rect.height / 2) {
-      dragData.position = 'top';
-      overEl.classList.add('drag-over-top');
-    }
-    if (y > rect.height / 2) {
-      dragData.position = 'bottom';
-      overEl.classList.add('drag-over-bottom');
-    }
-  };
-  const dragLeave = (ev: any) => {
-    ev.preventDefault();
-    dragData.resetDragOver();
+    backgroundColor: 'var(--primary-bg-color, #ffffff)', // Light background for design canvas
+    color: 'var(--primary-color, #333333)',
   };
 
   return (
-    <div css={css} class='design-container-top'>
-      <div class='design-container' onDrop={drop} onDragOver={dragOver} onDragLeave={dragLeave}>
-        <DesignBlockBox id='1'>
-          <BlockTitle>design block one</BlockTitle>
-        </DesignBlockBox>
-        <DesignBlockBox id='2'>
-          <BlockGrid />
-        </DesignBlockBox>
-        <DesignBlockBox id='3'>
-          <BlockTitle>design block three</BlockTitle>
-        </DesignBlockBox>
-        <DesignBlockBox id='4'>
-          <BlockParagraph>design block three</BlockParagraph>
-        </DesignBlockBox>
-        <DesignBlockBox id='5'>
-          <BlockTitle>design block three</BlockTitle>
-        </DesignBlockBox>
-        <DesignBlockBox id='6'>
-          <BlockGrid />
-        </DesignBlockBox>
-        <DesignBlockBox id='7'>
-          <BlockGrid />
-        </DesignBlockBox>
-      </div>
+    <div css={css} ref={ref}>
+       {rootDom.node}
     </div>
   );
 };
