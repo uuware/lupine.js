@@ -12,13 +12,12 @@ function getLatestVersion(pkgName, fallback, retries = 2) {
       const version = execSync(`npm view ${pkgName} version`, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
-        timeout: 5000,
+        timeout: 10000,
       }).trim();
       return version ? `^${version}` : fallback;
     } catch (e) {
       if (i === retries) {
-        console.warn(`\x1b[33mWarning: Failed to fetch latest version for ${pkgName}. Using fallback ${fallback}\x1b[0m`);
-        return fallback;
+        throw new Error(`\x1b[31m✖ Failed to fetch latest version for ${pkgName} from npm registry after ${retries} retries. Please check your network connection.\x1b[0m`);
       }
     }
   }
