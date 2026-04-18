@@ -9,16 +9,15 @@ import {
   langHelper,
   FsUtils,
   adminApiHelper,
-  processRefreshCache,
   apiStorage,
-  processRestartApp,
-  processShell,
-  WebServer,
+  IWebServer,
+  AppCacheGlobal,
+  AppCacheKeys,
+  getAppCache,
 } from 'lupine.api';
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
 import { adminTokenHelper } from './admin-token-helper';
-import { AppCacheGlobal, AppCacheKeys, getAppCache } from '../models';
 
 const releaseProgress = 'admin-release-progress';
 export class AdminRelease implements IApiBase {
@@ -102,7 +101,7 @@ export class AdminRelease implements IApiBase {
     const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
     const jsonData = req.locals.json();
     if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
-      await processRefreshCache(req);
+      await ServerControlProxy.processRefreshCache?.(req);
       const response = {
         status: 'ok',
         message: 'Cache refreshed successfully.',
@@ -143,7 +142,7 @@ export class AdminRelease implements IApiBase {
     const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
     const jsonData = req.locals.json();
     if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
-      await processRestartApp();
+      await ServerControlProxy.processRestartApp?.();
       const response = {
         status: 'ok',
         message: 'Restart app successfully.',
@@ -219,7 +218,7 @@ export class AdminRelease implements IApiBase {
     const json = await adminApiHelper.getDevAdminFromCookie(req, res, false);
     const jsonData = req.locals.json();
     if (json && jsonData && !Array.isArray(jsonData) && jsonData.isLocal) {
-      const result = await processShell(req);
+      const result = await ServerControlProxy.processShell?.(req);
       const response = {
         status: 'ok',
         message: 'Shell executed successfully.',
@@ -509,7 +508,7 @@ export class AdminRelease implements IApiBase {
         ApiHelper.sendJson(req, res, result);
         return true;
       }
-      const result2 = await this.updateSendFile(data, 'app-loader');
+      const result2 = await this.updateSendFile(data, 'server-loader');
       if (!result2 || result2.status !== 'ok') {
         ApiHelper.sendJson(req, res, result2);
         return true;
@@ -535,8 +534,8 @@ export class AdminRelease implements IApiBase {
     let sendFile = '';
     if (chkOption === 'server') {
       sendFile = path.join(appData.apiPath, '..', 'server', 'index.js');
-    } else if (chkOption === 'app-loader') {
-      sendFile = path.join(appData.apiPath, '..', 'server', 'app-loader.js');
+    } else if (chkOption === 'server-loader') {
+      sendFile = path.join(appData.apiPath, '..', 'server', 'server-loader.js');
     } else if (chkOption === 'api') {
       sendFile = path.join(appData.apiPath, '..', fromList + '_api', 'index.js');
       // } else if (chkOption === 'web') {
@@ -624,7 +623,7 @@ export class AdminRelease implements IApiBase {
         !chkOption ||
         !toList ||
         (chkOption !== 'server' &&
-          chkOption !== 'app-loader' &&
+          chkOption !== 'server-loader' &&
           chkOption !== 'api' &&
           // chkOption !== 'web' &&
           chkOption !== 'web-sub' &&
@@ -642,8 +641,8 @@ export class AdminRelease implements IApiBase {
       let saveFile = '';
       if (chkOption === 'server') {
         saveFile = path.join(appData.apiPath, '..', 'server', 'index.js');
-      } else if (chkOption === 'app-loader') {
-        saveFile = path.join(appData.apiPath, '..', 'server', 'app-loader.js');
+      } else if (chkOption === 'server-loader') {
+        saveFile = path.join(appData.apiPath, '..', 'server', 'server-loader.js');
       } else if (chkOption === 'api') {
         saveFile = path.join(appData.apiPath, '..', toList + '_api', 'index.js');
         // } else if (chkOption === 'web') {
@@ -706,7 +705,7 @@ export class AdminRelease implements IApiBase {
     const data = await this.chkData(jsonData, req, res, true);
     if (!data) return true;
 
-    await processRefreshCache(req);
+    await ServerControlProxy.processRefreshCache?.(req);
     const response = {
       status: 'ok',
       message: 'Cache refreshed successfully.',
@@ -720,7 +719,7 @@ export class AdminRelease implements IApiBase {
     const data = await this.chkData(jsonData, req, res, true);
     if (!data) return true;
 
-    await processRestartApp();
+    await ServerControlProxy.processRestartApp?.();
     const response = {
       status: 'ok',
       message: 'Restart app successfully.',
@@ -739,7 +738,7 @@ export class AdminRelease implements IApiBase {
   }
 
   private executeReloadCerts(req: ServerRequest, res: ServerResponse) {
-    const webServer = getAppCache().get(AppCacheGlobal, AppCacheKeys.WEB_SERVER) as WebServer;
+    const webServer = getAppCache().get(AppCacheGlobal, AppCacheKeys.WEB_SERVER) as IWebServer;
     if (webServer) {
       webServer.reloadCertificates();
       const response = {
@@ -761,7 +760,7 @@ export class AdminRelease implements IApiBase {
     const data = await this.chkData(jsonData, req, res, true);
     if (!data) return true;
 
-    const result = await processShell(req);
+    const result = await ServerControlProxy.processShell?.(req);
     const response = {
       status: 'ok',
       message: 'Shell executed successfully.',
@@ -771,3 +770,5 @@ export class AdminRelease implements IApiBase {
     return true;
   }
 }
+
+import { ServerControlProxy } from '../api/server-control-proxy';

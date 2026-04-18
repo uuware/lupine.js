@@ -54,3 +54,7 @@ export class DebugService {
     this.miniWebSocket.broadcast(JSON.stringify(msg));
   }
 }
+
+import { DevServiceProxy } from './dev-service-proxy';
+DevServiceProxy.handleUpgrade = DebugService.handleUpgrade.bind(DebugService);
+DevServiceProxy.broadcastRefresh = DebugService.broadcastRefresh.bind(DebugService);

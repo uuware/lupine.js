@@ -1,6 +1,5 @@
 import { ServerResponse } from 'http';
-import { exportCSVData, exportCSVHead, Logger } from 'lupine.api';
-import { Db } from '../lib/db';
+import { exportCSVData, exportCSVHead, Logger, Db } from 'lupine.api';
 
 const logger = new Logger('admin-csv');
 

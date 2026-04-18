@@ -10,8 +10,17 @@ export class DbSqlite extends Db {
   constructor(option: DbConfig) {
     super(option);
 
+    let nativeBinding;
+    try {
+      nativeBinding = require('path').join(
+        require('path').dirname(require.resolve('better-sqlite3/package.json')),
+        'build/Release/better_sqlite3.node'
+      );
+    } catch (e) {
+      nativeBinding = 'node_modules/better-sqlite3/build/Release/better_sqlite3.node'; // fallback to production default
+    }
     this.db = new Database(option.filename!, {
-      nativeBinding: 'node_modules/better-sqlite3/build/Release/better_sqlite3.node',
+      nativeBinding,
     });
     this.db.pragma('journal_mode = WAL');
 

@@ -9,7 +9,7 @@ import {
   ApiHelper,
   langHelper,
   FsUtils,
-  appStorage,
+  apiStorage,
 } from 'lupine.api';
 import path from 'path';
 
@@ -82,7 +82,7 @@ export class AdminConfig implements IApiBase {
     const cfgPath = path.join(appData.dataPath, 'config.json');
     await fs.writeFile(cfgPath, JSON.stringify(data.json));
 
-    await appStorage.load(appData.appName, appData.dataPath);
+    await apiStorage.getAppSharedStorage().load(appData.appName, appData.dataPath);
 
     const response = {
       status: 'ok',

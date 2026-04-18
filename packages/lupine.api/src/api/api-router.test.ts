@@ -161,6 +161,8 @@ describe('ApiRouter Execution Engine', () => {
     });
 
     const res = createMockRes();
+    console.log('');
+    console.log('--- NOTE: Expecting an ERROR log below from [api-router] testing crash handling ---');
     await router.handleRequest('/crash', createMockReq(), res);
 
     assert.equal((res as any)._getStatus(), 500);
