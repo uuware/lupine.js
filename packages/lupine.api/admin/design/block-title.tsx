@@ -1,19 +1,21 @@
-import { ComponentChildren, CssProps } from 'lupine.web';
-import { DesignBlockBox } from './design-block-box';
+import { CssProps } from 'lupine.web';
+import { DesignNode } from './design-store';
 
-export type BlockGridProps = {
-  children: ComponentChildren;
-};
-export const BlockTitle = (props: BlockGridProps) => {
+export const BlockTitle = (props: { node: DesignNode }) => {
+  const p = props.node.props;
   const css: CssProps = {
-    // width: '100%',
-    fontSize: 'var(--font-size-title)',
-    margin: '8px 16px',
+    margin: p.margin || '0',
+    padding: p.padding || '0',
+    textAlign: p.textAlign || 'left',
+    color: p.color || 'inherit',
+    overflow: 'hidden',
+    minWidth: '0',
   };
 
+  // Convert generic 'h1' - 'h6' string to a tag name. Fallback if something weird happens.
+  const Tag = (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(p.level) ? p.level : 'h2') as any;
+
   return (
-    <div css={css} class='block-title'>
-      {props.children}
-    </div>
+    <Tag css={css} class='block-title' dangerouslySetInnerHTML={p.text} />
   );
 };
