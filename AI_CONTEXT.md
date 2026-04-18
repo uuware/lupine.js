@@ -76,23 +76,23 @@ Since Lupine.js uses a CSS-in-JS styling approach, when you need to define or ov
 // 1. Separate theme variables into their own CSS object
 const cssTheme: CssProps = {
   '[data-theme="light" i]': {
-    "--my-comp-bg-color": "#e6e6e6",
+    '--my-comp-bg-color': '#e6e6e6',
   },
   '[data-theme="dark" i]': {
-    "--my-comp-bg-color": "var(--primary-accent-color)",
+    '--my-comp-bg-color': 'var(--primary-accent-color)',
   },
 };
 // 2. Bind globally. Param 4 (noTopClassName) MUST be true to prevent injecting a namespace prefix.
-bindGlobalStyle("my-comp-theme", cssTheme, false, true);
+bindGlobalStyle('my-comp-theme', cssTheme, false, true);
 
 // 3. Use the variable in your standard component styles
 const css: CssProps = {
-  ".&-element": {
-    backgroundColor: "var(--my-comp-bg-color)",
+  '.&-element': {
+    backgroundColor: 'var(--my-comp-bg-color)',
   },
 };
 // Bind your component styles normally
-bindGlobalStyle("my-comp-main", css);
+bindGlobalStyle('my-comp-main', css);
 ```
 
 #### 🎨 Color Variable Semantics (CRITICAL FOR DARK MODE)
@@ -131,22 +131,22 @@ export const MyComponent = () => {
   const ref: RefProps = {
     onLoad: async () => {
       // 3. Querying namespaced elements
-      const btn = ref.$(".&-btn");
-      btn.innerHTML = "Ready";
+      const btn = ref.$('.&-btn');
+      btn.innerHTML = 'Ready';
     },
   };
 
   const css: CssProps = {
     // Top-level rules apply to the root component container itself
-    width: "100%",
-    padding: "1rem",
+    width: '100%',
+    padding: '1rem',
 
     // 1. Defining namespaced sub-classes in CSS:
-    ".&-title": { fontWeight: "bold" },
-    ".&-btn": {
+    '.&-title': { fontWeight: 'bold' },
+    '.&-btn': {
       // Nesting pseudo-classes and combination modifiers (no space after &)
-      "&:hover": { background: "#f0f0f0" },
-      "&.active": { color: "var(--primary-accent-color)" },
+      '&:hover': { background: '#f0f0f0' },
+      '&.active': { color: 'var(--primary-accent-color)' },
     },
   };
 
@@ -154,8 +154,8 @@ export const MyComponent = () => {
     // Setting css={css} safely bounds this style scope
     <aside css={css} ref={ref}>
       {/* 2. Applying namespaced classes in JSX */}
-      <div class="&-title">Hello</div>
-      <button class="&-btn active">Click Me</button>
+      <div class='&-title'>Hello</div>
+      <button class='&-btn active'>Click Me</button>
     </aside>
   );
 };
@@ -214,24 +214,19 @@ If your component divides its logic so that some internal floating DOM elements 
 To force separated local DOM partitions to share the exact same `&` CSS Scope as their parent page, explicitly share a globally unique CSS ID using `globalStyleUniqueId()`:
 
 ```tsx
-import {
-  globalStyleUniqueId,
-  HtmlVar,
-  RefProps,
-  CssProps,
-} from "lupine.components";
+import { globalStyleUniqueId, HtmlVar, RefProps, CssProps } from 'lupine.components';
 
 export const HomePage = () => {
   // 1. Generate a manual ID for the container scope beforehand
   const cssId = globalStyleUniqueId();
 
-  const listDom = new HtmlVar("");
+  const listDom = new HtmlVar('');
 
   const renderList = () => {
     // 2. Explicitly bind the inner detached DOM to the parent's globalCssId
     listDom.value = (
-      <div ref={{ globalCssId: cssId }} class="&-bundle-container">
-        <div class="&-bundle-name">Basic Bundle</div>
+      <div ref={{ globalCssId: cssId }} class='&-bundle-container'>
+        <div class='&-bundle-name'>Basic Bundle</div>
       </div>
     );
   };
@@ -240,7 +235,7 @@ export const HomePage = () => {
     globalCssId: cssId, // 3. The parent registers the ID as well
     onLoad: async () => renderList(),
   };
-  const css: CssProps = { ".&-bundle-name": { color: "red" } };
+  const css: CssProps = { '.&-bundle-name': { color: 'red' } };
 
   return (
     <div css={css} ref={ref}>
@@ -253,24 +248,24 @@ export const HomePage = () => {
 
 ### Using `&` on Top-Level Tags
 
-The following example illustrates how to correctly use `&` in the `class` of a top-level tag. 
+The following example illustrates how to correctly use `&` in the `class` of a top-level tag.
 
 Generally, you should not need to use `&` classes on the top-level tag because you can reference the top-level tag directly via `ref.current`. For styling, the first-level styles defined directly under your `CssProps` object are automatically applied to the top-level tag (e.g., `color: 'red'` below).
 
-However, when there is a special need to use an `&-` class prefix on the top-level tag, you must be careful: **`"&.&-box"`** is the correct syntax. This is because the standalone `&` selector is replaced by both the explicit `gCssId` and the CSS ID automatically generated for this top-level tag. 
+However, when there is a special need to use an `&-` class prefix on the top-level tag, you must be careful: **`"&.&-box"`** is the correct syntax. This is because the standalone `&` selector is replaced by both the explicit `gCssId` and the CSS ID automatically generated for this top-level tag.
 
 For instance, if `gCssId="g00"` and the auto-generated CSS ID applied by the `ref` is `"l01"`, then `"&.&-box"` compiles to `"g00.g00-box, l01.l01-box"`.
 
 Similarly, a nested selector like `"&.&-box .&-item"` will be compiled into `"g00.g00-box .g00-item, l01.l01-box .l01-item"`.
 
-*(Alternatively, if you define the class without the `&-` prefix like `class="box"`, you would target it using `"&.box"`).*
+_(Alternatively, if you define the class without the `&-` prefix like `class="box"`, you would target it using `"&.box"`)._
+
 ```typescript
 export const Component1 = () => {
-
   const css: CssProps = {
     color: 'red',
-    "&.&-box": { fontWeight: 'bold' },
-    "&.&-box .&-item": { backgroundColor: 'blue' },
+    '&.&-box': { fontWeight: 'bold' },
+    '&.&-box .&-item': { backgroundColor: 'blue' },
   };
   const gCssId = getGlobalStylesId(css);
   bindGlobalStyle(gCssId, css);
@@ -285,8 +280,6 @@ export const Component1 = () => {
   );
 };
 ```
-
-
 
 ---
 
@@ -319,7 +312,7 @@ const MyPage = () => {
   // 4. Events
   const onSearch = async () => {
     // Read directly from DOM
-    const query = ref.$("input.&-search").value;
+    const query = ref.$('input.&-search').value;
     // Update logic var
     pageIndex = 0;
     // Update UI manually
@@ -334,7 +327,7 @@ const MyPage = () => {
 
   return (
     <div ref={ref}>
-      <input class="&-search" />
+      <input class='&-search' />
       <button onClick={onSearch}>Go</button>
       {/* Embed Dynamic Content */}
       {listDom.node}
@@ -352,11 +345,11 @@ When performing imperative or programmatic routing via JavaScript (e.g. clicking
 Instead, import and use `initializePage`:
 
 ```typescript
-import { initializePage } from "lupine.web";
+import { initializePage } from 'lupine.web';
 
 const navigate = () => {
   // CORRECT: Seamless SPA transition
-  initializePage("/play/diff01/1");
+  initializePage('/play/diff01/1');
 
   // ERROR / ANTI-PATTERN: Forces full browser reload unless explicitly desired
   // window.location.href = '/play/diff01/1';
@@ -368,11 +361,7 @@ const navigate = () => {
 Lupine uses a "Slide-over" model for navigation (Drill-down). To achieve infinite nesting (where a child page can open a grandchild page), each Component level simply needs to define its own `sliderHook` and its own `<SliderFrame>` tag to act as the placeholder for its children.
 
 ```typescript
-import {
-  SliderFrame,
-  SliderFrameHookProps,
-  HeaderWithBackFrame,
-} from "lupine.components";
+import { SliderFrame, SliderFrameHookProps, HeaderWithBackFrame } from 'lupine.components';
 
 // 1. Parent Component (or Level 1)
 const Parent = () => {
@@ -381,9 +370,7 @@ const Parent = () => {
 
   const openDetail = (id) => {
     // Push new view onto stack
-    sliderHook.load!(
-      <DetailComponent id={id} parentSliderFrameHook={sliderHook} />,
-    );
+    sliderHook.load!(<DetailComponent id={id} parentSliderFrameHook={sliderHook} />);
   };
 
   return (
@@ -397,28 +384,17 @@ const Parent = () => {
 };
 
 // 2. Child Component (Level 2)
-const DetailComponent = (props: {
-  id: number;
-  parentSliderFrameHook: SliderFrameHookProps;
-}) => {
+const DetailComponent = (props: { id: number; parentSliderFrameHook: SliderFrameHookProps }) => {
   // Define hook for Level 3
   const childSliderHook: SliderFrameHookProps = {};
 
   const openDeeper = () => {
     // Load Level 3 component into this component's placeholder
-    childSliderHook.load!(
-      <DetailComponent
-        id={props.id + 1}
-        parentSliderFrameHook={childSliderHook}
-      />,
-    );
+    childSliderHook.load!(<DetailComponent id={props.id + 1} parentSliderFrameHook={childSliderHook} />);
   };
 
   return (
-    <HeaderWithBackFrame
-      title="Detail Page"
-      onBack={(e) => props.parentSliderFrameHook.close!(e)}
-    >
+    <HeaderWithBackFrame title='Detail Page' onBack={(e) => props.parentSliderFrameHook.close!(e)}>
       {/* Placeholder for Level 3 */}
       <SliderFrame hook={childSliderHook} />
 
@@ -454,7 +430,7 @@ const Parent = () => {
   const ref: RefProps = {
     onLoad: async () => {
       // Safe: Child has rendered and populated the hook
-      myHook.setValue("Hello");
+      myHook.setValue('Hello');
     },
   };
 
@@ -507,14 +483,14 @@ You can import an `.svg` file (if your bundler supports it) or define a raw Data
 
 ```typescript
 // Option A: Using bundler import
-import githubIcon from "github.svg";
+import githubIcon from 'github.svg';
 
 // Option B: Raw Data URI string
 const closeSvgData = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E`;
 
 export const DemoIcons = {
   github: githubIcon,
-  "ma-close": closeSvgData,
+  'ma-close': closeSvgData,
 };
 ```
 
@@ -524,9 +500,9 @@ Use the `-webkit-mask-image` and `maskImage` property wrapped in `url()` to appl
 ```typescript
 const css: CssProps = {
   // Target the specific system icon class you wish to override
-  ".ifc-icon.ma-close": {
-    "-webkit-mask-image": `url("${DemoIcons["ma-close"]}")`,
-    maskImage: `url("${DemoIcons["ma-close"]}")`,
+  '.ifc-icon.ma-close': {
+    '-webkit-mask-image': `url("${DemoIcons['ma-close']}")`,
+    maskImage: `url("${DemoIcons['ma-close']}")`,
     // If needed, specify mask sizing properties:
     // maskRepeat: 'no-repeat',
     // maskPosition: 'center',
@@ -623,12 +599,12 @@ For interactive lists, `createDragUtil()` from `lupine.components` handles compl
 1. **Option Selection (`ActionSheetSelectPromise`)** (Replaces `confirm()` or complex choices):
 
    ```typescript
-   import { ActionSheetSelectPromise } from "lupine.components";
+   import { ActionSheetSelectPromise } from 'lupine.components';
 
    const index = await ActionSheetSelectPromise({
-     title: "Delete this saved game?", // Optional
-     options: ["Delete", "Edit"],
-     cancelButtonText: "Cancel",
+     title: 'Delete this saved game?', // Optional
+     options: ['Delete', 'Edit'],
+     cancelButtonText: 'Cancel',
    });
 
    if (index === 0) {
@@ -642,25 +618,25 @@ For interactive lists, `createDragUtil()` from `lupine.components` handles compl
 2. **Simple Messages (`ActionSheetMessagePromise`)** (Replaces `alert()`):
 
    ```typescript
-   import { ActionSheetMessagePromise } from "lupine.components";
+   import { ActionSheetMessagePromise } from 'lupine.components';
 
    await ActionSheetMessagePromise({
-     title: "Success", // Optional
-     message: "Your profile has been saved.",
-     closeButtonText: "OK", // Optional, defaults to a close behavior
+     title: 'Success', // Optional
+     message: 'Your profile has been saved.',
+     closeButtonText: 'OK', // Optional, defaults to a close behavior
    });
    ```
 
 3. **User Input (`ActionSheetInputPromise`)** (Replaces `prompt()`):
 
    ```typescript
-   import { ActionSheetInputPromise } from "lupine.components";
+   import { ActionSheetInputPromise } from 'lupine.components';
 
    const value = await ActionSheetInputPromise({
-     title: "Enter your name",
+     title: 'Enter your name',
      // placeholder: 'Player 1', // Optional
-     confirmButtonText: "Submit", // Optional
-     cancelButtonText: "Cancel", // Optional
+     confirmButtonText: 'Submit', // Optional
+     cancelButtonText: 'Cancel', // Optional
    });
 
    if (value !== null) {
@@ -680,12 +656,12 @@ When building mobile interfaces, users expect the physical hardware "Back" butto
 **The Rule**: Whenever you implement a cancel button, a close icon (`X`), or a back chevron (`<`) in a mobile overlay or frame, you **MUST** attach the `data-back-action` attribute using the `backActionHelper`.
 
 ```typescript
-import { backActionHelper } from "lupine.components";
+import { backActionHelper } from 'lupine.components';
 
 export const MyCloseButton = ({ onClose }) => {
   return (
     <i
-      class="ifc-icon ma-close"
+      class='ifc-icon ma-close'
       // Generate a unique ID for the back stack
       data-back-action={backActionHelper.genBackActionId()}
       onClick={onClose}
