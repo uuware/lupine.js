@@ -8,7 +8,7 @@ import {
   JsonObject,
   formatBytes,
   DateUtils,
-  getRequestCount,
+  
   ApiRouter,
   IApiBase,
   Logger,
@@ -17,7 +17,7 @@ import {
   getAppCache,
 } from 'lupine.api';
 import { adminApiHelper } from './admin-api-helper';
-import { needDevAdminSession } from './admin-auth';
+import { ServerControlProxy } from '../api/server-control-proxy';
 
 // #https://github.com/sebhildebrandt/systeminformation
 export class AdminPerformance implements IApiBase {
@@ -52,7 +52,7 @@ export class AdminPerformance implements IApiBase {
           runningTime: DateUtils.diffString(new Date(), getAppCache().get(AppCacheGlobal, AppCacheKeys.START_TIME)),
           // request info
           // process info
-          inProcessingRequests: getRequestCount(),
+          inProcessingRequests: ServerControlProxy.getRequestCount?.(),
           isPrimary: cluster.isPrimary,
           workerId: cluster.worker ? cluster.worker.id : 0,
         },

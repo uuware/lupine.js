@@ -9,5 +9,6 @@ export type AsyncStorageProps = {
   hostPath: HostToPathProps;
   locals: LocalsProps;
   lang: string;
+  req?: any; // ServerRequest
   [key: string]: any;
 };

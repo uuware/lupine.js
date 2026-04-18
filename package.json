@@ -30,8 +30,8 @@
     "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1 --obfuscate=0",
     "cp-docs": "node dev/cp-folder.js dist/server_root/doc_web/lupine.js docs",
     "cp-temps": "node dev/cp-temps.js",
-    "start-dev": "node dist/server_root/server/app-loader.js --env=.env.development",
-    "start-production": "node dist/server_root/server/app-loader.js --env=.env.production",
+    "start-dev": "node dist/server_root/server/server-loader.js --env=.env.development",
+    "start-production": "node dist/server_root/server/server-loader.js --env=.env.production",
     "rm-map": "node dev/rm-map.js",
     "format": "prettier --write \"**/*.{js,json,css,scss,md,html,yaml,ts,jsx,tsx}\""
   },

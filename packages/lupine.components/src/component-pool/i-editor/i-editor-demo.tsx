@@ -2,7 +2,7 @@ import { CssProps, RefProps } from 'lupine.web';
 import { DemoStory } from '../../demo/demo-types';
 import { IEditor } from './i-editor';
 
-export const IEditorDemoPage = () => {
+export const IEditorDemoPage = (props: { css?: CssProps }) => {
   let editor: IEditor | undefined;
 
   const ref: RefProps = {
@@ -42,6 +42,7 @@ export const IEditorDemoPage = () => {
       width: '100%',
       height: '100%',
     },
+    ...props.css,
   };
 
   return (

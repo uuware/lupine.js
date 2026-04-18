@@ -58,6 +58,7 @@ export class LogWriter {
     };
 
     this.level = Object.keys(LogLevels).findIndex((item) => item === this.getConfig().level);
+    this.savedSize = 0; // Prevent uninitialized state fallback bug
     if (this.fileHandle > 0) {
       fs.closeSync(this.fileHandle);
       this.fileHandle = 0;

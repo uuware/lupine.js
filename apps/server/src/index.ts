@@ -4,13 +4,10 @@ import {
   CryptoUtils,
   HostToPathProps,
   appStart,
-  bindRenderPageFunctions,
   getDefaultDbConfig,
-  getRenderPageFunctions,
   loadEnv,
   setAccessControlAllowHost,
-} from 'lupine.api';
-import { fetchData } from './fetch-data';
+} from 'lupine.api/server';
 import { ServerEnvKeys } from './server-env-keys';
 
 const initAndStartServer = async () => {
@@ -19,7 +16,6 @@ const initAndStartServer = async () => {
   const envFile = process.argv.find((i) => i.startsWith('--env='))?.substring(6) || '.env';
   // it can use "#!import file_name" to import another env file
   await loadEnv(envFile);
-  bindRenderPageFunctions({ fetchData });
 
   const dbConfig = { ...getDefaultDbConfig() };
   const serverRootPath = path.resolve(process.env[ServerEnvKeys.SERVER_ROOT_PATH]!);
@@ -63,7 +59,6 @@ const initAndStartServer = async () => {
     debug: process.env[ServerEnvKeys.NODE_ENV] === 'development',
     devToken: CryptoUtils.sha256(process.env['DEV_TOKEN'] || ''),
     appEnvFile: envFile,
-    renderPageFunctions: getRenderPageFunctions(),
     apiConfig: {
       serverRoot: `${serverRootPath}`,
       webHostMap: webRootMap,

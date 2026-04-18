@@ -7,3 +7,6 @@ export * from './admin-login';
 export * from './admin-release';
 export * from './admin-tokens';
 export * from './admin-performance';
+export * from './design/render-page';
+
+export * from './service';

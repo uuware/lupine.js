@@ -4,7 +4,7 @@ import * as path from 'path';
 import { ServerResponse } from 'http';
 import { Logger } from '../lib';
 import { ServerRequest } from '../models/locals-props';
-import { handler200, handler404, handler500 } from './handle-status';
+import { handler200, handler404, handler500 } from '../shared/handle-status';
 import { serverSideRenderPage } from './server-render';
 import { serverContentType } from './server-content-type';
 import { apiCache } from './api-cache';

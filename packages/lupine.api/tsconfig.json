@@ -107,7 +107,7 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "external": ["require", "fs", "path"],
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.tsx", "src/app-loader/app-loader.ts"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.tsx", "src/server-loader/server-loader.ts"],
   "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.spec.ts"]
   // "references": [
   // 	{ "path": "frontend-src/tsconfig.json" }

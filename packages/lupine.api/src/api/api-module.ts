@@ -9,18 +9,36 @@ import {
   IApiModule,
   IAppCache,
   IAppSharedStorage,
+  RenderPageFunctionsType,
   setAppCache,
 } from '../models';
 import { apiStorage } from './api-shared-storage';
+import { baseUrl, fetchData } from './service/fetch-data';
+import { assignToServerDevServiceProxy } from './dev-service-proxy';
+import { assignFromServerControlProxy } from './server-control-proxy';
 
+const defaultRenderPageFunctions: Partial<RenderPageFunctionsType> = {
+  baseUrl,
+  fetchData,
+};
 export class ApiModule implements IApiModule {
   rootApi: IApiBase;
-  constructor(api: IApiBase) {
+  constructor(api: IApiBase, renderPageFunctions: Partial<RenderPageFunctionsType> = defaultRenderPageFunctions) {
     this.rootApi = api;
+    bindRenderPageFunctions(renderPageFunctions);
   }
 
   public async processApi(store: AsyncStorageProps, url: string, req: ServerRequest, res: ServerResponse) {
     let result = false;
+    // Check if we are already in the exact same async context (e.g., recursive internal fetch)
+    const currentStore = asyncLocalStorage.getStore();
+    if (currentStore && currentStore.uuid === store.uuid) {
+      if (await this.rootApi.getRouter().findRoute(url, req, res, true)) {
+        return true;
+      }
+      return false;
+    }
+
     await asyncLocalStorage.run(store, async () => {
       if (await this.rootApi.getRouter().findRoute(url, req, res, true)) {
         result = true;
@@ -29,6 +47,8 @@ export class ApiModule implements IApiModule {
     });
     return result;
   }
+
+
 
   // appCache is from app-helper (parent scope), not the same in current scope
   public async initApi(appConfig: HostToPathProps, appCacheFromApp: IAppCache, appStorageFromApp: IAppSharedStorage) {
@@ -42,7 +62,9 @@ export class ApiModule implements IApiModule {
     // setAppStorage(appStorageFromApp);
     apiStorage.setAppSharedStorage(appStorageFromApp);
     // set RENDER_PAGE_FUNCTIONS to API module
-    bindRenderPageFunctions(appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.RENDER_PAGE_FUNCTIONS));
+
+    assignToServerDevServiceProxy(appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.DEV_SERVICE_PROXY));
+    assignFromServerControlProxy(appCacheFromApp.get(AppCacheGlobal, AppCacheKeys.SERVER_CONTROL_PROXY));
 
     console.log(`appConfig: `, appConfig);
     apiCache.set(apiCache.KEYS.APP_DATA, appConfig);

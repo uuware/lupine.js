@@ -66,14 +66,14 @@ const watchServerPlugin = (isDev, npmCmd, httpPort) => {
 };
 
 // watch server code changes
-const watchAppLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
+const watchServerLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
-    entryPoints: ['apps/server/src/app-loader.ts'],
+    entryPoints: ['apps/server/src/server-loader.ts'],
     // outdir: path.join(serverRootPath, 'server'),
-    outfile: path.join(serverRootPath, 'server', 'app-loader.js'),
+    outfile: path.join(serverRootPath, 'server', 'server-loader.js'),
     platform: 'node',
-    sourcemap: !!isDev,
+    sourcemap: isDev ? 'inline' : false, // inline
     format: 'cjs',
     bundle: true,
     treeShaking: true,
@@ -93,7 +93,7 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
     entryPoints: ['apps/server/src/index.ts'],
     outdir: path.join(serverRootPath, 'server'),
     platform: 'node',
-    sourcemap: !!isDev,
+    sourcemap: isDev ? 'inline' : false, // inline
     format: 'cjs',
     bundle: true,
     treeShaking: true,
@@ -167,7 +167,7 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     outbase,
     // entryNames: '[name]-[hash]',
     platform: 'browser',
-    sourcemap: !!isDev, // inline
+    sourcemap: isDev ? 'inline' : false, // inline
     format: 'iife',
     bundle: true,
     treeShaking: true,
@@ -209,7 +209,7 @@ const watchApi = async (saved, isDev, entryPoints) => {
     outdir: saved.outdirApi,
     // outbase,
     platform: 'node',
-    sourcemap: !!isDev, // inline
+    sourcemap: isDev ? 'inline' : false, // inline
     format: 'cjs', // iife, cjs
     bundle: true,
     treeShaking: true,
@@ -366,6 +366,6 @@ const start = async () => {
   }
 
   watchServer(isDev, npmCmd, httpPort, serverRootPath);
-  watchAppLoader(isDev, npmCmd, httpPort, serverRootPath);
+  watchServerLoader(isDev, npmCmd, httpPort, serverRootPath);
 };
 start();
