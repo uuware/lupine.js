@@ -15,12 +15,20 @@ import { TestComponentPage } from './admin-test-component';
 import { AdminConfigPage } from './admin-config';
 import { AdminAboutPage } from './admin-about';
 import { AdminShellPage } from './admin-shell';
+import { AdminImagesPage } from './admin-images';
+import { AdminImagesAssetPage } from './admin-images-asset';
+import { AdminWebSettingPage } from './admin-setting-web';
+import { AdminApiSettingPage } from './admin-setting-api';
 
 const chineseMenuText: { text: string; zh: string }[] = [
   { text: 'Contents', zh: '内容管理' },
   { text: 'Menu List', zh: '菜单列表' },
   { text: 'Page List', zh: '页面列表' },
   { text: 'Process List', zh: '流程列表' },
+  { text: 'Virtual Albums', zh: '虚拟相册' },
+  { text: 'Public Assets', zh: '公共资源' },
+  { text: 'Web Settings', zh: '网站设置' },
+  { text: 'API Settings', zh: 'API设置' },
 
   { text: 'DB', zh: '数据库' },
   { text: 'Table List', zh: '表' },
@@ -139,6 +147,30 @@ export class AdminFrameHelper {
           url: '',
           js: () => this.addPanel('Process', <div>new Process</div>),
         },
+        {
+          id: 'virtual-albums',
+          text: 'Virtual Albums',
+          url: '',
+          js: () => this.addPanel('Virtual Albums', AdminImagesPage({})),
+        },
+        {
+          id: 'public-assets',
+          text: 'Public Assets',
+          url: '',
+          js: () => this.addPanel('Public Assets', AdminImagesAssetPage({})),
+        },
+        {
+          id: 'web-settings',
+          text: 'Web Settings',
+          url: '',
+          js: () => this.addPanel('Web Settings', AdminWebSettingPage()),
+        },
+        {
+          id: 'api-settings',
+          text: 'API Settings',
+          url: '',
+          js: () => this.addPanel('API Settings', AdminApiSettingPage()),
+        },
       ],
     },
     // { text: 'menu2', url: '/st_did.l--liangbufan.gunanguanvqingguandeng.html' },
@@ -246,10 +278,22 @@ export class AdminFrameHelper {
           js: () => this.addPanel('Resources', AdminResourcesPage()),
         },
         {
-          id: 'config',
-          text: 'Config',
+          id: 'admin-config',
+          text: 'Settings',
           url: '',
-          js: () => this.addPanel('Config', AdminConfigPage()),
+          js: () => this.addPanel('admin-config', AdminConfigPage()),
+        },
+        {
+          id: 'admin-web-setting',
+          text: 'Web Settings',
+          url: '',
+          js: () => this.addPanel('Web Settings', AdminWebSettingPage()),
+        },
+        {
+          id: 'admin-api-setting',
+          text: 'API Settings',
+          url: '',
+          js: () => this.addPanel('API Settings', AdminApiSettingPage()),
         },
         {
           id: 'shell',

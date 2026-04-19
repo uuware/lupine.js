@@ -36,6 +36,7 @@ export const DesignUtils = {
 
     FloatWindow.show({
       title: 'Edit HTML Content',
+      contentMinWidth: '80%',
       buttons: ['Cancel', 'Save'],
       handleClicked: (index: number, close: any) => {
         if (index === 1 && edt) {
@@ -44,7 +45,7 @@ export const DesignUtils = {
         close();
       },
       children: (
-        <div ref={ref} style={{ width: '800px', height: '500px', display: 'flex', flexDirection: 'column' }}>
+        <div ref={ref} style={{ width: '100%', boxSizing: 'border-box', height: '500px', display: 'flex', flexDirection: 'column' }}>
           <div
             class="edit-view-box"
             style={{ flex: 1, border: '1px solid var(--primary-border)', borderRadius: '4px', overflow: 'hidden' }}
@@ -58,6 +59,7 @@ export const DesignUtils = {
     let currentVal = initialValue;
     FloatWindow.show({
       title: 'Edit Custom Inline CSS',
+      contentMinWidth: '80%',
       buttons: ['Cancel', 'Save'],
       handleClicked: (index: number, close: any) => {
         if (index === 1) {
@@ -68,7 +70,7 @@ export const DesignUtils = {
       children: (
         <textarea
           onInput={(e: any) => (currentVal = e.target.value)}
-          style="width:800px;height:400px;background:#1e1e1e;color:#d4d4d4;border:1px solid #333;padding:16px;font-family:'Courier New', Courier, monospace;font-size:14px;outline:none;resize:none;line-height:1.6;"
+          style="width:100%;box-sizing:border-box;height:400px;background:#1e1e1e;color:#d4d4d4;border:1px solid #333;padding:16px;font-family:'Courier New', Courier, monospace;font-size:14px;outline:none;resize:none;line-height:1.6;"
         >
           {initialValue}
         </textarea>
@@ -76,14 +78,15 @@ export const DesignUtils = {
     });
   },
 
-  saveComponent: async (name: string, tree: DesignNode, isComponent: boolean = true, overwrite: boolean = false): Promise<'ok' | 'ID_EXISTS' | 'error'> => {
+  saveComponent: async (name: string, tree: DesignNode, isComponent: boolean = true, overwrite: boolean = false, originalUpdatetime?: number): Promise<{status: 'ok' | 'ID_EXISTS' | 'MODIFIED_BY_OTHER' | 'error', newUpdatetime?: number}> => {
     try {
       const payload = {
         pageid: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         name: name,
         is_component: isComponent ? 1 : 0,
         json: tree,
-        checkExists: !overwrite
+        checkExists: !overwrite,
+        originalUpdatetime: originalUpdatetime
       };
 
       const res = await fetch('/api/admin/page/save', {
@@ -92,32 +95,41 @@ export const DesignUtils = {
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (data.status === 'ok') return 'ok';
-      if (data.status === 'ID_EXISTS') return 'ID_EXISTS';
-      return 'error';
+      if (data.status === 'ok') return { status: 'ok', newUpdatetime: data.newUpdatetime };
+      if (data.status === 'ID_EXISTS') return { status: 'ID_EXISTS' };
+      if (data.status === 'MODIFIED_BY_OTHER') return { status: 'MODIFIED_BY_OTHER' };
+      return { status: 'error' };
     } catch (e) {
       console.error('Failed to save component', e);
-      return 'error';
+      return { status: 'error' };
     }
   },
 
-  showSaveDialog: (initialName: string, initialIsComponent: boolean, astClone: any, onSuccess: (newName: string, isComponent: boolean) => void) => {
+  showSaveDialog: (initialName: string, initialIsComponent: boolean, initialUpdatetime: number, astClone: any, onSuccess: (newName: string, isComponent: boolean, newStamp: number) => void) => {
     let compName = initialName;
     let isComponentCtx = initialIsComponent;
 
     FloatWindow.show({
       title: 'Save Page',
       buttons: ['Cancel', 'Save'],
+      contentMinWidth: '80%',
       handleClicked: (index: number, close: any) => {
         if (index === 1) {
           const executeSave = async (overwrite: boolean) => {
-              const status = await DesignUtils.saveComponent(compName, astClone, isComponentCtx, overwrite);
-              if (status === 'ok') {
+              const isSameName = (compName.trim() === initialName.trim() && initialUpdatetime !== 0);
+              const passUpdatetime = isSameName ? initialUpdatetime : undefined;
+
+              const result = await DesignUtils.saveComponent(compName, astClone, isComponentCtx, overwrite, passUpdatetime);
+              if (result.status === 'ok') {
                  NotificationMessage.sendMessage(`${isComponentCtx ? 'Component' : 'Page'} "${compName}" saved!`, NotificationColor.Success);
-                 onSuccess(compName, isComponentCtx);
+                 onSuccess(compName, isComponentCtx, result.newUpdatetime || 0);
                  close();
-              } else if (status === 'ID_EXISTS') {
-                 if (confirm(`A record named "${compName}" already exists in the database. Overwrite?`)) {
+              } else if (result.status === 'ID_EXISTS') {
+                 if (confirm(`A record named "${compName}" already exists. Overwrite?`)) {
+                    executeSave(true);
+                 }
+              } else if (result.status === 'MODIFIED_BY_OTHER') {
+                 if (confirm(`The page "${compName}" has just been modified by someone else! Do you want to force overwrite?`)) {
                     executeSave(true);
                  }
               } else {
@@ -173,7 +185,7 @@ export const DesignUtils = {
                pageid: row.pageid,
                name: row.name,
                tree: tree,
-               savedAt: new Date(row.updatedstamp).getTime()
+               savedAt: row.updatetime || 0
             };
          });
       }

@@ -46,7 +46,7 @@ export class AdminPage implements IApiBase {
     let pageIndex = (data.pg_i as number) || 0;
     const searchValue = ((data.searchValue as string) || '').split(' ').filter(Boolean);
     const searchQuery = this.buildQuery(searchValue, ['pageid', 'name', 'remark', 'package']);
-    const sortKey = (data.sortKey as string) || 'updatedstamp';
+    const sortKey = (data.sortKey as string) || 'updatetime';
 
     const conditions = [];
     const params = [];
@@ -58,7 +58,7 @@ export class AdminPage implements IApiBase {
       params.push(parseInt(isComponentParam as string, 10));
     }
 
-    let query = `SELECT pageid, name, is_component, remark, package, updateduserid, updatedstamp from $__s_page`;
+    let query = `SELECT pageid, name, is_component, remark, package, updateduserid, updatetime from $__s_page`;
 
     if (searchQuery.sql) {
       conditions.push(searchQuery.sql);
@@ -87,7 +87,7 @@ export class AdminPage implements IApiBase {
       }
     }
     
-    // updatedstamp might be string from DB, sortKey DESC works correctly.
+    // updatetime is integer from DB
     query += ` ORDER BY ${sortKey} DESC LIMIT ${pageLimit} OFFSET ` + pageIndex * pageLimit;
     const results = await db.select(query, params);
     
@@ -113,20 +113,34 @@ export class AdminPage implements IApiBase {
     const id = data['pageid'] || data['id'];
     
     if (!data['idReadonly'] && data['checkExists']) {
-      const result = await db.selectObject('$__s_page', ['pageid'], {
+      const result = await db.selectObject('$__s_page', ['pageid', 'updatetime'], {
         pageid: id,
       });
       if (result && result.length > 0) {
-        const response = {
-          status: 'ID_EXISTS',
-          message: `Page id: ${id} exists`,
-        };
-        ApiHelper.sendJson(req, res, response);
-        return true;
+        if (data['originalUpdatetime']) {
+          if (data['originalUpdatetime'] === result[0].updatetime) {
+             // It's the same record the user opened, overwrite is safe.
+          } else {
+             const response = {
+               status: 'MODIFIED_BY_OTHER',
+               message: `Page id: ${id} has been modified by someone else.`,
+             };
+             ApiHelper.sendJson(req, res, response);
+             return true;
+          }
+        } else {
+          const response = {
+            status: 'ID_EXISTS',
+            message: `Page id: ${id} exists.`,
+          };
+          ApiHelper.sendJson(req, res, response);
+          return true;
+        }
       }
     }
 
     await db.deleteObject('$__s_page', { pageid: id });
+    const newStamp = Date.now();
     const result = await db.insertObject('$__s_page', {
       pageid: id,
       name: data['name'] || 'Untitled',
@@ -135,11 +149,12 @@ export class AdminPage implements IApiBase {
       is_component: data['is_component'] ? 1 : 0,
       json: typeof data['json'] === 'string' ? data['json'] : JSON.stringify(data['json'] || {}),
       updateduserid: 1,
-      updatedstamp: new Date().toISOString(),
+      updatetime: newStamp,
     });
     const response = {
       status: 'ok',
       result: result,
+      newUpdatetime: newStamp,
       message: 'Page Saved.',
     };
     ApiHelper.sendJson(req, res, response);
@@ -171,6 +186,7 @@ export class AdminPage implements IApiBase {
           remark: result[0]['remark'],
           package: result[0]['package'],
           is_component: result[0]['is_component'],
+          updatetime: result[0]['updatetime'],
           json: parsedJson,
         };
       }

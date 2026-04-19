@@ -11,16 +11,20 @@ export const BlockPlaceholder = (props: { node: DesignNode; contentReplacement?:
 
   const css: CssProps = {
     width: '100%',
+    height: '100%',
+    flex: props.node.props?.flex === 'none' ? 'none' : '1',
     padding: '32px',
     backgroundColor: '#f5f5f5',
     border: isPreview ? 'none' : '2px dashed #ccc',
     textAlign: 'center',
+    alignContent: 'center',
+    justifyContent: 'center',
     color: '#999',
     boxSizing: 'border-box'
   };
 
   return (
-    <div css={css} class='block-placeholder'>
+    <div css={css} class='block-placeholder' data-design-id={props.node.id}>
       Content Placeholder
     </div>
   );
