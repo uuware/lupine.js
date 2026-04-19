@@ -11,6 +11,9 @@ import { AdminConfig } from './admin-config';
 import { Logger, IApiBase, ServerRequest, ApiRouter } from 'lupine.api';
 import { readWebConfig } from './web-config-api';
 import { AdminPage } from './admin-page';
+import { AdminImageApi, serveUploadImage } from './admin-image-api';
+import { AdminImageAssetApi } from './admin-image-asset-api';
+import { readWebSetting, writeWebSetting, readApiSetting, writeApiSetting } from './admin-setting-api';
 
 const logger = new Logger('admin-api');
 
@@ -56,6 +59,19 @@ export class AdminApi implements IApiBase {
 
     const adminPage = new AdminPage();
     this.router.use('/page', needDevAdminSession, adminPage.getRouter());
+
+    const adminImageApi = new AdminImageApi();
+    this.router.use('/image', needDevAdminSession, adminImageApi.getRouter());
+
+    const adminImageAssetApi = new AdminImageAssetApi();
+    this.router.use('/image-asset', needDevAdminSession, adminImageAssetApi.getRouter());
+
+    this.router.use('/settings/read-web', needDevAdminSession, readWebSetting);
+    this.router.use('/settings/write-web', needDevAdminSession, writeWebSetting);
+    this.router.use('/settings/read-api', needDevAdminSession, readApiSetting);
+    this.router.use('/settings/write-api', needDevAdminSession, writeApiSetting);
+
+    this.router.use('/image/:id', serveUploadImage);
 
     this.router.use('/auth', async (req: ServerRequest, res: ServerResponse) => {
       return devAdminAuth(req, res);

@@ -99,7 +99,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       },
       { key: 'gap', label: 'Gap Size', type: 'text', responsive: true },
       { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
-      { key: 'backgroundColor', label: 'Background Color', type: 'text' },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
@@ -129,9 +129,34 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
         options: [{ label: 'No Wrap', value: 'nowrap' }, { label: 'Wrap', value: 'wrap' }],
         responsive: true
       },
+      {
+        key: 'alignItems',
+        label: 'Align Items (Cross Axis)',
+        type: 'select',
+        options: [
+          { label: 'Stretch', value: 'stretch' },
+          { label: 'Start', value: 'flex-start' },
+          { label: 'Center', value: 'center' },
+          { label: 'End', value: 'flex-end' },
+        ],
+        responsive: true
+      },
+      {
+        key: 'justifyContent',
+        label: 'Justify Content (Main Axis)',
+        type: 'select',
+        options: [
+          { label: 'Start', value: 'flex-start' },
+          { label: 'Center', value: 'center' },
+          { label: 'End', value: 'flex-end' },
+          { label: 'Space Between', value: 'space-between' },
+          { label: 'Space Around', value: 'space-around' }
+        ],
+        responsive: true
+      },
       { key: 'gap', label: 'Gap Size', type: 'text', responsive: true },
       { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
-      { key: 'backgroundColor', label: 'Background Color', type: 'text' },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
@@ -171,7 +196,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
           { label: 'Right', value: 'right' },
         ],
       },
-      { key: 'color', label: 'Color', type: 'text' },
+      { key: 'color', label: 'Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
