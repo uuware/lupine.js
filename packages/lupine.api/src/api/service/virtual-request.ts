@@ -65,7 +65,11 @@ export class MockServerRequest extends IncomingMessage implements ServerRequest 
       urlWithoutQuery,
       query,
       urlParameters: {},
-      body: postData ? Buffer.from(typeof postData === 'string' ? postData : JSON.stringify(postData)) : undefined,
+      body: postData
+        ? Buffer.isBuffer(postData) || postData instanceof Uint8Array || postData instanceof ArrayBuffer
+          ? Buffer.from(postData as any)
+          : Buffer.from(typeof postData === 'string' ? postData : JSON.stringify(postData))
+        : undefined,
       json: () => (postData ? (typeof postData === 'string' ? JSON.parse(postData) : postData) : undefined),
     });
   }

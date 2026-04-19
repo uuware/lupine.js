@@ -19,7 +19,7 @@ import {
   Redirect,
   demoPageRouter,
 } from 'lupine.components';
-import { baseUrl, fetchData } from './services/fetch-data';
+// import { baseUrl, fetchData } from './services/fetch-data';
 import { themes } from './styles/theme';
 import { NotFoundPage } from './components/not-found-page';
 import { LoginPage } from './components/login';
@@ -58,7 +58,7 @@ bindTheme('light', themes);
 bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Development Project for Lupine.js');
 
-bindRenderPageFunctions({ fetchData, baseUrl });
+// bindRenderPageFunctions({ fetchData, baseUrl });
 
 const fetchAuth = async (props: PageProps) => {
   const data = await props.renderPageFunctions.fetchData('/api/user-info');
