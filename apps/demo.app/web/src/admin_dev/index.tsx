@@ -20,7 +20,7 @@ import {
 } from 'lupine.components';
 import { themes } from '../styles/theme';
 import { baseCss } from '../styles/base-css';
-import { baseUrl, fetchData } from '../services/fetch-data';
+// import { baseUrl, fetchData } from '../services/fetch-data';
 import { patchAdminFrame } from './admin-patch';
 import { setCookieUser } from '../services/shared-data';
 import { ClientEnvKeys } from '../models/client-env-keys';
@@ -57,7 +57,7 @@ bindTheme('light', themes);
 bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Sample - Page Title');
 
-bindRenderPageFunctions({ fetchData, baseUrl });
+// bindRenderPageFunctions({ fetchData, baseUrl });
 
 patchAdminFrame();
 const pageRouter = new PageRouter();

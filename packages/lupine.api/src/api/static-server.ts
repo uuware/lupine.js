@@ -17,7 +17,7 @@ export interface StaticServerOptions {
   setHeaders?: (res: ServerResponse, path: string, stat: fs.Stats) => void;
 }
 
-export const staticServerOptions: StaticServerOptions = {
+const defaultSSOptions: StaticServerOptions = {
   maxAge: {
     html: 0,
     htm: 0,
@@ -33,6 +33,27 @@ export const staticServerOptions: StaticServerOptions = {
   etag: true,
   lastModified: true,
 };
+export const bindStaticServerOptions = (options?: Partial<StaticServerOptions>) => {
+  if (options?.maxAge) {
+    if (typeof options.maxAge === 'number') {
+      defaultSSOptions.maxAge = options.maxAge;
+    } else {
+      defaultSSOptions.maxAge = {
+        ...(typeof defaultSSOptions.maxAge === 'object' ? defaultSSOptions.maxAge : {}),
+        ...options.maxAge,
+      };
+    }
+  }
+  if (options?.etag !== undefined) {
+    defaultSSOptions.etag = options.etag;
+  }
+  if (options?.lastModified !== undefined) {
+    defaultSSOptions.lastModified = options.lastModified;
+  }
+  if (options?.setHeaders) {
+    defaultSSOptions.setHeaders = options.setHeaders;
+  }
+};
 
 /**
  * A highly reusable core function to serve file streams handling HTTP 206, Cache-Control, ETag and 304 logic.
@@ -43,7 +64,7 @@ export async function serveStaticFileStream(
   res: ServerResponse,
   realPath: string,
   requestPath: string,
-  options: StaticServerOptions = staticServerOptions,
+  options: StaticServerOptions = defaultSSOptions,
   logger?: Logger
 ) {
   try {
@@ -154,17 +175,9 @@ export async function serveStaticFileStream(
 
 export class StaticServer {
   logger = new Logger('StaticServer');
-  options: StaticServerOptions;
-
-  constructor(options?: Partial<StaticServerOptions>) {
-    this.options = { ...staticServerOptions, ...options };
-    if (options?.maxAge && typeof options.maxAge === 'object' && typeof staticServerOptions.maxAge === 'object') {
-      this.options.maxAge = { ...staticServerOptions.maxAge, ...options.maxAge };
-    }
-  }
 
   private async sendFile(req: ServerRequest, res: ServerResponse, realPath: string, requestPath: string) {
-    return serveStaticFileStream(req, res, realPath, requestPath, this.options, this.logger);
+    return serveStaticFileStream(req, res, realPath, requestPath, defaultSSOptions, this.logger);
   }
 
   async processRequest(req: ServerRequest, res: ServerResponse, rootUrl?: string) {
