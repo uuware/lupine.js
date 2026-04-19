@@ -19,25 +19,25 @@ export const isSafeFilename = (s: string): boolean => /^(?!\.)(?!.*\.\.)[A-Za-z0
 
 const fetchImages = async (folder: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images-asset/list?p=' + encodeURIComponent(folder)
+    '/api/admin/image-asset/list?p=' + encodeURIComponent(folder)
   );
   return result.json;
 };
 const createSubdir = async (currentDir: string, newDir: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images-asset/new-dir?p=' + encodeURIComponent(currentDir) + '&f=' + encodeURIComponent(newDir)
+    '/api/admin/image-asset/new-dir?p=' + encodeURIComponent(currentDir) + '&f=' + encodeURIComponent(newDir)
   );
   return result.json;
 };
 const delDir = async (currentDir: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images-asset/del-dir?p=' + encodeURIComponent(currentDir)
+    '/api/admin/image-asset/del-dir?p=' + encodeURIComponent(currentDir)
   );
   return result.json;
 };
 const renameFile = async (currentDir: string, filename: string, newName: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images-asset/rename?p=' +
+    '/api/admin/image-asset/rename?p=' +
       encodeURIComponent(currentDir) +
       '&f=' +
       encodeURIComponent(filename) +
@@ -48,7 +48,7 @@ const renameFile = async (currentDir: string, filename: string, newName: string)
 };
 const renameDir = async (currentDir: string, newName: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images-asset/rn-dir?p=' + encodeURIComponent(currentDir) + '&n=' + encodeURIComponent(newName)
+    '/api/admin/image-asset/rn-dir?p=' + encodeURIComponent(currentDir) + '&n=' + encodeURIComponent(newName)
   );
   return result.json;
 };
@@ -163,7 +163,7 @@ export const AdminImagesAssetPage = (props: AdminImagesAssetPageProps) => {
         close();
         if (index === 0) {
           const result = await getRenderPageProps().renderPageFunctions.fetchData(
-            '/api/admin/images-asset/delete?p=' + encodeURIComponent(currentPath) + '&f=' + encodeURIComponent(filename)
+            '/api/admin/image-asset/delete?p=' + encodeURIComponent(currentPath) + '&f=' + encodeURIComponent(filename)
           );
           const ok = result.json.status === 'ok';
           NotificationMessage.sendMessage(
@@ -362,7 +362,7 @@ export const AdminImagesAssetPage = (props: AdminImagesAssetPageProps) => {
         progressUpdate.onProgress?.(0, 0, 100);
         const resultImg = await uploadFile(
           fileDom.files![0],
-          '/api/admin/images-asset/upload?p=' +
+          '/api/admin/image-asset/upload?p=' +
             encodeURIComponent(currentPath) +
             '&f=' +
             encodeURIComponent(fileDom.files![0].name) +
