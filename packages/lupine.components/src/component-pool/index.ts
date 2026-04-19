@@ -25,3 +25,6 @@ export * from './timeline';
 export * from './tooltip';
 export * from './tour';
 export * from './youtube-player';
+
+export * from './svg-icons';
+export * from './svg-props';

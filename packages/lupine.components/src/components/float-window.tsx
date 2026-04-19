@@ -146,6 +146,8 @@ export class FloatWindow {
           padding: '15px',
           maxHeight: contentMaxHeight ? `min(${contentMaxHeight}, calc(100% - 100px))` : 'calc(100% - 100px)',
           overflowY: contentOverflowY,
+          boxSizing: 'border-box',
+          width: '100%',
         },
         '.fwin-bottom': {
           display: 'flex',
