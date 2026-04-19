@@ -23,7 +23,15 @@ export const fetchData = async (
     headers: new Headers({
       _token: getCookie('_token') || '',
     }),
-    body: postData ? (typeof postData === 'string' ? postData : JSON.stringify(postData)) : undefined,
+    body: postData
+      ? typeof postData === 'string' ||
+        postData instanceof Blob ||
+        postData instanceof FormData ||
+        postData instanceof ArrayBuffer ||
+        postData instanceof Uint8Array
+        ? (postData as any)
+        : JSON.stringify(postData)
+      : undefined,
   };
   try {
     const response = await fetch(url, option);
