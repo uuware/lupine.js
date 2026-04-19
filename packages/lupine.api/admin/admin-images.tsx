@@ -20,37 +20,37 @@ export const hasSlashes = (str: string) => str.includes('/') || str.includes('\\
 
 const fetchImages = async (folder: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images/list?p=' + encodeURIComponent(folder)
+    '/api/admin/image/list?p=' + encodeURIComponent(folder)
   );
   return result.json;
 };
 const createSubdir = async (currentDir: string, newDir: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images/new-dir?p=' + encodeURIComponent(currentDir) + '&f=' + encodeURIComponent(newDir)
+    '/api/admin/image/new-dir?p=' + encodeURIComponent(currentDir) + '&f=' + encodeURIComponent(newDir)
   );
   return result.json;
 };
 const delDir = async (currentDir: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images/del-dir?p=' + encodeURIComponent(currentDir)
+    '/api/admin/image/del-dir?p=' + encodeURIComponent(currentDir)
   );
   return result.json;
 };
 const delImg = async (file_id: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images/delete?f=' + encodeURIComponent(file_id)
+    '/api/admin/image/delete?f=' + encodeURIComponent(file_id)
   );
   return result.json;
 };
 const renameFile = async (file_id: string, newName: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images/rename?f=' + encodeURIComponent(file_id) + '&n=' + encodeURIComponent(newName)
+    '/api/admin/image/rename?f=' + encodeURIComponent(file_id) + '&n=' + encodeURIComponent(newName)
   );
   return result.json;
 };
 const renameDir = async (currentDir: string, newName: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
-    '/api/admin/images/rn-dir?p=' + encodeURIComponent(currentDir) + '&n=' + encodeURIComponent(newName)
+    '/api/admin/image/rn-dir?p=' + encodeURIComponent(currentDir) + '&n=' + encodeURIComponent(newName)
   );
   return result.json;
 };
@@ -394,7 +394,7 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
         progressUpdate.onProgress?.(0, 0, 100);
         const resultImg = await uploadFile(
           fileDom.files![0],
-          '/api/admin/images/upload?p=' +
+          '/api/admin/image/upload?p=' +
             encodeURIComponent(currentPath) +
             '&f=' +
             encodeURIComponent(fileDom.files![0].name) +

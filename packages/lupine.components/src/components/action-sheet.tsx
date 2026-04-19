@@ -270,7 +270,7 @@ export class ActionSheetMessage {
     confirmButtonText,
     handleConfirmClicked,
     cancelButtonText = '',
-    closeWhenClickMessage = true,
+    closeWhenClickMessage = false,
   }: ActionSheetMessageProps): Promise<ActionSheetCloseProps> {
     const handleClose = await ActionSheet.show({
       title,
