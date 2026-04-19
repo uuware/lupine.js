@@ -6,8 +6,9 @@ import { ShellService } from './shell-service';
 // This is only used in debug mode (no clusters)
 export class DebugService {
   static clientRefreshFlag = Date.now();
-  static miniWebSocket = new MiniWebSocket(this.onMessage.bind(this));
-  static shellMap = new Map<Duplex, ShellService>();
+  // Preserve WebSocket and shells across hot reloads by anchoring them to globalThis
+  static miniWebSocket: MiniWebSocket = (globalThis as any).__lupine_debug_ws || ((globalThis as any).__lupine_debug_ws = new MiniWebSocket(DebugService.onMessage.bind(DebugService)));
+  static shellMap: Map<Duplex, ShellService> = (globalThis as any).__lupine_debug_shell || ((globalThis as any).__lupine_debug_shell = new Map<Duplex, ShellService>());
 
   public static onMessage(msg: string, socket: Duplex) {
     try {

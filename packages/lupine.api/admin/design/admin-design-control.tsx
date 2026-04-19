@@ -1,22 +1,20 @@
-import { CssProps, HtmlVar, RefProps, PopupMenu, NotificationMessage, NotificationColor, FloatWindow, PopupMenuWithButton, HEditor } from 'lupine.components';
+import { CssProps, HtmlVar, RefProps, PopupMenu, NotificationMessage, NotificationColor, FloatWindow, PopupMenuWithButton, HEditor, ActionSheetColorPicker } from 'lupine.components';
 import { DesignStore } from './design-store';
 import { LayerTreePanel } from './layer-tree-panel';
 import { DesignUtils } from './design-utils';
 import { ComponentRegistry } from './component-registry';
 import { AdminSelectPage } from '../admin-page-list';
 
-let _storeInstance: DesignStore | null = null;
-let activeSidebarTab: 'components' | 'layers' = 'components';
-let currentContextName = 'New Page';
-let currentContextIsComponent = false;
-let savedComponents: any[] = [];
-// HtmlVars remain inside because they might belong strictly to the render cycle, but wait..
-// Using HtmlVar inside the render cycle means it generates new ones?
-// Actually if they are recreated, their `.node` is new. If it's pure SPA, we'll keep them inside first.
+// HtmlVars remain inside because they might belong strictly to the render cycle.
+// State must be within AdminDesignControl to allow multiple instances (tabs) to isolate data.
 
 export const AdminDesignControl = (props: { pageId?: string }) => {
-  if (!_storeInstance) _storeInstance = new DesignStore();
-  const store = _storeInstance;
+  const store = new DesignStore();
+  let activeSidebarTab: 'components' | 'layers' = 'components';
+  let currentContextName = 'New Page';
+  let currentContextIsComponent = false;
+  let currentUpdatetime = 0;
+  let savedComponents: any[] = [];
 
   const handleDragStart = (e: any, type: string) => {
     const comp = ComponentRegistry[type];
@@ -271,13 +269,14 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                   />
                 );
               } else if (editor.type === 'textarea') {
+                let isDirty = false;
                 inputEl = (
                   <textarea
                     class='prop-input'
                     rows={4}
                     value={val}
-                    onInput={(e: any) => handlePropChange(actualKey, e.target.value, false, true)}
-                    onBlur={() => store.emit('TREE_UPDATE')}
+                    onInput={(e: any) => { isDirty = true; handlePropChange(actualKey, e.target.value, false, true); }}
+                    onBlur={() => { if (isDirty) { isDirty = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
                   />
                 );
               } else if (editor.type === 'html' || editor.type === 'css') {
@@ -294,28 +293,70 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                    }
                 };
 
+                let isDirty = false;
                 inputEl = (
                   <div style={{ display: 'flex', gap: '4px', width: '100%' }}>
                     <input
                       type='text'
                       class='prop-input'
                       value={val}
-                      onInput={(e: any) => handlePropChange(actualKey, e.target.value, false, true)}
-                      onBlur={() => store.emit('TREE_UPDATE')}
+                      onInput={(e: any) => { isDirty = true; handlePropChange(actualKey, e.target.value, false, true); }}
+                      onBlur={() => { if (isDirty) { isDirty = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
                       onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
                       style={{ flex: 1, minWidth: 0 }}
                     />
                     <button class='button-base' onClick={openEditor} style={{ padding: '0 8px', fontSize: '14px', lineHeight: '1' }}>...</button>
                   </div>
                 );
+              } else if (editor.type === 'color') {
+                const openColorPicker = async () => {
+                   const result = await ActionSheetColorPicker({
+                       value: val,
+                       title: `Select ${editor.label}`
+                   });
+                   if (result !== undefined) {
+                       handlePropChange(actualKey, result, true);
+                       setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                   }
+                };
+
+                let isDirty = false;
+                inputEl = (
+                   <div style={{ display: 'flex', gap: '4px', width: '100%', alignItems: 'center' }}>
+                       <input
+                         type="text"
+                         class="prop-input"
+                         value={val}
+                         onInput={(e: any) => { isDirty = true; handlePropChange(actualKey, e.target.value, false, true); }}
+                         onBlur={() => { if (isDirty) { isDirty = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
+                         onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                         style={{ flex: 1, minWidth: 0 }}
+                       />
+                       <div 
+                         style={{ 
+                            width: '28px', 
+                            height: '24px', 
+                            backgroundColor: val || 'transparent', 
+                            borderRadius: '4px', 
+                            border: '1px solid #dae1e7', 
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)'
+                         }}
+                         onClick={openColorPicker}
+                         title="Pick Color"
+                       />
+                   </div>
+                );
               } else {
+                let isDirty = false;
                 inputEl = (
                   <input
-                    type={editor.type === 'color' ? 'color' : 'text'}
+                    type='text'
                     class='prop-input'
                     value={val}
-                    onInput={(e: any) => handlePropChange(actualKey, e.target.value, false, true)}
-                    onBlur={() => store.emit('TREE_UPDATE')}
+                    onInput={(e: any) => { isDirty = true; handlePropChange(actualKey, e.target.value, false, true); }}
+                    onBlur={() => { if (isDirty) { isDirty = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
                     onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
                   />
                 );
@@ -568,19 +609,29 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
       renderSidebarState();
       fetchSavedComponents();
       
+      currentContextName = 'New Page';
+      currentContextIsComponent = false;
+      currentUpdatetime = 0;
+
       if (props.pageId) {
          fetch(`/api/admin/page/get/${props.pageId}`)
            .then(r => r.json())
            .then(data => {
-              if (data.status === 'ok' && data.result && data.result.json) {
-                 try {
-                    const tree = JSON.parse(data.result.json);
-                    store.tree = tree;
-                    currentContextName = data.result.name;
-                    currentContextIsComponent = data.result.is_component === 1;
-                    store.emit('TREE_UPDATE');
-                 } catch(e) {
-                    console.error("Failed to parse page json", e);
+              if (data.status === 'ok' && data.result) {
+                 // Set the name and component type unconditionally if the page exists in db
+                 currentContextName = data.result.name || '';
+                 currentContextIsComponent = data.result.is_component === 1;
+                 currentUpdatetime = data.result.updatetime || 0;
+                 
+                 // Then try loading the nodes tree
+                 if (data.result.json) {
+                    try {
+                       const tree = typeof data.result.json === 'string' ? JSON.parse(data.result.json) : data.result.json;
+                       store.tree = tree;
+                       store.emit('TREE_UPDATE');
+                    } catch(e) {
+                       console.error("Failed to parse page json", e);
+                    }
                  }
               }
            })
@@ -616,10 +667,12 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                 DesignUtils.showSaveDialog(
                   currentContextName,
                   currentContextIsComponent,
+                  currentUpdatetime,
                   JSON.parse(JSON.stringify(store.tree)),
-                  (newName: string, isComponent: boolean) => {
+                  (newName: string, isComponent: boolean, newStamp: number) => {
                      currentContextName = newName;
                      currentContextIsComponent = isComponent;
+                     currentUpdatetime = newStamp;
                      if (isComponent) {
                         activeSidebarTab = 'components';
                         renderSidebarState();

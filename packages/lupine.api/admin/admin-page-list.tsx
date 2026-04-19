@@ -1,16 +1,16 @@
-import { 
-  CssProps, 
-  RefProps, 
-  HtmlVar, 
-  NotificationColor, 
-  NotificationMessage, 
+import {
+  CssProps,
+  RefProps,
+  HtmlVar,
+  NotificationColor,
+  NotificationMessage,
   getRenderPageProps,
   ActionSheetSelect,
   ActionSheet,
   getDefaultPageLimit,
   PagingLink,
   PopupMenu,
-  SearchInput
+  SearchInput,
 } from 'lupine.components';
 import { adminFrameHelper } from './admin-frame-helper';
 import { AdminPageEditPage } from './admin-page-edit';
@@ -29,7 +29,7 @@ export const getPageList = async (
     pg_l: pg_limit,
     searchValue,
     sortKey,
-    is_component
+    is_component,
   });
   return result.json;
 };
@@ -51,7 +51,7 @@ const ContentOneRow = (props: {
   const onEditLocal = async (ev: any) => {
     props.onEdit && props.onEdit(props.item.pageid);
   };
-  
+
   const onRemoveLocal = async (ev: MouseEvent) => {
     props.onDelete && props.onDelete(props.item.pageid);
   };
@@ -77,24 +77,22 @@ const ContentOneRow = (props: {
         <td>
           <span class='a-page-lst-gray'>{item.package || '-'}</span>
         </td>
-        <td>
-           {item.is_component === 1 ? <span class='color-red'>Component</span> : 'Page'}
-        </td>
+        <td>{item.is_component === 1 ? <span class='color-red'>Component</span> : 'Page'}</td>
+        {!isSelectMode && <td>{item.remark || '-'}</td>}
         {!isSelectMode && (
           <td>
-            {item.remark || '-'}
+            {/* item.updatetime is timestamp integer */}
+            <span class='a-page-lst-gray'>
+              {item.updatetime ? new Date(item.updatetime).toLocaleString() : '-'}
+            </span>
           </td>
         )}
         {!isSelectMode && (
-          <td>
-            {/* item.updatedstamp might be timestamp string */}
-            <span class='a-page-lst-gray'>{item.updatedstamp || '-'}</span>
-          </td>
-        )}
-        {!isSelectMode && (
-          <td class='a-page-lst-row-ctl' style={{ whiteSpace: 'nowrap' }}>
-            <button class='button-base button-s mr-m' onClick={onEditLocal}>Edit</button>
-            <button class='button-base button-s color-red' onClick={onRemoveLocal}>Delete</button>
+          <td class='a-page-lst-row-ctl'>
+            <div class='ctl-box'>
+              <i class='ifc-icon ma-pencil-outline mr-m' onClick={onEditLocal} title='编辑'></i>
+              <i class='ifc-icon ma-close color-red' onClick={onRemoveLocal} title='删除'></i>
+            </div>
           </td>
         )}
       </>
@@ -122,7 +120,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
   const itemNameMap: Record<string, string> = {};
 
   let searchValue: string = '';
-  let sortKey = 'updatedstamp';
+  let sortKey = 'updatetime';
   const refUpdate = adminFrameHelper.getTabsHook();
 
   const ref: RefProps = {
@@ -284,7 +282,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
 
   const listDom = new HtmlVar('');
   const selectedDom = new HtmlVar('');
-  
+
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
@@ -292,8 +290,13 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
     '.a-page-lst-row-icon': {
       textAlign: 'left',
     },
-    '.a-page-lst-row-ctl i': {
+    '.a-page-lst-row-ctl': {
       cursor: 'pointer',
+      width: '70px',
+    },
+    '.a-page-lst-row-ctl .ctl-box': {
+      display: 'flex',
+      whiteSpace: 'nowrap',
     },
     '.a-page-lst-main-tbl': {
       width: '100%',
@@ -318,21 +321,21 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
     },
     '.a-page-lst-gray': {
       color: 'var(--secondary-color)',
-      fontSize: '12px'
+      fontSize: '12px',
     },
     '.a-page-sel-box': {
       display: 'flex',
       alignItems: 'center',
       lineHeight: 2,
       flexWrap: 'wrap',
-      gap: '8px'
+      gap: '8px',
     },
     '.a-page-sel-tag': {
       padding: '2px 8px',
       borderRadius: '4px',
       backgroundColor: 'var(--secondary-bg-color)',
       position: 'relative',
-      fontSize: '12px'
+      fontSize: '12px',
     },
     '.a-page-sel-tag i': {
       position: 'absolute',
@@ -347,7 +350,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
   return (
     <div ref={ref} css={css}>
       <div class='admin-sub-title' style={{ marginBottom: '16px' }}>
-         {isSelectMode ? 'Select Items' : 'Page & Component Management'}
+        {isSelectMode ? 'Select Items' : 'Page & Component Management'}
       </div>
       <div class='row-box pb-m' style={{ gap: '16px', alignItems: 'center' }}>
         <SearchInput placeholder='Search...' onSearch={onSearch} onClear={onSearch} />
@@ -358,7 +361,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
             defaultValue={'Updated Time'}
             handleSelected={(text: string) => {
               if (text === 'Updated Time') {
-                sortKey = 'updatedstamp';
+                sortKey = 'updatetime';
               } else if (text === 'Name') {
                 sortKey = 'name';
               } else if (text === 'ID') {
@@ -370,7 +373,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
         </div>
         {!isSelectMode && (
           <button onClick={onNewPage} class='button-base'>
-             New Page
+            New Page
           </button>
         )}
       </div>
