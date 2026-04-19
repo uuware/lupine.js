@@ -22,13 +22,13 @@ export const staticServerOptions: StaticServerOptions = {
     html: 0,
     htm: 0,
     json: 0,
-    js: 31536000,
-    css: 31536000,
-    woff: 31536000,
-    woff2: 31536000,
-    ttf: 31536000,
-    eot: 31536000,
-    default: 604800,
+    js: 31536000, // 365 days (1 year)
+    css: 31536000, // 365 days (1 year)
+    woff: 31536000, // 365 days (1 year)
+    woff2: 31536000, // 365 days (1 year)
+    ttf: 31536000, // 365 days (1 year)
+    eot: 31536000, // 365 days (1 year)
+    default: 604800, // 7 days (1 week)
   },
   etag: true,
   lastModified: true,
@@ -154,9 +154,17 @@ export async function serveStaticFileStream(
 
 export class StaticServer {
   logger = new Logger('StaticServer');
+  options: StaticServerOptions;
+
+  constructor(options?: Partial<StaticServerOptions>) {
+    this.options = { ...staticServerOptions, ...options };
+    if (options?.maxAge && typeof options.maxAge === 'object' && typeof staticServerOptions.maxAge === 'object') {
+      this.options.maxAge = { ...staticServerOptions.maxAge, ...options.maxAge };
+    }
+  }
 
   private async sendFile(req: ServerRequest, res: ServerResponse, realPath: string, requestPath: string) {
-    return serveStaticFileStream(req, res, realPath, requestPath, staticServerOptions, this.logger);
+    return serveStaticFileStream(req, res, realPath, requestPath, this.options, this.logger);
   }
 
   async processRequest(req: ServerRequest, res: ServerResponse, rootUrl?: string) {
