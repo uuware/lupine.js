@@ -151,13 +151,13 @@ export class AdminFrameHelper {
           id: 'virtual-albums',
           text: 'Virtual Albums',
           url: '',
-          js: () => this.addPanel('Virtual Albums', AdminImagesPage({})),
+          js: () => this.addPanel('Virtual Albums', AdminImagesPage({ isEdit: true })),
         },
         {
           id: 'public-assets',
           text: 'Public Assets',
           url: '',
-          js: () => this.addPanel('Public Assets', AdminImagesAssetPage({})),
+          js: () => this.addPanel('Public Assets', AdminImagesAssetPage({ isEdit: true })),
         },
         {
           id: 'web-settings',
