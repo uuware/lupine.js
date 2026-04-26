@@ -105,6 +105,9 @@ export class DesignStore {
     const node = this.findNode(this.tree, id);
     if (node) {
       node.props = { ...node.props, ...propsToUpdate };
+      if (Object.keys(propsToUpdate).some(k => k.startsWith('customCss') || k.startsWith('hidden'))) {
+         delete node.props._sys_css;
+      }
 
       if ((node.type === 'block-grid' || node.type === 'block-page') && propsToUpdate.gridTemplate !== undefined) {
          this.enforceGridMesh(node);
