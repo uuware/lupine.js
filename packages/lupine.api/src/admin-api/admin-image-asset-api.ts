@@ -49,6 +49,14 @@ export class AdminImageAssetApi implements IApiBase {
 
   async list(req: ServerRequest, res: ServerResponse) {
     const subPath = decodeURIComponent((req.locals.query.get('p') as string) || '/');
+    if (subPath.includes('..')) {
+      const response = {
+        status: 'error',
+        message: 'Wrong data.',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
     const appData = apiCache.getAppData();
     const webPath = path.join(appData.webPath, subPath);
 
@@ -81,7 +89,7 @@ export class AdminImageAssetApi implements IApiBase {
   async newDir(req: ServerRequest, res: ServerResponse) {
     const currentDir = decodeURIComponent(req.locals.query.get('p') || '');
     const newDir = decodeURIComponent(req.locals.query.get('f') || '').toLowerCase();
-    if (!currentDir || currentDir.includes('..') || !newDir || newDir.includes('/')) {
+    if (!currentDir || currentDir.includes('..') || !newDir || !this.isSafeFilename(newDir)) {
       const response = {
         status: 'error',
         message: 'Wrong data.',
@@ -105,7 +113,9 @@ export class AdminImageAssetApi implements IApiBase {
     const result = await FsUtils.mkdir(webPath);
     const response = {
       status: result ? 'ok' : 'error',
-      message: result ? 'Subdirectory created successfully. Please refresh the current directory.' : 'Directory creation failed.',
+      message: result
+        ? 'Subdirectory created successfully. Please refresh the current directory.'
+        : 'Directory creation failed.',
     };
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -114,18 +124,10 @@ export class AdminImageAssetApi implements IApiBase {
   async upload(req: ServerRequest, res: ServerResponse) {
     const data = req.locals.body;
     const currentDir = decodeURIComponent(req.locals.query.get('p') || '');
-    const filename = decodeURIComponent(req.locals.query.get('f') || '').toLowerCase();
-    let newName = decodeURIComponent(req.locals.query.get('n') || '').toLowerCase();
+    const filename = decodeURIComponent(req.locals.query.get('f') || '').replace(/\s+/g, '_').toLowerCase();
+    let newName = decodeURIComponent(req.locals.query.get('n') || '').replace(/\s+/g, '_').toLowerCase();
     const force = decodeURIComponent(req.locals.query.get('force') || '');
-    if (
-      !data ||
-      data.length < 1 ||
-      !currentDir ||
-      currentDir.includes('..') ||
-      !filename ||
-      (!newName && !this.isSafeFilename(filename)) ||
-      (newName && !this.isSafeFilename(newName))
-    ) {
+    if (!data || data.length < 1 || !currentDir || currentDir.includes('..') || !filename) {
       const response = {
         status: 'error',
         message: 'Wrong data.',
@@ -134,14 +136,46 @@ export class AdminImageAssetApi implements IApiBase {
       return true;
     }
 
+    const allowExts = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.svg',
+      '.tiff',
+      '.ico',
+      '.bmp',
+      '.mp4',
+      '.mp3',
+      '.mov',
+    ];
     const nowExt = filename.substring(filename.lastIndexOf('.'));
-    const newExt = newName && newName.substring(newName.lastIndexOf('.'));
+    if (!nowExt || !allowExts.includes(nowExt)) {
+      const response = {
+        status: 'error',
+        message: 'Wrong extension.',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
+
     if (newName) {
+      const newExt = newName.substring(newName.lastIndexOf('.'));
       if (nowExt !== newExt) {
         newName += nowExt;
       }
     } else {
       newName = filename;
+    }
+
+    if (!this.isSafeFilename(newName)) {
+      const response = {
+        status: 'error',
+        message: 'Filename is not valid. Please rename it',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
     }
 
     const key = req.locals.query.get('key') as string;
@@ -184,8 +218,9 @@ export class AdminImageAssetApi implements IApiBase {
       return true;
     }
     const fullpath = path.join(webPath, newName);
-    if (force !== '1') {
-      if (await FsUtils.pathExist(fullpath)) {
+    const fileExists = await FsUtils.pathExist(fullpath);
+    if (chunkNumber === 0) {
+      if (fileExists && force !== '1') {
         const response = {
           status: 'error',
           message: 'A file with the same name already exists. Please select overwrite.',
@@ -193,11 +228,16 @@ export class AdminImageAssetApi implements IApiBase {
         ApiHelper.sendJson(req, res, response);
         return true;
       }
-    }
-    // write data to a file
-    if (chunkNumber === 0) {
       await fs.writeFile(fullpath, data, 'binary');
     } else {
+      if (!fileExists) {
+        const response = {
+          status: 'error',
+          message: 'File not found for appending.',
+        };
+        ApiHelper.sendJson(req, res, response);
+        return true;
+      }
       await fs.appendFile(fullpath, data, 'binary');
     }
 
@@ -215,7 +255,7 @@ export class AdminImageAssetApi implements IApiBase {
   async delete(req: ServerRequest, res: ServerResponse) {
     const currentDir = decodeURIComponent(req.locals.query.get('p') || '');
     const filename = decodeURIComponent(req.locals.query.get('f') || '');
-    if (!currentDir || currentDir.includes('..') || !filename) {
+    if (!currentDir || currentDir.includes('..') || !filename || !this.isSafeFilename(filename)) {
       const response = {
         status: 'error',
         message: 'Wrong data.',
@@ -263,7 +303,9 @@ export class AdminImageAssetApi implements IApiBase {
     const result = await FsUtils.unlinkFolderEmpty(webPath);
     const response = {
       status: result ? 'ok' : 'error',
-      message: result ? 'Directory deleted successfully. Please refresh the parent directory.' : 'Directory deletion failed.',
+      message: result
+        ? 'Directory deleted successfully. Please refresh the parent directory.'
+        : 'Directory deletion failed.',
     };
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -277,9 +319,9 @@ export class AdminImageAssetApi implements IApiBase {
       !currentDir ||
       currentDir.includes('..') ||
       !filename ||
-      filename.includes('/') ||
+      !this.isSafeFilename(filename) ||
       !newName ||
-      newName.includes('/')
+      !this.isSafeFilename(newName)
     ) {
       const response = {
         status: 'error',

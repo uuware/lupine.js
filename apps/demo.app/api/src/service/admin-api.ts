@@ -1,6 +1,6 @@
 import { ServerResponse } from 'http';
-import { FsUtils, Logger, apiCache, ServerRequest, ApiHelper, langHelper } from 'lupine.api';
-import { decryptJson, encryptJson, getUserFromCookie } from './user-api';
+import { FsUtils, Logger, apiCache, ServerRequest, ApiHelper, langHelper, adminApiHelper } from 'lupine.api';
+import {getUserFromCookie } from './user-api';
 import fsPromises from 'fs/promises';
 import path from 'path';
 import { sendFile } from './file-api-base';
@@ -33,7 +33,7 @@ export const addCfgFile = async (req: ServerRequest, res: ServerResponse) => {
   const chunkNumberStr = req.locals.query.get('chunkNumber') as string;
   const chunkNumber = parseInt(chunkNumberStr);
   const totalChunks = parseInt(req.locals.query.get('totalChunks') as string);
-  const decryptedKey = key && decryptJson(key.replace(/ /g, '+'));
+  const decryptedKey = key && adminApiHelper.decryptJson(key.replace(/ /g, '+'));
   const fname = req.locals.query.get('fn') as string;
   if (
     !fname ||
@@ -78,7 +78,7 @@ export const addCfgFile = async (req: ServerRequest, res: ServerResponse) => {
     chunkNumber,
     totalChunks,
     message: langHelper.getLang('shared:file_uploaded'),
-    key: encryptJson({
+    key: adminApiHelper.encryptJson({
       ind: chunkNumber + 1,
       cnt: totalChunks,
       t: new Date().getTime(),
