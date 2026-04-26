@@ -23,13 +23,17 @@ export const MenuBar = ({
   menuId,
   items,
   className,
-  textColor = 'var(--menubar-color)',
-  backgroundColor = 'var(--menubar-bg-color)', //'black',
-  hoverColor = 'var(--activatable-color-hover)', //'#ffffff',
-  hoverBgColor = 'var(--activatable-bg-color-hover)', //'#d12121',
+  textColor,
+  backgroundColor,
+  hoverColor,
+  hoverBgColor,
   maxWidth = '100%',
   maxWidthMobileMenu = MediaQueryMaxWidth.TabletMax,
 }: MenuBarProps) => {
+  backgroundColor = backgroundColor || 'var(--menubar-bg-color)';
+  textColor = textColor || 'var(--menubar-color)';
+  hoverColor = hoverColor || 'var(--activatable-color-hover)';
+  hoverBgColor = hoverBgColor || 'var(--activatable-bg-color-hover)';
   const css: any = {
     width: '100%',
     maxWidth: maxWidth,
@@ -140,6 +144,13 @@ export const MenuBar = ({
       '.menu-bar-top.open': {
         display: 'flex',
         flexDirection: 'column',
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        backgroundColor: backgroundColor,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       },
       '.menu-bar-top.open .menu-bar-sub-box > .menu-bar-sub': {
         display: 'flex',
