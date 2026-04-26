@@ -11,6 +11,7 @@ import {
   PagingLink,
   PopupMenu,
   SearchInput,
+  ActionSheetSelectPromise,
 } from 'lupine.components';
 import { adminFrameHelper } from './admin-frame-helper';
 import { AdminPageEditPage } from './admin-page-edit';
@@ -130,23 +131,20 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
   };
 
   const onDeleteLocal = async (id: string) => {
-    await ActionSheetSelect.show({
+    const idx = await ActionSheetSelectPromise({
       title: `Are you sure you want to delete ${id}?`,
       options: ['Confirm'],
-      cancelButtonText: 'Cancel',
-      handleClicked: async (index: number, close) => {
-        close();
-        if (index === 0) {
-          const result = await fetchTableDelete(tableName, id);
-          if (result.status === 'ok') {
-            await onSearch(searchValue);
-            NotificationMessage.sendMessage('Deleted: ' + id, NotificationColor.Success);
-          } else {
-            NotificationMessage.sendMessage(result.message || 'Error deleting', NotificationColor.Error);
-          }
-        }
-      },
+      cancelButtonText: 'Cancel'
     });
+    if (idx === 0) {
+      const result = await fetchTableDelete(tableName, id);
+      if (result.status === 'ok') {
+        await onSearch(searchValue);
+        NotificationMessage.sendMessage('Deleted: ' + id, NotificationColor.Success);
+      } else {
+        NotificationMessage.sendMessage(result.message || 'Error deleting', NotificationColor.Error);
+      }
+    }
   };
 
   const onEditLocal = async (id: string) => {
@@ -154,10 +152,10 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
       alert('You are opening too many pages');
       return;
     }
-    if (refUpdate?.findAndActivate && refUpdate.findAndActivate('Menu: ' + id)) {
+    if (refUpdate?.findAndActivate && refUpdate.findAndActivate('Page: ' + id)) {
       return;
     }
-    refUpdate?.newPage && (await refUpdate.newPage('Menu: ' + id, AdminPageEditPage(id)));
+    refUpdate?.newPage && (await refUpdate.newPage('Page: ' + id, AdminPageEditPage(id)));
   };
 
   const onSelectedId = (id: string, name: string) => {

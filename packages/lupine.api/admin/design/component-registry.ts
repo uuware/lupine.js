@@ -1,4 +1,4 @@
-export type PropEditorType = 'text' | 'number' | 'color' | 'checkbox' | 'select' | 'textarea' | 'html' | 'css';
+export type PropEditorType = 'text' | 'number' | 'color' | 'checkbox' | 'select' | 'textarea' | 'html' | 'css' | 'menu-select';
 
 export interface PropEditorDef {
   key: string;
@@ -21,6 +21,12 @@ export interface DesignComponentDef {
 }
 
 export const SpatialPropEditors: PropEditorDef[] = [
+  {
+    key: 'hidden',
+    label: 'Hide Component',
+    type: 'checkbox',
+    responsive: true
+  },
   {
     key: 'flex',
     label: 'Flex Grow Strategy',
@@ -69,8 +75,13 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
     type: 'block-placeholder',
     label: 'Content Placeholder',
     isContainer: false,
-    defaultProps: {},
-    propEditors: []
+    defaultProps: {
+      flex: '1',
+    },
+    propEditors: [
+      ...SpatialPropEditors,
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ]
   },
   'block-grid': {
     type: 'block-grid',
@@ -255,6 +266,50 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
           { label: 'None', value: 'none' },
         ],
       },
+      ...SpatialPropEditors,
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-menu-bar': {
+    type: 'block-menu-bar',
+    label: 'Menu Bar',
+    defaultProps: {
+      menuId: '',
+      textColor: '',
+      hoverColor: '',
+      hoverBgColor: '',
+      backgroundColor: '',
+      maxWidth: '100%',
+    },
+    propEditors: [
+      { key: 'menuId', label: 'Menu ID', type: 'menu-select' },
+      { key: 'textColor', label: 'Text Color', type: 'color' },
+      { key: 'hoverColor', label: 'Hover Text Color', type: 'color' },
+      { key: 'hoverBgColor', label: 'Hover Background', type: 'color' },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
+      { key: 'maxWidth', label: 'Max Width', type: 'text' },
+      ...SpatialPropEditors,
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-menu-list': {
+    type: 'block-menu-list',
+    label: 'Menu Sidebar',
+    defaultProps: {
+      menuId: '',
+      mobileMenu: false,
+      desktopMenu: true,
+      defaultOpenAll: false,
+      color: '',
+      backgroundColor: '',
+    },
+    propEditors: [
+      { key: 'menuId', label: 'Menu ID', type: 'menu-select' },
+      { key: 'mobileMenu', label: 'Mobile Menu Mode', type: 'checkbox' },
+      { key: 'desktopMenu', label: 'Desktop Menu', type: 'checkbox' },
+      { key: 'defaultOpenAll', label: 'Default Open All', type: 'checkbox' },
+      { key: 'color', label: 'Text Color', type: 'color' },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
