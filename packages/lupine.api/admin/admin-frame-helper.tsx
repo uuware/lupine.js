@@ -5,6 +5,7 @@ import { TableListPage } from './admin-table-list';
 import { AdminMenuPage } from './admin-menu-list';
 import { TestThemesPage } from './admin-test-themes';
 import { AdminPagePage } from './admin-page-list';
+import { AdminProcessPage } from './admin-process-list';
 import { AdminPerformancePage } from './admin-performance';
 import { AdminReleasePage } from './admin-release';
 import { AdminTestAnimationsPage } from './admin-test-animations';
@@ -145,7 +146,7 @@ export class AdminFrameHelper {
           id: 'process-list',
           text: 'Process List',
           url: '',
-          js: () => this.addPanel('Process', <div>new Process</div>),
+          js: () => this.addPanel('Process List', <AdminProcessPage />),
         },
         {
           id: 'virtual-albums',
