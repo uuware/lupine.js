@@ -24,6 +24,7 @@ import { redirectDemo } from '../components/redirect-demo';
 import { textWaveDemo } from '../components/text-wave-demo';
 import { textScaleDemo } from '../components/text-scale-demo';
 import { textGlowDemo } from '../components/text-glow-demo';
+import { svgGraphDemo } from '../component-pool/svg-graph/svg-graph-demo';
 import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
 import { loadingSpinDemo } from '../components/loading-spin-demo';
@@ -611,6 +612,12 @@ export class DemoFrameHelper {
           url: '',
           js: () => this.addPanel(redirectDemo.text, <DemoPage story={redirectDemo} />),
         },
+        {
+          id: svgGraphDemo.id,
+          text: svgGraphDemo.text,
+          url: '',
+          js: () => this.addPanel(svgGraphDemo.text, <DemoPage story={svgGraphDemo} />),
+        },
       ],
     },
     {
@@ -622,7 +629,7 @@ export class DemoFrameHelper {
           id: 'about',
           text: 'About',
           url: '',
-          js: () => this.addPanel('About', DemoAboutPage()),
+          js: () => this.addPanel('About', <DemoAboutPage />),
         },
       ],
     },
