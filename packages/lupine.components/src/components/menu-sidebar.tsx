@@ -19,6 +19,7 @@ export type MenuSidebarProps = {
   color?: string;
   backgroundColor?: string;
   isDevAdmin?: boolean;
+  defaultOpenAll?: boolean;
 };
 export const MenuSidebar = ({
   mobileMenu,
@@ -31,6 +32,7 @@ export const MenuSidebar = ({
   maxWidth = '100%',
   maxWidthMobileMenu = MediaQueryMaxWidth.TabletMax,
   isDevAdmin = false,
+  defaultOpenAll = false,
 }: MenuSidebarProps) => {
   const css: CssProps = {
     // backgroundColor,
@@ -228,7 +230,7 @@ export const MenuSidebar = ({
             }
             let ref: RefProps = {};
             return item.items ? (
-              <div ref={ref} class='menu-sidebar-sub-box' onClick={() => onItemToggleClick(ref)}>
+              <div ref={ref} class={`menu-sidebar-sub-box ${defaultOpenAll ? 'open' : ''}`} onClick={() => onItemToggleClick(ref)}>
                 <div class='menu-sidebar-item'>{item.text}</div>
                 {renderItems(item.items, 'menu-sidebar-sub')}
               </div>

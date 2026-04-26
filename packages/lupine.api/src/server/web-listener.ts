@@ -203,8 +203,11 @@ export class WebListener {
         return (req.locals.body || Buffer.alloc(0)).toString('utf8');
       },
       formData: async () => {
-        if (!req.locals.body) throw new Error('Request body is empty');
-        return await parseFormData(req, req.locals.body);
+        if (!req.locals._formData) {
+          if (!req.locals.body) throw new Error('Request body is empty');
+          req.locals._formData = await parseFormData(req, req.locals.body);
+        }
+        return req.locals._formData;
       },
       cookies: () => getCookiesStorage(req),
       setCookie: (name: string, value: string, options: SetCookieProps) => applySetCookie(req, res, name, value, options),
