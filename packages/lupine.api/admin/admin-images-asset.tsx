@@ -341,7 +341,7 @@ export const AdminImagesAssetPage = (props: AdminImagesAssetPageProps) => {
     }
 
     const newName = (ref.$('.a-img-name') as HTMLInputElement).value;
-    if (!newName && !isSafeFilename(fileDom.files[0].name)) {
+    if (!newName && !isSafeFilename(fileDom.files[0].name.replace(/\s+/g, '_'))) {
       NotificationMessage.sendMessage('Filename invalid', NotificationColor.Error);
       return;
     }

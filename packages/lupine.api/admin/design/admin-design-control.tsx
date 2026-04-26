@@ -15,6 +15,9 @@ import { DesignUtils } from './design-utils';
 import { ComponentRegistry } from './component-registry';
 import { AdminSelectPage } from '../admin-page-list';
 import { AdminSelectMenu } from '../admin-menu-list';
+import { AdminSelectImage } from '../admin-images';
+import { AdminSelectImageAsset } from '../admin-images-asset';
+import { baseUrl } from '../service';
 
 // HtmlVars remain inside because they might belong strictly to the render cycle.
 // State must be within AdminDesignControl to allow multiple instances (tabs) to isolate data.
@@ -371,7 +374,10 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                   <select
                     class='prop-input'
                     value={val}
-                    onChange={(e: any) => handlePropChange(actualKey, e.target.value, true)}
+                    onChange={(e: any) => {
+                      const newVal = e.target.value;
+                      handlePropChange(actualKey, newVal, true);
+                    }}
                   >
                     {editor.options.map((o: any) => (
                       <option value={o.value} selected={val === o.value}>
@@ -556,6 +562,210 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                       style={{ padding: '0 8px', fontSize: '14px', lineHeight: '1', height: '28px' }}
                     >
                       ...
+                    </button>
+                  </div>
+                );
+              } else if (editor.type === 'image-select') {
+                let isDirty = false;
+                const openVirtualSelect = async () => {
+                  await AdminSelectImage({
+                    handleSelectedUrl: (url) => {
+                      if (url.startsWith('/api/')) {
+                        handlePropChange(actualKey, baseUrl(url), true);
+                      } else {
+                        handlePropChange(actualKey, baseUrl(`/api/image/${url}`), true);
+                      }
+                      setTimeout(() => {
+                        store.commitHistory();
+                        store.emit('TREE_UPDATE');
+                      }, 150);
+                    },
+                  });
+                };
+                const openAssetSelect = async () => {
+                  await AdminSelectImageAsset({
+                    handleSelectedUrl: (url) => {
+                      handlePropChange(actualKey, url, true);
+                      setTimeout(() => {
+                        store.commitHistory();
+                        store.emit('TREE_UPDATE');
+                      }, 150);
+                    },
+                  });
+                };
+
+                inputEl = (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <input
+                      type='text'
+                      class='prop-input'
+                      value={val}
+                      onInput={(e: any) => {
+                        isDirty = true;
+                        handlePropChange(actualKey, e.target.value, false, true);
+                      }}
+                      onBlur={() => {
+                        if (isDirty) {
+                          isDirty = false;
+                          setTimeout(() => {
+                            store.commitHistory();
+                            store.emit('TREE_UPDATE');
+                          }, 150);
+                        }
+                      }}
+                      onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button class='button-base' style={{ flex: 1, fontSize: '12px' }} onClick={openVirtualSelect}>
+                        Virtual Album
+                      </button>
+                      <button class='button-base' style={{ flex: 1, fontSize: '12px' }} onClick={openAssetSelect}>
+                        Public Asset
+                      </button>
+                    </div>
+                  </div>
+                );
+              } else if (editor.type === 'carousel-cards') {
+                const cards = Array.isArray(val) ? val : [];
+
+                const updateCard = (index: number, newCardData: any) => {
+                  const newCards = [...cards];
+                  newCards[index] = { ...newCards[index], ...newCardData };
+                  handlePropChange(actualKey, newCards, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                const addCard = () => {
+                  const newCards = [...cards, { id: 'c_' + Math.random().toString(36).substring(2, 9), src: '', href: '', target: '_self', description: '' }];
+                  handlePropChange(actualKey, newCards, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                const moveCard = (index: number, direction: number) => {
+                  if (index + direction < 0 || index + direction >= cards.length) return;
+                  const newCards = [...cards];
+                  const temp = newCards[index];
+                  newCards[index] = newCards[index + direction];
+                  newCards[index + direction] = temp;
+                  handlePropChange(actualKey, newCards, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                const deleteCard = (index: number) => {
+                  const newCards = [...cards];
+                  newCards.splice(index, 1);
+                  handlePropChange(actualKey, newCards, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                inputEl = (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+                    {cards.map((card: any, index: number) => {
+                      let isDirtyDesc = false;
+                      let isDirtyHref = false;
+
+                      return (
+                        <div key={card.id || index} style={{ border: '1px solid var(--primary-border)', borderRadius: '6px', padding: '12px', backgroundColor: 'var(--secondary-bg-color)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <strong style={{ fontSize: '12px', color: 'var(--primary-color)' }}>Card {index + 1}</strong>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button class='button-base' style={{ padding: '2px 6px', fontSize: '12px' }} onClick={() => moveCard(index, -1)} disabled={index === 0}>↑</button>
+                              <button class='button-base' style={{ padding: '2px 6px', fontSize: '12px' }} onClick={() => moveCard(index, 1)} disabled={index === cards.length - 1}>↓</button>
+                              <button class='button-base color-red' style={{ padding: '2px 6px', fontSize: '12px', backgroundColor: 'transparent', border: '1px solid var(--error-color)' }} onClick={() => deleteCard(index)}>✕</button>
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '8px' }}>
+                            {card.src ? (
+                              <img src={card.src} style={{ width: '100%', height: '80px', objectFit: 'contain', backgroundColor: 'var(--primary-bg-color)', marginBottom: '8px', borderRadius: '4px', border: '1px solid var(--primary-border)' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary-bg-color)', marginBottom: '8px', borderRadius: '4px', color: '#999', fontSize: '12px', border: '1px solid var(--primary-border)' }}>No Image</div>
+                            )}
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button class='button-base' style={{ flex: 1, fontSize: '11px' }} onClick={async () => {
+                                await AdminSelectImage({
+                                  handleSelectedUrl: (url) => {
+                                    const finalUrl = url.startsWith('/api/') ? baseUrl(url) : baseUrl(`/api/image/${url}`);
+                                    updateCard(index, { src: finalUrl });
+                                  }
+                                });
+                              }}>Virtual Album</button>
+                              <button class='button-base' style={{ flex: 1, fontSize: '11px' }} onClick={async () => {
+                                await AdminSelectImageAsset({
+                                  handleSelectedUrl: (url) => {
+                                    updateCard(index, { src: url });
+                                  }
+                                });
+                              }}>Public Asset</button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>Link URL</label>
+                            <input type='text' class='prop-input' style={{ fontSize: '12px', padding: '6px' }} value={card.href || ''}
+                              onInput={(e: any) => { isDirtyHref = true; const newCards = [...cards]; newCards[index].href = e.target.value; handlePropChange(actualKey, newCards, false, true); }}
+                              onBlur={() => { if (isDirtyHref) { isDirtyHref = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
+                              onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                            />
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>Link Target</label>
+                            <select class='prop-input' style={{ fontSize: '12px', padding: '6px' }} value={card.target || '_self'} onChange={(e: any) => updateCard(index, { target: e.target.value })}>
+                              <option value='_self'>Same Window</option>
+                              <option value='_blank'>New Window</option>
+                            </select>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>Description (HTML)</label>
+                            <textarea class='prop-input' rows={3} style={{ fontSize: '12px', padding: '6px', resize: 'vertical' }} value={card.description || ''}
+                              onInput={(e: any) => { isDirtyDesc = true; const newCards = [...cards]; newCards[index].description = e.target.value; handlePropChange(actualKey, newCards, false, true); }}
+                              onBlur={() => { if (isDirtyDesc) { isDirtyDesc = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <button class='button-base button-d' style={{ padding: '8px', fontSize: '13px' }} onClick={addCard}>+ Add Card</button>
+                  </div>
+                );
+              } else if (editor.type === 'chart-data') {
+                const sampleDataMap: Record<string, string> = {
+                  default: JSON.stringify({ labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], series: [{ name: 'Series 1', data: [31, 40, 28, 51, 42, 109, 100] }, { name: 'Series 2', data: [11, 32, 45, 32, 34, 52, 41] }] }, null, 2),
+                  gauge: JSON.stringify({ value: 65, min: 0, max: 100 }, null, 2),
+                };
+
+                let isDirty = false;
+                const loadSampleData = () => {
+                  const currentChartType = node.props.chartType || 'pie';
+                  const sample = currentChartType === 'gauge' ? sampleDataMap.gauge : sampleDataMap.default;
+                  handlePropChange(actualKey, sample, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                inputEl = (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <textarea
+                      class='prop-input'
+                      rows={10}
+                      style={{ fontSize: '11px', fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto' }}
+                      onInput={(e: any) => {
+                        isDirty = true;
+                        handlePropChange(actualKey, e.target.value, false, true);
+                      }}
+                      onBlur={() => {
+                        if (isDirty) {
+                          isDirty = false;
+                          setTimeout(() => {
+                            store.commitHistory();
+                            store.emit('TREE_UPDATE');
+                          }, 150);
+                        }
+                      }}
+                    >{typeof val === 'string' ? val : JSON.stringify(val, null, 2)}</textarea>
+                    <button class='button-base' style={{ fontSize: '12px' }} onClick={loadSampleData}>
+                      Load Sample Data
                     </button>
                   </div>
                 );

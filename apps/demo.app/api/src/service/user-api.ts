@@ -12,6 +12,7 @@ import {
   AppAdminHookSetCookieProps,
   AppAdminHookCheckLoginProps,
   AppAdminHookLogoutProps,
+  adminApiHelper,
 } from 'lupine.api';
 import { sendEmail, sendSiteEmail } from './send-email';
 import { clearCookie } from 'lupine.web';
@@ -27,33 +28,6 @@ export type LoginJsonProps = {
   ip: string;
   h: string; // hash of name+pass
   r?: any; // record, user info after verification
-};
-
-export const decryptJson = (text: string) => {
-  const cryptoKey = process.env['CRYPTO_KEY'];
-  if (cryptoKey && text) {
-    try {
-      const deCrypto = CryptoUtils.decrypt(text, cryptoKey);
-      const json = JSON.parse(deCrypto);
-      return json;
-    } catch (error: any) {
-      logger.error(error.message);
-    }
-  }
-  return false;
-};
-export const encryptJson = (jsonOrText: string | object) => {
-  const cryptoKey = process.env['CRYPTO_KEY'];
-  if (cryptoKey && jsonOrText) {
-    try {
-      const text = typeof jsonOrText === 'string' ? jsonOrText : JSON.stringify(jsonOrText);
-      const encryptText = CryptoUtils.encrypt(text, cryptoKey);
-      return encryptText;
-    } catch (error: any) {
-      logger.error(error.message);
-    }
-  }
-  return false;
 };
 
 export const appAdminHookSetCookie: AppAdminHookSetCookieProps = async (
@@ -96,9 +70,9 @@ export const appAdminHookSetCookie: AppAdminHookSetCookieProps = async (
   req.locals.setCookie('_token', tokenCookie, {
     expireDays: 360,
     path: '/',
-    httpOnly: false,
+    httpOnly: true,
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
   });
   return response;
 };
@@ -140,7 +114,7 @@ export const getUserFromCookie = async (
     const cookies = req.locals.cookies();
     const token = cookies.get('_token', '');
     if (token) {
-      const json = decryptJson(token) as LoginJsonProps;
+      const json = adminApiHelper.decryptJson(token) as LoginJsonProps;
       if (!json || !json.u) {
         if (sendResponseWhenError) {
           const response = {
@@ -361,9 +335,9 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
     req.locals.setCookie('_token', tokenCookie, {
       expireDays: 360,
       path: '/',
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
-      sameSite: 'none',
+      sameSite: 'lax',
     });
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -487,9 +461,9 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
     req.locals.setCookie('_token', tokenCookie, {
       expireDays: 360,
       path: '/',
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
-      sameSite: 'none',
+      sameSite: 'lax',
     });
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -504,7 +478,7 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
 };
 
 export const userLogout = async (req: ServerRequest, res: ServerResponse) => {
-  req.locals.setCookie('_token', '', { expireDays: 360, path: '/', httpOnly: false, secure: true, sameSite: 'none' });
+  req.locals.setCookie('_token', '', { expireDays: 360, path: '/', httpOnly: true, secure: true, sameSite: 'lax' });
   ApiHelper.sendJson(req, res, { status: 'ok', message: 'Logged out.' });
   return true;
 };

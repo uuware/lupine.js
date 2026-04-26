@@ -11,6 +11,7 @@ import { AdminConfig } from './admin-config';
 import { Logger, IApiBase, ServerRequest, ApiRouter } from 'lupine.api';
 import { readWebConfig } from './web-config-api';
 import { AdminPage } from './admin-page';
+import { AdminProcess } from './admin-process';
 import { AdminImageApi, serveUploadImage } from './admin-image-api';
 import { AdminImageAssetApi } from './admin-image-asset-api';
 import { readWebSetting, writeWebSetting, readApiSetting, writeApiSetting } from './admin-setting-api';
@@ -59,6 +60,9 @@ export class AdminApi implements IApiBase {
 
     const adminPage = new AdminPage();
     this.router.use('/page', needDevAdminSession, adminPage.getRouter());
+
+    const adminProcess = new AdminProcess();
+    this.router.use('/process', needDevAdminSession, adminProcess.getRouter());
 
     const adminImageApi = new AdminImageApi();
     this.router.use('/image', needDevAdminSession, adminImageApi.getRouter());
