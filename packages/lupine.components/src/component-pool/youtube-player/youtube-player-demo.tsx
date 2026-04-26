@@ -5,13 +5,13 @@ export const youtubePlayerDemo: DemoStory<YouTubePlayerProps> = {
   id: 'youtubePlayerDemo',
   text: 'YouTube Player',
   args: {
-    videoId: 'dQw4w9WgXcQ',
+    srcOrVideoId: 'dQw4w9WgXcQ',
     width: '100%',
     height: '400px',
     autoplay: false,
   },
   argTypes: {
-    videoId: { control: 'text', description: 'YouTube Video ID' },
+    srcOrVideoId: { control: 'text', description: 'YouTube Video ID' },
     width: { control: 'text' },
     height: { control: 'text' },
     autoplay: { control: 'boolean' },
@@ -39,8 +39,8 @@ export const youtubePlayerDemo: DemoStory<YouTubePlayerProps> = {
         <section>
           <div class='section-title'>Custom Size</div>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <YouTubePlayer videoId='jNQXAC9IVRw' width='300px' height='200px' />
-            <YouTubePlayer videoId='M7lc1UVf-VE' width='400px' height='250px' />
+            <YouTubePlayer srcOrVideoId='jNQXAC9IVRw' width='300px' height='200px' />
+            <YouTubePlayer srcOrVideoId='M7lc1UVf-VE' width='400px' height='250px' />
           </div>
         </section>
       </div>

@@ -4,6 +4,10 @@ import { BlockGrid } from './block-grid';
 import { BlockFlex } from './block-flex';
 import { BlockTitle } from './block-title';
 import { BlockParagraph } from './block-paragraph';
+import { BlockImage } from './block-image';
+import { BlockCarousel } from './block-carousel';
+import { BlockYoutube } from './block-youtube';
+import { BlockChart } from './block-chart';
 import { BlockPlaceholder } from './block-placeholder';
 import { BlockMenuBar } from './block-menu-bar';
 import { BlockMenuList } from './block-menu-list';
@@ -14,6 +18,10 @@ export const ComponentsMap: Record<string, any> = {
   'block-flex': BlockFlex,
   'block-title': BlockTitle,
   'block-paragraph': BlockParagraph,
+  'block-image': BlockImage,
+  'block-carousel': BlockCarousel,
+  'block-youtube': BlockYoutube,
+  'block-chart': BlockChart,
   'block-placeholder': BlockPlaceholder,
   'block-menu-bar': BlockMenuBar,
   'block-menu-list': BlockMenuList,

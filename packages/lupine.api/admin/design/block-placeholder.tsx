@@ -16,6 +16,7 @@ export const BlockPlaceholder = (props: { node: DesignNode; contentReplacement?:
     width: '100%',
     height: '100%',
     flex: props.node.props?.flex === 'none' ? 'none' : '1',
+    overflowY: p.overflowY || 'auto',
     padding: '32px',
     backgroundColor: '#f5f5f5',
     border: isPreview ? 'none' : '2px dashed #ccc',

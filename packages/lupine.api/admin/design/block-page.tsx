@@ -22,6 +22,7 @@ export const BlockPage = (props: { node: DesignNode }) => {
     backgroundColor: p.backgroundColor || 'transparent',
     padding: p.padding || '0',
     border: 'none',
+    overflowY: p.overflowY || 'auto',
 
     gridTemplateRows: isVertical ? (p.gridTemplate || DEFAULT_LAYOUT) : '1fr',
     gridTemplateColumns: !isVertical ? (p.gridTemplate || DEFAULT_LAYOUT) : '1fr',

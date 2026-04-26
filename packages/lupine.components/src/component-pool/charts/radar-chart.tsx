@@ -105,8 +105,20 @@ export const RadarChart = (props: RadarChartProps) => {
 
       const pointsStr = coordinates.map((c) => `${c.x},${c.y}`).join(' ');
 
+      const seriesGroupElements: any[] = [];
+
       // Fill area
-      dataElements.push(<polygon points={pointsStr} fill={color} fillOpacity='0.3' stroke={color} strokeWidth='2' />);
+      seriesGroupElements.push(
+        <polygon 
+          class="radar-polygon"
+          points={pointsStr} 
+          fill={color} 
+          fillOpacity='0.15' 
+          stroke={color} 
+          strokeWidth='2' 
+          style={{ transition: 'fill-opacity 0.2s ease' }}
+        />
+      );
 
       // Points and Tooltips
       coordinates.forEach((c) => {
@@ -132,9 +144,9 @@ export const RadarChart = (props: RadarChartProps) => {
           e.target.setAttribute('r', '4');
         };
 
-        dataElements.push(
+        seriesGroupElements.push(
           <circle
-            class='chart-element'
+            class='chart-element radar-point'
             cx={c.x}
             cy={c.y}
             r='4'
@@ -147,6 +159,26 @@ export const RadarChart = (props: RadarChartProps) => {
           />
         );
       });
+
+      const handleGroupMouseEnter = (e: any) => {
+        const polygon = e.currentTarget.querySelector('.radar-polygon');
+        if (polygon) polygon.setAttribute('fill-opacity', '0.6');
+      };
+
+      const handleGroupMouseLeave = (e: any) => {
+        const polygon = e.currentTarget.querySelector('.radar-polygon');
+        if (polygon) polygon.setAttribute('fill-opacity', '0.15');
+      };
+
+      dataElements.push(
+        <g 
+          class="radar-series" 
+          onMouseEnter={handleGroupMouseEnter} 
+          onMouseLeave={handleGroupMouseLeave}
+        >
+          {seriesGroupElements}
+        </g>
+      );
     });
 
     return dataElements;
