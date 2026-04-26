@@ -26,6 +26,23 @@ When performing multi-line code refactoring or replacement operations (`replace_
   - ✅ **Use when**: The component is small, state drives most of the UI, and the React-style patterns feel natural.
   - ⚠️ **Avoid when**: The component is large/complex, or only a tiny portion of the UI needs to change (e.g. a progress counter, a list inside a page) — repeated full rerenders are wasteful.
   - **`ref.onLoad` + useState**: `onLoad` is called **only on initial mount** (not on rerenders). It's the right place for async data fetch that populates state.
+  - **Async component functions**: Component functions **can be `async`** — the framework detects the returned Promise and `await`s it. This lets you `await fetch()` directly inside a component body. However, **all `useState()` calls MUST appear before the first `await`**. The internal `_currentStore` pointer is cleared immediately after the synchronous portion of the component executes (before any `await`), so calling `useState()` after an `await` will throw `"useState must be called inside a component function"`.
+
+    ```tsx
+    // ✅ Correct: useState before await
+    const MyComp = async (props) => {
+      const [data, setData] = useState(null); // hooks first
+      const result = await fetchData();        // await after hooks
+      return <div>{result.title}</div>;
+    };
+
+    // ❌ Wrong: useState after await — will crash
+    const MyComp = async (props) => {
+      const result = await fetchData();        // await first
+      const [data, setData] = useState(null); // 💥 _currentStore is null
+      return <div>{result.title}</div>;
+    };
+    ```
 
 - **`HtmlVar` — Surgical partial updates (large/complex components)**:
 
@@ -199,7 +216,7 @@ When you pass `css={css}` to a JSX element, Lupine automatically evaluates it an
 4. Use `class="&-item"` normally. Lupine replaces `&` with the identical `globalCssId` across all instances.
 
 > [!WARNING]
-> Because `getGlobalStylesId` relies on `getRequestContext()` data to correctly attach and track styles (especially across SSR and interactive client renders), getGlobalStylesId and `bindGlobalStyle` **MUST** be called inside the component function scope. Calling them at the file/module level will result in runtime errors.
+> Because `getGlobalStylesId` relies on `getRequestContext()` data to correctly attach and track styles (especially across SSR and interactive client renders), `getGlobalStylesId` and `bindGlobalStyle` **MUST** be called inside the component function scope. Calling them at the file/module level will result in runtime errors like: `Uncaught Error: Request context is not initialized`.
 
 ### ⚠️ IMPORTANT: The "Static `CssProps`" Rule
 
