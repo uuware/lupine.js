@@ -5,6 +5,7 @@ export * from './breadcrumbs';
 export * from './card';
 export * from './carousel';
 export * from './cascader';
+export * from './charts';
 export * from './copy-button';
 export * from './date-picker';
 export * from './floating-icon-menu';
