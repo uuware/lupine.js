@@ -124,12 +124,6 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     }
   };
   if (refUpdate) {
-    refUpdate.updateTitle = (index: number, title: string) => {
-      const doms = ref.$all(`.&tabs > div > .tab`);
-      if (index >= 0 && index < doms.length) {
-        doms[index].innerHTML = title;
-      }
-    };
     refUpdate.updateIndex = updateIndex;
     refUpdate.removePage = removePage;
     refUpdate.newPage = newPage;
@@ -140,6 +134,15 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     refUpdate.getCount = () => {
       const doms = ref.$all(`.&tabs > div > .tab`);
       return doms.length;
+    };
+    refUpdate.updateTitle = (index: number, title: string) => {
+      const doms = ref.$all(`.&tabs > div > .tab`);
+      if (index === -1) {
+        index = refUpdate.getIndex!();
+      }
+      if (index >= 0 && index < doms.length) {
+        doms[index].innerHTML = title;
+      }
     };
     refUpdate.findAndActivate = (title: string) => {
       const doms = ref.$all(`.&tabs > div > .tab`);
