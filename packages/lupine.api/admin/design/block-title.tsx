@@ -1,5 +1,7 @@
 import { CssProps } from 'lupine.web';
+import { MediaQueryRange } from 'lupine.components';
 import { DesignNode, getDesignStore } from './design-store';
+import { DesignUtils } from './design-utils';
 
 export const BlockTitle = (props: { node: DesignNode }) => {
   const store = getDesignStore();
@@ -10,9 +12,9 @@ export const BlockTitle = (props: { node: DesignNode }) => {
     padding: p.padding || '0',
     textAlign: p.textAlign || 'left',
     color: p.color || 'inherit',
-    // overflow: 'hidden',
     minWidth: '0',
     flex: p.flex === '1' ? '1' : 'none',
+    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node))
   };
 
   // Convert generic 'h1' - 'h6' string to a tag name. Fallback if something weird happens.

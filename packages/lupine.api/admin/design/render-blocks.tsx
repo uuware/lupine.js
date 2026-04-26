@@ -5,6 +5,8 @@ import { BlockFlex } from './block-flex';
 import { BlockTitle } from './block-title';
 import { BlockParagraph } from './block-paragraph';
 import { BlockPlaceholder } from './block-placeholder';
+import { BlockMenuBar } from './block-menu-bar';
+import { BlockMenuList } from './block-menu-list';
 
 export const ComponentsMap: Record<string, any> = {
   'block-page': BlockPage,
@@ -13,6 +15,8 @@ export const ComponentsMap: Record<string, any> = {
   'block-title': BlockTitle,
   'block-paragraph': BlockParagraph,
   'block-placeholder': BlockPlaceholder,
+  'block-menu-bar': BlockMenuBar,
+  'block-menu-list': BlockMenuList,
 };
 
 export const RenderBlocks = (props: { node: DesignNode }) => {

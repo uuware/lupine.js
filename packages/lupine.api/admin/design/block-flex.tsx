@@ -2,14 +2,17 @@ import { CssProps } from 'lupine.web';
 import { MediaQueryRange } from 'lupine.components';
 import { DesignNode, getDesignStore } from './design-store';
 import { RenderBlocks } from './render-blocks';
+import { DesignUtils } from './design-utils';
 
 export const BlockFlex = (props: { node: DesignNode }) => {
   const store = getDesignStore();
   const isPreview = store ? store.isPreviewMode : true;
   const p = props.node.props;
 
+  const sysCss: any = p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node, 'flex');
+
   const css: CssProps = {
-    display: 'flex',
+    display: p.hidden ? 'none' : 'flex',
     width: '100%',
     minHeight: '0',
     height: '100%',
@@ -24,27 +27,36 @@ export const BlockFlex = (props: { node: DesignNode }) => {
     
     // Desktop Base
     flexDirection: p.flexDirection || 'column',
+    ...sysCss,
     
     // Responsive Overrides
     [MediaQueryRange.DesktopBelow]: {
+       ...sysCss[MediaQueryRange.DesktopBelow],
        flexDirection: p.flexDirectionDesktopBelow || p.flexDirection || 'column',
        alignItems: p.alignItemsDesktopBelow || p.alignItems || 'stretch',
        justifyContent: p.justifyContentDesktopBelow || p.justifyContent || 'flex-start',
+       gap: p.gapDesktopBelow || p.gap || '0',
     },
     [MediaQueryRange.TabletBelow]: {
+       ...sysCss[MediaQueryRange.TabletBelow],
        flexDirection: p.flexDirectionTabletBelow || p.flexDirectionDesktopBelow || p.flexDirection || 'column',
        alignItems: p.alignItemsTabletBelow || p.alignItemsDesktopBelow || p.alignItems || 'stretch',
        justifyContent: p.justifyContentTabletBelow || p.justifyContentDesktopBelow || p.justifyContent || 'flex-start',
+       gap: p.gapTabletBelow || p.gapDesktopBelow || p.gap || '0',
     },
     [MediaQueryRange.MobileBelow]: {
+       ...sysCss[MediaQueryRange.MobileBelow],
        flexDirection: p.flexDirectionMobileBelow || p.flexDirectionTabletBelow || p.flexDirectionDesktopBelow || p.flexDirection || 'column',
        alignItems: p.alignItemsMobileBelow || p.alignItemsTabletBelow || p.alignItemsDesktopBelow || p.alignItems || 'stretch',
        justifyContent: p.justifyContentMobileBelow || p.justifyContentTabletBelow || p.justifyContentDesktopBelow || p.justifyContent || 'flex-start',
+       gap: p.gapMobileBelow || p.gapTabletBelow || p.gapDesktopBelow || p.gap || '0',
     },
     [MediaQueryRange.ExtraSmallBelow]: {
+       ...sysCss[MediaQueryRange.ExtraSmallBelow],
        flexDirection: p.flexDirectionExtraSmallBelow || p.flexDirectionMobileBelow || p.flexDirectionTabletBelow || p.flexDirectionDesktopBelow || p.flexDirection || 'column',
        alignItems: p.alignItemsExtraSmallBelow || p.alignItemsMobileBelow || p.alignItemsTabletBelow || p.alignItemsDesktopBelow || p.alignItems || 'stretch',
        justifyContent: p.justifyContentExtraSmallBelow || p.justifyContentMobileBelow || p.justifyContentTabletBelow || p.justifyContentDesktopBelow || p.justifyContent || 'flex-start',
+       gap: p.gapExtraSmallBelow || p.gapMobileBelow || p.gapTabletBelow || p.gapDesktopBelow || p.gap || '0',
     },
 
     '.empty-drop-zone': {

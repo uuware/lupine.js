@@ -1,635 +1,835 @@
-import { CssProps, getRenderPageProps, RefProps, DomUtils, ModalWindow, NotificationMessage } from 'lupine.components';
+import {
+  CssProps,
+  getRenderPageProps,
+  RefProps,
+  HtmlVar,
+  NotificationMessage,
+  NotificationColor,
+  ActionSheetSelect,
+  createDragUtil,
+  DomUtils,
+  ActionSheetSelectPromise,
+  FloatWindow,
+} from 'lupine.components';
 
-const fetchTableList = async () => {
-  const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/db/tables');
-  return data.json;
-};
-const fetchTableDrop = async (tableName: string) => {
-  const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/db/table-drop', {
-    table: tableName,
-  });
-  return data.json;
-};
-const fetchTableTruncate = async (tableName: string) => {
-  const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/db/table-truncate', {
-    table: tableName,
-  });
-  return data.json;
-};
+// Access level constants
+const ACCESS_LEVELS = [
+  { value: '0', label: 'Public' },
+  { value: '2', label: 'Logged In' },
+  { value: '3', label: 'Admin' },
+  { value: '9', label: 'Site Admin' },
+];
+const getAccessLabel = (val: string) => ACCESS_LEVELS.find((a) => a.value === val)?.label || 'Public';
 
-export const SaveMenu = (props: {
-  menuIdReadonly?: boolean;
-  menuId: string;
-  title: string;
-  note: string;
-  package: string;
+// Menu item data structure: [level, nav, access, link, text]
+interface MenuItem {
+  id: number; // unique client-side id for rendering
+  level: number;
+  nav: string; // 0=same window, 1=new window
+  access: string;
+  link: string;
+  text: string;
+  expanded: boolean;
+}
+
+let _nextId = 1;
+const createMenuItem = (
+  level: number,
+  nav: string,
+  access: string,
+  link: string,
+  text: string,
+  expanded = false
+): MenuItem => ({
+  id: _nextId++,
+  level,
+  nav,
+  access,
+  link,
+  text,
+  expanded,
+});
+
+
+// Single menu item card component
+const MenuItemCard = (props: {
+  item: MenuItem;
+  itemIndex: number;
+  onToggle: () => void;
+  onUpdate: (field: string, value: string) => void;
+  onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onIndent: () => void;
+  onOutdent: () => void;
+  onDragStart: (e: any) => void;
 }) => {
+  const { item } = props;
+
   return (
-    <div class='save-menu'>
-      <div class='row-box mb-s'>
-        <div class='w-7'>Menu Id:</div>
-        <input type='text' id='s_menuId' value={props.menuId} class='input-base w-20' readonly={props.menuIdReadonly} />
+    <div class='menu-item-card' style={{ marginLeft: `${item.level * 40}px` }} data-index={props.itemIndex}>
+      <div class='menu-item-header'>
+        <div
+          class='menu-item-drag'
+          onMouseDown={(e: any) => {
+            e.stopPropagation();
+            props.onDragStart(e);
+          }}
+          onTouchStart={(e: any) => {
+            e.stopPropagation();
+            props.onDragStart(e);
+          }}
+        >
+          <i class='ifc-icon ma-drag-horizontal-variant'></i>
+        </div>
+        <div class='menu-item-title-bar' onClick={props.onToggle}>
+          <span class='menu-item-title'>{item.text || '(untitled)'}</span>
+          <div class='menu-item-badges'>
+            <span class={`menu-item-access-badge access-${item.access}`}>{getAccessLabel(item.access)}</span>
+            {item.link && (
+              <span class='menu-item-link-badge' title={item.link}>
+                {item.link}
+              </span>
+            )}
+          </div>
+        </div>
+        <div class='menu-item-header-actions'>
+          <i class='ifc-icon ma-arrow-up' onClick={props.onMoveUp} title='Move Up'></i>
+          <i class='ifc-icon ma-arrow-down' onClick={props.onMoveDown} title='Move Down'></i>
+          <i class='ifc-icon ma-arrow-left' onClick={props.onOutdent} title='Outdent'></i>
+          <i class='ifc-icon ma-arrow-right' onClick={props.onIndent} title='Indent'></i>
+          <i class='ifc-icon ma-close color-red' onClick={props.onDelete} title='Delete'></i>
+        </div>
+        <div class='menu-item-toggle' onClick={props.onToggle}>
+          <i class={`ifc-icon ${item.expanded ? 'ma-chevron-up' : 'ma-chevron-down'}`}></i>
+        </div>
       </div>
-      <div class='row-box mb-s'>
-        <div class='w-7'>Menu Title:</div>
-        <input type='text' id='s_menuTitle' value={props.title} class='input-base w-20' />
-      </div>
-      <div class='row-box mb-s'>
-        <div class='w-7'>Menu Description:</div>
-        <input type='text' id='s_menuNote' value={props.note} class='input-base w-20' />
-      </div>
-      <div class='row-box mb-s'>
-        <div class='w-7'>Package id:</div>
-        <input type='text' id='s_menuPackage' value={props.package} class='input-base w-20' />
-      </div>
+
+      {item.expanded && (
+        <div class='menu-item-body'>
+          <div class='menu-item-field-row'>
+            <div class='menu-item-field'>
+              <label>Title</label>
+              <input
+                type='text'
+                class='input-base'
+                value={item.text}
+                onInput={(e: any) => props.onUpdate('text', e.target.value)}
+              />
+            </div>
+            <div class='menu-item-field'>
+              <label>Link / URL</label>
+              <input
+                type='text'
+                class='input-base'
+                value={item.link}
+                onInput={(e: any) => props.onUpdate('link', e.target.value)}
+              />
+            </div>
+          </div>
+          <div class='menu-item-field-row'>
+            <div class='menu-item-field'>
+              <label>Target</label>
+              <select class='input-base' value={item.nav} onChange={(e: any) => props.onUpdate('nav', e.target.value)}>
+                <option value='0'>Same Window</option>
+                <option value='1'>New Window</option>
+              </select>
+            </div>
+            <div class='menu-item-field'>
+              <label>Access Level</label>
+              <select
+                class='input-base'
+                value={item.access}
+                onChange={(e: any) => props.onUpdate('access', e.target.value)}
+              >
+                {ACCESS_LEVELS.map((al) => (
+                  <option value={al.value}>{al.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export const AdminMenuEditPage = (menuId: string) => {
-  let savedMenuId = '';
-  let savedMenuTitle = '';
-  let savedMenuNote = '';
+  let savedMenuId = menuId || '';
+  let savedName = '';
+  let savedRemark = '';
   let savedPackage = '';
-  const onDelete = async (tableName: string) => {
-    if (!confirm(`Are you really Deleting ${tableName}?`)) {
-      return;
-    }
-    const json = await fetchTableDrop(tableName);
-    console.log('====fetchTableDelete', json);
-    NotificationMessage.sendMessage('Deleted: ' + tableName);
-    onClick();
-  };
+  let savedUpdatetime: number = 0;
+  let items: MenuItem[] = [];
 
-  // const onDownload = async (tableName: string) => {
-  //   DomUtils.download('/api/admin/db/table-download?table=' + tableName);
-  // };
+  const itemsDom = new HtmlVar('');
+  const titleDom = new HtmlVar('');
 
-  const onClick = async () => {
-    const json = await fetchTableList();
-    console.log('====fetchTableList', json);
-  };
-
-  const doLoad = (results: any) => {
-    oMenu.length = 0;
-    savedMenuId = results.menuid;
-    savedMenuTitle = results.title;
-    savedMenuNote = results.note;
-    savedPackage = results.package;
-    for (const i in results.items) {
-      const item = results.items[i];
-      const lev = Number.parseInt(item[0]);
-      var pre = new Array(lev * 4 + 1).join('-');
-      oMenu.options[oMenu.length] = new Option(pre + item[4], item.join('\t'));
-    }
-    oMenu.selectedIndex = 0;
-    doListChg();
-  };
-  const onSave = () => {
-    doSave(false);
-  };
-  const onSaveAs = () => {
-    doSave(true);
-  };
-  const doSave = async (isSaveAs = false) => {
-    const handleClicked = async (index: number) => {
-      if (index === 0) {
-        // Save
-        const id = DomUtils.getValue('#s_menuId');
-        const title = DomUtils.getValue('#s_menuTitle');
-        const note = DomUtils.getValue('#s_menuNote');
-        const pkg = DomUtils.getValue('#s_menuPackage');
-        let regex = /^[a-zA-Z0-9]+$/;
-        if (!id || !regex.test(id)) {
-          alert('menuId is not valid!');
-          return;
-        }
-        const menuIdReadonly = !isSaveAs && !!savedMenuId;
-        const items = getAllItems();
-        const post: any = {
-          id,
-          title,
-          note,
-          items,
-          idReadonly: menuIdReadonly,
-          package: pkg,
-        };
-
-        const updateIds = () => {
-          savedMenuId = id;
-          savedMenuTitle = title;
-          savedMenuNote = note;
-          savedPackage = pkg;
-          ref.$('.admin-sub-title').innerHTML = `Edit Menu: ${savedMenuId}`;
-        };
-        const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/menu/save', post);
-        if (data.json && data.json.status !== 'ok') {
-          if (!post.idReadonly && data.json.status === 'ID_EXISTS') {
-            if (!confirm(`${data.json.message}\r\n\r\nDo you want to override the same menu id?`)) {
-              return;
-            }
-            post.idReadonly = true;
-            const data2 = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/menu/save', post);
-            if (data2.json && data2.json.status !== 'ok') {
-              alert(`Error happened: ${data2.json.message}`);
-            } else {
-              updateIds();
-              NotificationMessage.sendMessage('Menu is saved.');
-            }
-          } else {
-            alert(`Error happened: ${data.json.message}`);
-            return;
-          }
-        } else {
-          updateIds();
-          NotificationMessage.sendMessage('Menu is saved.');
-        }
+  const renderHeader = () => {
+    const css: CssProps = {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px',
+      '.hdr-label': {
+        fontSize: '12px',
+        color: '#666',
+      },
+      '.hdr-value': {
+        fontSize: '14px',
+        fontWeight: 'bold',
       }
-
-      modalClose();
     };
-    const modalClose = await ModalWindow.show({
-      title: 'Save Menu',
-      buttons: ['Save', 'Cancel'],
-      // contentMaxHeight: '400px',
-      handleClicked,
-      children: (
-        <SaveMenu
-          menuIdReadonly={!!savedMenuId && !isSaveAs}
-          menuId={savedMenuId}
-          title={savedMenuTitle}
-          note={savedMenuNote}
-          package={savedPackage}
-        ></SaveMenu>
-      ),
+    titleDom.value = (
+      <div css={css}>
+        <div>
+          <span class='hdr-label'>Id: </span>
+          <span class='hdr-value'>{savedMenuId || '(New Menu)'}</span>
+        </div>
+        <div>
+          <span class='hdr-label'>Name: </span>
+          <span class='hdr-value'>{savedName || '(none)'}</span>
+        </div>
+        <div>
+          <span class='hdr-label'>Package: </span>
+          <span class='hdr-value'>{savedPackage || '(none)'}</span>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Helpers ──
+  const renderItems = () => {
+    itemsDom.value = (
+      <div class='menu-items-list'>
+        {items.length === 0 && <div class='menu-items-empty'>No menu items yet. Click "Add Item" to get started.</div>}
+        {items.map((item, index) => (
+          <MenuItemCard
+            item={item}
+            itemIndex={index}
+            onToggle={() => {
+              item.expanded = !item.expanded;
+              renderItems();
+            }}
+            onUpdate={(field, value) => {
+              (item as any)[field] = value;
+              renderItems();
+            }}
+            onDelete={() => doDelete(index)}
+            onMoveUp={() => doMoveUp(index)}
+            onMoveDown={() => doMoveDown(index)}
+            onIndent={() => doIndent(index)}
+            onOutdent={() => doOutdent(index)}
+            onDragStart={(e: any) => {
+              dragUtil.onMouseDown ? dragUtil.onMouseDown(e) : dragUtil.onTouchStart(e);
+            }}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const getItemGroup = (index: number): { start: number; end: number } => {
+    // Returns the range [start, end) of the item and all its children
+    const level = items[index].level;
+    let end = index + 1;
+    while (end < items.length && items[end].level > level) {
+      end++;
+    }
+    return { start: index, end };
+  };
+
+  // ── Item operations ──
+  const doDelete = async (index: number) => {
+    const group = getItemGroup(index);
+    const count = group.end - group.start;
+    const msg = count > 1 ? `Delete this item and ${count - 1} sub-item(s)?` : 'Delete this item?';
+    await ActionSheetSelect.show({
+      title: msg,
+      options: ['Remove'],
+      cancelButtonText: 'Cancel',
+      handleClicked: async (btnIndex: number, close: () => void) => {
+        close();
+        if (btnIndex === 0) {
+          items.splice(group.start, count);
+          renderItems();
+        }
+      },
     });
   };
 
-  let oMenu: HTMLSelectElement;
+  const doMoveUp = (index: number) => {
+    if (index <= 0) return;
+    const level = items[index].level;
+    // Find previous sibling (same level)
+    let prevSiblingIndex = -1;
+    for (let i = index - 1; i >= 0; i--) {
+      if (items[i].level < level) break;
+      if (items[i].level === level) {
+        prevSiblingIndex = i;
+        break;
+      }
+    }
+    if (prevSiblingIndex < 0) return;
+
+    const group = getItemGroup(index);
+    const prevGroup = getItemGroup(prevSiblingIndex);
+    // Extract current group
+    const currentChunk = items.splice(group.start, group.end - group.start);
+    // Insert before previous group
+    items.splice(prevGroup.start, 0, ...currentChunk);
+    renderItems();
+  };
+
+  const doMoveDown = (index: number) => {
+    const level = items[index].level;
+    const group = getItemGroup(index);
+    // Find next sibling (same level)
+    let nextSiblingIndex = -1;
+    for (let i = group.end; i < items.length; i++) {
+      if (items[i].level < level) break;
+      if (items[i].level === level) {
+        nextSiblingIndex = i;
+        break;
+      }
+    }
+    if (nextSiblingIndex < 0) return;
+
+    const nextGroup = getItemGroup(nextSiblingIndex);
+    // Extract next group
+    const nextChunk = items.splice(nextGroup.start, nextGroup.end - nextGroup.start);
+    // Insert before current group
+    items.splice(group.start, 0, ...nextChunk);
+    renderItems();
+  };
+
+  const doIndent = (index: number) => {
+    // Cannot indent if no previous sibling to become parent
+    if (index <= 0) return;
+    const prevLevel = items[index - 1].level;
+    const currentLevel = items[index].level;
+    if (currentLevel > prevLevel) return; // already a child of previous
+
+    const group = getItemGroup(index);
+    for (let i = group.start; i < group.end; i++) {
+      items[i].level++;
+    }
+    renderItems();
+  };
+
+  const doOutdent = (index: number) => {
+    const currentLevel = items[index].level;
+    if (currentLevel <= 0) return;
+
+    const group = getItemGroup(index);
+    for (let i = group.start; i < group.end; i++) {
+      items[i].level--;
+    }
+    renderItems();
+  };
+
+  const doAddItem = () => {
+    items.push(createMenuItem(0, '0', '0', '', 'New Item', true));
+    renderItems();
+  };
+
+  // ── Load data ──
+  const doLoad = (result: any) => {
+    savedMenuId = result.menuid || '';
+    savedName = result.name || '';
+    savedRemark = result.remark || '';
+    savedPackage = result.package || '';
+    savedUpdatetime = result.updatetime || 0;
+
+    items = [];
+    if (Array.isArray(result.items)) {
+      for (const arr of result.items) {
+        // arr = [level, nav, access, link, text]
+        items.push(
+          createMenuItem(
+            Number(arr[0]) || 0,
+            String(arr[1] || '0'),
+            String(arr[2] || '0'),
+            String(arr[3] || ''),
+            String(arr[4] || ''),
+            false
+          )
+        );
+      }
+    }
+    renderHeader();
+    renderItems();
+  };
+
+  // ── Save ──
+  const doSave = async () => {
+    let id = savedMenuId || '';
+    let name = savedName || '';
+    let remark = savedRemark || '';
+    let pkg = savedPackage || '';
+
+    FloatWindow.show({
+      title: 'Save Menu',
+      buttons: ['Cancel', 'Save'],
+      contentMinWidth: '400px',
+      handleClicked: async (index: number, close: any) => {
+        if (index === 1) {
+          id = id.trim().toLowerCase();
+
+          const regex = /^[a-z0-9_]+$/;
+          if (!id || !regex.test(id)) {
+            NotificationMessage.sendMessage('Menu ID can only contain lowercase letters, numbers, and underscores.', NotificationColor.Warning);
+            return;
+          }
+
+          const menuItems = items.map((item) => [item.level, item.nav, item.access, item.link, item.text]);
+
+          const isRenamed = savedMenuId && id !== savedMenuId;
+          const isNew = !savedMenuId;
+
+          const executeSave = async (overwrite: boolean) => {
+            const post: any = {
+              menuid: id,
+              name,
+              remark,
+              package: pkg,
+              json: menuItems,
+              checkExists: !overwrite,
+              idReadonly: false,
+            };
+
+            if (!isNew && !isRenamed) {
+              // Saving to the same ID — pass originalUpdatetime for conflict check
+              post.originalUpdatetime = savedUpdatetime;
+              post.idReadonly = true;
+            }
+
+            const data = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/menu/save', post);
+            const json = data.json;
+
+            if (json && json.status === 'ok') {
+              savedMenuId = id;
+              savedName = name;
+              savedRemark = remark;
+              savedPackage = pkg;
+              savedUpdatetime = json.newUpdatetime;
+              renderHeader();
+              NotificationMessage.sendMessage('Menu saved.', NotificationColor.Success);
+              close();
+            } else if (json && json.status === 'ID_EXISTS') {
+              const idx = await ActionSheetSelectPromise({
+                title: `Menu ID "${id}" already exists.\n\nDo you want to overwrite it?`,
+                options: ['Overwrite'],
+                cancelButtonText: 'Cancel'
+              });
+              if (idx === 0) {
+                executeSave(true);
+              }
+            } else if (json && json.status === 'MODIFIED_BY_OTHER') {
+              const idx = await ActionSheetSelectPromise({
+                title: `${json.message}\n\nDo you want to overwrite anyway?`,
+                options: ['Force Overwrite'],
+                cancelButtonText: 'Cancel'
+              });
+              if (idx === 0) {
+                executeSave(true);
+              }
+            } else {
+              NotificationMessage.sendMessage(`Error: ${json?.message || 'Unknown error'}`, NotificationColor.Error);
+              close();
+            }
+          };
+
+          executeSave(false);
+          return;
+        }
+        close();
+      },
+      children: (
+        <div style={{ padding: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Menu ID:</label>
+          <input 
+            type="text" 
+            value={id} 
+            onInput={(e: any) => id = e.target.value}
+            class="input-base"
+            style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
+          />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Name:</label>
+          <input 
+            type="text" 
+            value={name} 
+            onInput={(e: any) => name = e.target.value}
+            class="input-base"
+            style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
+          />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Package:</label>
+          <input 
+            type="text" 
+            value={pkg} 
+            onInput={(e: any) => pkg = e.target.value}
+            class="input-base"
+            style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
+          />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
+          <input 
+            type="text" 
+            value={remark} 
+            onInput={(e: any) => remark = e.target.value}
+            class="input-base"
+            style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
+          />
+        </div>
+      )
+    });
+  };
+
+  // ── Delete menu ──
+  const doDeleteMenu = async () => {
+    if (!savedMenuId) {
+      NotificationMessage.sendMessage('This menu has not been saved yet.', NotificationColor.Warning);
+      return;
+    }
+    const idx = await ActionSheetSelectPromise({
+      title: `Are you sure you want to delete menu "${savedMenuId}"?`,
+      options: ['Delete'],
+      cancelButtonText: 'Cancel'
+    });
+    if (idx === 0) {
+      await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/delete/${savedMenuId}`);
+      savedMenuId = '';
+      savedName = '';
+      savedRemark = '';
+      savedPackage = '';
+      savedUpdatetime = 0;
+      items = [];
+      renderHeader();
+      renderItems();
+      NotificationMessage.sendMessage('Menu deleted.', NotificationColor.Success);
+    }
+  };
+
+  // ── Clear all items ──
+  const doClearAll = async () => {
+    if (items.length === 0) return;
+    const idx = await ActionSheetSelectPromise({
+      title: 'Clear all menu items? This cannot be undone.',
+      options: ['Clear All'],
+      cancelButtonText: 'Cancel'
+    });
+    if (idx !== 0) return;
+    items = [];
+    renderItems();
+  };
+
+  // ── Drag to reorder ──
+  const dragUtil = createDragUtil();
+  dragUtil.setOnMoveCallback((clientX, clientY, movedX, movedY) => {
+    const dragDom = dragUtil.getDraggingDom();
+    if (!dragDom) return;
+    if (!dragDom.classList.contains('menu-item-drag')) return;
+
+    const card = dragDom.closest('.menu-item-card') as HTMLDivElement;
+    if (!card) return;
+
+    // Visual feedback
+    card.style.opacity = '0.85';
+    card.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+    card.style.outline = '2px solid var(--primary-accent-color, #1890ff)';
+    card.style.zIndex = '100';
+    card.style.position = 'relative';
+
+    const container = DomUtils.bySelector('.menu-items-list') as HTMLDivElement;
+    if (!container) return;
+
+    const cards = ref.$all('.menu-item-card') as NodeListOf<HTMLDivElement>;
+    if (cards.length <= 1) return;
+    const rect = container.getBoundingClientRect();
+    const relativeY = clientY - rect.top + container.scrollTop;
+
+    let targetIndex = -1;
+    for (let i = 0; i < cards.length; i++) {
+      const cardTop = cards[i].offsetTop;
+      const cardBottom = cardTop + cards[i].offsetHeight;
+      if (relativeY >= cardTop && relativeY <= cardBottom) {
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (targetIndex >= 0) {
+      const targetCard = cards[targetIndex];
+      if (card !== targetCard) {
+        let currentIdx = -1;
+        for (let i = 0; i < cards.length; i++) {
+          if (cards[i] === card) {
+            currentIdx = i;
+            break;
+          }
+        }
+        if (currentIdx >= 0) {
+          if (currentIdx < targetIndex) {
+            targetCard.parentNode?.insertBefore(card, targetCard.nextSibling);
+          } else {
+            targetCard.parentNode?.insertBefore(card, targetCard);
+          }
+        }
+      }
+    }
+  });
+
+  dragUtil.setOnMoveEndCallback(() => {
+    const dragDom = dragUtil.getDraggingDom();
+    if (!dragDom) return;
+    if (!dragDom.classList.contains('menu-item-drag')) return;
+
+    const card = dragDom.closest('.menu-item-card') as HTMLDivElement;
+    if (card) {
+      card.style.opacity = '1';
+      card.style.boxShadow = '';
+      card.style.outline = '';
+      card.style.zIndex = '';
+      card.style.position = '';
+    }
+
+    // Read new order from DOM
+    const container = DomUtils.bySelector('.menu-items-list') as HTMLDivElement;
+    if (!container) return;
+    const cards = ref.$all('.menu-item-card') as NodeListOf<HTMLDivElement>;
+    const newOrder: number[] = [];
+    cards.forEach((c) => newOrder.push(parseInt(c.getAttribute('data-index') || '-1')));
+
+    // Rebuild items array in new order
+    const reordered: MenuItem[] = [];
+    for (const idx of newOrder) {
+      if (idx >= 0 && idx < items.length) {
+        reordered.push(items[idx]);
+      }
+    }
+    if (reordered.length === items.length) {
+      items = reordered;
+      renderItems();
+    }
+  });
+
+  // ── Init ──
   const ref: RefProps = {
     onLoad: async () => {
-      oMenu = document.querySelector('#menulist')!;
       if (menuId) {
         const response = await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/get/${menuId}`);
-        doLoad(response.json.result);
+        if (response.json?.result) {
+          doLoad(response.json.result);
+        }
+      } else {
+        renderHeader();
+        renderItems();
       }
     },
   };
-  function getSel(ismsg = true) {
-    if (oMenu.selectedIndex < 0 && ismsg) {
-      if (oMenu.length == 0) {
-        NotificationMessage.sendMessage('No item in menu item list.');
-      } else {
-        NotificationMessage.sendMessage('Please select one item.');
-      }
-    }
-    return oMenu.selectedIndex;
-  }
-  function getLevel(ind: number) {
-    var t = oMenu.options[ind].value.split('\t');
-    return Number.parseInt(t[0]);
-  }
-  function getNav(ind: number) {
-    var t = oMenu.options[ind].value.split('\t');
-    return t[1];
-  }
-  function getAcc(ind: number) {
-    var t = oMenu.options[ind].value.split('\t');
-    return t[2];
-  }
-  function getLnk(ind: number) {
-    var t = oMenu.options[ind].value.split('\t');
-    return t[3];
-  }
-  function getTxt(ind: number) {
-    var t = oMenu.options[ind].value.split('\t');
-    return t[4];
-  }
-
-  function getAllItems() {
-    const ret = [];
-    for (var i = 0; i < oMenu.length; i++) {
-      // ret.push(oMenu.options[i].value);
-      ret.push([getLevel(i), getNav(i), getAcc(i), getLnk(i), getTxt(i)]);
-    }
-    return ret;
-  }
-  async function doDelete() {
-    if (!savedMenuId) {
-      alert('Current menu is not on DB yet.');
-      return;
-    }
-    if (!confirm('Do you delete this menu from the system?')) return;
-    await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/delete/${savedMenuId}`);
-    doNew();
-    NotificationMessage.sendMessage('Menu is deleted.');
-  }
-  function doNew() {
-    savedMenuId = '';
-    for (var i = oMenu.length - 1; i >= 0; i--) {
-      oMenu.options[i].remove();
-    }
-  }
-  function byId(id: string) {
-    return document.getElementById(id)! as HTMLElement;
-  }
-  function doListChg() {
-    var ind = getSel(false);
-    var tt = getTxt(ind);
-
-    var ty = '0';
-    DomUtils.setValue('#menuimageout', '');
-    DomUtils.setValue('#menuimageon', '');
-    DomUtils.setValue('#menupanel', '');
-    if (tt.substring(0, 4) == '[::]') {
-      var t = tt.split('[::]');
-      if (t.length == 6) {
-        DomUtils.setValue('#menuimg1', t[3]);
-        DomUtils.setValue('#menuimg2', t[4]);
-        ty = t[1];
-        tt = t[2];
-        DomUtils.setValue('#menupanel', t[5]);
-      }
-    }
-
-    var lev = getLevel(ind);
-    if (lev > 0) {
-      byId('img_p0').style.display = 'none';
-      byId('img_p1').style.display = 'none';
-      byId('img_p2').style.display = 'none';
-      byId('img_panel').style.display = 'none';
-    } else {
-      byId('img_p0').style.display = '';
-      byId('img_p1').style.display = '';
-      byId('img_p2').style.display = '';
-      byId('img_panel').style.display = '';
-    }
-
-    DomUtils.setChecked('#itemtype1', ty == '' || ty == '0');
-    DomUtils.setChecked('#itemtype2', ty == '1');
-    DomUtils.setValue('#menutitle', tt);
-    DomUtils.setValue('#menulink', getLnk(ind));
-    DomUtils.setValue('#menutarget', getNav(ind));
-    DomUtils.setValue('#menuaccess', getAcc(ind));
-  }
-
-  function doReplace(ind2?: number) {
-    var ind = typeof ind2 === 'number' && ind2 >= 0 ? ind2 : getSel(true);
-    if (ind < 0) return;
-    var menutxt = DomUtils.getValue('#menutitle').trim();
-    if (menutxt == '') {
-      alert('Please input menu text.');
-      return;
-    }
-    if (menutxt.indexOf('[::]') >= 0) {
-      alert('Cannot include "[::]" in menu text.');
-      return;
-    }
-
-    var lev = getLevel(ind);
-    var acc = DomUtils.getValue('#menuaccess');
-    var nav = DomUtils.getValue('#menutarget');
-    if (!nav || nav == '' || !acc || acc == '') {
-      alert('Please select browsernav and access.');
-      return;
-    }
-
-    var itemty = '0';
-    if (DomUtils.getChecked('#itemtype2')) {
-      itemty = '1';
-    }
-    var img1 = DomUtils.getValue('#menuimageout').trim();
-    var img2 = DomUtils.getValue('#menuimageon').trim();
-    var panel = DomUtils.getValue('#menupanel').trim();
-    if (itemty == '1' && img1 == '') {
-      alert('For selected Image, need input image path.');
-      return;
-    }
-
-    if (img1 != '' || panel != '') {
-      menutxt = '[::]' + itemty + '[::]' + menutxt + '[::]' + img1 + '[::]' + img2 + '[::]' + panel;
-    }
-
-    var pre = new Array(lev * 4 + 1).join('-');
-    oMenu.options[ind].value = lev + '	' + nav + '	' + acc + '	XX	' + DomUtils.getValue('#menulink').trim() + '	' + menutxt;
-    oMenu.options[ind].text = pre + DomUtils.getValue('#menutitle').trim();
-  }
-  function doAppend(act: number) {
-    var ind = oMenu.selectedIndex;
-    if (ind < 0) {
-      ind = oMenu.length - 1;
-    }
-    if (act == 1) {
-      DomUtils.setValue('#menutitle', 'New Item');
-      DomUtils.setValue('#menulink', '');
-    }
-    if (DomUtils.getValue('#menutitle').trim() == '') {
-      alert('Please input menu text.');
-      return;
-    }
-    var acc = DomUtils.getValue('#menuaccess');
-    var nav = DomUtils.getValue('#menutarget');
-    if (!nav || nav == '' || !acc || acc == '') {
-      alert('Please select Target and Access Level.');
-      return;
-    }
-    oMenu.options[oMenu.length] = new Option('', '');
-    for (var i = oMenu.length - 1; ind >= 0 && i > ind; i--) {
-      oMenu.options[i].text = oMenu.options[i - 1].text;
-      oMenu.options[i].value = oMenu.options[i - 1].value;
-    }
-    doReplace(ind + 1);
-    oMenu.options[ind + 1].selected = true;
-  }
-
-  function doDel() {
-    var ind = getSel(true);
-    if (ind < 0) return;
-    if (!confirm('Delete the selected item and all the subs?')) return;
-    var lev = getLevel(ind);
-    var ind0 = -1;
-    for (var i = ind; i < oMenu.length; i++) {
-      var levx = getLevel(i);
-      if (levx <= lev && i != ind) {
-        break;
-      }
-      ind0 = i;
-    }
-    for (var i = ind0; i >= ind; i--) {
-      oMenu.options[i].remove();
-    }
-
-    if (ind >= oMenu.length) ind = oMenu.length - 1;
-    if (ind >= 0) oMenu.options[ind].selected = true;
-  }
-
-  function doMoveUp(ind: number) {
-    if (ind < 1) return -1;
-    var ind0 = -1;
-    var lev = getLevel(ind);
-    for (var i = ind - 1; i >= 0; i--) {
-      var levx = getLevel(i);
-      if (levx < lev) {
-        break;
-      }
-      if (levx == lev) {
-        ind0 = i;
-        break;
-      }
-    }
-    if (ind0 < 0) return -1;
-    oMenu.options[ind0].selected = true;
-    var inds = ind0;
-
-    for (var i = ind; i < oMenu.length; i++) {
-      var levx = getLevel(i);
-      if (levx <= lev && i != ind) break;
-
-      for (var j = i; j > ind0; j--) {
-        var text = oMenu.options[j].text;
-        var value = oMenu.options[j].value;
-        oMenu.options[j].text = oMenu.options[j - 1].text;
-        oMenu.options[j].value = oMenu.options[j - 1].value;
-        oMenu.options[j - 1].text = text;
-        oMenu.options[j - 1].value = value;
-      }
-      ind0++;
-    }
-    return ind0 - inds;
-  }
-  function doUp() {
-    var ind = getSel(true);
-    doMoveUp(ind);
-  }
-  function doDown() {
-    var ind = getSel(true);
-    if (ind < 0) return;
-
-    if (ind >= oMenu.length - 1) return;
-    var ind0 = -1;
-    var lev = getLevel(ind);
-    for (var i = ind + 1; i < oMenu.length; i++) {
-      var levx = getLevel(i);
-      if (levx < lev) {
-        break;
-      }
-      if (levx == lev) {
-        ind0 = i;
-        break;
-      }
-    }
-    if (ind0 < 0) return;
-    var ind2 = doMoveUp(ind0);
-    oMenu.options[ind + ind2].selected = true;
-  }
-  function doLeft() {
-    var ind = getSel(true);
-    if (ind < 0) return;
-
-    var lev = getLevel(ind);
-    if (lev <= 0) return;
-    for (var i = ind; i < oMenu.length; i++) {
-      var t = oMenu.options[i].value.split('\t');
-      let newlev = Number.parseInt(t[0]);
-      if (newlev <= lev && i != ind) break;
-
-      newlev--;
-      t[0] = '' + newlev;
-      var pre = new Array(newlev * 4 + 1).join('-');
-      oMenu.options[i].value = t.join('	');
-      oMenu.options[i].text = pre + t[4];
-    }
-  }
-  function doRight() {
-    var ind = getSel(true);
-    if (ind < 1) return;
-
-    var lev0 = getLevel(ind - 1);
-    var lev = getLevel(ind);
-    if (lev0 < lev) return;
-    for (var i = ind; i < oMenu.length; i++) {
-      var t = oMenu.options[i].value.split('\t');
-      let newlev = Number.parseInt(t[0]);
-      if (newlev <= lev && i != ind) break;
-
-      newlev++;
-      t[0] = '' + newlev;
-      var pre = new Array(newlev * 4 + 1).join('-');
-      oMenu.options[i].value = t.join('	');
-      oMenu.options[i].text = pre + t[4];
-    }
-  }
 
   const css: CssProps = {
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    '.list-top': {
+    overflow: 'hidden',
+
+    '.menu-edit-header': {
+      padding: '8px 12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      // borderBottom: 'var(--primary-border)',
+      flexShrink: '0',
+    },
+
+    '.menu-edit-body': {
       flex: '1',
+      overflow: 'auto',
+      padding: '12px',
+      backgroundColor: 'var(--secondary-bg-color)',
+      border: 'var(--primary-border)',
+    },
+
+    // ── Item card styles ──
+    '.menu-items-list': {
       display: 'flex',
       flexDirection: 'column',
+      gap: '4px',
     },
-    '.list-body': {
+    '.menu-items-empty': {
+      padding: '40px 20px',
+      textAlign: 'center',
+      color: 'var(--secondary-color)',
+      fontSize: '14px',
+      border: '2px dashed var(--border-color, #ddd)',
+      borderRadius: '8px',
+    },
+
+    '.menu-item-card': {
+      border: 'var(--primary-border)',
+      borderRadius: '6px',
+      backgroundColor: 'var(--primary-bg-color)',
+      transition: 'box-shadow 0.15s ease',
+    },
+    '.menu-item-card:hover': {
+      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+    },
+
+    '.menu-item-header': {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '6px 10px',
+      cursor: 'pointer',
+      gap: '8px',
+      userSelect: 'none',
+      backgroundColor: 'var(--secondary-bg-color)',
+      borderRadius: '6px',
+    },
+    '.menu-item-header:hover': {
+      backgroundColor: 'var(--hover-bg-color, var(--secondary-bg-color))',
+    },
+
+    '.menu-item-drag': {
+      cursor: 'grab',
+      color: 'var(--secondary-color)',
+      fontSize: '16px',
+      flexShrink: '0',
+    },
+    '.menu-item-title-bar': {
       flex: '1',
       display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      overflow: 'hidden',
+      flexWrap: 'wrap',
     },
-    '#menulist': {
-      width: '200px',
+    '.menu-item-title': {
+      fontWeight: '600',
+      fontSize: '13px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
-    '.edit': {
-      alignSelf: 'normal',
+    '.menu-item-badges': {
+      display: 'flex',
+      gap: '6px',
+      alignItems: 'center',
+      flexShrink: '0',
     },
-    '.action-box': {
-      width: '100px',
-      alignSelf: 'normal',
-      button: {
-        marginBottom: '0.3rem',
+    '.menu-item-access-badge': {
+      fontSize: '11px',
+      padding: '1px 6px',
+      borderRadius: '3px',
+      fontWeight: '500',
+      whiteSpace: 'nowrap',
+    },
+    '.menu-item-access-badge.access-0': {
+      backgroundColor: '#e8f5e9',
+      color: '#2e7d32',
+    },
+    '.menu-item-access-badge.access-2': {
+      backgroundColor: '#e3f2fd',
+      color: '#1565c0',
+    },
+    '.menu-item-access-badge.access-3': {
+      backgroundColor: '#fff3e0',
+      color: '#e65100',
+    },
+    '.menu-item-access-badge.access-9': {
+      backgroundColor: '#fce4ec',
+      color: '#c62828',
+    },
+    '.menu-item-link-badge': {
+      fontSize: '11px',
+      color: 'var(--secondary-color)',
+      maxWidth: '200px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+    '.menu-item-toggle': {
+      flexShrink: '0',
+      fontSize: '14px',
+      color: 'var(--secondary-color)',
+    },
+
+    '.menu-item-body': {
+      padding: '10px 12px',
+      borderTop: 'var(--primary-border)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    },
+    '.menu-item-field': {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '3px',
+      flex: '1',
+      label: {
+        fontSize: '12px',
+        fontWeight: '500',
+        color: 'var(--secondary-color)',
       },
     },
+    '.menu-item-field-row': {
+      display: 'flex',
+      gap: '12px',
+    },
+    '.menu-item-header-actions': {
+      display: 'flex',
+      gap: '4px',
+      alignItems: 'center',
+      flexShrink: '0',
+      i: {
+        cursor: 'pointer',
+        fontSize: '16px',
+        padding: '2px',
+        borderRadius: '3px',
+        opacity: '0.6',
+        transition: 'opacity 0.15s ease',
+      },
+      'i:hover': {
+        opacity: '1',
+      },
+    },
+
+    '.menu-edit-add-btn': {
+      marginTop: '12px',
+      display: 'flex',
+      justifyContent: 'center',
+    },
   };
+
   return (
-    <div css={css} ref={ref}>
-      <div class='admin-sub-title pt-s pl-s'>Edit Menu: {menuId}</div>
-      <div class='list-top p-2'>
-        <div class='row-box mb-s'>
-          <button onClick={onClick} class='button-base'>
-            Open
-          </button>
-          <button onClick={onSave} class='button-base'>
-            Save
-          </button>
-          <button onClick={onSaveAs} class='button-base'>
-            Save As
-          </button>
-          <button onClick={doNew} class='button-base'>
-            Clear all items
-          </button>
-          <button onClick={doDelete} class='button-base red ml-m'>
-            Delete from DB
-          </button>
+    <div
+      css={css}
+      ref={ref}
+      onMouseMove={dragUtil.onMouseMove}
+      onMouseUp={dragUtil.onMouseUp}
+      onTouchMove={dragUtil.onTouchMove}
+      onTouchEnd={dragUtil.onTouchEnd}
+    >
+      <div class='menu-edit-header'>
+        <div class='admin-sub-title' style={{ margin: '0', flex: '1' }}>
+          {titleDom.node}
         </div>
-        {/* <div class='row-box mt1'>
-          <div class='w6'>Menu Id:</div>
-          <input type='text' ref={refInput} class='input-base' placeholder='Menu Id' />
-        </div>
-        <div class='row-box mt1'>
-          <div class='w6'>Title:</div>
-          <input type='text' ref={refInput} class='input-base' placeholder='Menu Title' />
-        </div>
-        <div class='row-box mt1 mb1'>
-          <div class='w6'>Remark:</div>
-          <input type='text' ref={refInput} class='input-base w20' placeholder='Menu Remark' />
-        </div> */}
-        <div class='list-body row-box mt-1'>
-          <div class='row-box h-100p'>
-            <div class='list-box h-100p'>
-              <select class='input-base w-20 h-100p' id='menulist' size={3} onChange={doListChg}>
-                <option value='0	0	0	help.php?st_m0=help	Help Home'>Home</option>
-                <option value='1	0	0	help.php?st_p2=hlp_begin	for Beginners'>----Sub Menu</option>
-              </select>
-            </div>
-            <div class='action-box'>
-              <button
-                onClick={() => {
-                  doReplace();
-                }}
-                class='button-base button-s w-6'
-              >
-                Update
-              </button>
-              <button
-                onClick={() => {
-                  doAppend(1);
-                }}
-                class='button-base button-s w-6'
-              >
-                Add New
-              </button>
-              <button
-                onClick={() => {
-                  doAppend(2);
-                }}
-                class='button-base button-s w-6'
-              >
-                Add Copy
-              </button>
-              <button onClick={doDel} class='button-base button-s mb-m w-6'>
-                Delete
-              </button>
-              <button onClick={doUp} class='button-base button-s mt3 w-4'>
-                Up
-              </button>
-              <button onClick={doDown} class='button-base button-s w-4'>
-                Down
-              </button>
-              <button onClick={doRight} class='button-base button-s w-4'>
-                Right
-              </button>
-              <button onClick={doLeft} class='button-base button-s w-4'>
-                Left
-              </button>
-            </div>
-          </div>
-          <div class='edit flex-1'>
-            <div class='row-box' id='img_p0'>
-              <div class='w-6'>Type</div>
-              <input type='radio' id='itemtype1' name='itemtype' checked={true} />
-              <label for='itemtype1'>Text</label>
-              <input type='radio' id='itemtype2' name='itemtype' />
-              <label for='itemtype2'>Image</label>
-            </div>
-
-            <div class='row-box mt-m'>
-              <div class='w-6'>Title</div>
-              <input type='text' id='menutitle' class='input-base w-20' />
-            </div>
-            <div class='row-box mt-m'>
-              <div class='w-6'>Link</div>
-              <input type='text' id='menulink' class='input-base w-20' />
-            </div>
-            <div class='row-box mt-m'>
-              <div class='w-6'>Target</div>
-              <select id='menutarget' class='input-base w20' size={1}>
-                <option value='0'>Parent Window</option>
-                <option value='1'>New Window</option>
-              </select>
-            </div>
-
-            <div class='row-box mt-m' id='img_panel'>
-              <div class='w-6'>Show Panel</div>
-              <div>
-                <input type='text' id='menupanel' class='input-base w-20' />
-                <br />
-                (This is ignored if it has a sub menu)
-              </div>
-            </div>
-
-            <div class='row-box mt-m' id='img_p1'>
-              <div class='w-6'>Image (Default)</div>
-              <div>
-                <input type='text' id='menuimageout' class='input-base w-20' /> <br />
-                (Image for default)
-              </div>
-            </div>
-            <div class='row-box mt-m' id='img_p2'>
-              <div class='w-6'>Image (On)</div>
-              <div>
-                <input type='text' id='menuimageon' class='input-base w-20' /> <br />
-                (Image when mouse is on)
-              </div>
-            </div>
-
-            <div class='row-box mt-m'>
-              <div class='w-6'>Access Level</div>
-              <select id='menuaccess' class='input-base w-20' size={1}>
-                <option value='0'>Public (All)</option>
-                <option value='1'>Not logged in</option>
-                <option value='2'>Logged in</option>
-                <option value='3'>Admin</option>
-                <option value='9'>Full Rights</option>
-              </select>
-            </div>
-          </div>
+        <button onClick={doSave} class='button-base'>
+          Save
+        </button>
+        <button onClick={doClearAll} class='button-base'>
+          Clear All
+        </button>
+        {savedMenuId && (
+          <button onClick={doDeleteMenu} class='button-base red'>
+            Delete
+          </button>
+        )}
+      </div>
+      <div class='menu-edit-body'>
+        {itemsDom.node}
+        <div class='menu-edit-add-btn'>
+          <button onClick={doAddItem} class='button-base'>
+            + Add Menu Item
+          </button>
         </div>
       </div>
     </div>

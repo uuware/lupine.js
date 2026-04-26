@@ -1,7 +1,47 @@
-import { FloatWindow, HEditor, RefProps, NotificationMessage, NotificationColor } from 'lupine.components';
+import { FloatWindow, HEditor, RefProps, NotificationMessage, NotificationColor, MediaQueryRange, ActionSheetSelectPromise } from 'lupine.components';
 import { DesignNode } from './design-store';
 
 export const DesignUtils = {
+
+  getHiddenCss: (p: any, mq: string, defaultDisplay?: string) => {
+    const val = p[`hidden${mq}`];
+    return val !== undefined ? { display: val ? 'none' : defaultDisplay } : {};
+  },
+
+  parseInlineCss: (cssStr?: string) => {
+    if (!cssStr) return {};
+    const obj: any = {};
+    cssStr.split(';').forEach(rule => {
+      const idx = rule.indexOf(':');
+      if (idx > 0) {
+        const key = rule.substring(0, idx).trim();
+        const val = rule.substring(idx + 1).trim();
+        if (key && val) obj[key] = val;
+      }
+    });
+    return obj;
+  },
+
+  getResponsiveCss: (p: any, mq: string, defaultDisplay?: string) => {
+    return {
+      ...DesignUtils.getHiddenCss(p, mq, defaultDisplay),
+      ...DesignUtils.parseInlineCss(p[`customCss${mq}`])
+    };
+  },
+
+  compileResponsiveCssForNode: (node: DesignNode, defaultDisplay?: string) => {
+    const p = node.props || {};
+    const sysCss = {
+      ...DesignUtils.parseInlineCss(p.customCss),
+      [MediaQueryRange.DesktopBelow]: DesignUtils.getResponsiveCss(p, 'DesktopBelow', defaultDisplay),
+      [MediaQueryRange.TabletBelow]: DesignUtils.getResponsiveCss(p, 'TabletBelow', defaultDisplay),
+      [MediaQueryRange.MobileBelow]: DesignUtils.getResponsiveCss(p, 'MobileBelow', defaultDisplay),
+      [MediaQueryRange.ExtraSmallBelow]: DesignUtils.getResponsiveCss(p, 'ExtraSmallBelow', defaultDisplay),
+    };
+    p._sys_css = sysCss;
+    return sysCss;
+  },
+
   showJsonTree: (tree: DesignNode) => {
     FloatWindow.show({
       title: 'Node Tree JSON',
@@ -78,11 +118,13 @@ export const DesignUtils = {
     });
   },
 
-  saveComponent: async (name: string, tree: DesignNode, isComponent: boolean = true, overwrite: boolean = false, originalUpdatetime?: number): Promise<{status: 'ok' | 'ID_EXISTS' | 'MODIFIED_BY_OTHER' | 'error', newUpdatetime?: number}> => {
+  saveComponent: async (pageid: string, name: string, packageId: string, remark: string, tree: DesignNode, isComponent: boolean = true, overwrite: boolean = false, originalUpdatetime?: number): Promise<{status: 'ok' | 'ID_EXISTS' | 'MODIFIED_BY_OTHER' | 'error', newUpdatetime?: number}> => {
     try {
       const payload = {
-        pageid: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        name: name,
+        pageid: pageid.trim(),
+        name: name.trim() || 'Untitled',
+        package: packageId.trim() || 'default',
+        remark: remark,
         is_component: isComponent ? 1 : 0,
         json: tree,
         checkExists: !overwrite,
@@ -105,31 +147,54 @@ export const DesignUtils = {
     }
   },
 
-  showSaveDialog: (initialName: string, initialIsComponent: boolean, initialUpdatetime: number, astClone: any, onSuccess: (newName: string, isComponent: boolean, newStamp: number) => void) => {
+  showSaveDialog: (initialId: string, initialName: string, initialPackage: string, initialRemark: string, initialIsComponent: boolean, initialUpdatetime: number, astClone: any, onSuccess: (newId: string, newName: string, newPackage: string, newRemark: string, isComponent: boolean, newStamp: number) => void) => {
+    let compId = initialId;
     let compName = initialName;
+    let compPackage = initialPackage || 'default';
+    let compRemark = initialRemark || '';
     let isComponentCtx = initialIsComponent;
 
     FloatWindow.show({
       title: 'Save Page',
       buttons: ['Cancel', 'Save'],
-      contentMinWidth: '80%',
+      contentMinWidth: '400px',
       handleClicked: (index: number, close: any) => {
         if (index === 1) {
-          const executeSave = async (overwrite: boolean) => {
-              const isSameName = (compName.trim() === initialName.trim() && initialUpdatetime !== 0);
-              const passUpdatetime = isSameName ? initialUpdatetime : undefined;
+          compId = compId.trim().toLowerCase();
+          if (!compId) {
+            NotificationMessage.sendMessage('Page ID is required', NotificationColor.Warning);
+            return;
+          }
+          if (!/^[a-z0-9_]+$/.test(compId)) {
+            NotificationMessage.sendMessage('Page ID can only contain lowercase letters, numbers, and underscores.', NotificationColor.Warning);
+            return;
+          }
 
-              const result = await DesignUtils.saveComponent(compName, astClone, isComponentCtx, overwrite, passUpdatetime);
+          const executeSave = async (overwrite: boolean) => {
+              const isSameId = (compId.trim() === initialId.trim() && initialUpdatetime !== 0);
+              const passUpdatetime = isSameId ? initialUpdatetime : undefined;
+
+              const result = await DesignUtils.saveComponent(compId, compName, compPackage, compRemark, astClone, isComponentCtx, overwrite, passUpdatetime);
               if (result.status === 'ok') {
-                 NotificationMessage.sendMessage(`${isComponentCtx ? 'Component' : 'Page'} "${compName}" saved!`, NotificationColor.Success);
-                 onSuccess(compName, isComponentCtx, result.newUpdatetime || 0);
+                 NotificationMessage.sendMessage(`${isComponentCtx ? 'Component' : 'Page'} saved!`, NotificationColor.Success);
+                 onSuccess(compId, compName, compPackage, compRemark, isComponentCtx, result.newUpdatetime || 0);
                  close();
               } else if (result.status === 'ID_EXISTS') {
-                 if (confirm(`A record named "${compName}" already exists. Overwrite?`)) {
+                 const idx = await ActionSheetSelectPromise({
+                   title: `A record with ID "${compId}" already exists. Overwrite?`,
+                   options: ['Overwrite'],
+                   cancelButtonText: 'Cancel'
+                 });
+                 if (idx === 0) {
                     executeSave(true);
                  }
               } else if (result.status === 'MODIFIED_BY_OTHER') {
-                 if (confirm(`The page "${compName}" has just been modified by someone else! Do you want to force overwrite?`)) {
+                 const idx = await ActionSheetSelectPromise({
+                   title: `The page "${compId}" has just been modified by someone else! Do you want to force overwrite?`,
+                   options: ['Force Overwrite'],
+                   cancelButtonText: 'Cancel'
+                 });
+                 if (idx === 0) {
                     executeSave(true);
                  }
               } else {
@@ -145,11 +210,32 @@ export const DesignUtils = {
       },
       children: (
         <div style={{ padding: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Page ID:</label>
+          <input 
+            type="text" 
+            value={compId} 
+            onInput={(e: any) => compId = e.target.value}
+            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '16px' }}
+          />
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Page Name:</label>
           <input 
             type="text" 
             value={compName} 
             onInput={(e: any) => compName = e.target.value}
+            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '16px' }}
+          />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Package:</label>
+          <input 
+            type="text" 
+            value={compPackage} 
+            onInput={(e: any) => compPackage = e.target.value}
+            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '16px' }}
+          />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
+          <input 
+            type="text" 
+            value={compRemark} 
+            onInput={(e: any) => compRemark = e.target.value}
             style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '16px' }}
           />
           <div class="row-box" style={{ gap: '8px' }}>

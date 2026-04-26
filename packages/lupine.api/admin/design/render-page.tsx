@@ -28,7 +28,13 @@ export const RenderPage = async (props: PageProps) => {
   const swapPlaceholder = (node: DesignNode) => {
      if (node.type === 'block-placeholder') {
          if (contentTree) {
+             const originalProps = node.props || {};
              Object.assign(node, contentTree); // Swap the raw placeholder node with the true sub-page tree natively!
+             node.props = {
+                 ...contentTree.props,
+                 ...originalProps,
+                 customCss: [contentTree.props?.customCss, originalProps.customCss].filter(Boolean).join('; ')
+             };
              node.props.isRoot = false; // Defeat 100vh height override CSS cascades so it flows into the container.
          }
      } else if (node.children) {

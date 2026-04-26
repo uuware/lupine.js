@@ -1,5 +1,7 @@
 import { CssProps } from 'lupine.web';
+import { MediaQueryRange } from 'lupine.components';
 import { DesignNode, getDesignStore } from './design-store';
+import { DesignUtils } from './design-utils';
 
 export const BlockPlaceholder = (props: { node: DesignNode; contentReplacement?: any }) => {
   if (props.contentReplacement) {
@@ -8,6 +10,7 @@ export const BlockPlaceholder = (props: { node: DesignNode; contentReplacement?:
   
   const store = getDesignStore();
   const isPreview = store ? store.isPreviewMode : true;
+  const p = props.node.props || {};
 
   const css: CssProps = {
     width: '100%',
@@ -20,7 +23,8 @@ export const BlockPlaceholder = (props: { node: DesignNode; contentReplacement?:
     alignContent: 'center',
     justifyContent: 'center',
     color: '#999',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node))
   };
 
   return (

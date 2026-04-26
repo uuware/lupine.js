@@ -110,7 +110,16 @@ export class AdminPage implements IApiBase {
     const db = apiCache.getDb();
     const data = req.locals.json() as any;
 
-    const id = data['pageid'] || data['id'];
+    let id = data['pageid'] || data['id'];
+    if (!id) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Page ID is required.' });
+      return true;
+    }
+    id = String(id).trim().toLowerCase();
+    if (!/^[a-z0-9_]+$/.test(id)) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Page ID can only contain lowercase letters, numbers, and underscores.' });
+      return true;
+    }
     
     if (!data['idReadonly'] && data['checkExists']) {
       const result = await db.selectObject('$__s_page', ['pageid', 'updatetime'], {
