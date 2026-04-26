@@ -16,7 +16,7 @@ import {
   uploadFile,
 } from 'lupine.components';
 import { baseUrl } from './service';
-export const hasSlashes = (str: string) => str.includes('/') || str.includes('\\');
+export const isSafeFilename = (s: string): boolean => /^(?!\.)(?!.*\.\.)[A-Za-z0-9_\-#<>.]+$/.test(s);
 
 const fetchImages = async (folder: string) => {
   const result = await getRenderPageProps().renderPageFunctions.fetchData(
@@ -210,7 +210,7 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
       handleConfirmClicked: async (close) => {
         close();
         if (inputValue) {
-          if (hasSlashes(inputValue)) {
+          if (!isSafeFilename(inputValue)) {
             NotificationMessage.sendMessage('Invalid file name', NotificationColor.Error);
             return;
           }
@@ -263,7 +263,7 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
       handleConfirmClicked: async (close) => {
         close();
         if (inputDir) {
-          if (hasSlashes(inputDir)) {
+          if (!isSafeFilename(inputDir)) {
             NotificationMessage.sendMessage('Directory name cannot contain / or \\', NotificationColor.Error);
             return;
           }
@@ -333,7 +333,7 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
       handleConfirmClicked: async (close) => {
         close();
         if (inputValue) {
-          if (hasSlashes(inputValue)) {
+          if (!isSafeFilename(inputValue)) {
             NotificationMessage.sendMessage('Invalid directory name', NotificationColor.Error);
             return;
           }
@@ -368,15 +368,15 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
     }
 
     const newName = (ref.$('.a-img-name') as HTMLInputElement).value;
-    if (!newName && hasSlashes(fileDom.files[0].name)) {
+    if (!newName && !isSafeFilename(fileDom.files[0].name.replace(/\s+/g, '_'))) {
       NotificationMessage.sendMessage('Filename cannot contain / or \\', NotificationColor.Error);
       return;
     }
-    if (newName && hasSlashes(newName)) {
+    if (newName && !isSafeFilename(newName)) {
       NotificationMessage.sendMessage('New filename cannot contain / or \\', NotificationColor.Error);
       return;
     }
-    const finalName = newName || fileDom.files[0].name;
+    const finalName = newName || fileDom.files[0].name.replace(/\s+/g, '_');
     if (finalName.length > 40 || currentPath.length + finalName.length > 250) {
       NotificationMessage.sendMessage('Name limit is 40, total path limit is 250', NotificationColor.Error);
       return;
@@ -434,10 +434,10 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
                       {one.display_name}
                     </div>
                     <div class='a-img-rename' onClick={() => onRenameImg(one.display_name, one.file_id)}>
-                      <i class='ifc-icon ma-pencil-outline'></i>
+                      🖉
                     </div>
                     <div class='a-img-del' onClick={() => onDelImg(one.display_name, one.file_id)}>
-                      <i class='ifc-icon ma-close'></i>
+                      ❌
                     </div>
                   </div>
                 </td>
@@ -468,10 +468,10 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
             {one.display_name}
           </div>
           <div class='a-img-rename img' onClick={() => onRenameImg(one.display_name, one.file_id)}>
-            <i class='ifc-icon ma-pencil-outline'></i>
+            🖉
           </div>
           <div class='a-img-del img' onClick={() => onDelImg(one.display_name, one.file_id)}>
-            <i class='ifc-icon ma-close'></i>
+            ❌
           </div>
         </div>
       );
@@ -557,7 +557,11 @@ export const AdminImagesPage = (props: AdminImagesPageProps) => {
             <label class='a-img-label'>Current Dir:</label>
             <div class='current-dir'>{currentDirDom.node}</div>
           </div>
-          <PopupMenu list={['Image List', 'File List']} defaultValue={'Image List'} handleSelected={onLayout}></PopupMenu>
+          <PopupMenu
+            list={['Image List', 'File List']}
+            defaultValue={'Image List'}
+            handleSelected={onLayout}
+          ></PopupMenu>
         </div>
       </div>
 

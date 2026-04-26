@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { ServerResponse } from 'http';
 import { ApiHelper, CryptoUtils, Logger, ServerRequest } from 'lupine.api';
 
@@ -143,7 +144,7 @@ export class AdminApiHelper {
         this.logger.error(error.message);
       }
     }
-    return false;
+    return null;
   }
 
   encryptJson(jsonOrText: string | object) {
@@ -157,7 +158,7 @@ export class AdminApiHelper {
         this.logger.error(error.message);
       }
     }
-    return false;
+    return null;
   }
 
   async getDevAdminFromCookie(
@@ -201,6 +202,18 @@ export class AdminApiHelper {
       ApiHelper.sendJson(req, res, response);
     }
     return false;
+  }
+
+  /** Timing-safe string comparison to prevent timing attacks */
+  timingSafeEqual(a: string, b: string): boolean {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) {
+      // Compare against self to keep constant time, then return false
+      crypto.timingSafeEqual(bufA, bufA);
+      return false;
+    }
+    return crypto.timingSafeEqual(bufA, bufB);
   }
 }
 

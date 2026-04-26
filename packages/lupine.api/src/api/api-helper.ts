@@ -1,8 +1,8 @@
 import { ServerResponse } from 'http';
 import { ServerRequest } from '../models/locals-props';
 import { JsonObject } from '../models/json-object';
-import fs from 'fs';
 import zlib from 'zlib';
+import { serveStaticFileStream } from './static-server-helper';
 
 let ENABLE_RESPONSE_GZIP = false;
 export const setEnableResponseGzip = (enable: boolean) => {
@@ -27,6 +27,7 @@ export class ApiHelper {
 
     if (shouldGzip) {
       zlib.gzip(payload, (err, buffer) => {
+        if (res.headersSent) return;
         if (err || !buffer) {
           res.writeHead(statusCode, Object.assign({ 'Content-Type': contentType }, headers));
           res.write(payload);
@@ -41,6 +42,7 @@ export class ApiHelper {
         }
       });
     } else {
+      if (res.headersSent) return;
       res.writeHead(statusCode, Object.assign({ 'Content-Type': contentType }, headers));
       res.write(payload);
       res.end();
@@ -69,29 +71,32 @@ export class ApiHelper {
     return true;
   }
 
-  static sendFile(
-    req: ServerRequest,
-    res: ServerResponse,
-    filepath: string,
-    statusCode = 200,
-    headers?: { [key: string]: string }
-  ) {
-    const stream = fs.createReadStream(filepath);
-    stream.on('open', () => {
-      if (!res.headersSent) {
-        res.writeHead(statusCode, Object.assign({ 'Content-Type': 'application/octet-stream' }, headers));
-      }
-      stream.pipe(res);
+  static async sendFile(req: ServerRequest, res: ServerResponse, filepath: string, contentType?: string) {
+    await serveStaticFileStream(
+      req,
+      res,
+      filepath,
+      filepath,
+      {
+        maxAge: 86400, // 1 day, then revalidate via ETag
+        setHeaders: (response, _path, _stat) => {
+          response.setHeader('Access-Control-Allow-Origin', '*');
+        },
+      },
+      contentType
+    );
+
+    return true;
+  }
+
+  static async sendVideo(req: ServerRequest, res: ServerResponse, filepath: string) {
+    await serveStaticFileStream(req, res, filepath, filepath, {
+      maxAge: 86400, // 1 day, then revalidate via ETag
+      setHeaders: (response, _path, _stat) => {
+        response.setHeader('Access-Control-Allow-Origin', '*');
+      },
     });
-    stream.on('error', (err: any) => {
-      // File missing or access denied
-      if (!res.headersSent) {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('File not found or access denied');
-      } else {
-        res.end(); // Fallback if stream broke mid-transmit
-      }
-    });
+
     return true;
   }
 }

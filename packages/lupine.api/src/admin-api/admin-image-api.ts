@@ -84,10 +84,11 @@ export class AdminImageApi implements IApiBase {
   //   return /^(?!\.)(?!.*\.\.)[A-Za-z0-9_\-#<>.]+$/.test(s);
   // }
   checkCurrentDir(currentDir: string): boolean {
-    return !!currentDir && currentDir[0] === '/' && !currentDir.includes('\\');
+    return !!currentDir && currentDir[0] === '/' && !currentDir.includes('..') && !currentDir.includes('\\');
   }
-  hasSlash(s: string): boolean {
-    return s.includes('/') || s.includes('\\');
+
+  isSafeFilename(s: string): boolean {
+    return /^(?!\.)(?!.*\.\.)[A-Za-z0-9_\-#<>.]+$/.test(s);
   }
 
   async listImageFiles(folder: string, subPath: string) {
@@ -280,20 +281,55 @@ export class AdminImageApi implements IApiBase {
   async upload(req: ServerRequest, res: ServerResponse) {
     const data = req.locals.body;
     let currentDir = decodeURIComponent(req.locals.query.get('p') || '');
-    const filename = decodeURIComponent(req.locals.query.get('f') || '');
-    let newName = decodeURIComponent(req.locals.query.get('n') || '');
+    const filename = decodeURIComponent(req.locals.query.get('f') || '').replace(/\s+/g, '_');
+    let newName = decodeURIComponent(req.locals.query.get('n') || '').replace(/\s+/g, '_');
     const force = decodeURIComponent(req.locals.query.get('force') || '');
-    if (
-      !data ||
-      data.length < 1 ||
-      !this.checkCurrentDir(currentDir) ||
-      !filename ||
-      this.hasSlash(filename) ||
-      this.hasSlash(newName)
-    ) {
+    if (!data || data.length < 1 || !this.checkCurrentDir(currentDir) || !filename) {
       const response = {
         status: 'error',
         message: 'Wrong data.',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
+
+    const allowExts = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.svg',
+      '.tiff',
+      '.ico',
+      '.bmp',
+      '.mp4',
+      '.mp3',
+      '.mov',
+    ];
+    const nowExt = filename.substring(filename.lastIndexOf('.')).toLocaleLowerCase();
+    if (!nowExt || !allowExts.includes(nowExt)) {
+      const response = {
+        status: 'error',
+        message: 'Wrong extension.',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
+
+    if (newName) {
+      const newExt = newName.substring(newName.lastIndexOf('.')).toLocaleLowerCase();
+      if (nowExt !== newExt) {
+        newName += nowExt;
+      }
+    } else {
+      newName = filename;
+    }
+
+    if (!this.isSafeFilename(newName)) {
+      const response = {
+        status: 'error',
+        message: 'Filename is not valid. Please rename it',
       };
       ApiHelper.sendJson(req, res, response);
       return true;
@@ -312,24 +348,6 @@ export class AdminImageApi implements IApiBase {
       currentDir = currentDir.slice(0, -1);
     }
 
-    const nowExt = filename.substring(filename.lastIndexOf('.')).toLowerCase();
-    if (nowExt.length >= 9) {
-      const response = {
-        status: 'error',
-        message: 'File extension is too long.',
-      };
-      ApiHelper.sendJson(req, res, response);
-      return true;
-    }
-
-    const newExt = newName && newName.substring(newName.lastIndexOf('.')).toLowerCase();
-    if (newName) {
-      if (nowExt !== newExt) {
-        newName += nowExt;
-      }
-    } else {
-      newName = filename;
-    }
     if (newName.length > 40) {
       const response = {
         status: 'error',
@@ -339,7 +357,7 @@ export class AdminImageApi implements IApiBase {
       return true;
     }
     // Convert extension to lowercase
-    newName = newName.slice(0, -nowExt.length) + nowExt.toLowerCase();
+    newName = newName.slice(0, -nowExt.length) + nowExt;
 
     const key = req.locals.query.get('key') as string;
     const chunkNumberStr = req.locals.query.get('chunkNumber') as string;
@@ -546,11 +564,21 @@ export class AdminImageApi implements IApiBase {
       return true;
     }
 
+    const subFolders = await db.selectObject('$__image_folder', ['count(*) as cnt'], { parent_full_path: currentDir });
+    if (subFolders.length !== 1 || subFolders[0].cnt !== 0) {
+      const response = {
+        status: 'error',
+        message: 'Directory is not empty (has sub-directories).',
+      };
+      ApiHelper.sendJson(req, res, response);
+      return true;
+    }
+
     const records = await db.selectObject('$__image', ['count(*) as cnt'], { parent_full_path: currentDir });
     if (records.length !== 1 || records[0].cnt !== 0) {
       const response = {
         status: 'error',
-        message: 'Directory is not empty.',
+        message: 'Directory is not empty (has files).',
       };
       ApiHelper.sendJson(req, res, response);
       return true;
@@ -577,7 +605,7 @@ export class AdminImageApi implements IApiBase {
   async rename(req: ServerRequest, res: ServerResponse) {
     const file_id = decodeURIComponent(req.locals.query.get('f') || '');
     let newName = decodeURIComponent(req.locals.query.get('n') || '');
-    if (!file_id || !newName || this.hasSlash(newName)) {
+    if (!file_id || !newName || !this.isSafeFilename(newName)) {
       const response = {
         status: 'error',
         message: 'Wrong data.',
@@ -599,7 +627,7 @@ export class AdminImageApi implements IApiBase {
       return true;
     }
 
-    const nowExt = file_id.substring(file_id.lastIndexOf('.')).toLowerCase();
+    const nowExt = records[0].display_name.substring(records[0].display_name.lastIndexOf('.')).toLowerCase();
     const newExt = newName.substring(newName.lastIndexOf('.')).toLowerCase();
     if (nowExt !== newExt) {
       newName += nowExt;
@@ -619,7 +647,7 @@ export class AdminImageApi implements IApiBase {
   async renameDir(req: ServerRequest, res: ServerResponse) {
     const currentDir = decodeURIComponent(req.locals.query.get('p') || '');
     let newName = decodeURIComponent(req.locals.query.get('n') || '');
-    if (!currentDir || !newName || this.hasSlash(newName)) {
+    if (!currentDir || !newName || !this.isSafeFilename(newName)) {
       const response = {
         status: 'error',
         message: 'Wrong data.',

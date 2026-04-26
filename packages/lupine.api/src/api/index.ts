@@ -12,6 +12,7 @@ export * from './server-content-type';
 export * from './server-control-proxy';
 export * from './server-render';
 export * from './shell-service';
+export * from './static-server-helper';
 export * from './static-server';
 export * from './to-client-delivery';
 export * from './service/fetch-data';
