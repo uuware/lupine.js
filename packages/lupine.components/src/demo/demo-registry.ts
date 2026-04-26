@@ -68,6 +68,7 @@ import {
   gaugeChartDemo,
   scatterChartDemo,
 } from '../component-pool/charts';
+import { svgGraphDemo } from '../component-pool/svg-graph/svg-graph-demo';
 
 export const demoRegistry: Record<string, DemoStory<any>> = {
   [buttonDemo.id]: buttonDemo,
@@ -138,4 +139,5 @@ export const demoRegistry: Record<string, DemoStory<any>> = {
   [radarChartDemo.id]: radarChartDemo,
   [gaugeChartDemo.id]: gaugeChartDemo,
   [scatterChartDemo.id]: scatterChartDemo,
+  [svgGraphDemo.id]: svgGraphDemo,
 };
