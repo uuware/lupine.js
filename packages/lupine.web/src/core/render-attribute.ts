@@ -17,7 +17,13 @@ export const genUniqueId = (props: any) => {
   return props._id;
 };
 // data-refid will be assigned with a ref.id
-export const renderAttribute = (type: any, props: any, jsxNodes: any, uniqueClassName?: string, globalCssId?: string) => {
+export const renderAttribute = (
+  type: any,
+  props: any,
+  jsxNodes: any,
+  uniqueClassName?: string,
+  globalCssId?: string
+) => {
   const html = [];
   // data-refid is used for nested components like this:
   //    <div class='class-name' ref={ref} ...>...
@@ -40,13 +46,14 @@ export const renderAttribute = (type: any, props: any, jsxNodes: any, uniqueClas
       // style is a  string, in-line style
       if (i === 'style') {
         if (typeof props[i] === 'object') {
-          let attrs = `${i}="`;
+          let attrs = '';
           for (let j in props[i]) {
             attrs += `${camelToHyphens(j)}:${escapeAttr(props[i][j])};`;
           }
-          attrs += `"`;
-          html.push(attrs);
-        } else {
+          if (attrs) {
+            html.push(`${i}="${attrs}"`);
+          }
+        } else if (props[i]) {
           html.push(`${i}="${escapeAttr(props[i])}"`);
         }
       } else if (i === 'css') {
@@ -97,4 +104,4 @@ export const renderAttribute = (type: any, props: any, jsxNodes: any, uniqueClas
     html.push(props._id);
   }
   return html.join(' ');
-}
+};
