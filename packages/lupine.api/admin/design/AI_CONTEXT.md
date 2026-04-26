@@ -35,3 +35,19 @@ Re-rendering the entire canvas DOM during rapid typing traversing heavy sub-comp
 ## 6. CSS Grid Dimensions in Empty Axes
 If `gridTemplateRows` evaluates to directional tracks but `gridTemplateColumns` is left undefined in standard `block-page`/`block-grid` styles, the cross-axis element defaults to `auto` and shrinks to content, causing responsive container widths to collapse.
 - **Cross-Axis 1fr Enforcement**: Under all directional checks (`isVertical`), the omitted complementary axis is forcefully bound to `'1fr'` in the CSS-in-JS prop mapping to compel strict 100% cross-axis spanning behavior.
+
+## 7. Adding New Components
+To add a new component to the Visual Builder, follow these steps to preserve architectural consistency:
+1. **Create the Component (`block-[name].tsx`)**:
+   - The component should accept `(props: { node: DesignNode })`.
+   - Access properties using `props.node.props` and apply them to standard HTML elements.
+   - Inject `props.node.id` into the top-level element via `data-design-id` to ensure it's selectable in the canvas.
+   - Utilize `DesignUtils.compileResponsiveCssForNode` for responsive CSS compilation.
+2. **Register the Component (`component-registry.ts`)**:
+   - Add a definition object to `ComponentRegistry` with standard keys: `type`, `label`, `defaultProps`, and `propEditors`.
+   - Ensure the structure of `propEditors` maps valid `PropEditorType` values (e.g. `'text'`, `'color'`, `'checkbox'`, `'select'`, `'html'`) to the component properties.
+3. **Handle Custom Property Editors (`admin-design-control.tsx`)**:
+   - If a completely new `PropEditorType` is introduced (e.g., `'image-select'`), implement its UI rendering logic inside the `renderPropertyPanel` block of `admin-design-control.tsx`.
+   - Custom editors must emit `store.emit('TREE_UPDATE')` and `store.commitHistory()` on interaction to re-render the canvas properly.
+4. **Expose the Component (`render-blocks.tsx`)**:
+   - Import the newly created component and add it to `ComponentsMap` to ensure the Render Engine can map the AST `type` to the actual React function.
