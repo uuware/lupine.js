@@ -571,6 +571,7 @@ export class AdminRelease implements IApiBase {
     //     });
     // })
     const chunkSize = 1024 * 500;
+    const totalChunks = Math.ceil(fileContent.length / chunkSize);
     let cnt = 0;
     this.logger.info(`updateSendFile, sendFile: ${sendFile}, len: ${fileContent.length}`);
     for (let i = 0; i < fileContent.length; i += chunkSize) {
@@ -579,7 +580,7 @@ export class AdminRelease implements IApiBase {
 
       const postData = {
         method: 'POST',
-        body: JSON.stringify({ ...data, chkOption, index: cnt, size: fileContent.length }) + '\n\n' + chunk,
+        body: JSON.stringify({ ...data, chkOption, index: cnt, totalChunks, size: fileContent.length }) + '\n\n' + chunk,
       };
       this.logger.info(
         `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
@@ -657,14 +658,11 @@ export class AdminRelease implements IApiBase {
         // } else if (chkOption === 'web') {
         //   saveFile = path.join(appData.apiPath, '..', toList + '_web', 'index.js');
       } else if (chkOption === 'web-sub' && data.webSub) {
-        const baseName = path.basename(data.webSub);
-        if (baseName !== data.webSub) {
-          const folder = path.join(appData.apiPath, '..', toList + '_web', baseName);
-          if (!(await FsUtils.pathExist(folder))) {
-            await FsUtils.mkdir(folder);
-          }
-        }
         saveFile = path.join(appData.apiPath, '..', toList + '_web', data.webSub);
+        const folder = path.dirname(saveFile);
+        if (!(await FsUtils.pathExist(folder))) {
+          await FsUtils.mkdir(folder);
+        }
       } else if ((chkOption as string).startsWith('.env')) {
         saveFile = path.join(appData.apiPath, '../../..', chkOption);
       }
@@ -687,11 +685,12 @@ export class AdminRelease implements IApiBase {
       this.logger.info(
         `byClientUpdate, index: ${data.index}, saveFile: ${saveFile}, received len: ${(fileContent || '').length}`
       );
-      if (data.index === 0) {
-        await FsUtils.writeFile(saveFile, fileContent || '');
-      } else {
-        await FsUtils.appendFile(saveFile, fileContent || '');
-      }
+      // if (data.index === 0) {
+      //   await FsUtils.writeFile(saveFile, fileContent || '');
+      // } else {
+      //   await FsUtils.appendFile(saveFile, fileContent || '');
+      // }
+      await FsUtils.writeUploadChunk(saveFile, fileContent || '', data.index, data.totalChunks);
 
       const response = {
         status: 'ok',
