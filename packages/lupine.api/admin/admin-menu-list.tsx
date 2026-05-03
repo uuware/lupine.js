@@ -5,7 +5,6 @@ import {
   NotificationColor,
   NotificationMessage,
   getRenderPageProps,
-  ActionSheetSelect,
   ActionSheet,
   getDefaultPageLimit,
   PagingLink,
@@ -60,7 +59,9 @@ const ContentOneRow = (props: {
     return (
       <>
         <td>
-          {props.onSelectedId ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!isSelectMode && <input type='checkbox' class='admin-check-box' value={item.menuid} />}
+            {props.onSelectedId ? (
             <div
               class='a-menu-sel-link cursor-pointer underline'
               onClick={() => props.onSelectedId!(item.menuid, item.name)}
@@ -70,6 +71,7 @@ const ContentOneRow = (props: {
           ) : (
             item.menuid
           )}
+          </div>
         </td>
         <td class='a-menu-lst-row-name'>
           <span style={{ fontWeight: 'bold' }}>{item.name || '(No Name)'}</span>
@@ -284,6 +286,15 @@ export const AdminMenuListPage = (props: AdminMenuListPageProps) => {
     display: 'flex',
     flexDirection: 'column',
     padding: '0 8px',
+    '&.admin-lst-hide-more .admin-control-box, &.admin-lst-hide-more .admin-check-box': {
+      display: 'none',
+    },
+    '.admin-sub-title': {
+      marginBottom: '16px',
+    },
+    '.admin-search-box, .admin-control-box': {
+      gap: '16px', alignItems: 'center',
+    },
     '.a-menu-lst-row-name': {
       textAlign: 'left',
     },
@@ -344,12 +355,34 @@ export const AdminMenuListPage = (props: AdminMenuListPageProps) => {
     ...props.css,
   };
 
+  const onMore = () => {
+    ref.current?.classList.toggle('admin-lst-hide-more');
+  }
+
+  const onExportSelected = () => {
+    const checkboxes = ref.current?.querySelectorAll('.list .admin-check-box') as NodeListOf<HTMLInputElement>;
+    if (!checkboxes) return;
+    const ids = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    if (ids.length === 0) {
+      NotificationMessage.sendMessage('Please select items to export.', NotificationColor.Warning);
+      return;
+    }
+    const idsParam = encodeURIComponent(ids.join(','));
+    const url = `/api/admin/menu/export?ids=${idsParam}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
-    <div ref={ref} css={css}>
-      <div class='admin-sub-title' style={{ marginBottom: '16px' }}>
+    <div ref={ref} css={css} class='admin-lst-hide-more'>
+      <div class='admin-sub-title'>
         {isSelectMode ? 'Select Menu' : 'Menu Management'}
       </div>
-      <div class='row-box pb-m' style={{ gap: '16px', alignItems: 'center' }}>
+      <div class='row-box pb-m admin-search-box'>
         <SearchInput placeholder='Search...' onSearch={onSearch} onClear={onSearch} />
         <div class='a-menu-lst-header-sort' style={{ display: 'flex', alignItems: 'center' }}>
           Sort By: &nbsp;
@@ -371,6 +404,18 @@ export const AdminMenuListPage = (props: AdminMenuListPageProps) => {
         {!isSelectMode && (
           <button onClick={onNewMenu} class='button-base'>
             New Menu
+          </button>
+        )}
+        {!isSelectMode && (
+          <button onClick={onMore} class='button-base'>
+            More...
+          </button>
+        )}
+      </div>
+      <div class='row-box pb-m admin-control-box'>
+        {!isSelectMode && (
+          <button onClick={onExportSelected} class='button-base'>
+            Export Selected
           </button>
         )}
       </div>

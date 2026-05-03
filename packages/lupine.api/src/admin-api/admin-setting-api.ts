@@ -36,24 +36,10 @@ export const writeWebSetting = async (req: ServerRequest, res: ServerResponse) =
 };
 
 export const readApiSetting = async (req: ServerRequest, res: ServerResponse) => {
-  const data = req.locals.json() || {};
-  if (Array.isArray(data) || typeof data !== 'object') {
-    const response = {
-      status: 'error',
-      message: langHelper.getLang('shared:wrong_data'),
-    };
-    ApiHelper.sendJson(req, res, response);
-    return true;
-  }
-
-  for (const key in data) {
-    data[key] = await apiStorage.getApi(key);
-  }
-
   const response = {
     status: 'ok',
-    message: 'Configuration loaded successfully.',
-    result: data,
+    result: await apiStorage.getApiAll(),
+    message: langHelper.getLang('shared:operation_success'),
   };
   ApiHelper.sendJson(req, res, response);
   return true;

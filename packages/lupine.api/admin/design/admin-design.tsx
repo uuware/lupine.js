@@ -19,7 +19,7 @@ export const AdminDesignPage = async (props: PageProps) => {
     rootDom.value = (
       <div 
         class="canvas-root" 
-        style={{ minHeight: '100vh', boxSizing: 'border-box' }}
+        style={{ minHeight: '100vh', boxSizing: 'border-box', overflowY: 'auto' }}
         onClick={(e) => {
            if (store.isPreviewMode) return;
            const target = e.target as HTMLElement;

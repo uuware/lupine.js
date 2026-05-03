@@ -26,13 +26,11 @@ export const barChartDemo: DemoStory<any> = {
   args: {
     title: 'Top Economies',
     width: '100%',
-    height: '350px',
     showLegend: true,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
   },
   render: (args: any) => {
@@ -78,7 +76,6 @@ export const barChartDemo: DemoStory<any> = {
               data={singleSeriesData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
               xAxisFormatter={(val) => '$' + val + 'T'}
             />
@@ -88,7 +85,7 @@ export const barChartDemo: DemoStory<any> = {
         <section class='demo-section'>
           <div class='section-title'>Multi-Series (Grouped Horizontal)</div>
           <div class='chart-box'>
-            <BarChart data={multiSeriesData} title='Quarterly Comparison' height='300px' showLegend={true} />
+            <BarChart data={multiSeriesData} title='Quarterly Comparison' showLegend={true} />
           </div>
         </section>
       </div>

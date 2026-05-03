@@ -15,7 +15,7 @@ export const BlockYoutube = (props: { node: DesignNode }) => {
     flex: p.flex === '1' ? '1' : 'none',
     width: p.width || '100%',
     height: p.height || 'auto',
-    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node)),
+    ...(p._sys_css || {}),
     '.youtube-wrapper': {
       width: '100%',
       height: '100%',
@@ -26,18 +26,25 @@ export const BlockYoutube = (props: { node: DesignNode }) => {
   return (
     <div css={css} class='block-youtube' data-design-id={props.node.id}>
       {p.url ? (
-        <div class="youtube-wrapper" style={{ pointerEvents: isPreview ? 'auto' : 'none' }}>
-          <YouTubePlayer 
-            srcOrVideoId={p.url} 
-            autoplay={isPreview ? p.autoplay === true : false} 
-            allowFullScreen={p.allowFullScreen !== false}
-            controls={p.controls !== false}
-            loop={p.loop === true}
-            muted={p.muted === true}
-            rel={p.rel === true}
-            modestbranding={p.modestbranding !== false}
-          />
-        </div>
+        isPreview ? (
+          <div class="youtube-wrapper">
+            <YouTubePlayer 
+              srcOrVideoId={p.url} 
+              autoplay={p.autoplay === true} 
+              allowFullScreen={p.allowFullScreen !== false}
+              controls={p.controls !== false}
+              loop={p.loop === true}
+              muted={p.muted === true}
+              rel={p.rel === true}
+              modestbranding={p.modestbranding !== false}
+            />
+          </div>
+        ) : (
+          <div style={{ padding: '40px', border: '1px solid #ddd', textAlign: 'center', backgroundColor: '#f0f0f0', width: '100%', minHeight: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: '24px', color: '#ff0000', marginBottom: '8px' }}>▶ YouTube Video</div>
+            <a href={p.url} target="_blank" style={{ color: '#06c', textDecoration: 'none', wordBreak: 'break-all' }}>{p.url}</a>
+          </div>
+        )
       ) : (
         !isPreview && (
           <div style={{ padding: '40px', border: '1px dashed #ccc', textAlign: 'center', color: '#999', backgroundColor: '#f9f9f9', width: '100%', minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

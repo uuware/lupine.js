@@ -14,7 +14,7 @@ export const BlockParagraph = (props: { node: DesignNode }) => {
     minWidth: '0',
     flex: p.flex === '1' ? '1' : 'none',
     lineHeight: '1.5',
-    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node)),
+    ...(p._sys_css || {}),
     '.paragraph-title': {
        fontWeight: 'bold',
        marginBottom: '4px',

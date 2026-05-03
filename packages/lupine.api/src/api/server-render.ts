@@ -174,8 +174,9 @@ export const serverSideRenderPage = async (
 
   // Address Cache Stampede Concurrency Vulnerability natively
   if (!cachedHtml[nearRoot]) {
-    if (!pendingSsrLoads.has(nearRoot)) {
-      const loadPromise = (async () => {
+    let loadPromise = pendingSsrLoads.get(nearRoot);
+    if (!loadPromise) {
+      loadPromise = (async () => {
         try {
           const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
           let _lupineJs;
@@ -201,6 +202,9 @@ export const serverSideRenderPage = async (
             ...indices,
             _lupineJs: _lupineJs,
           } as CachedHtmlProps;
+        } catch (error: any) {
+          logger.error(`SSR load failed: ${error.message}`);
+          throw error;
         } finally {
           // Promise self-cleanup pattern guarantees cleanup safely
           // to prevent permanent blockage across all future API calls
@@ -212,7 +216,16 @@ export const serverSideRenderPage = async (
     }
     
     // Await either the fresh logic above, or lock onto existing synchronous Promise!
-    cachedHtml[nearRoot] = await pendingSsrLoads.get(nearRoot);
+    try {
+      const result = await loadPromise;
+      if (result) {
+        cachedHtml[nearRoot] = result;
+      }
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Internal Server Error');
+      return;
+    }
   }
 
   const props = {
@@ -222,8 +235,13 @@ export const serverSideRenderPage = async (
     renderPageFunctions: getRenderPageFunctions(),
   };
 
-  const _lupineJs = cachedHtml[nearRoot]._lupineJs;
   const currentCache = cachedHtml[nearRoot] as CachedHtmlProps;
+  if (!currentCache) {
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Internal Server Error: No cache available');
+    return;
+  }
+  const _lupineJs = currentCache._lupineJs;
   const webSetting = await apiStorage.getWebAll();
   const requestContext = getRequestContext();
   requestContext.coreData = requestContext.coreData || {};

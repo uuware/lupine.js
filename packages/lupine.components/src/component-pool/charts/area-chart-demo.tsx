@@ -16,14 +16,12 @@ export const areaChartDemo: DemoStory<any> = {
   args: {
     title: 'Company Revenues',
     width: '100%',
-    height: '350px',
     showLegend: true,
     curved: true,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
     curved: { control: 'boolean' },
   },
@@ -70,7 +68,6 @@ export const areaChartDemo: DemoStory<any> = {
               data={multiSeriesData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
               curved={args.curved}
               yAxisFormatter={(val) => '$' + val + 'M'}
@@ -84,7 +81,6 @@ export const areaChartDemo: DemoStory<any> = {
             <AreaChart
               data={multiSeriesData}
               title='Straight Area Comparison'
-              height='300px'
               showLegend={true}
               curved={false}
               yAxisFormatter={(val) => '$' + val + 'M'}

@@ -16,13 +16,11 @@ export const radarChartDemo: DemoStory<any> = {
   args: {
     title: 'Character Stats',
     width: '100%',
-    height: '400px',
     showLegend: true,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
   },
   render: (args: any) => {
@@ -68,7 +66,6 @@ export const radarChartDemo: DemoStory<any> = {
               data={statsData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
             />
           </div>

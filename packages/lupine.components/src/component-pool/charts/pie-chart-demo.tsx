@@ -23,13 +23,11 @@ export const pieChartDemo: DemoStory<any> = {
   args: {
     title: 'Fruit Sales',
     width: '100%',
-    height: '300px',
     showLegend: true,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
   },
   render: (args: any) => {
@@ -81,7 +79,6 @@ export const pieChartDemo: DemoStory<any> = {
               data={sampleData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
             />
           </div>
@@ -91,10 +88,10 @@ export const pieChartDemo: DemoStory<any> = {
           <div class='section-title'>Variations</div>
           <div class='grid'>
             <div class='chart-box'>
-              <PieChart data={sampleData} title='No Legend' showLegend={false} height='200px' />
+              <PieChart data={sampleData} title='No Legend' showLegend={false} />
             </div>
             <div class='chart-box'>
-              <PieChart data={emptyData} title='Empty Data' height='200px' />
+              <PieChart data={emptyData} title='Empty Data' />
             </div>
             <div class='chart-box'>
               <PieChart
@@ -103,8 +100,7 @@ export const pieChartDemo: DemoStory<any> = {
                   series: [{ name: 'Lone', data: [100] }],
                 }}
                 title='100% Value'
-                height='200px'
-              />
+                />
             </div>
             <div class='chart-box'>
               <PieChart
@@ -113,8 +109,7 @@ export const pieChartDemo: DemoStory<any> = {
                   series: [{ name: 'Half', data: [50, 50] }],
                 }}
                 title='50/50 Split'
-                height='200px'
-              />
+                />
             </div>
           </div>
         </section>
@@ -132,7 +127,6 @@ const data = {
   data={data} 
   title="Fruit Sales" 
   width="100%" 
-  height="300px" 
   showLegend={true} 
 />
 `,

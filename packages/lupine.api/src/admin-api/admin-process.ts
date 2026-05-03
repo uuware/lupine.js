@@ -2,6 +2,7 @@ import { ServerResponse } from 'http';
 import { IApiBase, Logger, apiCache, ServerRequest, ApiRouter, ApiHelper, JsonKeyValue } from 'lupine.api';
 import { getAllRegisteredClasses, getClassConstructor } from './process/class-registry';
 import { ProcessBase } from './process/process-base';
+import { exportCSV } from '../lib/utils/csv-util';
 
 const logger = new Logger('admin-process');
 
@@ -24,6 +25,7 @@ export class AdminProcess implements IApiBase {
     this.router.use('/delete/:id', this.delete.bind(this));
     this.router.use('/classes', this.getClasses.bind(this));
     this.router.use('/class-info', this.getClassInfo.bind(this));
+    this.router.use('/export', this.export.bind(this));
   }
 
   private buildQuery(searchValue: string[], searchFields: string[]) {
@@ -100,15 +102,19 @@ export class AdminProcess implements IApiBase {
 
   async save(req: ServerRequest, res: ServerResponse) {
     const db = apiCache.getDb();
-    const data = req.locals.json() as any;
+    const data = req.locals.json();
+    if (!data || Array.isArray(data) || !data.processid) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload: expected { processid: string, ... }.' });
+      return true;
+    }
 
-    let id = data['processid'] || data['id'];
+    let id = data.processid as string;
     if (!id) {
       ApiHelper.sendJson(req, res, { status: 'error', message: 'Process ID is required.' });
       return true;
     }
     id = String(id).trim().toLowerCase();
-    if (!/^[a-z0-9_]+$/.test(id)) {
+    if (!/^[a-z0-9_\-#]+$/.test(id)) {
       ApiHelper.sendJson(req, res, { status: 'error', message: 'Process ID can only contain lowercase letters, numbers, and underscores.' });
       return true;
     }
@@ -144,10 +150,10 @@ export class AdminProcess implements IApiBase {
     const newStamp = Date.now();
     const result = await db.insertObject('$__s_process', {
       processid: id,
-      name: data['name'] || '',
-      remark: data['remark'] || '',
-      package: data['package'] || 'default',
-      accesslevel: data['accesslevel'] || '0',
+      name: data['name'] as string || '',
+      remark: data['remark'] as string || '',
+      package: data['package'] as string || 'default',
+      accesslevel: data['accesslevel'] as string || '0',
       json: typeof data['json'] === 'string' ? data['json'] : JSON.stringify(data['json'] || {}),
       updatetime: newStamp,
     });
@@ -255,6 +261,21 @@ export class AdminProcess implements IApiBase {
     } catch (e: any) {
       ApiHelper.sendJson(req, res, { status: 'ng', message: e.message });
     }
+    return true;
+  }
+
+  async export(req: ServerRequest, res: ServerResponse) {
+    const db = apiCache.getDb();
+    const idsParam = req.locals.query.get('ids') || '';
+    let where = '';
+    if (idsParam) {
+      const ids = idsParam.split(',').filter(Boolean).map((id: string) => id.trim());
+      if (ids.length > 0) {
+        const safeIds = ids.map((id: string) => `'${id.replace(/'/g, "''")}'`).join(',');
+        where = `processid IN (${safeIds})`;
+      }
+    }
+    await exportCSV(db, '$__s_process', res, where);
     return true;
   }
 }

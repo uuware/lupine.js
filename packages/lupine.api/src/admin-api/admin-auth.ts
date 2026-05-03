@@ -1,53 +1,21 @@
 import { ServerResponse } from 'http';
 import { Logger, ServerRequest, ApiHelper, CryptoUtils, langHelper } from 'lupine.api';
-import { adminApiHelper, DEV_ADMIN_CRYPTO_KEY_NAME, DEV_ADMIN_TYPE, DevAdminSessionProps } from './admin-api-helper';
-import crypto from 'crypto';
+import {
+  adminApiHelper,
+  checkEnvNotSet,
+  clearFailedAttempts,
+  DEV_ADMIN_CRYPTO_KEY_NAME,
+  DEV_ADMIN_PASS_KEY_NAME,
+  DEV_ADMIN_SESSION_NAME,
+  DEV_ADMIN_TYPE,
+  DEV_ADMIN_USER_KEY_NAME,
+  DevAdminSessionProps,
+  isLockedOut,
+  recordFailedAttempt,
+  scheduleCleanup,
+} from './admin-api-helper';
 
 const logger = new Logger('admin-auth');
-
-// Brute force protection: track failed login attempts per IP
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 10 * 60 * 1000; // 10 minutes
-const failedAttempts = new Map<string, { count: number; lockedUntil: number }>();
-
-// Debounced cleanup: triggered on login requests, last one wins
-let cleanupTimer: ReturnType<typeof setTimeout> | null = null;
-function scheduleCleanup() {
-  if (cleanupTimer) clearTimeout(cleanupTimer);
-  cleanupTimer = setTimeout(() => {
-    cleanupTimer = null;
-    const now = Date.now();
-    for (const [ip, record] of failedAttempts) {
-      if (record.lockedUntil > 0 && record.lockedUntil <= now) {
-        failedAttempts.delete(ip);
-      }
-    }
-  }, LOCKOUT_DURATION_MS * 2);
-  cleanupTimer.unref();
-}
-
-function isLockedOut(ip: string): boolean {
-  const record = failedAttempts.get(ip);
-  if (!record) return false;
-  if (record.lockedUntil > Date.now()) return true;
-  // Lockout expired, reset
-  failedAttempts.delete(ip);
-  return false;
-}
-
-function recordFailedAttempt(ip: string) {
-  const record = failedAttempts.get(ip) || { count: 0, lockedUntil: 0 };
-  record.count++;
-  if (record.count >= MAX_FAILED_ATTEMPTS) {
-    record.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
-    logger.warn(`IP ${ip} locked out for 10 minutes after ${record.count} failed attempts`);
-  }
-  failedAttempts.set(ip, record);
-}
-
-function clearFailedAttempts(ip: string) {
-  failedAttempts.delete(ip);
-}
 
 export const needDevAdminSession = async (req: ServerRequest, res: ServerResponse) => {
   const devAdminSession = await adminApiHelper.getDevAdminFromCookie(req, res, true);
@@ -78,33 +46,15 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
     return true;
   }
 
-  const cryptoKey = process.env[DEV_ADMIN_CRYPTO_KEY_NAME];
-  if (!cryptoKey) {
-    const msg = langHelper.getLang('shared:name_not_set', {
-      name: 'ENV ' + DEV_ADMIN_CRYPTO_KEY_NAME,
-    });
-    logger.error(msg);
-    const response = {
-      status: 'error',
-      message: msg,
-    };
-    ApiHelper.sendJson(req, res, response);
+  if (checkEnvNotSet(req, res, DEV_ADMIN_PASS_KEY_NAME)) {
     return true;
   }
-  if (!process.env['DEV_ADMIN_PASS']) {
-    const msg = langHelper.getLang('shared:name_not_set', {
-      name: 'ENV DEV_ADMIN_PASS',
-    });
-    logger.error(msg);
-    const response = {
-      status: 'error',
-      message: msg,
-    };
-    ApiHelper.sendJson(req, res, response);
+  if (checkEnvNotSet(req, res, DEV_ADMIN_CRYPTO_KEY_NAME)) {
     return true;
   }
 
   // TODO: secure and httpOnly cookies
+  const cryptoKey = process.env[DEV_ADMIN_CRYPTO_KEY_NAME] as string;
   const data = req.locals.json();
   if (!data || Array.isArray(data) || !data.u || !data.p) {
     // if session already exists, use session data login
@@ -125,57 +75,49 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
       ApiHelper.sendJson(req, res, response);
       return true;
     }
-    // on set app cookie when login, not every time
-    // // if it's dev admin, then set app admin cookie as well
-    // let addLoginResponse = {};
-    // const appAdminHookSetCookie = adminApiHelper.getAppAdminHookSetCookie();
-    // if (appAdminHookSetCookie) {
-    //   addLoginResponse = await appAdminHookSetCookie(req, res, devAdminSession.u);
-    // }
+
     const response = {
-      // ...addLoginResponse,
       status: 'ok',
       message: langHelper.getLang('shared:login_success'),
-      devLogin: CryptoUtils.encrypt(JSON.stringify(devAdminSession), cryptoKey),
+      devLogin: 1,
+      // devLogin: CryptoUtils.encrypt(JSON.stringify(devAdminSession), cryptoKey),
     };
     ApiHelper.sendJson(req, res, response);
     return true;
   }
 
-  const envUser = process.env['DEV_ADMIN_USER'] || '';
-  const envPass = process.env['DEV_ADMIN_PASS'] || '';
-  if (adminApiHelper.timingSafeEqual(data.u as string, envUser) && adminApiHelper.timingSafeEqual(data.p as string, envPass)) {
+  const envUser = process.env[DEV_ADMIN_USER_KEY_NAME] || '';
+  const envPass = process.env[DEV_ADMIN_PASS_KEY_NAME] || '';
+  const singleHash = CryptoUtils.sha256(data.p as string);
+  const doubleHash = CryptoUtils.sha256(singleHash);
+  if (
+    adminApiHelper.timingSafeEqual(data.u as string, envUser) &&
+    adminApiHelper.timingSafeEqual(doubleHash, envPass)
+  ) {
     clearFailedAttempts(clientIp);
     logger.info('dev admin logged in');
     const devSession: DevAdminSessionProps = {
       u: envUser,
       t: DEV_ADMIN_TYPE,
       ip: clientIp,
-      h: CryptoUtils.hash(data.u + ':' + data.p),
+      h: singleHash,
+      l: Date.now(),
     };
     const token = JSON.stringify(devSession);
     const tokenCookie = CryptoUtils.encrypt(token, cryptoKey);
-
-    // if it's dev admin, then set app admin cookie as well
-    let addLoginResponse = {};
-    const appAdminHookSetCookie = adminApiHelper.getAppAdminHookSetCookie();
-    if (appAdminHookSetCookie) {
-      addLoginResponse = await appAdminHookSetCookie(req, res, envUser);
-    }
-
     const response = {
-      ...addLoginResponse,
       status: 'ok',
       message: langHelper.getLang('shared:login_success'),
-      devLogin: tokenCookie,
+      devLogin: 1,
+      // devLogin: tokenCookie,
     };
-    // req.locals.setCookie('_token', tokenCookie, {
-    //   expireDays: 360,
-    //   path: '/',
-    //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: 'lax',
-    // });
+    req.locals.setCookie(DEV_ADMIN_SESSION_NAME, tokenCookie, {
+      expireDays: 360,
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+    });
     ApiHelper.sendJson(req, res, response);
     return true;
   }
@@ -200,12 +142,12 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
 };
 
 export const devAdminLogout = async (req: ServerRequest, res: ServerResponse) => {
-  req.locals.setCookie('_token_dev', '', {
+  req.locals.setCookie(DEV_ADMIN_SESSION_NAME, '', {
     expireDays: 0,
     path: '/',
-    httpOnly: false,
+    httpOnly: true,
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
   });
   await adminApiHelper.getAppAdminHookLogout()?.(req, res);
   ApiHelper.sendJson(req, res, { status: 'ok', message: langHelper.getLang('shared:process_completed') });

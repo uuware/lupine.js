@@ -13,7 +13,7 @@ export const BlockCarousel = (props: { node: DesignNode }) => {
     padding: p.padding || '0',
     minWidth: '0',
     flex: p.flex === '1' ? '1' : 'none',
-    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node)),
+    ...(p._sys_css || {}),
     '.carousel-wrapper': {
       width: '100%',
     },

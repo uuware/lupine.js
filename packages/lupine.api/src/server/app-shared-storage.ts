@@ -25,7 +25,7 @@ export class AppSharedStorage implements IAppSharedStorage {
   configMap: { [key: string]: { fPath: string; storage: SimpleStorage } } = {};
   logger = new Logger('app-shared-storage');
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): IAppSharedStorage {
     if (!AppSharedStorage.instance) {
@@ -219,6 +219,17 @@ export class AppSharedStorage implements IAppSharedStorage {
 
     return webSettingShortKey;
   }
+  async getApiAll(appName: string): Promise<SimpleStorageDataProps> {
+    const apiAll = await this.getWithPrefix(appName, AppSharedStorageApiPrefix);
+
+    const apiSettingShortKey: SimpleStorageDataProps = {};
+    for (let item of Object.keys(apiAll)) {
+      const newItem = item.substring(AppSharedStorageApiPrefix.length);
+      apiSettingShortKey[newItem] = apiAll[item];
+    }
+
+    return apiSettingShortKey;
+  }
   getWithPrefix(appName: string, prefixKey: string): Promise<SimpleStorageDataProps> {
     return new Promise((resolve, reject) => {
       // console.log(`${process.pid} - AppStorage getWithPrefix for prefixKey: ${prefixKey}`);
@@ -325,7 +336,7 @@ class AppSharedStorageWorker {
       throw new Error('AppSharedStorageWorker should be only called from workers');
     }
     const uniqueKey = key + ':' + crypto.randomUUID();
-    
+
     // Auto timeout leak prevention
     const timer = setTimeout(() => {
       const map = AppSharedStorageWorker.handleMap[uniqueKey];

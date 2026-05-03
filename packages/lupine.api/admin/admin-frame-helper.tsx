@@ -20,6 +20,7 @@ import { AdminImagesPage } from './admin-images';
 import { AdminImagesAssetPage } from './admin-images-asset';
 import { AdminWebSettingPage } from './admin-setting-web';
 import { AdminApiSettingPage } from './admin-setting-api';
+import { AdminDataPage } from './admin-data';
 
 const chineseMenuText: { text: string; zh: string }[] = [
   { text: 'Contents', zh: '内容管理' },
@@ -161,16 +162,10 @@ export class AdminFrameHelper {
           js: () => this.addPanel('Public Assets', AdminImagesAssetPage({ isEdit: true })),
         },
         {
-          id: 'web-settings',
-          text: 'Web Settings',
+          id: 'content-data',
+          text: 'Content Data',
           url: '',
-          js: () => this.addPanel('Web Settings', AdminWebSettingPage()),
-        },
-        {
-          id: 'api-settings',
-          text: 'API Settings',
-          url: '',
-          js: () => this.addPanel('API Settings', AdminApiSettingPage()),
+          js: () => this.addPanel('Content Data', <AdminDataPage />),
         },
       ],
     },
@@ -308,7 +303,7 @@ export class AdminFrameHelper {
       id: 'help',
       text: 'Help',
       url: '',
-      devAdmin: true,
+      // devAdmin: true,
       items: [
         {
           id: 'demo',

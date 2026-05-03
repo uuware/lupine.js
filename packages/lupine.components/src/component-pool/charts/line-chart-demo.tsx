@@ -21,14 +21,12 @@ export const lineChartDemo: DemoStory<any> = {
   args: {
     title: 'Exchange Rates over Week',
     width: '100%',
-    height: '350px',
     showLegend: true,
     curved: false,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
     curved: { control: 'boolean' },
   },
@@ -75,7 +73,6 @@ export const lineChartDemo: DemoStory<any> = {
               data={multiSeriesData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
               curved={args.curved}
             />
@@ -88,7 +85,6 @@ export const lineChartDemo: DemoStory<any> = {
             <LineChart
               data={exchangeRatesData}
               title='Crypto Value 2024'
-              height='300px'
               showLegend={true}
               curved={true}
             />

@@ -67,7 +67,7 @@ export const AdminLoginPage = async (props: PageProps) => {
       NotificationMessage.sendMessage((auth && auth.message) || 'Login failed', NotificationColor.Error);
     }
     if (auth.devLogin) {
-      setCookie('_token_dev', auth.devLogin, 30, '/');
+      // setCookie('_token_dev', auth.devLogin, 30, '/');
       window.location.href = '/admin_dev';
     }
     const appAdminHookCheckLogin = adminFrameHelper.getAppAdminHookCheckLogin();
