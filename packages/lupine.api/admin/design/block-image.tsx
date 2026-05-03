@@ -15,7 +15,7 @@ export const BlockImage = (props: { node: DesignNode }) => {
     boxShadow: p.showShadow === true ? 'var(--cover-box-shadow-around)' : 'none',
     display: 'flex',
     flexDirection: 'column',
-    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node)),
+    ...(p._sys_css || {}),
     '.image-title': {
        fontWeight: 'bold',
        marginBottom: '4px',

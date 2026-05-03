@@ -14,7 +14,7 @@ export const BlockTitle = (props: { node: DesignNode }) => {
     color: p.color || 'inherit',
     minWidth: '0',
     flex: p.flex === '1' ? '1' : 'none',
-    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node))
+    ...(p._sys_css || {})
   };
 
   // Convert generic 'h1' - 'h6' string to a tag name. Fallback if something weird happens.

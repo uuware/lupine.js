@@ -41,6 +41,10 @@ export class ApiSharedStorage {
     const appName = apiCache.getAppName();
     return this.getAppSharedStorage().getWebAll(appName);
   }
+  getApiAll(): Promise<SimpleStorageDataProps> {
+    const appName = apiCache.getAppName();
+    return this.getAppSharedStorage().getApiAll(appName);
+  }
   getWithPrefix(prefixKey: string): Promise<SimpleStorageDataProps> {
     const appName = apiCache.getAppName();
     return this.getAppSharedStorage().getWithPrefix(appName, prefixKey);

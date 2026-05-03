@@ -15,6 +15,7 @@ import { AdminProcess } from './admin-process';
 import { AdminImageApi, serveUploadImage } from './admin-image-api';
 import { AdminImageAssetApi } from './admin-image-asset-api';
 import { readWebSetting, writeWebSetting, readApiSetting, writeApiSetting } from './admin-setting-api';
+import { AdminData } from './admin-data';
 
 const logger = new Logger('admin-api');
 
@@ -63,6 +64,9 @@ export class AdminApi implements IApiBase {
 
     const adminProcess = new AdminProcess();
     this.router.use('/process', needDevAdminSession, adminProcess.getRouter());
+
+    const adminData = new AdminData();
+    this.router.use('/data', needDevAdminSession, adminData.getRouter());
 
     const adminImageApi = new AdminImageApi();
     this.router.use('/image', needDevAdminSession, adminImageApi.getRouter());

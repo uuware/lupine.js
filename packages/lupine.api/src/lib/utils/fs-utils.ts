@@ -2,6 +2,12 @@ import { Dirent } from 'fs';
 import * as fs from 'fs/promises';
 import path from 'path';
 
+const FILE_WRITE_RETRY_COUNT = 5;
+const FILE_WRITE_RETRY_DELAY_MS = 120;
+const uploadFileLocks = new Map<string, Promise<void>>();
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export type FileInfoProps = {
   size: number;
   mtime: number;
@@ -9,6 +15,91 @@ export type FileInfoProps = {
   isDir: boolean;
 };
 export class FsUtils {
+  private static isRetriableFsError = (error: any) => {
+    return !error?.code || ['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES', 'ENOENT'].includes(error.code);
+  };
+
+  static retryFsOperation = async <T>(
+    operationName: string,
+    targetPath: string,
+    operation: () => Promise<T>,
+    retryCount = FILE_WRITE_RETRY_COUNT,
+    retryDelayMs = FILE_WRITE_RETRY_DELAY_MS
+  ): Promise<T> => {
+    let lastError: any;
+    for (let i = 0; i < retryCount; i++) {
+      try {
+        const result = await operation();
+        if (result === false) {
+          throw new Error(`${operationName} returned false: ${targetPath}`);
+        }
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        if (!this.isRetriableFsError(error) || i === retryCount - 1) {
+          break;
+        }
+        console.warn(
+          `${operationName} failed, retry ${i + 1}/${retryCount - 1}: ${targetPath}, ${error?.code || ''} ${
+            error?.message || error
+          }`
+        );
+        await sleep(retryDelayMs * (i + 1));
+      }
+    }
+    throw lastError;
+  };
+
+  private static withFileLock = async <T>(lockKey: string, action: () => Promise<T>): Promise<T> => {
+    const previous = uploadFileLocks.get(lockKey) || Promise.resolve();
+    let releaseLock: () => void = () => undefined;
+    const current = new Promise<void>((resolve) => {
+      releaseLock = resolve;
+    });
+    uploadFileLocks.set(lockKey, previous.then(() => current, () => current));
+
+    try {
+      await previous.catch(() => undefined);
+      return await action();
+    } finally {
+      releaseLock();
+      if (uploadFileLocks.get(lockKey) === current) {
+        uploadFileLocks.delete(lockKey);
+      }
+    }
+  };
+
+  static writeUploadChunk = async (
+    fileFullPath: string,
+    data: Buffer | string,
+    chunkNumber: number,
+    totalChunks: number
+  ) => {
+    const tempPath = `${fileFullPath}.uploading`;
+    await this.withFileLock(fileFullPath, async () => {
+      if (chunkNumber === 0) {
+        await this.retryFsOperation('write upload temp file', tempPath, () => fs.writeFile(tempPath, data, 'binary'));
+      } else {
+        await this.retryFsOperation('append upload temp file', tempPath, () => fs.appendFile(tempPath, data, 'binary'));
+      }
+
+      if (chunkNumber !== totalChunks - 1) {
+        return;
+      }
+
+      await this.retryFsOperation('remove old upload target', fileFullPath, async () => {
+        try {
+          await fs.unlink(fileFullPath);
+        } catch (error: any) {
+          if (error?.code !== 'ENOENT') {
+            throw error;
+          }
+        }
+      });
+      await this.retryFsOperation('publish upload file', fileFullPath, () => fs.rename(tempPath, fileFullPath));
+    });
+  };
+
   static readFile = async (filePath: string): Promise<string | undefined> => {
     try {
       const text = await fs.readFile(filePath, 'utf-8');

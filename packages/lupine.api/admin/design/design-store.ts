@@ -1,4 +1,5 @@
 import { uniqueIdGenerator } from "lupine.web";
+import { DesignUtils } from './design-utils';
 
 export interface DesignNode {
   id: string;
@@ -105,8 +106,9 @@ export class DesignStore {
     const node = this.findNode(this.tree, id);
     if (node) {
       node.props = { ...node.props, ...propsToUpdate };
-      if (Object.keys(propsToUpdate).some(k => k.startsWith('customCss') || k.startsWith('hidden'))) {
-         delete node.props._sys_css;
+      const sysCssKeys = ['customCss', 'hidden', 'position', 'top', 'bottom', 'left', 'right', 'zIndex', 'alignSelf'];
+      if (Object.keys(propsToUpdate).some(k => sysCssKeys.some(sysK => k.startsWith(sysK)))) {
+         DesignUtils.compileResponsiveCssForNode(node, node.type === 'block-flex' ? 'flex' : (node.type === 'block-grid' || node.type === 'block-page' ? 'grid' : undefined));
       }
 
       if ((node.type === 'block-grid' || node.type === 'block-page') && propsToUpdate.gridTemplate !== undefined) {

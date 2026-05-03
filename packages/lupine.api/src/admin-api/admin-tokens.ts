@@ -25,8 +25,12 @@ export class AdminTokens implements IApiBase {
 
   async list(req: ServerRequest, res: ServerResponse) {
     const pageLimit = (await apiStorage.getWeb('pageLimit')) || '15';
-    const data = req.locals.json() as any;
-    const search = data['q'];
+    const data = req.locals.json();
+    if (!data || Array.isArray(data)) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload.' });
+      return true;
+    }
+    const search = data.q as string || '';
     const list = await adminTokenHelper.list(search);
     const response = {
       status: 'ok',
@@ -39,9 +43,13 @@ export class AdminTokens implements IApiBase {
   }
 
   async add(req: ServerRequest, res: ServerResponse) {
-    const data = req.locals.json() as any;
-    const token = data['token'];
-    const description = data['description'];
+    const data = req.locals.json();
+    if (!data || Array.isArray(data) || !data.token) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload: expected { token: string, description: string }.' });
+      return true;
+    }
+    const token = data.token as string;
+    const description = data.description as string || '';
     token && (await adminTokenHelper.add({ token, description }));
     const response = {
       status: 'ok',
@@ -63,10 +71,14 @@ export class AdminTokens implements IApiBase {
   }
 
   async update(req: ServerRequest, res: ServerResponse) {
-    const data = req.locals.json() as any;
-    const token = data['token'];
-    const description = data['description'];
-    token && (await adminTokenHelper.update({ token, description }));
+    const data = req.locals.json();
+    if (!data || Array.isArray(data) || !data.id) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload.' });
+      return true;
+    }
+    const id = data.id as string;
+    const description = data.description as string || '';
+    id && (await adminTokenHelper.update({ id, description }));
     const response = {
       status: 'ok',
       message: 'Updated token.',
@@ -76,9 +88,13 @@ export class AdminTokens implements IApiBase {
   }
 
   async remove(req: ServerRequest, res: ServerResponse) {
-    const data = req.locals.json() as any;
-    const token = data['token'];
-    token && (await adminTokenHelper.remove(token));
+    const data = req.locals.json();
+    if (!data || Array.isArray(data) || !data.id) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload.' });
+      return true;
+    }
+    const id = data.id as string;
+    id && (await adminTokenHelper.remove(id));
 
     const response = {
       status: 'ok',

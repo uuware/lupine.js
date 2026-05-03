@@ -16,13 +16,11 @@ export const scatterChartDemo: DemoStory<any> = {
   args: {
     title: 'Value Correlation',
     width: '100%',
-    height: '350px',
     showLegend: true,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
   },
   render: (args: any) => {
@@ -68,7 +66,6 @@ export const scatterChartDemo: DemoStory<any> = {
               data={correlationData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
             />
           </div>

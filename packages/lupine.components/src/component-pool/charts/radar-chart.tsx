@@ -188,13 +188,16 @@ export const RadarChart = (props: RadarChartProps) => {
     globalCssId,
   };
 
-  const styleStr = `width: ${props.width || '100%'}; height: ${props.height || '100%'};`;
+  const ratio = props.aspectRatio ?? 16 / 9;
+  const paddingTop = `${(1 / ratio) * 100}%`;
+
+  const styleStr = `width: ${props.width || '100%'};`;
 
   return (
     <div ref={ref} class='&-container' style={styleStr}>
       {props.title && <div class='chart-title'>{props.title}</div>}
 
-      <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 0 }}>
+      <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 0, paddingTop }}>
         <svg
           class='chart-svg'
           style={{
