@@ -61,16 +61,19 @@ const ContentOneRow = (props: {
     return (
       <>
         <td>
-          {props.onSelectedId ? (
-            <div
-              class='a-page-sel-link cursor-pointer underline'
-              onClick={() => props.onSelectedId!(item.pageid, item.name)}
-            >
-              {item.pageid}
-            </div>
-          ) : (
-            item.pageid
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!isSelectMode && <input type='checkbox' class='admin-check-box' value={item.pageid} />}
+            {props.onSelectedId ? (
+              <div
+                class='a-page-sel-link cursor-pointer underline'
+                onClick={() => props.onSelectedId!(item.pageid, item.name)}
+              >
+                {item.pageid}
+              </div>
+            ) : (
+              item.pageid
+            )}
+          </div>
         </td>
         <td class='a-page-lst-row-icon'>
           <span style={{ fontWeight: 'bold' }}>{item.name || '(No Name)'}</span>
@@ -285,6 +288,9 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
     display: 'flex',
     flexDirection: 'column',
     padding: '0 8px',
+    '&.admin-lst-hide-more .admin-control-box, &.admin-lst-hide-more .admin-check-box': {
+      display: 'none',
+    },
     '.a-page-lst-row-icon': {
       textAlign: 'left',
     },
@@ -345,8 +351,30 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
     ...props.css,
   };
 
+  const onMore = () => {
+    ref.current?.classList.toggle('admin-lst-hide-more');
+  }
+
+  const onExportSelected = () => {
+    const checkboxes = ref.current?.querySelectorAll('.list .admin-check-box') as NodeListOf<HTMLInputElement>;
+    if (!checkboxes) return;
+    const ids = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    if (ids.length === 0) {
+      NotificationMessage.sendMessage('Please select items to export.', NotificationColor.Warning);
+      return;
+    }
+    const idsParam = encodeURIComponent(ids.join(','));
+    const url = `/api/admin/page/export?ids=${idsParam}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
-    <div ref={ref} css={css}>
+    <div ref={ref} css={css} class='admin-lst-hide-more'>
       <div class='admin-sub-title' style={{ marginBottom: '16px' }}>
         {isSelectMode ? 'Select Items' : 'Page & Component Management'}
       </div>
@@ -372,6 +400,18 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
         {!isSelectMode && (
           <button onClick={onNewPage} class='button-base'>
             New Page
+          </button>
+        )}
+        {!isSelectMode && (
+          <button onClick={onMore} class='button-base'>
+            More...
+          </button>
+        )}
+      </div>
+      <div class='row-box pb-m admin-control-box'>
+        {!isSelectMode && (
+          <button onClick={onExportSelected} class='button-base'>
+            Export Selected
           </button>
         )}
       </div>

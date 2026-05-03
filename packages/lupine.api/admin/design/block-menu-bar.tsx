@@ -61,7 +61,7 @@ export const BlockMenuBar = async (props: { node: DesignNode }) => {
   const p = props.node.props;
   const menuId = p.menuId || '';
 
-  const wrapperCss: CssProps = p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node);
+  const wrapperCss: CssProps = p._sys_css || {};
 
   // In design mode (not preview), show a placeholder
   if (!isPreview) {

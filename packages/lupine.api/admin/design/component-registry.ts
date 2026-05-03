@@ -32,7 +32,36 @@ export const SpatialPropEditors: PropEditorDef[] = [
     label: 'Flex Grow Strategy',
     type: 'select',
     options: [{ label: 'Fill Remaining Space (flex: 1)', value: '1' }, { label: 'Fit Content (none)', value: 'none' }],
-  }
+  },
+  {
+    key: 'position',
+    label: 'Positioning',
+    type: 'select',
+    options: [
+      { label: 'Default', value: '' },
+      { label: 'Relative', value: 'relative' },
+      { label: 'Sticky', value: 'sticky' },
+      { label: 'Absolute', value: 'absolute' },
+      { label: 'Fixed', value: 'fixed' },
+    ],
+    responsive: true
+  },
+  { key: 'top', label: 'Top Offset (e.g. 0px)', type: 'text', showIf: (p) => p.position === 'sticky' || p.position === 'absolute' || p.position === 'fixed', responsive: true },
+  { key: 'bottom', label: 'Bottom Offset', type: 'text', showIf: (p) => p.position === 'sticky' || p.position === 'absolute' || p.position === 'fixed', responsive: true },
+  { key: 'zIndex', label: 'Z-Index', type: 'text', showIf: (p) => p.position === 'sticky' || p.position === 'absolute' || p.position === 'fixed', responsive: true },
+  {
+    key: 'alignSelf',
+    label: 'Align Self (Override)',
+    type: 'select',
+    options: [
+      { label: 'Default', value: '' },
+      { label: 'Start (Required for Sticky)', value: 'flex-start' },
+      { label: 'Center', value: 'center' },
+      { label: 'End', value: 'flex-end' },
+      { label: 'Stretch', value: 'stretch' },
+    ],
+    responsive: true
+  },
 ];
 
 export const ComponentRegistry: Record<string, DesignComponentDef> = {
@@ -44,7 +73,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       siteTitle: 'My Website',
       description: '',
       keywords: '',
-      backgroundColor: '#ffffff',
+      backgroundColor: '',
       padding: '0px',
       overflowY: 'auto',
       layoutDirection: 'vertical',
@@ -55,12 +84,14 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       { key: 'description', label: 'SEO Description', type: 'textarea' },
       { key: 'keywords', label: 'SEO Keywords', type: 'text' },
       { key: 'backgroundColor', label: 'Base Theme Color', type: 'color' },
-      { key: 'padding', label: 'Global Margin (Padding)', type: 'text', responsive: true },
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
       {
         key: 'overflowY',
         label: 'Overflow Y',
         type: 'select',
         options: [
+          { label: 'Default', value: '' },
           { label: 'Auto (Scroll if needed)', value: 'auto' },
           { label: 'Hidden (No scroll)', value: 'hidden' },
           { label: 'Scroll (Always scroll)', value: 'scroll' },
@@ -91,11 +122,14 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       overflowY: 'auto',
     },
     propEditors: [
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
       {
         key: 'overflowY',
         label: 'Overflow Y',
         type: 'select',
         options: [
+          { label: 'Default', value: '' },
           { label: 'Auto (Scroll if needed)', value: 'auto' },
           { label: 'Hidden (No scroll)', value: 'hidden' },
           { label: 'Scroll (Always scroll)', value: 'scroll' },
@@ -131,7 +165,19 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
         responsive: true
       },
       { key: 'gap', label: 'Gap Size', type: 'text', responsive: true },
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
       { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      {
+        key: 'overflowY',
+        label: 'Overflow Y',
+        type: 'select',
+        options: [
+          { label: 'Default', value: '' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
       { key: 'backgroundColor', label: 'Background Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
@@ -188,7 +234,19 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
         responsive: true
       },
       { key: 'gap', label: 'Gap Size', type: 'text', responsive: true },
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
       { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      {
+        key: 'overflowY',
+        label: 'Overflow Y',
+        type: 'select',
+        options: [
+          { label: 'Default', value: '' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
       { key: 'backgroundColor', label: 'Background Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },

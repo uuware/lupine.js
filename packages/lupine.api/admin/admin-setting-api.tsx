@@ -7,26 +7,58 @@ import {
   RefProps,
   FloatWindow,
 } from 'lupine.components';
+import { SettingGroup, SettingItem, SettingItemRender } from './admin-setting-props';
+
+const cfgApiGroups: SettingGroup[] = [
+  {
+    groupName: 'Maintenance',
+    items: [
+      { label: 'Enable Maintenance Mode', type: 'checkbox', name: 'isMaintenance' },
+      { label: 'Maintenance Message', type: 'html', name: 'maintenanceInfo' },
+    ],
+  },
+  {
+    groupName: 'Email Settings',
+    items: [
+      { label: 'Email Sender Type', type: 'select', name: 'sendEmailType', options: [{ value: 'gmail', label: 'Gmail' }, { value: 'qq', label: 'QQ' }] },
+      { label: 'Email Display Name', type: 'text', name: 'sendEmailUser' },
+      { label: 'Email Auth User', type: 'text', name: 'sendEmailAuthUser' },
+      { label: 'Email Auth Secret', type: 'text', name: 'sendEmailSecret' },
+    ],
+  },
+];
+
+export const settingApiInsertGroup = (groups: SettingGroup[], beforeGroupName?: string) => {
+  if (!beforeGroupName) {
+    cfgApiGroups.push(...groups);
+    return;
+  }
+  const idx = cfgApiGroups.findIndex(g => g.groupName === beforeGroupName);
+  if (idx >= 0) {
+    cfgApiGroups.splice(idx, 0, ...groups);
+  } else {
+    cfgApiGroups.push(...groups);
+  }
+};
+
+export const settingApiInsertGroupItem = (targetGroupName: string, items: SettingItem[], beforeItemName?: string) => {
+  const group = cfgApiGroups.find(g => g.groupName === targetGroupName);
+  if (!group) return;
+  
+  if (!beforeItemName) {
+    group.items.push(...items);
+    return;
+  }
+  
+  const idx = group.items.findIndex(i => i.name === beforeItemName);
+  if (idx >= 0) {
+    group.items.splice(idx, 0, ...items);
+  } else {
+    group.items.push(...items);
+  }
+};
 
 export const AdminApiSettingPage = () => {
-  const cfgItems: { [key: string]: { label: string; type: string; group?: string; options?: {value: string; label: string}[]; name: string } } = {
-    isMaintenance: { label: 'Enable Maintenance Mode', type: 'checkbox', group: 'Maintenance', name: 'isMaintenance' },
-    maintenanceInfo: { label: 'Maintenance Message', type: 'html', group: 'Maintenance', name: 'maintenanceInfo' },
-    sendEmailType: { label: 'Email Sender Type', type: 'select', group: 'Email Settings', name: 'sendEmailType', options: [{ value: 'gmail', label: 'Gmail' }, { value: 'qq', label: 'QQ' }] },
-    sendEmailUser: { label: 'Email Display Name', type: 'text', group: 'Email Settings', name: 'sendEmailUser' },
-    sendEmailAuthUser: { label: 'Email Auth User', type: 'text', group: 'Email Settings', name: 'sendEmailAuthUser' },
-    sendEmailSecret: { label: 'Email Auth Secret', type: 'text', group: 'Email Settings', name: 'sendEmailSecret' },
-    weixinAppSecret: { label: 'Wechat AppSecret', type: 'text', group: 'Auth Settings', name: 'weixinAppSecret' },
-    weixinWebAppSecret: { label: 'Wechat WebAppSecret', type: 'text', group: 'Auth Settings', name: 'weixinWebAppSecret' },
-    weixinMchId: { label: 'Wechat MchId', type: 'text', group: 'Auth Settings', name: 'weixinMchId' },
-    weixinMchKey: { label: 'Wechat MchKey', type: 'text', group: 'Auth Settings', name: 'weixinMchKey' },
-    googleClientSecretWeb: { label: 'Google Web AppSecret', type: 'text', group: 'Auth Settings', name: 'googleClientSecretWeb' },
-    aliAccessKeyId: { label: 'Aliyun AccessKeyId', type: 'text', group: 'Ali SMS Settings', name: 'aliAccessKeyId' },
-    aliAccessKeySecret: { label: 'Aliyun AccessKeySecret', type: 'text', group: 'Ali SMS Settings', name: 'aliAccessKeySecret' },
-    aliSignName: { label: 'Aliyun SignName', type: 'text', group: 'Ali SMS Settings', name: 'aliSignName' },
-    aliTemplateCode: { label: 'Aliyun TemplateCode', type: 'text', group: 'Ali SMS Settings', name: 'aliTemplateCode' },
-    allowedDayRegisterCount: { label: 'Daily Registration Limit', type: 'number', group: 'Security', name: 'allowedDayRegisterCount' },
-  };
 
   const css: CssProps = {
     display: 'flex',
@@ -48,9 +80,6 @@ export const AdminApiSettingPage = () => {
       borderRadius: '8px',
       padding: '10px',
     },
-    '.m-text': {
-      marginBottom: '10px',
-    },
     '.html-editor-btn': {
       marginLeft: '8px',
       cursor: 'pointer',
@@ -59,42 +88,18 @@ export const AdminApiSettingPage = () => {
     }
   };
 
-  const openHtmlEditor = (key: string, title: string) => {
-    const currentValue = ref.$(`.f-${key}`).value;
-    let editValue = currentValue;
-
-    const content = (
-      <div style={{ padding: '10px', width: '100%', height: '300px' }}>
-        <textarea 
-          style={{ width: '100%', height: '100%', padding: '8px', boxSizing: 'border-box' }}
-          onChange={(e: any) => editValue = e.target.value}
-        >{currentValue}</textarea>
-      </div>
-    );
-
-    FloatWindow.show({
-      title: `Edit ${title}`,
-      children: content,
-      buttons: ['OK', 'Cancel'],
-      contentMinWidth: '500px',
-      handleClicked: (index, close) => {
-        if (index === 0) {
-          ref.$(`.f-${key}`).value = editValue;
-        }
-        close();
-      }
-    });
-  };
-
   const onSave = async () => {
     const cfgItemsOnly: { [key: string]: any } = {};
-    for (const key in cfgItems) {
-      const el = ref.$('.f-' + key);
-      if (el) {
-        if (cfgItems[key].type === 'checkbox') {
-          cfgItemsOnly[key] = (el as HTMLInputElement).checked;
-        } else {
-          cfgItemsOnly[key] = el.value;
+    for (const group of cfgApiGroups) {
+      for (const item of group.items) {
+        const key = item.name;
+        const el = ref.$('.f-' + key);
+        if (el) {
+          if (item.type === 'checkbox') {
+            cfgItemsOnly[key] = (el as HTMLInputElement).checked;
+          } else {
+            cfgItemsOnly[key] = el.value;
+          }
         }
       }
     }
@@ -109,13 +114,16 @@ export const AdminApiSettingPage = () => {
   const onLoad = async () => {
     const cfg = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/settings/read-api');
     if (cfg && cfg.json && cfg.json.status === 'ok' && cfg.json.result) {
-      for (const key in cfgItems) {
-        const el = ref.$('.f-' + key);
-        if (el) {
-          if (cfgItems[key].type === 'checkbox') {
-            (el as HTMLInputElement).checked = cfg.json.result[key];
-          } else {
-             el.value = cfg.json.result[key] || '';
+      for (const group of cfgApiGroups) {
+        for (const item of group.items) {
+          const key = item.name;
+          const el = ref.$('.f-' + key);
+          if (el) {
+            if (item.type === 'checkbox') {
+              (el as HTMLInputElement).checked = cfg.json.result[key];
+            } else {
+               el.value = cfg.json.result[key] || '';
+            }
           }
         }
       }
@@ -134,48 +142,11 @@ export const AdminApiSettingPage = () => {
         </button>
       </div>
       
-      {Object.entries(
-        Object.entries(cfgItems).reduce((acc: any, [key, item]) => {
-          const group = item.group || 'Other Settings';
-          if (!acc[group]) acc[group] = [];
-          acc[group].push({ key, item });
-          return acc;
-        }, {})
-      ).map(([group, items]: [string, any]) => (
+      {cfgApiGroups.map((group) => (
         <fieldset class='m-fieldset'>
-          <legend>{group}:</legend>
-          {items.map(({ key, item }: any) => (
-            <div class='row-box'>
-              <label class='cfg-label'>{item.label}:</label>
-              
-              {(item.type === 'text' || item.type === 'number' || item.type === 'color') && (
-                <input type={item.type} class={`cfg-input input-base m-text f-${key}`} />
-              )}
-
-              {item.type === 'select' && (
-                <select class={`cfg-input input-base m-text f-${key}`}>
-                  {item.options?.map((opt: any) => (
-                    <option value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              )}
-
-              {item.type === 'checkbox' && (
-                <div class="row-box flex-1">
-                   <input type="checkbox" class={`f-${key}`} style={{ marginRight: '8px' }} />
-                </div>
-              )}
-
-              {item.type === 'html' && (
-                <div class="row-box flex-1">
-                  <input type='text' class={`cfg-input input-base m-text f-${key}`} />
-                  <button class='button-base html-editor-btn' onClick={() => openHtmlEditor(key, item.label)}>
-                    ...
-                  </button>
-                </div>
-              )}
-
-            </div>
+          <legend>{group.groupName}:</legend>
+          {group.items.map((item) => (
+            <SettingItemRender item={item} ref={ref} />
           ))}
         </fieldset>
       ))}

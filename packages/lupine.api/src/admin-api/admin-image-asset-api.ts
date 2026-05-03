@@ -228,7 +228,7 @@ export class AdminImageAssetApi implements IApiBase {
         ApiHelper.sendJson(req, res, response);
         return true;
       }
-      await fs.writeFile(fullpath, data, 'binary');
+      // await fs.writeFile(fullpath, data, 'binary');
     } else {
       if (!fileExists) {
         const response = {
@@ -238,8 +238,9 @@ export class AdminImageAssetApi implements IApiBase {
         ApiHelper.sendJson(req, res, response);
         return true;
       }
-      await fs.appendFile(fullpath, data, 'binary');
+      // await fs.appendFile(fullpath, data, 'binary');
     }
+    await FsUtils.writeUploadChunk(fullpath, data, chunkNumber, totalChunks);
 
     const response = {
       status: 'ok',

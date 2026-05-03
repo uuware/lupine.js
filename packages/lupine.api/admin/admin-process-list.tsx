@@ -56,7 +56,10 @@ const ContentOneRow = (props: {
     return (
       <>
         <td>
-          <span style={{ fontWeight: 'bold' }}>{item.processid}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input type='checkbox' class='admin-check-box' value={item.processid} />
+            <span style={{ fontWeight: 'bold' }}>{item.processid}</span>
+          </div>
         </td>
         <td>
           <span style={{ fontWeight: 'bold' }}>{item.name || '-'}</span>
@@ -216,6 +219,9 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
     display: 'flex',
     flexDirection: 'column',
     padding: '0 8px',
+    '&.admin-lst-hide-more .admin-control-box, &.admin-lst-hide-more .admin-check-box': {
+      display: 'none',
+    },
     '.a-process-lst-row-ctl': {
       cursor: 'pointer',
       width: '70px',
@@ -252,8 +258,30 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
     ...props.css,
   };
 
+  const onMore = () => {
+    ref.current?.classList.toggle('admin-lst-hide-more');
+  }
+
+  const onExportSelected = () => {
+    const checkboxes = ref.current?.querySelectorAll('.list .admin-check-box') as NodeListOf<HTMLInputElement>;
+    if (!checkboxes) return;
+    const ids = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    if (ids.length === 0) {
+      NotificationMessage.sendMessage('Please select items to export.', NotificationColor.Warning);
+      return;
+    }
+    const idsParam = encodeURIComponent(ids.join(','));
+    const url = `/api/admin/process/export?ids=${idsParam}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
-    <div ref={ref} css={css}>
+    <div ref={ref} css={css} class='admin-lst-hide-more'>
       <div class='admin-sub-title' style={{ marginBottom: '16px' }}>
         Process Management
       </div>
@@ -276,6 +304,14 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
         </div>
         <button onClick={onNewProcess} class='button-base'>
           New Process
+        </button>
+        <button onClick={onMore} class='button-base'>
+          More...
+        </button>
+      </div>
+      <div class='row-box pb-m admin-control-box'>
+        <button onClick={onExportSelected} class='button-base'>
+          Export Selected
         </button>
       </div>
       <div class='list'>{listDom.node}</div>

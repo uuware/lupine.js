@@ -1,5 +1,6 @@
 import { ServerResponse } from 'http';
 import { IApiBase, Logger, apiCache, ServerRequest, ApiRouter, ApiHelper } from 'lupine.api';
+import { exportCSV } from '../lib/utils/csv-util';
 
 const logger = new Logger('admin-page');
 export class AdminPage implements IApiBase {
@@ -20,6 +21,7 @@ export class AdminPage implements IApiBase {
     this.router.use('/save', this.save.bind(this));
     this.router.use('/get/:id', this.getRecord.bind(this));
     this.router.use('/delete/:id', this.delete.bind(this));
+    this.router.use('/export', this.export.bind(this));
   }
 
   private buildQuery(searchValue: string[], searchFields: string[]) {
@@ -108,15 +110,19 @@ export class AdminPage implements IApiBase {
 
   async save(req: ServerRequest, res: ServerResponse) {
     const db = apiCache.getDb();
-    const data = req.locals.json() as any;
+    const data = req.locals.json();
+    if (!data || Array.isArray(data) || !data.pageid) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload: expected { pageid: string, ... }.' });
+      return true;
+    }
 
-    let id = data['pageid'] || data['id'];
+    let id = data.pageid as string;
     if (!id) {
       ApiHelper.sendJson(req, res, { status: 'error', message: 'Page ID is required.' });
       return true;
     }
     id = String(id).trim().toLowerCase();
-    if (!/^[a-z0-9_]+$/.test(id)) {
+    if (!/^[a-z0-9_\-#]+$/.test(id)) {
       ApiHelper.sendJson(req, res, { status: 'error', message: 'Page ID can only contain lowercase letters, numbers, and underscores.' });
       return true;
     }
@@ -152,9 +158,9 @@ export class AdminPage implements IApiBase {
     const newStamp = Date.now();
     const result = await db.insertObject('$__s_page', {
       pageid: id,
-      name: data['name'] || 'Untitled',
-      remark: data['remark'] || '',
-      package: data['package'] || 'default',
+      name: data['name'] as string || 'Untitled',
+      remark: data['remark'] as string || '',
+      package: data['package'] as string || 'default',
       is_component: data['is_component'] ? 1 : 0,
       json: typeof data['json'] === 'string' ? data['json'] : JSON.stringify(data['json'] || {}),
       updateduserid: 1,
@@ -220,6 +226,21 @@ export class AdminPage implements IApiBase {
       response.status = 'ok';
     }
     ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  async export(req: ServerRequest, res: ServerResponse) {
+    const db = apiCache.getDb();
+    const idsParam = req.locals.query.get('ids') || '';
+    let where = '';
+    if (idsParam) {
+      const ids = idsParam.split(',').filter(Boolean).map((id: string) => id.trim());
+      if (ids.length > 0) {
+        const safeIds = ids.map((id: string) => `'${id.replace(/'/g, "''")}'`).join(',');
+        where = `pageid IN (${safeIds})`;
+      }
+    }
+    await exportCSV(db, '$__s_page', res, where);
     return true;
   }
 }

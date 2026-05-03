@@ -27,13 +27,11 @@ export const columnChartDemo: DemoStory<any> = {
   args: {
     title: 'Monthly Revenue',
     width: '100%',
-    height: '350px',
     showLegend: true,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
   },
   render: (args: any) => {
@@ -79,7 +77,6 @@ export const columnChartDemo: DemoStory<any> = {
               data={singleSeriesData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
               yAxisFormatter={(val) => '$' + val}
             />
@@ -89,7 +86,7 @@ export const columnChartDemo: DemoStory<any> = {
         <section class='demo-section'>
           <div class='section-title'>Multi-Series (Grouped)</div>
           <div class='chart-box'>
-            <ColumnChart data={multiSeriesData} title='Quarterly Product Sales' height='300px' showLegend={true} />
+            <ColumnChart data={multiSeriesData} title='Quarterly Product Sales' showLegend={true} />
           </div>
         </section>
       </div>

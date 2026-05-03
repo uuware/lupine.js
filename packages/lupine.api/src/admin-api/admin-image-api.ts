@@ -455,21 +455,16 @@ export class AdminImageApi implements IApiBase {
       return true;
     }
     const fullpath = path.join(dataPath, file_id);
+    await FsUtils.writeUploadChunk(fullpath, data, chunkNumber, totalChunks);
     // write data to a file
-    if (chunkNumber === 0) {
-      await fs.writeFile(fullpath, data, 'binary');
-
-      if (!imgRecords || imgRecords.length !== 1) {
-        await db.insertObject('$__image', {
-          file_id,
-          display_name: newName,
-          parent_full_path: currentDir,
-          version: 1,
-          updatetime: Date.now(),
-        });
-      }
-    } else {
-      await fs.appendFile(fullpath, data, 'binary');
+    if (chunkNumber === 0 && (!imgRecords || imgRecords.length !== 1)) {
+      await db.insertObject('$__image', {
+        file_id,
+        display_name: newName,
+        parent_full_path: currentDir,
+        version: 1,
+        updatetime: Date.now(),
+      });
     }
 
     const response = {

@@ -8,13 +8,11 @@ export const gaugeChartDemo: DemoStory<any> = {
   args: {
     title: 'Server Load',
     width: '100%',
-    height: '350px',
     value: 65,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     value: { control: 'number' },
   },
   render: (args: any) => {
@@ -60,7 +58,6 @@ export const gaugeChartDemo: DemoStory<any> = {
       liveValue.value = (
         <GaugeChart
           title='CPU Usage'
-          height='300px'
           value={Math.round(currentValue)}
           color='#e74c3c'
           valueFormatter={(v) => v + '%'}
@@ -79,7 +76,6 @@ export const gaugeChartDemo: DemoStory<any> = {
             <GaugeChart
               title={args.title}
               width={args.width}
-              height={args.height}
               value={args.value}
               valueFormatter={(v) => v + '%'}
             />

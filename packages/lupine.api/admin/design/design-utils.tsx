@@ -22,24 +22,101 @@ export const DesignUtils = {
     return obj;
   },
 
+  getStandardCss: (p: any, mq: string = '') => {
+    const css: any = {};
+    if (p[`position${mq}`]) css.position = p[`position${mq}`];
+    if (p[`top${mq}`]) css.top = p[`top${mq}`];
+    if (p[`bottom${mq}`]) css.bottom = p[`bottom${mq}`];
+    if (p[`left${mq}`]) css.left = p[`left${mq}`];
+    if (p[`right${mq}`]) css.right = p[`right${mq}`];
+    if (p[`zIndex${mq}`]) css.zIndex = p[`zIndex${mq}`];
+    if (p[`alignSelf${mq}`]) css.alignSelf = p[`alignSelf${mq}`];
+    if (p[`margin${mq}`]) css.margin = p[`margin${mq}`];
+    if (p[`padding${mq}`]) css.padding = p[`padding${mq}`];
+    if (p[`overflowY${mq}`]) css.overflowY = p[`overflowY${mq}`];
+    return css;
+  },
+
   getResponsiveCss: (p: any, mq: string, defaultDisplay?: string) => {
     return {
       ...DesignUtils.getHiddenCss(p, mq, defaultDisplay),
+      ...DesignUtils.getStandardCss(p, mq),
       ...DesignUtils.parseInlineCss(p[`customCss${mq}`])
     };
   },
 
   compileResponsiveCssForNode: (node: DesignNode, defaultDisplay?: string) => {
     const p = node.props || {};
-    const sysCss = {
+    const sysCss: any = {
+      ...DesignUtils.getStandardCss(p, ''),
       ...DesignUtils.parseInlineCss(p.customCss),
-      [MediaQueryRange.DesktopBelow]: DesignUtils.getResponsiveCss(p, 'DesktopBelow', defaultDisplay),
-      [MediaQueryRange.TabletBelow]: DesignUtils.getResponsiveCss(p, 'TabletBelow', defaultDisplay),
-      [MediaQueryRange.MobileBelow]: DesignUtils.getResponsiveCss(p, 'MobileBelow', defaultDisplay),
-      [MediaQueryRange.ExtraSmallBelow]: DesignUtils.getResponsiveCss(p, 'ExtraSmallBelow', defaultDisplay),
     };
-    p._sys_css = sysCss;
-    return sysCss;
+    
+    const mqs = [
+      { key: MediaQueryRange.DesktopBelow, suffix: 'DesktopBelow' },
+      { key: MediaQueryRange.TabletBelow, suffix: 'TabletBelow' },
+      { key: MediaQueryRange.MobileBelow, suffix: 'MobileBelow' },
+      { key: MediaQueryRange.ExtraSmallBelow, suffix: 'ExtraSmallBelow' },
+    ];
+
+    const isFlex = node.type === 'block-flex';
+    const isGrid = node.type === 'block-grid';
+    const isPage = node.type === 'block-page';
+
+    if (isFlex) {
+      sysCss.flexDirection = p.flexDirection || 'column';
+      sysCss.alignItems = p.alignItems || 'stretch';
+      sysCss.justifyContent = p.justifyContent || 'flex-start';
+      sysCss.gap = p.gap || '0';
+    } else if (isGrid || isPage) {
+      const isVertical = isGrid ? (p.layoutDirection === 'vertical') : (p.layoutDirection === 'vertical' || !p.layoutDirection);
+      const defaultLayout = isGrid ? '1fr 1fr' : '100px 1fr 50px';
+      sysCss.gridTemplateRows = isVertical ? (p.gridTemplate || defaultLayout) : '1fr';
+      sysCss.gridTemplateColumns = !isVertical ? (p.gridTemplate || defaultLayout) : '1fr';
+    }
+
+    mqs.forEach(mq => {
+       const mqCss: any = DesignUtils.getResponsiveCss(p, mq.suffix, defaultDisplay);
+
+       if (isFlex) {
+         const getFlexCascade = (propName: string, defaultVal: string) => {
+            if (mq.suffix === 'DesktopBelow') return p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+            if (mq.suffix === 'TabletBelow') return p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+            if (mq.suffix === 'MobileBelow') return p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+            if (mq.suffix === 'ExtraSmallBelow') return p[`${propName}ExtraSmallBelow`] || p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+         };
+         mqCss.flexDirection = getFlexCascade('flexDirection', 'column');
+         mqCss.alignItems = getFlexCascade('alignItems', 'stretch');
+         mqCss.justifyContent = getFlexCascade('justifyContent', 'flex-start');
+         mqCss.gap = getFlexCascade('gap', '0');
+       } else if (isGrid || isPage) {
+         const isVertical = isGrid ? (p.layoutDirection === 'vertical') : (p.layoutDirection === 'vertical' || !p.layoutDirection);
+         const defaultLayout = isGrid ? '1fr 1fr' : '100px 1fr 50px';
+         
+         const getGridCascade = (propName: string) => {
+            if (mq.suffix === 'DesktopBelow') return p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
+            if (mq.suffix === 'TabletBelow') return p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
+            if (mq.suffix === 'MobileBelow') return p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
+            if (mq.suffix === 'ExtraSmallBelow') return p[`${propName}ExtraSmallBelow`] || p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
+         };
+         
+         const cascadeVal = getGridCascade('gridTemplate');
+         mqCss.gridTemplateRows = isVertical ? cascadeVal : '1fr';
+         mqCss.gridTemplateColumns = !isVertical ? cascadeVal : '1fr';
+       }
+
+       if (Object.keys(mqCss).length > 0) {
+          sysCss[mq.key] = mqCss;
+       }
+    });
+
+    if (Object.keys(sysCss).length > 0) {
+      p._sys_css = sysCss;
+      return sysCss;
+    } else {
+      delete p._sys_css;
+      return undefined;
+    }
   },
 
   showJsonTree: (tree: DesignNode) => {
@@ -165,7 +242,7 @@ export const DesignUtils = {
             NotificationMessage.sendMessage('Page ID is required', NotificationColor.Warning);
             return;
           }
-          if (!/^[a-z0-9_]+$/.test(compId)) {
+          if (!/^[a-z0-9_\-#]+$/.test(compId)) {
             NotificationMessage.sendMessage('Page ID can only contain lowercase letters, numbers, and underscores.', NotificationColor.Warning);
             return;
           }

@@ -33,6 +33,7 @@ export interface IAppSharedStorage {
   getWeb(appName: string, key: string): Promise<string>;
   getApi(appName: string, key: string): Promise<string>;
   getWebAll(appName: string): Promise<SimpleStorageDataProps>;
+  getApiAll(appName: string): Promise<SimpleStorageDataProps>;
   getWithPrefix(appName: string, prefixKey: string): Promise<SimpleStorageDataProps>;
   set(appName: string, key: string, value: any): void;
   setWeb(appName: string, key: string, value: any): void;

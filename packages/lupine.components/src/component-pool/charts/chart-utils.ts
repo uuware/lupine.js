@@ -113,7 +113,7 @@ export type ChartData = {
 export type BasicChartProps = {
   title?: string;
   data: ChartData;
-  height?: string | number;
+  aspectRatio?: number;
   width?: string | number;
   showLegend?: boolean;
 };

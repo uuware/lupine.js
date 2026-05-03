@@ -7,6 +7,53 @@ import {
   RefProps,
   WebConfig,
 } from 'lupine.components';
+import { SettingGroup, SettingItem, SettingItemRender } from './admin-setting-props';
+
+const cfgGroups: SettingGroup[] = [
+  {
+    groupName: 'Paging Settings',
+    items: [
+      { label: 'Page Limit', type: 'number', name: 'pageLimit' },
+    ],
+  },
+  {
+    groupName: 'Email Sending Info',
+    items: [
+      { label: 'Email address', type: 'text', name: 'siteEmail' },
+      { label: 'Website Url', type: 'text', name: 'siteUrl' },
+    ],
+  },
+];
+
+export const settingWebInsertGroup = (groups: SettingGroup[], beforeGroupName?: string) => {
+  if (!beforeGroupName) {
+    cfgGroups.push(...groups);
+    return;
+  }
+  const idx = cfgGroups.findIndex(g => g.groupName === beforeGroupName);
+  if (idx >= 0) {
+    cfgGroups.splice(idx, 0, ...groups);
+  } else {
+    cfgGroups.push(...groups);
+  }
+};
+
+export const settingWebInsertGroupItem = (targetGroupName: string, items: SettingItem[], beforeItemName?: string) => {
+  const group = cfgGroups.find(g => g.groupName === targetGroupName);
+  if (!group) return;
+  
+  if (!beforeItemName) {
+    group.items.push(...items);
+    return;
+  }
+  
+  const idx = group.items.findIndex(i => i.name === beforeItemName);
+  if (idx >= 0) {
+    group.items.splice(idx, 0, ...items);
+  } else {
+    group.items.push(...items);
+  }
+};
 
 export const AdminWebSettingPage = () => {
   const css: CssProps = {
@@ -29,34 +76,16 @@ export const AdminWebSettingPage = () => {
       borderRadius: '8px',
       padding: '10px',
     },
-    '.m-text': {
-      marginBottom: '10px',
-    },
-  };
-
-  const cfgItems: { [key: string]: { label: string; type: string; group?: string; name: string } } = {
-    siteTitle: { label: 'Site Title', type: 'text', group: 'Website Settings', name: 'siteTitle' },
-    siteSubTitle: { label: 'Site Subtitle', type: 'text', group: 'Website Settings', name: 'siteSubTitle' },
-    siteFooter: { label: 'Site Footer', type: 'text', group: 'Website Settings', name: 'siteFooter' },
-    musicTags: { label: 'Music Tags', type: 'text', group: 'Website Settings', name: 'musicTags' },
-    lessonHomeSub: { label: 'Lesson Sub Menu', type: 'text', group: 'Website Settings', name: 'lessonHomeSub' },
-    lessonTags: { label: 'Lesson Tags', type: 'text', group: 'Website Settings', name: 'lessonTags' },
-    shopTags: { label: 'Shop Tags', type: 'text', group: 'Website Settings', name: 'shopTags' },
-    shopProductIds: { label: 'Product IDs', type: 'text', group: 'Shop Settings', name: 'shopProductIds' },
-    pageLimit: { label: 'Page Limit', type: 'number', group: 'Paging Settings', name: 'pageLimit' },
-    siteEmail: { label: 'Email address', type: 'text', group: 'Email Sending Info', name: 'siteEmail' },
-    siteUrl: { label: 'Website Url', type: 'text', group: 'Email Sending Info', name: 'siteUrl' },
-    weixinAppId: { label: 'Wechat AppId', type: 'text', group: 'Frontend Auth Settings', name: 'weixinAppId' },
-    weixinWebAppId: { label: 'Wechat WebAppId', type: 'text', group: 'Frontend Auth Settings', name: 'weixinWebAppId' },
-    googleClientIdWeb: { label: 'Google Web AppId', type: 'text', group: 'Frontend Auth Settings', name: 'googleClientIdWeb' },
-    afterAuthUrl: { label: 'Post-Auth Redirect URL', type: 'text', group: 'Frontend Auth Settings', name: 'afterAuthUrl' },
   };
 
   const onSave = async () => {
     const cfgItemsOnly: { [key: string]: string } = {};
-    for (const key in cfgItems) {
-      if (ref.$('.f-' + key)) {
-        cfgItemsOnly[key] = ref.$('.f-' + key).value;
+    for (const group of cfgGroups) {
+      for (const item of group.items) {
+        const key = item.name;
+        if (ref.$('.f-' + key)) {
+          cfgItemsOnly[key] = ref.$('.f-' + key).value;
+        }
       }
     }
 
@@ -64,7 +93,7 @@ export const AdminWebSettingPage = () => {
       '/api/admin/settings/write-web',
       cfgItemsOnly
     );
-    
+
     WebConfig.init(true);
     NotificationMessage.sendMessage(
       result.json?.message || 'Done',
@@ -75,12 +104,15 @@ export const AdminWebSettingPage = () => {
   const onLoad = async () => {
     const result = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/settings/read-web');
     if (result.json && result.json.status === 'ok') {
-       const resData = result.json.result || {};
-       for (const key in cfgItems) {
-         if (ref.$('.f-' + key)) {
-           ref.$('.f-' + key).value = resData[key] || '';
-         }
-       }
+      const resData = result.json.result || {};
+      for (const group of cfgGroups) {
+        for (const item of group.items) {
+          const key = item.name;
+          if (ref.$('.f-' + key)) {
+            ref.$('.f-' + key).value = resData[key] || '';
+          }
+        }
+      }
     }
   };
 
@@ -96,23 +128,11 @@ export const AdminWebSettingPage = () => {
         </button>
       </div>
 
-      {Object.entries(
-        Object.entries(cfgItems).reduce((acc: any, [key, item]) => {
-          const group = item.group || 'Other Settings';
-          if (!acc[group]) acc[group] = [];
-          acc[group].push({ key, item });
-          return acc;
-        }, {})
-      ).map(([group, items]: [string, any]) => (
+      {cfgGroups.map((group) => (
         <fieldset class='m-fieldset'>
-          <legend>{group}:</legend>
-          {items.map(({ key, item }: any) => (
-            <div class='row-box'>
-              <label class='cfg-label'>{item.label}:</label>
-              {(item.type === 'text' || item.type === 'number' || item.type === 'color') && (
-                <input type={item.type} class={`cfg-input input-base m-text f-${key}`} />
-              )}
-            </div>
+          <legend>{group.groupName}:</legend>
+          {group.items.map((item) => (
+            <SettingItemRender item={item} ref={ref} />
           ))}
         </fieldset>
       ))}

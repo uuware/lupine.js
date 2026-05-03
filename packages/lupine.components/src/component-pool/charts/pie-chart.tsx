@@ -97,7 +97,10 @@ export const PieChart = (props: PieChartProps) => {
     globalCssId,
   };
 
-  const styleStr = `width: ${props.width || '100%'}; height: ${props.height || '100%'}; min-height: 200px;`;
+  const ratio = props.aspectRatio ?? 16 / 9;
+  const paddingTop = `${(1 / ratio) * 100}%`;
+
+  const styleStr = `width: ${props.width || '100%'}; min-height: 200px;`;
 
   return (
     <div ref={ref} class='&-container' style={styleStr}>
@@ -111,6 +114,7 @@ export const PieChart = (props: PieChartProps) => {
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: '0',
+          paddingTop,
         }}
       >
         <svg

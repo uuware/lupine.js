@@ -1082,6 +1082,20 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
               if (data.result.json) {
                 try {
                   const tree = typeof data.result.json === 'string' ? JSON.parse(data.result.json) : data.result.json;
+                  const computeCss = (n: any) => {
+                    if (n.props) {
+                      Object.keys(n.props).forEach(k => {
+                        if (n.props[k] === '') {
+                          delete n.props[k];
+                        }
+                      });
+                    }
+                    DesignUtils.compileResponsiveCssForNode(n, n.type === 'block-flex' ? 'flex' : (n.type === 'block-grid' || n.type === 'block-page' ? 'grid' : undefined));
+                    if (n.children) {
+                      n.children.forEach(computeCss);
+                    }
+                  };
+                  computeCss(tree);
                   store.tree = tree;
                   store.emit('TREE_UPDATE');
                 } catch (e) {
@@ -1117,6 +1131,22 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
           <button
             class='button-base'
             onClick={() => {
+              const astClone = JSON.parse(JSON.stringify(store.tree));
+              const computeCss = (n: any) => {
+                if (n.props) {
+                  Object.keys(n.props).forEach(k => {
+                    if (n.props[k] === '') {
+                      delete n.props[k];
+                    }
+                  });
+                }
+                DesignUtils.compileResponsiveCssForNode(n, n.type === 'block-flex' ? 'flex' : (n.type === 'block-grid' || n.type === 'block-page' ? 'grid' : undefined));
+                if (n.children) {
+                  n.children.forEach(computeCss);
+                }
+              };
+              computeCss(astClone);
+
               DesignUtils.showSaveDialog(
                 currentContextId,
                 currentContextName,
@@ -1124,7 +1154,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                 currentContextRemark,
                 currentContextIsComponent,
                 currentUpdatetime,
-                JSON.parse(JSON.stringify(store.tree)),
+                astClone,
                 (
                   newId: string,
                   newName: string,

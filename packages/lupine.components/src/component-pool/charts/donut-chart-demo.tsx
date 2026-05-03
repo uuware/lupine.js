@@ -18,14 +18,12 @@ export const donutChartDemo: DemoStory<any> = {
   args: {
     title: 'Traffic Sources',
     width: '100%',
-    height: '300px',
     showLegend: true,
     innerRadiusRatio: 0.6,
   },
   argTypes: {
     title: { control: 'text' },
     width: { control: 'text' },
-    height: { control: 'text' },
     showLegend: { control: 'boolean' },
     innerRadiusRatio: { control: 'number' },
   },
@@ -78,7 +76,6 @@ export const donutChartDemo: DemoStory<any> = {
               data={sampleData}
               title={args.title}
               width={args.width}
-              height={args.height}
               showLegend={args.showLegend}
               innerRadiusRatio={args.innerRadiusRatio}
             />
@@ -89,10 +86,10 @@ export const donutChartDemo: DemoStory<any> = {
           <div class='section-title'>Variations</div>
           <div class='grid'>
             <div class='chart-box'>
-              <DonutChart data={sampleData} title='Thin Ring' innerRadiusRatio={0.8} height='200px' />
+              <DonutChart data={sampleData} title='Thin Ring' innerRadiusRatio={0.8} />
             </div>
             <div class='chart-box'>
-              <DonutChart data={sampleData} title='Thick Ring' innerRadiusRatio={0.3} height='200px' />
+              <DonutChart data={sampleData} title='Thick Ring' innerRadiusRatio={0.3} />
             </div>
           </div>
         </section>

@@ -14,6 +14,9 @@ import {
   AppCacheGlobal,
   AppCacheKeys,
   getAppCache,
+  DEV_ADMIN_USER_KEY_NAME,
+  DEV_ADMIN_PASS_KEY_NAME,
+  CryptoUtils,
 } from 'lupine.api';
 import path from 'path';
 import { needDevAdminSession } from './admin-auth';
@@ -268,21 +271,27 @@ export class AdminRelease implements IApiBase {
     if (chkCredential) {
       if (await adminTokenHelper.validateToken(data.accessToken)) {
         return data;
-      } else if (
-        process.env['DEV_ADMIN_PASS'] &&
-        process.env['DEV_ADMIN_USER'] &&
-        (data.accessToken === `${process.env['DEV_ADMIN_USER']}@${process.env['DEV_ADMIN_PASS']}` ||
-          data.accessToken === `${process.env['DEV_ADMIN_USER']}:${process.env['DEV_ADMIN_PASS']}`)
-      ) {
-        return data;
-      } else {
-        const response = {
-          status: 'error',
-          message: 'Wrong data [wrong token].', //langHelper.getLang('shared:wrong_data'),
-        };
-        ApiHelper.sendJson(req, res, response);
-        return false;
       }
+      if (
+        process.env[DEV_ADMIN_PASS_KEY_NAME] &&
+        process.env[DEV_ADMIN_USER_KEY_NAME] &&
+        data.accessToken.startsWith(process.env[DEV_ADMIN_USER_KEY_NAME] + ':')
+      ) {
+        // Basic Auth: username:password
+        const token = data.accessToken.substring(process.env[DEV_ADMIN_USER_KEY_NAME].length + 1);
+        const singleHash = CryptoUtils.sha256(token);
+        const doubleHash = CryptoUtils.sha256(singleHash);
+        if (doubleHash === process.env[DEV_ADMIN_PASS_KEY_NAME]) {
+          return data;
+        }
+      }
+
+      const response = {
+        status: 'error',
+        message: 'Wrong data [wrong token].', //langHelper.getLang('shared:wrong_data'),
+      };
+      ApiHelper.sendJson(req, res, response);
+      return false;
     }
     return data;
   }

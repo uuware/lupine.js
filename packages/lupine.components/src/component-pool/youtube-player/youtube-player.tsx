@@ -77,6 +77,10 @@ export const YouTubePlayer = (props: YouTubePlayerProps) => {
 
   const { videoId, list, start } = parseYouTubeUrl(srcOrVideoId);
   
+  if (typeof document === 'undefined') {
+    return <div class={className} css={{ position: 'relative', width, height, ...style }}></div>;
+  }
+
   let src = '';
   if (videoId || list) {
     src = `https://www.youtube.com/embed/${videoId}?autoplay=${autoplay ? 1 : 0}`;

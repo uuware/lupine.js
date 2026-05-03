@@ -24,8 +24,8 @@ export const BlockChart = (props: { node: DesignNode }) => {
     minWidth: '0',
     flex: p.flex === '1' ? '1' : 'none',
     width: p.width || '100%',
-    height: p.height || '350px',
-    ...(p._sys_css || DesignUtils.compileResponsiveCssForNode(props.node)),
+    height: p.height || 'auto',
+    ...(p._sys_css || {}),
     '.chart-error': {
       width: '100%',
       height: '100%',

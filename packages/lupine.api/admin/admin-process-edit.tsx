@@ -398,7 +398,7 @@ export const AdminProcessEditPage = (processId: string) => {
             NotificationMessage.sendMessage('Process ID is required', NotificationColor.Warning);
             return;
           }
-          if (!/^[a-z0-9_]+$/.test(processId)) {
+          if (!/^[a-z0-9_\-#]+$/.test(processId)) {
             NotificationMessage.sendMessage(
               'Process ID can only contain lowercase letters, numbers, and underscores.',
               NotificationColor.Warning

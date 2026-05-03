@@ -27,28 +27,31 @@ export type LoginJsonProps = {
   t: string; // type: admin, user
   ip: string;
   h: string; // hash of name+pass
+  l?: number; // login time
   r?: any; // record, user info after verification
 };
+
+const ADMIN_SESSION_INVALID_BEFORE_KEY_NAME = 'ADMIN_SESSION_INVALID_BEFORE';
 
 export const appAdminHookSetCookie: AppAdminHookSetCookieProps = async (
   req: ServerRequest,
   res: ServerResponse,
-  username: string
+  username: string,
+  singleHash?: string
 ) => {
   const cryptoKey = process.env['CRYPTO_KEY'];
   const u = process.env['ADMIN_USER'];
-  const p = process.env['ADMIN_PASS'];
-  if (!cryptoKey || !u || !p) {
+  if (!cryptoKey || !u || !singleHash) {
     return false;
   }
 
-  const specialToken = CryptoUtils.hash((u + ':' + p) as string);
   const loginJson: LoginJsonProps = {
     ip: '',
     id: 0,
     u: u,
     t: 'admin',
-    h: specialToken,
+    h: singleHash,
+    l: Date.now(),
   };
 
   const token = JSON.stringify(loginJson);
@@ -86,15 +89,19 @@ export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
   if (!username || !password) {
     const json = await getUserFromCookie(req, res, false);
     if (json && json.t && json.h) {
-      const appAdminResponse = await appAdminHookSetCookie(req, res, username);
+      const appAdminResponse = await appAdminHookSetCookie(req, res, username, json.h);
       ApiHelper.sendJson(req, res, appAdminResponse);
       return true;
     }
     return false;
   }
 
-  if (process.env['ADMIN_PASS'] && username === process.env['ADMIN_USER'] && password === process.env['ADMIN_PASS']) {
-    const appAdminResponse = await appAdminHookSetCookie(req, res, username);
+  const singleHash = CryptoUtils.sha256(password);
+  const doubleHash = CryptoUtils.sha256(singleHash);
+  if (process.env['ADMIN_PASS'] && process.env['ADMIN_USER']
+    && adminApiHelper.timingSafeEqual(username, process.env['ADMIN_USER'])
+    && adminApiHelper.timingSafeEqual(doubleHash, process.env['ADMIN_PASS'])) {
+    const appAdminResponse = await appAdminHookSetCookie(req, res, username, singleHash);
     ApiHelper.sendJson(req, res, appAdminResponse);
     return true;
   }
@@ -126,9 +133,14 @@ export const getUserFromCookie = async (
         return false;
       }
       // if it's special admin
-      if (json.h && json.u === process.env['ADMIN_USER'] && process.env['ADMIN_PASS']) {
-        const specialToken = CryptoUtils.hash((process.env['ADMIN_USER'] + ':' + process.env['ADMIN_PASS']) as string);
-        if (json.h === specialToken) {
+      if (json.h && process.env['ADMIN_USER'] && process.env['ADMIN_PASS'] && adminApiHelper.timingSafeEqual(json.u, process.env['ADMIN_USER'])) {
+        const invalidBefore = Number(process.env[ADMIN_SESSION_INVALID_BEFORE_KEY_NAME] || 0);
+        if (invalidBefore > 0 && (!json.l || json.l < invalidBefore)) {
+          return false;
+        }
+
+        const doubleHash = CryptoUtils.sha256(json.h);
+        if (adminApiHelper.timingSafeEqual(doubleHash, process.env['ADMIN_PASS'])) {
           json.r = {
             id: 0,
             email: json.u,
@@ -172,6 +184,11 @@ export const getUserFromCookie = async (
         }
         return false;
       }
+      // Do not trust identity/permission fields from the encrypted cookie.
+      // If CRYPTO_KEY is leaked, an attacker may tamper with id/t and re-encrypt the token.
+      // After the password-derived hash is verified, restore trusted fields from DB.
+      json.id = record[0].id;
+      json.t = record[0].usertype;
       json.r = record[0];
       return json;
     }
@@ -307,14 +324,16 @@ export const userLogin = async (req: ServerRequest, res: ServerResponse) => {
     return true;
   }
 
-  if (process.env['ADMIN_PASS'] && data.u === process.env['ADMIN_USER'] && data.p === process.env['ADMIN_PASS']) {
-    const specialToken = CryptoUtils.hash((process.env['ADMIN_USER'] + ':' + process.env['ADMIN_PASS']) as string);
+  const singleHash = CryptoUtils.sha256(data.p as string);
+  const doubleHash = CryptoUtils.sha256(singleHash);
+  if (process.env['ADMIN_PASS'] && data.u === process.env['ADMIN_USER'] && adminApiHelper.timingSafeEqual(doubleHash, process.env['ADMIN_PASS'])) {
     const loginJson: LoginJsonProps = {
       ip: req.socket.remoteAddress as string,
       id: 0,
       u: data.u as string,
       t: 'admin',
-      h: specialToken,
+      h: singleHash,
+      l: Date.now(),
     };
 
     const token = JSON.stringify(loginJson);

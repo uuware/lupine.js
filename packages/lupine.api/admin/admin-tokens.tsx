@@ -8,10 +8,13 @@ import {
   NotificationMessage,
   PagingLink,
   useState,
+  FloatWindowCloseProps,
 } from 'lupine.components';
 
 export type TokenProps = {
-  token: string;
+  id?: string;
+  token?: string;
+  displayToken?: string;
   description: string;
   timestamp?: number;
 };
@@ -67,8 +70,8 @@ const addTokenData = async (item: TokenProps) => {
   return { ...item };
 };
 
-const removeTokenData = async (token: string) => {
-  const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/tokens/remove', { token });
+const removeTokenData = async (id: string) => {
+  const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/tokens/remove', { id });
   const dataResponse = await response.json;
   if (dataResponse && dataResponse.status === 'ok') {
     NotificationMessage.sendMessage(dataResponse.message || 'Token removed successfully', NotificationColor.Success);
@@ -108,9 +111,9 @@ const showTokenEditItem = async (item: TokenProps, update: (item: TokenProps) =>
   };
   const updateFn: TokenDataUpdateProps = {};
   const modalClose = await ModalWindow.show({
-    title: 'Edit Token Data',
+    title: isNew ? 'Add Token' : 'Edit Token Description',
     buttons: ['Save', 'Cancel'],
-    // contentMaxHeight: '400px',
+    contentMinWidth: '500px',
     handleClicked,
     children: <TokenEditItem item={item} update={updateFn}></TokenEditItem>,
     closeWhenClickOutside: false,
@@ -130,32 +133,32 @@ export const TokenEditItem = (props: { item: TokenProps; update: TokenDataUpdate
     },
   };
   props.update.save = async (isNew: boolean) => {
-    const token = ref.$('input.token').value;
     const description = ref.$('input.description').value;
-    if (token && description) {
+    if (description) {
       const newItem = isNew
-        ? await addTokenData({ token, description })
-        : await updateTokenData({ token, description });
+        ? await addTokenData({ token: props.item.token, description })
+        : await updateTokenData({ id: props.item.id, description });
       props.item.token = newItem.token;
       props.item.description = newItem.description;
       return newItem;
     }
-    NotificationMessage.sendMessage('Please input token and description', NotificationColor.Error);
+    NotificationMessage.sendMessage('Please input description', NotificationColor.Error);
     return null;
   };
   return (
     <div ref={ref} css={css} class='sample-data'>
       <div class='row-box mt-m'>
         <div class='lable'>Token: </div>
-        <div>
-          <input type='text' class='input-base token' value={props.item.token} readonly={true} />
-        </div>
+        <input
+          type='text'
+          class='input-base token w-100p'
+          value={props.item.displayToken || '(Please copy the token in the next pop up dialog)'}
+          readonly={true}
+        />
       </div>
       <div class='row-box'>
         <div class='lable'>Description: </div>
-        <div>
-          <input type='text' class='input-base description' value={props.item.description} />
-        </div>
+        <input type='text' class='input-base description w-100p' value={props.item.description} />
       </div>
     </div>
   );
@@ -196,7 +199,7 @@ export const TokenShowItem = (props: { item: TokenProps }) => {
     if (!confirm('Are you sure you want to delete this token?')) {
       return;
     }
-    await removeTokenData(item.token);
+    await removeTokenData(item.id!);
     ref.current!.remove();
   };
 
@@ -218,7 +221,7 @@ export const TokenShowItem = (props: { item: TokenProps }) => {
       </div>
       <div class='row-box'>
         <div class='lable'>Token: </div>
-        <div class='token'>{item.token}</div>
+        <div class='token'>{item.displayToken || '••••••••••••••••'}</div>
       </div>
       <div class='row-box'>
         <div class='lable'>Description: </div>
@@ -250,9 +253,40 @@ const TokenList = () => {
   };
 
   const onAdd = async () => {
+    const newTokenStr = await generateToken();
     showTokenEditItem(
-      { token: await generateToken(), description: '' },
+      { token: newTokenStr, description: '' },
       async () => {
+        ModalWindow.show({
+          title: 'Save your Personal Access Token',
+          buttons: ['I have copied it'],
+          closeWhenClickOutside: false,
+          handleClicked: (index: number, close: FloatWindowCloseProps) => {
+            if (index === 0) {
+              close();
+            }
+          },
+          children: (
+            <div
+              style={{ padding: '20px' }}
+              onClick={(ev: any) => {
+                ev.stopPropagation();
+                ev.preventDefault();
+              }}
+            >
+              <div style={{ color: 'red', fontWeight: 'bold', marginBottom: '15px' }}>
+                Please copy your token now. You will NOT be able to see it again!
+              </div>
+              <input
+                type='text'
+                class='input-base w-100p'
+                value={newTokenStr}
+                readonly={true}
+              />
+            </div>
+          ),
+        });
+
         // navigate to last page after add
         const fresh = await getTokenData(0, state.searchText);
         const lastPage = Math.max(0, Math.floor((fresh.itemsCount - 1) / fresh.pageLimit));

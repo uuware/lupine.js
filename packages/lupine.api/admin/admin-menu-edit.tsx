@@ -375,7 +375,7 @@ export const AdminMenuEditPage = (menuId: string) => {
         if (index === 1) {
           id = id.trim().toLowerCase();
 
-          const regex = /^[a-z0-9_]+$/;
+          const regex = /^[a-z0-9_\-#]+$/;
           if (!id || !regex.test(id)) {
             NotificationMessage.sendMessage('Menu ID can only contain lowercase letters, numbers, and underscores.', NotificationColor.Warning);
             return;

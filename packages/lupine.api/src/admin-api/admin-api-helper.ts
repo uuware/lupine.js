@@ -15,7 +15,8 @@ export type DevAdminSessionProps = {
   u: string; // username
   t: string; // type: admin, user
   ip: string;
-  h: string; // md5 of name+pass
+  h: string; // sha256 of login password
+  l?: number; // login time
 };
 
 /*
@@ -73,7 +74,7 @@ export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
   username: string,
   password: string
 ) => {
-  if (process.env['ADMIN_PASS'] && username === process.env['ADMIN_USER'] && password === process.env['ADMIN_PASS']) {
+  if (process.env['ADMIN_PASS'] && username === process.env['ADMIN_USER'] && CryptoUtils.sha256(password) === process.env['ADMIN_PASS']) {
     const appAdminResponse = await appAdminHookSetCookie(req, res, username);
     ApiHelper.sendJson(req, res, appAdminResponse);
     return true;
@@ -84,7 +85,66 @@ export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
 adminHelper.setAppAdminHookSetCookie(appAdminHookSetCookie);
 adminHelper.setAppAdminHookCheckLogin(appAdminHookCheckLogin);
 */
-export type AppAdminHookSetCookieProps = (req: ServerRequest, res: ServerResponse, username: string) => Promise<any>;
+
+// Brute force protection: track failed login attempts per IP
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+const failedAttempts = new Map<string, { count: number; lockedUntil: number }>();
+
+// Debounced cleanup: triggered on login requests, last one wins
+let cleanupTimer: ReturnType<typeof setTimeout> | null = null;
+export function scheduleCleanup() {
+  if (cleanupTimer) clearTimeout(cleanupTimer);
+  cleanupTimer = setTimeout(() => {
+    cleanupTimer = null;
+    const now = Date.now();
+    for (const [ip, record] of failedAttempts) {
+      if (record.lockedUntil > 0 && record.lockedUntil <= now) {
+        failedAttempts.delete(ip);
+      }
+    }
+  }, LOCKOUT_DURATION_MS * 2);
+  cleanupTimer.unref();
+}
+
+export function isLockedOut(ip: string): boolean {
+  const record = failedAttempts.get(ip);
+  if (!record) return false;
+  if (record.lockedUntil > Date.now()) return true;
+  // Lockout expired, reset
+  failedAttempts.delete(ip);
+  return false;
+}
+
+export function recordFailedAttempt(ip: string) {
+  const record = failedAttempts.get(ip) || { count: 0, lockedUntil: 0 };
+  record.count++;
+  if (record.count >= MAX_FAILED_ATTEMPTS) {
+    record.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+    console.warn(`IP ${ip} locked out for 10 minutes after ${record.count} failed attempts`);
+  }
+  failedAttempts.set(ip, record);
+}
+
+export function clearFailedAttempts(ip: string) {
+  failedAttempts.delete(ip);
+}
+
+
+// If env not set, send error message to client, and return true
+export const checkEnvNotSet = (req: ServerRequest, res: ServerResponse, envName: string) => {
+  if (!process.env[envName]) {
+    const msg = 'Admin login is not configured';
+    ApiHelper.sendJson(req, res, {
+      status: 'error',
+      message: msg,
+    });
+    return true;
+  }
+  return false;
+}
+
+export type AppAdminHookSetCookieProps = (req: ServerRequest, res: ServerResponse, username: string, singleHash?: string) => Promise<any>;
 export type AppAdminHookCheckLoginProps = (
   req: ServerRequest,
   res: ServerResponse,
@@ -94,13 +154,16 @@ export type AppAdminHookCheckLoginProps = (
 export type AppAdminHookLogoutProps = (req: ServerRequest, res: ServerResponse) => Promise<void>;
 
 export const DEV_ADMIN_TYPE = 'dev-admin';
+export const DEV_ADMIN_USER_KEY_NAME = 'DEV_ADMIN_USER';
+export const DEV_ADMIN_PASS_KEY_NAME = 'DEV_ADMIN_PASS';
 export const DEV_ADMIN_CRYPTO_KEY_NAME = 'DEV_CRYPTO_KEY';
+export const DEV_ADMIN_SESSION_INVALID_BEFORE_KEY_NAME = 'DEV_ADMIN_SESSION_INVALID_BEFORE';
 export const DEV_ADMIN_SESSION_NAME = '_token_dev';
 export class AdminApiHelper {
   private static instance: AdminApiHelper;
   private logger = new Logger('admin-api');
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): AdminApiHelper {
     if (!AdminApiHelper.instance) {
@@ -183,9 +246,14 @@ export class AdminApiHelper {
         }
 
         // if it's special admin
-        if (json.h && json.u === process.env['DEV_ADMIN_USER']) {
-          const hash = CryptoUtils.hash(process.env['DEV_ADMIN_USER'] + ':' + process.env['DEV_ADMIN_PASS']);
-          if (json.h === hash) {
+        if (json.h && json.u === process.env[DEV_ADMIN_USER_KEY_NAME] && process.env[DEV_ADMIN_PASS_KEY_NAME]) {
+          const invalidBefore = Number(process.env[DEV_ADMIN_SESSION_INVALID_BEFORE_KEY_NAME] || 0);
+          if (invalidBefore > 0 && (!json.l || json.l < invalidBefore)) {
+            return false;
+          }
+
+          const doubleHash = CryptoUtils.sha256(json.h);
+          if (doubleHash === process.env[DEV_ADMIN_PASS_KEY_NAME]) {
             return json;
           }
         }
