@@ -1,5 +1,5 @@
-import { getCurrentLang, initializePage } from 'lupine.components';
-import { getPressSubDir, getPressLangs, setSidebarScroll } from './cache';
+import { initializePage } from 'lupine.components';
+import { getPressSubDir, setSidebarScroll } from './cache';
 
 export const pressLoad = (url: string) => {
   const sidemenu = document.querySelector('.press-frame-sidemenu');
@@ -11,14 +11,9 @@ export const pressLoad = (url: string) => {
 };
 
 export const pressProcessUrl = (url: string) => {
-  const langs = getPressLangs();
   const subDir = getPressSubDir();
   let target = url;
   if (subDir && !target.startsWith(subDir + '/') && !target.includes('//')) {
-    // if (target.startsWith('/') && !langs.some((l) => target === `/${l.id}` || target.startsWith(`/${l.id}/`))) {
-    //   const { langName } = getCurrentLang();
-    //   target = `/${langName}${target}`;
-    // }
     target = `${subDir}${target}`;
   }
   return target || '/';

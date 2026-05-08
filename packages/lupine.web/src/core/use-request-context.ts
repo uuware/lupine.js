@@ -1,12 +1,16 @@
 import { AppDataProps, IRequestContextProps } from '../models/use-request-context-props';
 import { CssProps } from '../jsx';
 
+// here is shared for all sessions
 export const defaultLang = 'en';
 export const defaultTheme = 'light';
 export const appData: AppDataProps = {
   defaultPageTitle: '',
 
-  defaultLang: defaultLang,
+  siteDefaultLang: 'en',
+  siteLangs: [{ code: 'en', text: 'English' }],
+
+  // defaultLang: defaultLang,
   langs: {},
 
   defaultTheme: defaultTheme,

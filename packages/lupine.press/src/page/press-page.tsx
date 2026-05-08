@@ -30,12 +30,12 @@ export const PressPage = async (props: PageProps) => {
 
   const langName = supportedLangs.includes(pathLang) ? pathLang : supportedLangs[0] || 'en';
 
-  // Sync global state with URL language
-  import('lupine.components').then((m) => {
-    if (m.getCurrentLang().langName !== langName) {
-      m.updateLang(langName);
-    }
-  });
+  // // Sync global state with URL language
+  // import('lupine.components').then((m) => {
+  //   if (m.getCurrentLang().langName !== langName) {
+  //     m.updateLang(langName);
+  //   }
+  // });
 
   // Get current path from router props or window.location
   let currentPath = p;
