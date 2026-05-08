@@ -1,5 +1,6 @@
 export * from './action-sheet-color';
 export * from './action-sheet-date';
+export * from './action-sheet-theme';
 export * from './action-sheet-time';
 export * from './action-sheet';
 export * from './button-push-animation';

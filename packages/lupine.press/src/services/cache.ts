@@ -24,6 +24,7 @@ export const getPressSubDir = () => {
   return _cache.subDir || '';
 };
 
+// first is the default language
 export const setPressLangs = (val: { title: string; id: string }[]) => {
   _cache.langs = val;
 };

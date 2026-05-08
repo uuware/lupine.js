@@ -192,7 +192,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
         {props.selectedIds?.filter(Boolean).map((id) => (
           <span class='a-page-sel-tag'>
             {id + ': ' + (itemNameMap[id] || id)}
-            <i class='ifc-icon ma-close-circle-outline' onClick={() => onUnSelectedId(id)}></i>
+            <i class='ifc-icon ma-close' onClick={() => onUnSelectedId(id)}></i>
           </span>
         ))}
         <button class='button-base button-s ml-m' onClick={onSelectedMultiIds}>
@@ -282,7 +282,7 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
   };
 
   const listDom = new HtmlVar('');
-  const selectedDom = new HtmlVar('');
+  const selectedDom = new HtmlVar(makeSelectedList());
 
   const css: CssProps = {
     display: 'flex',
@@ -345,8 +345,10 @@ export const AdminPageListPage = (props: AdminPageListPageProps) => {
       position: 'absolute',
       right: '-5px',
       top: '-4px',
+      color: 'red',
       cursor: 'pointer',
-      fontSize: '14px',
+      width: '16px',
+      height: '16px',
     },
     ...props.css,
   };

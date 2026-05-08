@@ -94,7 +94,7 @@ export const YouTubePlayer = (props: YouTubePlayerProps) => {
   }
 
   return (
-    <div class={className} css={{ position: 'relative', width, height, ...style }}>
+    <div class={className} css={{ position: 'relative', width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...style }}>
       {src ? (
         <iframe
           width='100%'
@@ -104,7 +104,7 @@ export const YouTubePlayer = (props: YouTubePlayerProps) => {
           frameBorder='0'
           allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
           allowFullScreen={allowFullScreen}
-          style={{ border: 'none', display: 'block' }}
+          style={{ border: 'none', display: 'block', aspectRatio: '16 / 9', height: 'auto', maxHeight: '100%' }}
         ></iframe>
       ) : (
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f0f0', color: '#999', border: '1px solid #ddd' }}>

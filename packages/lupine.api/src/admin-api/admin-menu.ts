@@ -1,6 +1,7 @@
 import { ServerResponse } from 'http';
 import { IApiBase, Logger, apiCache, ServerRequest, ApiRouter, ApiHelper } from 'lupine.api';
 import { exportCSV } from '../lib/utils/csv-util';
+import { getDesignLang, selectLangFallbackRecord } from './admin-api-helper';
 
 const logger = new Logger('admin-menu');
 export class AdminMenu implements IApiBase {
@@ -58,7 +59,7 @@ export class AdminMenu implements IApiBase {
       params.push(...searchQuery.params);
     }
 
-    let query = `SELECT menuid, name, remark, package, updateduserid, updatetime from $__s_menu`;
+    let query = `SELECT menuid, name, remark, package, accesslevel, updateduserid, updatetime from $__s_menu`;
 
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' and ')}`;
@@ -148,6 +149,7 @@ export class AdminMenu implements IApiBase {
       name: data['name'] as string || 'Untitled',
       remark: data['remark'] as string || '',
       package: data['package'] as string || '',
+      accesslevel: data['accesslevel'] as string || '0',
       json: typeof data['json'] === 'string' ? data['json'] : JSON.stringify(data['json'] || []),
       updateduserid: 1,
       updatetime: newStamp,
@@ -163,7 +165,6 @@ export class AdminMenu implements IApiBase {
   }
 
   async getRecord(req: ServerRequest, res: ServerResponse) {
-    const db = apiCache.getDb();
     const id = req.locals.urlParameters.get('id', '');
 
     const response = {
@@ -172,9 +173,7 @@ export class AdminMenu implements IApiBase {
       result: {} as any,
     };
     if (id) {
-      const result = await db.selectObject('$__s_menu', undefined, {
-        menuid: id,
-      });
+      const result = await selectLangFallbackRecord('$__s_menu', 'menuid', id, getDesignLang(req));
       if (result && result.length > 0) {
         let parsedJson: any[] = [];
         try {
@@ -186,6 +185,7 @@ export class AdminMenu implements IApiBase {
           name: result[0]['name'],
           remark: result[0]['remark'],
           package: result[0]['package'],
+          accesslevel: result[0]['accesslevel'],
           updatetime: result[0]['updatetime'],
           items: parsedJson,
         };

@@ -10,6 +10,24 @@ export type MessageBoxProps = FloatWindowShowProps & {
 };
 
 export class MessageBox {
+  static async showPromise(props: MessageBoxProps): Promise<number> {
+    return new Promise(async (resolve) => {
+      const handleClicked = (index: number, close: FloatWindowCloseProps) => {
+        resolve(index);
+        close();
+      };
+      const closeEvent = () => {
+        resolve(-1);
+        props.closeEvent?.();
+      };
+      await MessageBox.show({
+        ...props,
+        handleClicked,
+        closeEvent,
+      });
+    });
+  }
+
   static async show({
     title,
     children,

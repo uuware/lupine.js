@@ -195,10 +195,22 @@ export const AdminReleasePage = () => {
       return;
     }
 
-    if (fromList !== toList && !confirm('The From and To are not the same, are you sure?')) {
-      return;
+    if (fromList !== toList) {
+      const fromToIndex = await ActionSheetSelectPromise({
+        title: 'The From and To are not the same, are you sure?',
+        options: ['OK'],
+        cancelButtonText: 'Cancel',
+      });
+      if (fromToIndex !== 0) {
+        return;
+      }
     }
-    if (!confirm('Are you sure you want to update the release? (Assets are not copied, so it may cause issues)')) {
+    const updateIndex = await ActionSheetSelectPromise({
+      title: 'Are you sure you want to update the release? (Assets are not copied, so it may cause issues)',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (updateIndex !== 0) {
       return;
     }
     const releaseUpdateBtn = document.querySelector('.release-update-btn') as HTMLButtonElement;

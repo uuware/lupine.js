@@ -502,9 +502,9 @@ export const PopupMenuWithButton = (props: PopupMenuWithButtonProps) => {
       onClick={() => {
         hook.openMenu && hook.openMenu();
       }}
-      css={{ '>div': { float: 'right', textAlign: 'left' } }}
+      css={{ display: 'flex', flexDirection: 'row' }}
     >
-      {props.label}:{' '}
+      {props.label ? <div style={{ marginRight: '5px' }}>{`${props.label}:`}</div> : ''}
       <PopupMenu
         list={props.list}
         defaultValue={props.defaultValue}
@@ -535,9 +535,9 @@ export const PopupMenuWithLabel = (props: PopupMenuWithLabelProps) => {
       onClick={() => {
         hook.openMenu && hook.openMenu();
       }}
-      css={{ cursor: 'pointer', '>div': { float: 'right', textAlign: 'left' } }}
+      css={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
     >
-      {props.label}:{' '}
+      {props.label ? <div style={{ marginRight: '5px' }}>{`${props.label}:`}</div> : ''}
       <PopupMenu
         list={props.list}
         defaultValue={props.defaultValue}

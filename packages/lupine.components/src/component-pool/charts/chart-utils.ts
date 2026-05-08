@@ -20,8 +20,9 @@ declare global {
 export const chartCommonCss: CssProps = {
   position: 'relative',
   width: '100%',
-  height: '100%',
-  minHeight: '200px', // Default min height
+  height: 'auto',
+  minHeight: '0', // Default min height
+  maxHeight: '100%',
   display: 'flex',
   flexDirection: 'column',
 

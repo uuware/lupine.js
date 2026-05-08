@@ -9,6 +9,7 @@ import {
   PagingLink,
   useState,
   FloatWindowCloseProps,
+  ActionSheetSelectPromise,
 } from 'lupine.components';
 
 export type TokenProps = {
@@ -196,7 +197,12 @@ export const TokenShowItem = (props: { item: TokenProps }) => {
   };
 
   const onRemove = async (ev: any) => {
-    if (!confirm('Are you sure you want to delete this token?')) {
+    const index = await ActionSheetSelectPromise({
+      title: 'Are you sure you want to delete this token?',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (index !== 0) {
       return;
     }
     await removeTokenData(item.id!);
