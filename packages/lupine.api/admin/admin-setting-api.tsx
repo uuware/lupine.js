@@ -11,13 +11,6 @@ import { SettingGroup, SettingItem, SettingItemRender } from './admin-setting-pr
 
 const cfgApiGroups: SettingGroup[] = [
   {
-    groupName: 'Maintenance',
-    items: [
-      { label: 'Enable Maintenance Mode', type: 'checkbox', name: 'isMaintenance' },
-      { label: 'Maintenance Message', type: 'html', name: 'maintenanceInfo' },
-    ],
-  },
-  {
     groupName: 'Email Settings',
     items: [
       { label: 'Email Sender Type', type: 'select', name: 'sendEmailType', options: [{ value: 'gmail', label: 'Gmail' }, { value: 'qq', label: 'QQ' }] },
@@ -69,10 +62,18 @@ export const AdminApiSettingPage = () => {
     padding: '16px',
     '.cfg-label': {
       width: '150px',
-      marginBottom: '20px',
+    },
+    '.cfg-control': {
+      display: 'flex',
+      flexDirection: 'column',
     },
     '.cfg-input': {
       flex: 1,
+    },
+    '.cfg-tip': {
+      color: 'var(--secondary-text, #777)',
+      fontSize: '12px',
+      lineHeight: '18px',
     },
     '.m-fieldset': {
       margin: '10px 0',
@@ -96,7 +97,7 @@ export const AdminApiSettingPage = () => {
         const el = ref.$('.f-' + key);
         if (el) {
           if (item.type === 'checkbox') {
-            cfgItemsOnly[key] = (el as HTMLInputElement).checked;
+            cfgItemsOnly[key] = (el as HTMLInputElement).checked ? '1' : '';
           } else {
             cfgItemsOnly[key] = el.value;
           }
@@ -120,7 +121,7 @@ export const AdminApiSettingPage = () => {
           const el = ref.$('.f-' + key);
           if (el) {
             if (item.type === 'checkbox') {
-              (el as HTMLInputElement).checked = cfg.json.result[key];
+              (el as HTMLInputElement).checked = cfg.json.result[key] === '1' || cfg.json.result[key] === 1 || cfg.json.result[key] === true;
             } else {
                el.value = cfg.json.result[key] || '';
             }

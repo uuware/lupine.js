@@ -11,6 +11,16 @@ import { SettingGroup, SettingItem, SettingItemRender } from './admin-setting-pr
 
 const cfgGroups: SettingGroup[] = [
   {
+    groupName: 'CMS Settings',
+    items: [
+      { label: 'Languages', type: 'text', name: 'siteLangs', tip: 'Languages separated by commas. Format: code:title,code:title. First is default language. Example: en:English,cn:Chinese,ja:Japanese' },
+      { label: 'Default Page', type: 'cms-page', name: 'cmsPageDefault' },
+      { label: 'Default Content', type: 'cms-page', name: 'cmsContentDefault' },
+      { label: 'Maintenance Mode', type: 'checkbox', name: 'cmsMaintenanceMode' },
+      { label: 'Maintenance Message', type: 'html', name: 'cmsMaintenanceMsg' },
+    ],
+  },
+  {
     groupName: 'Paging Settings',
     items: [
       { label: 'Page Limit', type: 'number', name: 'pageLimit' },
@@ -65,10 +75,18 @@ export const AdminWebSettingPage = () => {
     padding: '16px',
     '.cfg-label': {
       width: '150px',
-      marginBottom: '20px',
+    },
+    '.cfg-control': {
+      display: 'flex',
+      flexDirection: 'column',
     },
     '.cfg-input': {
       flex: 1,
+    },
+    '.cfg-tip': {
+      color: 'var(--secondary-text, #777)',
+      fontSize: '12px',
+      lineHeight: '18px',
     },
     '.m-fieldset': {
       margin: '10px 0',
@@ -83,8 +101,13 @@ export const AdminWebSettingPage = () => {
     for (const group of cfgGroups) {
       for (const item of group.items) {
         const key = item.name;
-        if (ref.$('.f-' + key)) {
-          cfgItemsOnly[key] = ref.$('.f-' + key).value;
+        const el = ref.$('.f-' + key);
+        if (el) {
+          if (item.type === 'checkbox') {
+            cfgItemsOnly[key] = (el as HTMLInputElement).checked ? '1' : '';
+          } else {
+            cfgItemsOnly[key] = el.value;
+          }
         }
       }
     }
@@ -108,8 +131,13 @@ export const AdminWebSettingPage = () => {
       for (const group of cfgGroups) {
         for (const item of group.items) {
           const key = item.name;
-          if (ref.$('.f-' + key)) {
-            ref.$('.f-' + key).value = resData[key] || '';
+          const el = ref.$('.f-' + key);
+          if (el) {
+            if (item.type === 'checkbox') {
+              (el as HTMLInputElement).checked = resData[key] === '1' || resData[key] === 1 || resData[key] === true;
+            } else {
+              el.value = resData[key] || '';
+            }
           }
         }
       }
