@@ -1,5 +1,5 @@
 import { isFrontEnd } from 'lupine.components';
-import { AdminDesignControl } from './design/admin-design-control';
+import { CmsDesignControl } from './cms/cms-design-control';
 
 export const AdminPageEditPage = (pageId: string) => {
   if (!isFrontEnd()) {
@@ -8,7 +8,7 @@ export const AdminPageEditPage = (pageId: string) => {
 
   return (
     <div style={{ height: '100%' }}>
-       <AdminDesignControl pageId={pageId} />
+       <CmsDesignControl pageId={pageId} />
     </div>
   );
 };
