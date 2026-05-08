@@ -477,7 +477,231 @@ const Parent = () => {
     - Fixed parameters use `/fixed-parameter/` (e.g., `pageRouter.use('/page/:id/detail/', PlayPage)`), `detail` is a fixed parameter.
     - Optional parameters use `?` (e.g., `/page/:userId/?option1/?option2`). Once an optional parameter is declared, all subsequent route sections become optional (It's not a query string).
 
-## 6. Coding Standards & Gotchas
+## 6. Lupine.cms App Integration Guide
+
+This section describes Lupine.cms from the app user's point of view: how a frontend app routes public/SSR requests into CMS rendering, how CMS URLs are resolved, how language fallback works, how coded pages/components override CMS content, and where registration code must live.
+
+### 6.1 Required frontend entry point
+
+A CMS-enabled frontend app must register `CmsRenderPage` as the catch-all page handler in its public app entry, for example in `apps/cms/web/src/index.tsx`:
+
+```tsx
+pageRouter.use('*', CmsRenderPage);
+```
+
+This is the key integration point. During frontend rendering or SSR, any page request that reaches this catch-all route is delegated to `CmsRenderPage`. Without this route, CMS page JSON will not be used for public page requests.
+
+Typical public entry responsibilities:
+
+- initialize app/global styles and theme
+- register any public coded CMS frame/content pages with `cmsRegisterPage()`
+- configure `pageRouter`
+- end with `pageRouter.use('*', CmsRenderPage)` so unresolved public routes are served by CMS
+
+### 6.2 CMS URL structure: `/lang/frame/content`
+
+CMS public URLs are interpreted as three logical levels:
+
+```text
+/lang/frame/content
+```
+
+Meanings:
+
+- `lang`: optional language code
+- `frame`: optional frame page ID
+- `content`: optional content page ID
+
+If the first URL segment matches a configured site language, it is treated as `lang`. Otherwise the URL is treated as not having a language prefix.
+
+Examples:
+
+```text
+/en/home/article-1   -> lang=en, frame=home, content=article-1
+/home/article-1      -> lang is resolved automatically, frame=home, content=article-1
+/en/home             -> lang=en, frame=home, content defaults from config
+/home                -> lang auto, frame=home, content defaults from config
+/                    -> lang auto, frame and content default from config
+```
+
+### 6.3 Language resolution and default language
+
+If `lang` is omitted from the URL, CMS resolves language in this order:
+
+1. explicit `lang` parameter passed to the render/embed API, if any
+2. language in the URL prefix, if any
+3. browser language
+4. the default language configured in `siteLangs`
+
+The available languages are configured in the web settings UI using the `siteLangs` setting declared in `packages/lupine.api/admin/admin-setting-web.tsx`:
+
+```typescript
+{ label: 'Languages', type: 'text', name: 'siteLangs', tip: 'Languages separated by commas. Format: code:title,code:title. First is default language. Example: en:English,cn:Chinese,ja:Japanese' }
+```
+
+The first item in `siteLangs` is the default language. If the browser language is not in `siteLangs`, CMS falls back to this first language.
+
+Agent rules:
+
+- Do not assume browser language is always accepted. Always compare it against configured `siteLangs`.
+- Keep the first `siteLangs` entry stable because it is the fallback default for public rendering and data fallback.
+- When testing multilingual pages, test both explicit language URLs and language omitted URLs.
+
+### 6.4 Default frame and content IDs
+
+When `frame` or `content` is missing from the URL, CMS uses web configuration defaults from `render-page.tsx`:
+
+```typescript
+const frameId = (hasLangPrefix ? urlParts[1] : urlParts[0]) || await WebConfig.get('cmsPageDefault', '');
+const contentId = (hasLangPrefix ? urlParts[2] : urlParts[1]) || await WebConfig.get('cmsContentDefault', '');
+```
+
+Therefore:
+
+- missing frame ID falls back to `cmsPageDefault`
+- missing content ID falls back to `cmsContentDefault`
+
+Agent rules:
+
+- If `/` renders incorrectly, inspect `cmsPageDefault` and `cmsContentDefault` first.
+- If `/en` renders incorrectly, remember it may still be using default frame/content IDs.
+- Do not hardcode default page IDs in rendering logic; use `WebConfig` settings.
+
+### 6.5 CMS page data lookup and language fallback
+
+When CMS loads persisted page JSON from the backend, it uses language-qualified IDs first:
+
+1. try `lang:id`
+2. if missing, try `defaultLang:id`
+3. if still missing, try plain `id`
+
+This applies to frame/content page data loaded from CMS storage.
+
+Practical result:
+
+- Save `en:home` to create an English-specific home page.
+- Save `cn:home` to create a Chinese-specific home page.
+- Save `home` as a language-neutral fallback.
+- If `ja:home` does not exist, CMS can fall back to default language and then plain `home`.
+
+Agent rules:
+
+- When investigating "wrong language page displayed", check all three possible records: `lang:id`, `defaultLang:id`, and `id`.
+- When creating multilingual content, use `lang:id` consistently in the designer save dialog.
+- Keep fallback pages plain or default-language records intentionally; do not create accidental stale fallbacks.
+
+### 6.6 Coded frame/content pages with `cmsRegisterPage()`
+
+A frontend app can override or provide a frame/content page with code:
+
+```tsx
+const SampleFrame = async (props: PageProps) => {
+  return <div>Frame from code</div>;
+};
+
+cmsRegisterPage('pagex', SampleFrame);
+```
+
+When CMS resolves a frame/content ID, registered pages are checked before persisted CMS JSON. This means a coded registration for `pagex` takes priority over a database page with the same ID.
+
+Use this when:
+
+- a frame should be implemented in code for full control
+- content is dynamic and not suited to page-designer JSON
+- you want a coded fallback/override for a CMS ID
+
+Agent rules:
+
+- Registered page keys are public render contracts. Changing them can break URLs and saved CMS references.
+- Keep `cmsRegisterPage()` calls in the public frontend entry when they are needed for public `CmsRenderPage` routing.
+- If a CMS page ID is not loading from database, check whether the same ID was registered with `cmsRegisterPage()` and is taking priority.
+
+### 6.7 Saving pages and using `My Components`
+
+In the design UI, pages can be saved with language-qualified IDs such as:
+
+```text
+en:home
+cn:home
+home
+```
+
+If the save dialog has `component` checked, the saved content is also treated as a reusable saved component. It becomes available under `My Components` in the designer and can be dragged into other pages.
+
+Important distinction:
+
+- A normal saved page/content is resolved by URL and ID.
+- A checked component save is additionally discoverable as a reusable design component.
+- Saved components are persisted CMS data, unlike registered code components which are runtime registrations.
+
+Agent rules:
+
+- Use saved components for reusable page-designer JSON fragments.
+- Use registered code components for reusable coded JSX/TSX components.
+- Do not confuse `My Components` with `Registered Components`.
+
+### 6.8 Coded designer components with `cmsRegisterComponent()`
+
+The designer can also expose coded components as draggable design items:
+
+```tsx
+const SampleContent = async (props: PageProps) => {
+  return (
+    <div class='sample-content-box'>
+      This is a sample registered components.
+    </div>
+  );
+};
+
+cmsRegisterComponent('contentx', SampleContent, 'Sample Content');
+```
+
+These appear in the designer under `Registered Components`. Dragging one into a page stores a `block-registered-component` node with only a component key/label. At render time, CMS looks up the real function from the registered component map and renders it.
+
+Critical placement rule:
+
+- Register designer components in the admin/dashboard entry, such as `apps/cms/web/src/admin_dev/index.tsx`.
+- Do not register designer-only components only in the public frontend entry, such as `apps/cms/web/src/index.tsx`, because the design page does not go through that public route. If registration only happens there, the admin designer will not see the component.
+
+Agent rules:
+
+- Use `cmsRegisterComponent()` in the admin dashboard bundle for components that must appear in the design sidebar.
+- Use `cmsRegisterPage()` in the public frontend bundle for pages/frames/content that must be resolved during public CMS rendering.
+- If a registered component is visible in public render but missing in the design sidebar, check whether it was registered in the admin dashboard entry.
+- If a saved page contains `block-registered-component` but render says component not found, check whether the same component key was registered in the currently running bundle/process.
+
+### 6.9 Embedding CMS content inside coded components
+
+Use `CmsEmbedContent` when coded components need to render CMS-managed content by ID. It accepts an `id` and optional `lang`, and follows the same language priority/fallback logic as CMS public rendering.
+
+Use cases:
+
+- coded page shells that embed CMS-managed regions
+- coded landing pages with editable CMS sections
+- admin/demo pages that need to preview CMS content by ID
+
+Agent rules:
+
+- Prefer `CmsEmbedContent` for embedding CMS content inside coded components.
+- Pass `lang` explicitly only when the component must force a language. Otherwise let URL/browser/default language resolution work.
+- Remember backend data fallback still follows `lang:id -> defaultLang:id -> id`.
+
+### 6.10 User-facing CMS troubleshooting checklist
+
+When CMS routing/rendering does not behave as expected, check in this order:
+
+1. Does the public app entry call `pageRouter.use('*', CmsRenderPage)`?
+2. Is the URL parsed as `/lang/frame/content` or `/frame/content`?
+3. Is the `lang` segment present in `siteLangs`?
+4. Are `cmsPageDefault` and `cmsContentDefault` configured when frame/content are omitted?
+5. Does a coded `cmsRegisterPage(id, ...)` override the database page?
+6. Do the expected records exist as `lang:id`, `defaultLang:id`, or plain `id`?
+7. Was the page saved with the intended language-qualified ID?
+8. If using `My Components`, was the saved item checked as component?
+9. If using `Registered Components`, was `cmsRegisterComponent()` called in the admin/dashboard entry?
+10. If rendering a registered component, is the same key registered in the current runtime bundle?
+
+## 7. Coding Standards & Gotchas
 
 - **`useState` vs `HtmlVar`**: `useState` exists (`import { useState } from 'lupine.components'`) and is elegant for small components. But it rerenders the **entire** component — for large/complex components or high-frequency updates, prefer `HtmlVar` for surgical partial updates. `useEffect`, `useReducer`, `useCallback`, `useContext` **do NOT exist**.
 - **❌ `className`**: Use standard HTML `class`.
@@ -485,7 +709,7 @@ const Parent = () => {
 - **✅ Native Events**: `onClick`, `onChange`, `onInput`, `onMouseMove` etc. are standard HTML events and **ARE ALLOWED**. Use them for triggering logic or callbacks (e.g., `onInput={(e) => updateOtherThing(e.target.value)}`).
 - **✅ Uncontrolled Inputs**: While you _can_ use `onInput` to track state, the default efficient pattern is often to read `ref.$('input').value` only when the user clicks "Save" or "Search".
 
-## 7. System Icons & Customization
+## 8. System Icons & Customization
 
 Lupine.components uses a set of built-in system icons (like `ma-close` and `mg-arrow_back_ios_new_outlined` found in components like `MobileHeaderWithBack`).
 
@@ -528,7 +752,7 @@ const css: CssProps = {
 };
 ```
 
-## 8. Cross-Platform App Bootstrapping Guidance
+## 9. Cross-Platform App Bootstrapping Guidance
 
 When creating a new Cross-Platform App using `lupine.js`, follow this standard procedure for scaffolding the entry point, navigation, and icons:
 
@@ -550,7 +774,7 @@ When creating a new Cross-Platform App using `lupine.js`, follow this standard p
 5. **Local Storage Patterns**:
    For pure frontend utility apps (compatible with browsers, Capacitor, and Electron), wrap `localStorage.getItem()` and `localStorage.setItem()` inside dedicated Service singletons (e.g., `LocalNotesService`). Always parse/serialize consistently and assign standard unique IDs (like `Date.now()`) for newly inserted records. Combine this with the `onLoad` pattern inside `RefProps` to fetch data immediately when components render, injecting it directly into an `HtmlVar` wrapping the list.
 
-## 9. Standard Mobile App Layout & Interactions
+## 10. Standard Mobile App Layout & Interactions
 
 When asked to "create a list page" or "initialize a standard mobile framework", rigorously apply this exact structural pattern based on the cross-platform starter app.
 
