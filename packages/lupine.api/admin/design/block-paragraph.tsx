@@ -1,7 +1,5 @@
 import { CssProps } from 'lupine.web';
-import { MediaQueryRange } from 'lupine.components';
 import { DesignNode, getDesignStore } from './design-store';
-import { DesignUtils } from './design-utils';
 
 export const BlockParagraph = (props: { node: DesignNode }) => {
   const store = getDesignStore();
@@ -9,10 +7,11 @@ export const BlockParagraph = (props: { node: DesignNode }) => {
   const p = props.node.props;
   const css: CssProps = {
     textAlign: p.textAlign || 'left',
+    color: p.color || 'inherit',
     margin: p.margin || '0',
     padding: p.padding || '0',
     minWidth: '0',
-    flex: p.flex === '1' ? '1' : 'none',
+    flex: p.flex === '1' ? '1 0 auto' : '0 0 auto',
     lineHeight: '1.5',
     ...(p._sys_css || {}),
     '.paragraph-title': {

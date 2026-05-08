@@ -1,8 +1,130 @@
 import { ServerResponse } from 'http';
 import { IApiBase, Logger, apiCache, ServerRequest, ApiRouter, ApiHelper } from 'lupine.api';
 import { exportCSV } from '../lib/utils/csv-util';
+import { adminApiHelper, getDesignLang, selectLangFallbackRecord } from './admin-api-helper';
 
 const logger = new Logger('admin-page');
+
+const parsePageJson = (json: any) => {
+  if (!json) return {};
+  if (typeof json !== 'string') return json;
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    return {};
+  }
+};
+
+const getComponentRef = (node: any) => {
+  const ref = node?.props?._componentRef;
+  const id = ref?.id || (node?.type === 'block-component-ref' ? node?.props?.pageid : '');
+  if (!id) return null;
+  return {
+    id: String(id),
+    name: String(ref?.name || node?.props?.name || id),
+  };
+};
+
+const createMissingComponentNode = (node: any, ref: { id: string; name: string }) => ({
+  id: node?.id || ref.id,
+  type: 'block-component-ref',
+  props: {
+    _componentRef: ref,
+  },
+});
+
+const expandComponentRefs = async (node: any, lang: string, currentLevel: number, stack: string[] = []): Promise<any> => {
+  if (!node || typeof node !== 'object') return node;
+
+  const ref = getComponentRef(node);
+  if (ref) {
+    if (stack.includes(ref.id)) {
+      logger.warn(`Circular component reference skipped: ${[...stack, ref.id].join(' -> ')}`);
+      return createMissingComponentNode(node, ref);
+    }
+
+    const componentResult = await selectLangFallbackRecord('$__s_page', 'pageid', ref.id, lang);
+    if (!componentResult || componentResult.length === 0) {
+      return createMissingComponentNode(node, ref);
+    }
+
+    const componentAccesslevel = String(componentResult[0]['accesslevel'] || '0');
+    const componentLevel = /^\d+$/.test(componentAccesslevel) ? parseInt(componentAccesslevel, 10) : 0;
+    if (componentLevel > 0 && currentLevel < componentLevel) {
+      return createMissingComponentNode(node, ref);
+    }
+
+    const expandedJson = parsePageJson(componentResult[0]['json']);
+    const expandedNode = await expandComponentRefs(expandedJson, lang, currentLevel, [...stack, ref.id]);
+    if (expandedNode && typeof expandedNode === 'object') {
+      expandedNode.id = node.id || expandedNode.id;
+      expandedNode.props = {
+        ...(expandedNode.props || {}),
+        _componentRef: ref,
+      };
+    }
+    return expandedNode;
+  }
+
+  if (Array.isArray(node.children)) {
+    node.children = await Promise.all(node.children.map((child: any) => expandComponentRefs(child, lang, currentLevel, stack)));
+  }
+  return node;
+};
+
+export const serveDesignPage = async (req: ServerRequest, res: ServerResponse) => {
+  const id = req.locals.urlParameters.get('id', '');
+
+  const response = {
+    status: 'error',
+    message: 'Get a page/component.',
+    result: {} as any,
+  };
+
+  if (!id) {
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  const loginLevel = await adminApiHelper.getLoginLevel(req, res);
+  const lang = getDesignLang(req);
+  const result = await selectLangFallbackRecord('$__s_page', 'pageid', id, lang);
+
+  if (!result || result.length === 0) {
+    response.message = 'Page does not exist or access level is not enough.';
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  const pageAccesslevel = String(result[0]['accesslevel'] || '0');
+  const currentAccesslevel = String(loginLevel.accesslevel || '0');
+  const pageLevel = /^\d+$/.test(pageAccesslevel) ? parseInt(pageAccesslevel, 10) : 0;
+  const currentLevel = /^\d+$/.test(currentAccesslevel) ? parseInt(currentAccesslevel, 10) : 0;
+
+  if (pageLevel > 0 && currentLevel < pageLevel) {
+    response.message = 'Page does not exist or access level is not enough.';
+    ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  let parsedJson = parsePageJson(result[0]['json']);
+  parsedJson = await expandComponentRefs(parsedJson, lang, currentLevel);
+
+  response.result = {
+    pageid: result[0]['pageid'],
+    name: result[0]['name'],
+    remark: result[0]['remark'],
+    package: result[0]['package'],
+    accesslevel: pageAccesslevel,
+    is_component: result[0]['is_component'],
+    updatetime: result[0]['updatetime'],
+    json: parsedJson,
+  };
+  response.status = 'ok';
+  ApiHelper.sendJson(req, res, response);
+  return true;
+};
+
 export class AdminPage implements IApiBase {
   protected router = new ApiRouter();
   adminUser: any;
@@ -60,7 +182,7 @@ export class AdminPage implements IApiBase {
       params.push(parseInt(isComponentParam as string, 10));
     }
 
-    let query = `SELECT pageid, name, is_component, remark, package, updateduserid, updatetime from $__s_page`;
+    let query = `SELECT pageid, name, is_component, remark, package, accesslevel, updateduserid, updatetime from $__s_page`;
 
     if (searchQuery.sql) {
       conditions.push(searchQuery.sql);
@@ -161,6 +283,7 @@ export class AdminPage implements IApiBase {
       name: data['name'] as string || 'Untitled',
       remark: data['remark'] as string || '',
       package: data['package'] as string || 'default',
+      accesslevel: data['accesslevel'] as string || '0',
       is_component: data['is_component'] ? 1 : 0,
       json: typeof data['json'] === 'string' ? data['json'] : JSON.stringify(data['json'] || {}),
       updateduserid: 1,
@@ -177,38 +300,7 @@ export class AdminPage implements IApiBase {
   }
 
   async getRecord(req: ServerRequest, res: ServerResponse) {
-    const db = apiCache.getDb();
-    const id = req.locals.urlParameters.get('id', '');
-
-    const response = {
-      status: 'error',
-      message: 'Get a page/component.',
-      result: {} as any,
-    };
-    if (id) {
-      const result = await db.selectObject('$__s_page', undefined, {
-        pageid: id,
-      });
-      if (result && result.length > 0) {
-        let parsedJson = {};
-        try {
-           parsedJson = JSON.parse(result[0]['json']);
-        } catch(e) {}
-
-        response.result = {
-          pageid: result[0]['pageid'],
-          name: result[0]['name'],
-          remark: result[0]['remark'],
-          package: result[0]['package'],
-          is_component: result[0]['is_component'],
-          updatetime: result[0]['updatetime'],
-          json: parsedJson,
-        };
-      }
-      response.status = 'ok';
-    }
-    ApiHelper.sendJson(req, res, response);
-    return true;
+    return serveDesignPage(req, res);
   }
 
   async delete(req: ServerRequest, res: ServerResponse) {
