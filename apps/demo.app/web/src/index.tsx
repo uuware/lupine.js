@@ -13,7 +13,6 @@ import {
   bindAppGlobalStyle,
   _LupineJs,
   _lupineJs,
-  bindLang,
   PageProps,
   isFrontEnd,
   Redirect,
@@ -53,7 +52,6 @@ if (isFrontEnd() && webEnv(ClientEnvKeys.NODE_ENV, '') === 'development') {
 
 // console.log(document.title);
 // addWebVersion('20250409');
-bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Development Project for Lupine.js');
