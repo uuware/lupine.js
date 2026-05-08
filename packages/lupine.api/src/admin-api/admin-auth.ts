@@ -58,16 +58,8 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
   const data = req.locals.json();
   if (!data || Array.isArray(data) || !data.u || !data.p) {
     // if session already exists, use session data login
-    const devAdminSession = await adminApiHelper.getDevAdminFromCookie(req, res, false);
-    if (!devAdminSession) {
-      // check is app admin
-      const appAdminHookCheckLogin = adminApiHelper.getAppAdminHookCheckLogin();
-      if (appAdminHookCheckLogin) {
-        if (await appAdminHookCheckLogin(req, res, '', '')) {
-          return true;
-        }
-      }
-
+    const loginLevel = await adminApiHelper.getLoginLevel(req, res);
+    if (!loginLevel.isLogin) {
       const response = {
         status: 'error',
         message: 'Please login to use this system.',
@@ -76,11 +68,22 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
       return true;
     }
 
+    let addLoginResponse = {};
+    if (loginLevel.isDevAdmin && loginLevel.devAdminSession) {
+      const appAdminHookSetCookie = adminApiHelper.getAppAdminHookSetCookie();
+      if (appAdminHookSetCookie) {
+        addLoginResponse = await appAdminHookSetCookie(req, res);
+      }
+    }
+
     const response = {
+      ...addLoginResponse,
       status: 'ok',
       message: langHelper.getLang('shared:login_success'),
-      devLogin: 1,
-      // devLogin: CryptoUtils.encrypt(JSON.stringify(devAdminSession), cryptoKey),
+      result: true,
+      devLogin: loginLevel.isDevAdmin ? 1 : 0,
+      appLogin: loginLevel.isAppLogin ? 1 : (addLoginResponse as any).appLogin,
+      // devLogin: CryptoUtils.encrypt(JSON.stringify(loginLevel.devAdminSession), cryptoKey),
     };
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -105,9 +108,17 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
     };
     const token = JSON.stringify(devSession);
     const tokenCookie = CryptoUtils.encrypt(token, cryptoKey);
+    // if it's dev admin, then set app admin cookie as well
+    let addLoginResponse = {};
+    const appAdminHookSetCookie = adminApiHelper.getAppAdminHookSetCookie();
+    if (appAdminHookSetCookie) {
+      addLoginResponse = await appAdminHookSetCookie(req, res);
+    }
     const response = {
+      ...addLoginResponse,
       status: 'ok',
       message: langHelper.getLang('shared:login_success'),
+      result: true,
       devLogin: 1,
       // devLogin: tokenCookie,
     };
@@ -125,7 +136,7 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
   // check is app admin
   const appAdminHookCheckLogin = adminApiHelper.getAppAdminHookCheckLogin();
   if (appAdminHookCheckLogin) {
-    if (await appAdminHookCheckLogin(req, res, data.u as string, data.p as string)) {
+    if (await appAdminHookCheckLogin(req, res, data.u as string, data.p as string, true)) {
       clearFailedAttempts(clientIp);
       return true;
     }

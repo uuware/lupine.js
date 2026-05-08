@@ -15,7 +15,6 @@ import {
   adminApiHelper,
 } from 'lupine.api';
 import { sendEmail, sendSiteEmail } from './send-email';
-import { clearCookie } from 'lupine.web';
 
 const PW_RETRY_MAX = 5;
 const PW_RETRY_RESET_MINUTES = 15;
@@ -36,15 +35,16 @@ const ADMIN_SESSION_INVALID_BEFORE_KEY_NAME = 'ADMIN_SESSION_INVALID_BEFORE';
 export const appAdminHookSetCookie: AppAdminHookSetCookieProps = async (
   req: ServerRequest,
   res: ServerResponse,
-  username: string,
+  username?: string,
   singleHash?: string
 ) => {
   const cryptoKey = process.env['CRYPTO_KEY'];
-  const u = process.env['ADMIN_USER'];
-  if (!cryptoKey || !u || !singleHash) {
+  const u = username || process.env['ADMIN_USER'];
+  if (!cryptoKey || !u || !process.env['ADMIN_PASS']) {
     return false;
   }
 
+  singleHash = singleHash || CryptoUtils.sha256(process.env['ADMIN_PASS']);
   const loginJson: LoginJsonProps = {
     ip: '',
     id: 0,
@@ -84,13 +84,25 @@ export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
   req: ServerRequest,
   res: ServerResponse,
   username: string,
-  password: string
+  password: string,
+  sendResponseWhenError: boolean
 ) => {
   if (!username || !password) {
     const json = await getUserFromCookie(req, res, false);
-    if (json && json.t && json.h) {
-      const appAdminResponse = await appAdminHookSetCookie(req, res, username, json.h);
-      ApiHelper.sendJson(req, res, appAdminResponse);
+    if (json && json.t === 'admin' && json.h) {
+      if (sendResponseWhenError) {
+        ApiHelper.sendJson(req, res, {
+          status: 'ok',
+          message: langHelper.getLang('shared:login_success'),
+          appLogin: 1,
+          user: {
+            nickname: json.u,
+            admin: json.t === 'admin' ? '1' : '0',
+            u: json.u,
+            t: json.t,
+          },
+        });
+      }
       return true;
     }
     return false;
@@ -102,14 +114,20 @@ export const appAdminHookCheckLogin: AppAdminHookCheckLoginProps = async (
     && adminApiHelper.timingSafeEqual(username, process.env['ADMIN_USER'])
     && adminApiHelper.timingSafeEqual(doubleHash, process.env['ADMIN_PASS'])) {
     const appAdminResponse = await appAdminHookSetCookie(req, res, username, singleHash);
-    ApiHelper.sendJson(req, res, appAdminResponse);
+    sendResponseWhenError && ApiHelper.sendJson(req, res, appAdminResponse);
     return true;
   }
   return false;
 };
 
 export const appAdminHookLogout: AppAdminHookLogoutProps = async (req: ServerRequest, res: ServerResponse) => {
-  clearCookie('_token', '/');
+  req.locals.setCookie('_token', '', {
+    expireDays: 0,
+    path: '/',
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+  });
 };
 
 export const getUserFromCookie = async (
