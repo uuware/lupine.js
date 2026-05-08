@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { ServerResponse } from 'http';
-import { ApiHelper, CryptoUtils, Logger, ServerRequest } from 'lupine.api';
+import { ApiHelper, CryptoUtils, Logger, ServerRequest, apiCache, apiStorage } from 'lupine.api';
 
 /*
 dev-admin uses different authentication method from frontend.
@@ -17,6 +17,14 @@ export type DevAdminSessionProps = {
   ip: string;
   h: string; // sha256 of login password
   l?: number; // login time
+};
+
+export type AdminLoginLevelProps = {
+  isLogin: boolean;
+  isAppLogin: boolean;
+  isDevAdmin: boolean;
+  accesslevel: '0' | '2' | '3' | '9';
+  devAdminSession?: DevAdminSessionProps;
 };
 
 /*
@@ -144,12 +152,13 @@ export const checkEnvNotSet = (req: ServerRequest, res: ServerResponse, envName:
   return false;
 }
 
-export type AppAdminHookSetCookieProps = (req: ServerRequest, res: ServerResponse, username: string, singleHash?: string) => Promise<any>;
+export type AppAdminHookSetCookieProps = (req: ServerRequest, res: ServerResponse, username?: string, singleHash?: string) => Promise<any>;
 export type AppAdminHookCheckLoginProps = (
   req: ServerRequest,
   res: ServerResponse,
   username: string,
-  password: string
+  password: string,
+  sendResponseWhenError: boolean,
 ) => Promise<boolean>;
 export type AppAdminHookLogoutProps = (req: ServerRequest, res: ServerResponse) => Promise<void>;
 
@@ -159,6 +168,44 @@ export const DEV_ADMIN_PASS_KEY_NAME = 'DEV_ADMIN_PASS';
 export const DEV_ADMIN_CRYPTO_KEY_NAME = 'DEV_CRYPTO_KEY';
 export const DEV_ADMIN_SESSION_INVALID_BEFORE_KEY_NAME = 'DEV_ADMIN_SESSION_INVALID_BEFORE';
 export const DEV_ADMIN_SESSION_NAME = '_token_dev';
+
+export const getDefaultSiteLang = async () => {
+  const siteLangs = await apiStorage.getWeb('siteLangs');
+  const firstLang = siteLangs
+    .split(',')
+    .map((lang) => lang.trim())
+    .filter(Boolean)[0];
+  return firstLang?.split(':')[0] || 'en';
+};
+
+export const getDesignLang = (req: ServerRequest) => {
+  const data = req.locals.json?.() as { lang?: string } | undefined;
+  return (data?.lang || req.locals.query?.get('lang') || '').trim();
+};
+
+export const getLangFallbackIds = async (id: string, lang: string) => {
+  const defaultLang = await getDefaultSiteLang();
+  return [
+    lang ? `${lang}:${id}` : '',
+    lang && lang !== defaultLang ? `${defaultLang}:${id}` : '',
+    id,
+  ].filter((fallbackId, index, arr) => fallbackId && arr.indexOf(fallbackId) === index);
+};
+
+export const selectLangFallbackRecord = async (table: string, idField: string, id: string, lang: string) => {
+  const db = apiCache.getDb();
+  const ids = await getLangFallbackIds(id, lang);
+  for (const fallbackId of ids) {
+    const result = await db.selectObject(table, undefined, {
+      [idField]: fallbackId,
+    });
+    if (result && result.length > 0) {
+      return result;
+    }
+  }
+  return [];
+};
+
 export class AdminApiHelper {
   private static instance: AdminApiHelper;
   private logger = new Logger('admin-api');
@@ -196,8 +243,8 @@ export class AdminApiHelper {
     return this.AppAdminHookLogout;
   }
 
-  decryptJson(text: string) {
-    const cryptoKey = process.env[DEV_ADMIN_CRYPTO_KEY_NAME];
+  decryptJson(text: string, cryptoKey?: string) {
+    cryptoKey = cryptoKey || process.env[DEV_ADMIN_CRYPTO_KEY_NAME];
     if (cryptoKey && text) {
       try {
         const deCrypto = CryptoUtils.decrypt(text, cryptoKey);
@@ -210,8 +257,8 @@ export class AdminApiHelper {
     return null;
   }
 
-  encryptJson(jsonOrText: string | object) {
-    const cryptoKey = process.env[DEV_ADMIN_CRYPTO_KEY_NAME];
+  encryptJson(jsonOrText: string | object, cryptoKey?: string) {
+    cryptoKey = cryptoKey || process.env[DEV_ADMIN_CRYPTO_KEY_NAME];
     if (cryptoKey && jsonOrText) {
       try {
         const text = typeof jsonOrText === 'string' ? jsonOrText : JSON.stringify(jsonOrText);
@@ -270,6 +317,35 @@ export class AdminApiHelper {
       ApiHelper.sendJson(req, res, response);
     }
     return false;
+  }
+
+  async getLoginLevel(req: ServerRequest, res: ServerResponse): Promise<AdminLoginLevelProps> {
+    const devAdminSession = await this.getDevAdminFromCookie(req, res, false);
+    if (devAdminSession) {
+      return {
+        isLogin: true,
+        isAppLogin: false,
+        isDevAdmin: true,
+        accesslevel: '9',
+        devAdminSession,
+      };
+    }
+
+    if (this.AppAdminHookCheckLogin && await this.AppAdminHookCheckLogin(req, res, '', '', false)) {
+      return {
+        isLogin: true,
+        isAppLogin: true,
+        isDevAdmin: false,
+        accesslevel: '3',
+      };
+    }
+
+    return {
+      isLogin: false,
+      isAppLogin: false,
+      isDevAdmin: false,
+      accesslevel: '0',
+    };
   }
 
   /** Timing-safe string comparison to prevent timing attacks */
