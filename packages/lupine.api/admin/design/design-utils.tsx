@@ -1,5 +1,8 @@
 import { FloatWindow, HEditor, RefProps, NotificationMessage, NotificationColor, MediaQueryRange, ActionSheetSelectPromise } from 'lupine.components';
 import { DesignNode } from './design-store';
+import { getAccessLevelOptions } from '../admin-props';
+import { ComponentRegistry } from './component-registry';
+import { buildCssVariables } from './css-variable-utils';
 
 export const DesignUtils = {
 
@@ -33,6 +36,7 @@ export const DesignUtils = {
     if (p[`alignSelf${mq}`]) css.alignSelf = p[`alignSelf${mq}`];
     if (p[`margin${mq}`]) css.margin = p[`margin${mq}`];
     if (p[`padding${mq}`]) css.padding = p[`padding${mq}`];
+    if (p[`overflowX${mq}`]) css.overflowX = p[`overflowX${mq}`];
     if (p[`overflowY${mq}`]) css.overflowY = p[`overflowY${mq}`];
     return css;
   },
@@ -46,11 +50,23 @@ export const DesignUtils = {
   },
 
   compileResponsiveCssForNode: (node: DesignNode, defaultDisplay?: string) => {
-    const p = node.props || {};
+    const defaultProps = ComponentRegistry[node.type]?.defaultProps || {};
+    const p = node.props = { ...defaultProps, ...(node.props || {}) };
     const sysCss: any = {
       ...DesignUtils.getStandardCss(p, ''),
       ...DesignUtils.parseInlineCss(p.customCss),
     };
+    
+    const pruneInheritedCss = (css: any, inheritedCss: any) => {
+      const optimizedCss: any = {};
+      Object.keys(css).forEach((key) => {
+        if (css[key] !== inheritedCss[key]) {
+          optimizedCss[key] = css[key];
+        }
+      });
+      return optimizedCss;
+    };
+    let inheritedResponsiveCss = { ...sysCss };
     
     const mqs = [
       { key: MediaQueryRange.DesktopBelow, suffix: 'DesktopBelow' },
@@ -62,6 +78,23 @@ export const DesignUtils = {
     const isFlex = node.type === 'block-flex';
     const isGrid = node.type === 'block-grid';
     const isPage = node.type === 'block-page';
+    const isScrollableX = (overflowX: any) => overflowX === 'auto' || overflowX === 'scroll';
+    const isScrollableY = (overflowY: any) => overflowY === 'auto' || overflowY === 'scroll';
+    const hasScrollablePlaceholderChildX = (mq: string = '') => node.children?.some((child) => {
+      if (child.type !== 'block-placeholder') return false;
+      const childProps = child.props || {};
+      return isScrollableX(childProps[`overflowX${mq}`] || childProps.overflowX || childProps._sys_css?.overflowX);
+    }) === true;
+    const hasScrollablePlaceholderChildY = (mq: string = '') => node.children?.some((child) => {
+      if (child.type !== 'block-placeholder') return false;
+      const childProps = child.props || {};
+      return isScrollableY(childProps[`overflowY${mq}`] || childProps.overflowY || childProps._sys_css?.overflowY);
+    }) === true;
+    const normalizeGridTemplate = (template: any, shouldConstrainRows: boolean) => (
+      shouldConstrainRows && typeof template === 'string'
+        ? template.replace(/\b(\d*\.?\d+)fr\b/g, 'minmax(0, $1fr)')
+        : template
+    );
 
     if (isFlex) {
       sysCss.flexDirection = p.flexDirection || 'column';
@@ -69,14 +102,36 @@ export const DesignUtils = {
       sysCss.justifyContent = p.justifyContent || 'flex-start';
       sysCss.gap = p.gap || '0';
     } else if (isGrid || isPage) {
+      const isNestedPage = isPage && p.isRoot !== true;
+      // const rootOverflowY = p.overflowY || sysCss.overflowY;
+      // const shouldConstrainRootY = rootOverflowY === 'auto' || rootOverflowY === 'scroll' || rootOverflowY === 'hidden';
+      // const hasScrollableDirectChild = isPage && p.isRoot === true && node.children?.some((child) => {
+      //   const childOverflowY = child.props?.overflowY || child.props?._sys_css?.overflowY;
+      //   return childOverflowY === 'auto' || childOverflowY === 'scroll';
+      // }) === true;
+      // const normalizeRootRows = (rows: any) => typeof rows === 'string' ? rows.replace(/(^|\s)1fr(?=\s|$)/g, '$1auto') : rows;
       const isVertical = isGrid ? (p.layoutDirection === 'vertical') : (p.layoutDirection === 'vertical' || !p.layoutDirection);
       const defaultLayout = isGrid ? '1fr 1fr' : '100px 1fr 50px';
-      sysCss.gridTemplateRows = isVertical ? (p.gridTemplate || defaultLayout) : '1fr';
-      sysCss.gridTemplateColumns = !isVertical ? (p.gridTemplate || defaultLayout) : '1fr';
+      const shouldConstrainRows = !isScrollableY(sysCss.overflowY || p.overflowY) && hasScrollablePlaceholderChildY();
+      const shouldConstrainColumns = !isScrollableX(sysCss.overflowX || p.overflowX) && hasScrollablePlaceholderChildX();
+      
+      sysCss.gridTemplateRows = normalizeGridTemplate(isVertical ? (p.gridTemplate || defaultLayout) : '1fr', shouldConstrainRows);
+      sysCss.gridTemplateColumns = normalizeGridTemplate(!isVertical ? (p.gridTemplate || defaultLayout) : '1fr', shouldConstrainColumns);
+      if (isNestedPage) {
+        sysCss.gridTemplateRows = 'auto';
+        sysCss.height = 'auto';
+        sysCss.gridAutoRows = 'max-content';
+        sysCss.alignContent = 'start';
+        sysCss.alignSelf = 'flex-start';
+        sysCss.overflowY = 'visible';
+      }
     }
 
     mqs.forEach(mq => {
-       const mqCss: any = DesignUtils.getResponsiveCss(p, mq.suffix, defaultDisplay);
+       const mqCss: any = {
+         ...DesignUtils.getResponsiveCss(p, mq.suffix, defaultDisplay),
+         ...buildCssVariables(p[`cssVars${mq.suffix}`]),
+       };
 
        if (isFlex) {
          const getFlexCascade = (propName: string, defaultVal: string) => {
@@ -90,23 +145,40 @@ export const DesignUtils = {
          mqCss.justifyContent = getFlexCascade('justifyContent', 'flex-start');
          mqCss.gap = getFlexCascade('gap', '0');
        } else if (isGrid || isPage) {
-         const isVertical = isGrid ? (p.layoutDirection === 'vertical') : (p.layoutDirection === 'vertical' || !p.layoutDirection);
-         const defaultLayout = isGrid ? '1fr 1fr' : '100px 1fr 50px';
+          const isNestedPage = isPage && p.isRoot !== true;
+          const defaultLayout = isGrid ? '1fr 1fr' : '100px 1fr 50px';
          
-         const getGridCascade = (propName: string) => {
-            if (mq.suffix === 'DesktopBelow') return p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
-            if (mq.suffix === 'TabletBelow') return p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
-            if (mq.suffix === 'MobileBelow') return p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
-            if (mq.suffix === 'ExtraSmallBelow') return p[`${propName}ExtraSmallBelow`] || p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultLayout;
+         const getGridCascade = (propName: string, defaultVal: string) => {
+            if (mq.suffix === 'DesktopBelow') return p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+            if (mq.suffix === 'TabletBelow') return p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+            if (mq.suffix === 'MobileBelow') return p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
+            if (mq.suffix === 'ExtraSmallBelow') return p[`${propName}ExtraSmallBelow`] || p[`${propName}MobileBelow`] || p[`${propName}TabletBelow`] || p[`${propName}DesktopBelow`] || p[propName] || defaultVal;
          };
          
-         const cascadeVal = getGridCascade('gridTemplate');
-         mqCss.gridTemplateRows = isVertical ? cascadeVal : '1fr';
-         mqCss.gridTemplateColumns = !isVertical ? cascadeVal : '1fr';
+         const cascadeDirection = getGridCascade('layoutDirection', isGrid ? 'horizontal' : 'vertical');
+         const cascadeLayout = getGridCascade('gridTemplate', defaultLayout);
+         const cascadeOverflowX = getGridCascade('overflowX', '');
+         const cascadeOverflowY = getGridCascade('overflowY', '');
+         const mqIsVertical = isGrid ? (cascadeDirection === 'vertical') : (cascadeDirection === 'vertical' || !cascadeDirection);
+         const shouldConstrainRows = !isScrollableY(mqCss.overflowY || cascadeOverflowY) && hasScrollablePlaceholderChildY(mq.suffix);
+         const shouldConstrainColumns = !isScrollableX(mqCss.overflowX || cascadeOverflowX) && hasScrollablePlaceholderChildX(mq.suffix);
+         
+         mqCss.gridTemplateRows = normalizeGridTemplate(mqIsVertical ? cascadeLayout : '1fr', shouldConstrainRows);
+         mqCss.gridTemplateColumns = normalizeGridTemplate(!mqIsVertical ? cascadeLayout : '1fr', shouldConstrainColumns);
+         if (isNestedPage) {
+           mqCss.gridTemplateRows = 'auto';
+           mqCss.height = 'auto';
+           mqCss.gridAutoRows = 'max-content';
+           mqCss.alignContent = 'start';
+           mqCss.alignSelf = 'flex-start';
+           mqCss.overflowY = 'visible';
+         }
        }
 
-       if (Object.keys(mqCss).length > 0) {
-          sysCss[mq.key] = mqCss;
+       const optimizedMqCss = pruneInheritedCss(mqCss, inheritedResponsiveCss);
+       inheritedResponsiveCss = { ...inheritedResponsiveCss, ...mqCss };
+       if (Object.keys(optimizedMqCss).length > 0) {
+          sysCss[mq.key] = optimizedMqCss;
        }
     });
 
@@ -195,15 +267,38 @@ export const DesignUtils = {
     });
   },
 
-  saveComponent: async (pageid: string, name: string, packageId: string, remark: string, tree: DesignNode, isComponent: boolean = true, overwrite: boolean = false, originalUpdatetime?: number): Promise<{status: 'ok' | 'ID_EXISTS' | 'MODIFIED_BY_OTHER' | 'error', newUpdatetime?: number}> => {
+  stripSavedComponentTrees: (node: DesignNode): DesignNode => {
+    const componentRef = node.props?._componentRef;
+    if (componentRef?.id) {
+      return {
+        id: node.id,
+        type: 'block-component-ref',
+        props: {
+          _componentRef: {
+            id: componentRef.id,
+            name: componentRef.name || componentRef.id,
+          },
+        },
+      };
+    }
+
+    return {
+      ...node,
+      props: { ...(node.props || {}) },
+      children: node.children?.map((child) => DesignUtils.stripSavedComponentTrees(child)),
+    };
+  },
+
+  saveComponent: async (pageid: string, name: string, packageId: string, accesslevel: string, remark: string, tree: DesignNode, isComponent: boolean = true, overwrite: boolean = false, originalUpdatetime?: number): Promise<{status: 'ok' | 'ID_EXISTS' | 'MODIFIED_BY_OTHER' | 'error', newUpdatetime?: number}> => {
     try {
       const payload = {
         pageid: pageid.trim(),
         name: name.trim() || 'Untitled',
         package: packageId.trim() || 'default',
+        accesslevel: accesslevel || '0',
         remark: remark,
         is_component: isComponent ? 1 : 0,
-        json: tree,
+        json: DesignUtils.stripSavedComponentTrees(tree),
         checkExists: !overwrite,
         originalUpdatetime: originalUpdatetime
       };
@@ -224,10 +319,11 @@ export const DesignUtils = {
     }
   },
 
-  showSaveDialog: (initialId: string, initialName: string, initialPackage: string, initialRemark: string, initialIsComponent: boolean, initialUpdatetime: number, astClone: any, onSuccess: (newId: string, newName: string, newPackage: string, newRemark: string, isComponent: boolean, newStamp: number) => void) => {
+  showSaveDialog: (initialId: string, initialName: string, initialPackage: string, initialAccesslevel: string, initialRemark: string, initialIsComponent: boolean, initialUpdatetime: number, astClone: any, onSuccess: (newId: string, newName: string, newPackage: string, newAccesslevel: string, newRemark: string, isComponent: boolean, newStamp: number) => void) => {
     let compId = initialId;
     let compName = initialName;
     let compPackage = initialPackage || 'default';
+    let compAccesslevel = initialAccesslevel || '0';
     let compRemark = initialRemark || '';
     let isComponentCtx = initialIsComponent;
 
@@ -251,10 +347,10 @@ export const DesignUtils = {
               const isSameId = (compId.trim() === initialId.trim() && initialUpdatetime !== 0);
               const passUpdatetime = isSameId ? initialUpdatetime : undefined;
 
-              const result = await DesignUtils.saveComponent(compId, compName, compPackage, compRemark, astClone, isComponentCtx, overwrite, passUpdatetime);
+              const result = await DesignUtils.saveComponent(compId, compName, compPackage, compAccesslevel, compRemark, astClone, isComponentCtx, overwrite, passUpdatetime);
               if (result.status === 'ok') {
                  NotificationMessage.sendMessage(`${isComponentCtx ? 'Component' : 'Page'} saved!`, NotificationColor.Success);
-                 onSuccess(compId, compName, compPackage, compRemark, isComponentCtx, result.newUpdatetime || 0);
+                 onSuccess(compId, compName, compPackage, compAccesslevel, compRemark, isComponentCtx, result.newUpdatetime || 0);
                  close();
               } else if (result.status === 'ID_EXISTS') {
                  const idx = await ActionSheetSelectPromise({
@@ -308,6 +404,16 @@ export const DesignUtils = {
             onInput={(e: any) => compPackage = e.target.value}
             style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '16px' }}
           />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Access Level:</label>
+          <select
+            value={compAccesslevel}
+            onChange={(e: any) => compAccesslevel = e.target.value}
+            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '16px' }}
+          >
+            {getAccessLevelOptions(compAccesslevel).map((al) => (
+              <option value={al.value} selected={al.selected}>{al.label}</option>
+            ))}
+          </select>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
           <input 
             type="text" 
@@ -324,7 +430,7 @@ export const DesignUtils = {
     });
   },
 
-  getSavedComponents: async (): Promise<{ name: string; tree: DesignNode; savedAt: number; pageid: string }[]> => {
+  getSavedComponents: async (): Promise<{ name: string; savedAt: number; pageid: string }[]> => {
     try {
       const savedStr = localStorage.getItem('lupine_design_pinned_components');
       if (!savedStr) return [];
@@ -341,16 +447,11 @@ export const DesignUtils = {
       });
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.results)) {
-         return data.results.map((row: any) => {
-            let tree: any = {};
-            try { tree = JSON.parse(row.json); } catch(err) {}
-            return {
-               pageid: row.pageid,
-               name: row.name,
-               tree: tree,
-               savedAt: row.updatetime || 0
-            };
-         });
+         return data.results.map((row: any) => ({
+            pageid: row.pageid,
+            name: row.name,
+            savedAt: row.updatetime || 0
+         }));
       }
       return [];
     } catch (e) {

@@ -59,6 +59,7 @@ export class DesignStore {
     if (this.historyIndex > 0) {
        this.historyIndex--;
        this.tree = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+       this.normalizeTreeIds();
        this.emit('TREE_UPDATE');
        this.emit('HISTORY_CHANGED');
     }
@@ -68,6 +69,7 @@ export class DesignStore {
     if (this.historyIndex < this.history.length - 1) {
        this.historyIndex++;
        this.tree = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+       this.normalizeTreeIds();
        this.emit('TREE_UPDATE');
        this.emit('HISTORY_CHANGED');
     }
@@ -93,7 +95,13 @@ export class DesignStore {
 
   setTree(newTree: DesignNode) {
     this.tree = newTree;
-    this.commitHistory();
+    this.normalizeTreeIds();
+    // Do not call enforceGridMesh here: saved pages already contain their
+    // intended grid/flex cell structure, and re-meshing can move children
+    // between rows/cells when opening an existing page.
+    this.history = [];
+    this.historyIndex = -1;
+    this.commitHistory(true);
     this.emit('TREE_UPDATE');
   }
 
@@ -105,13 +113,16 @@ export class DesignStore {
   updateNodeProps(id: string, propsToUpdate: Record<string, any>, silent: boolean = false) {
     const node = this.findNode(this.tree, id);
     if (node) {
+      const isGridNode = node.type === 'block-grid' || (node.type === 'block-page' && node.props.componentMode !== 'flex');
+      const previousGridTemplate = node.props.gridTemplate;
+
       node.props = { ...node.props, ...propsToUpdate };
-      const sysCssKeys = ['customCss', 'hidden', 'position', 'top', 'bottom', 'left', 'right', 'zIndex', 'alignSelf'];
+      const sysCssKeys = ['customCss', 'hidden', 'position', 'top', 'bottom', 'left', 'right', 'zIndex', 'alignSelf', 'margin', 'padding', 'overflowY', 'flexDirection', 'alignItems', 'justifyContent', 'gap', 'layoutDirection', 'gridTemplate'];
       if (Object.keys(propsToUpdate).some(k => sysCssKeys.some(sysK => k.startsWith(sysK)))) {
-         DesignUtils.compileResponsiveCssForNode(node, node.type === 'block-flex' ? 'flex' : (node.type === 'block-grid' || node.type === 'block-page' ? 'grid' : undefined));
+         DesignUtils.compileResponsiveCssForNode(node, node.type === 'block-flex' || (node.type === 'block-page' && node.props.componentMode === 'flex') ? 'flex' : (isGridNode ? 'grid' : undefined));
       }
 
-      if ((node.type === 'block-grid' || node.type === 'block-page') && propsToUpdate.gridTemplate !== undefined) {
+      if (isGridNode && propsToUpdate.gridTemplate !== undefined && this.hasGridTrackCountChanged(node, previousGridTemplate, propsToUpdate.gridTemplate)) {
          this.enforceGridMesh(node);
       }
 
@@ -122,12 +133,48 @@ export class DesignStore {
     }
   }
 
+  setNodeComponentMode(id: string, mode: 'grid' | 'flex' | 'html') {
+    const node = this.findNode(this.tree, id);
+    if (!node || !['block-page', 'block-grid', 'block-flex'].includes(node.type)) return;
+
+    const oldMode = node.props.componentMode || (node.type === 'block-flex' ? 'flex' : 'grid');
+    if (oldMode === mode) return;
+
+    if (mode === 'html') {
+      node.props = { ...node.props, componentMode: 'html', content: node.props.content || '' };
+      node.children = [];
+    } else if (node.type === 'block-page') {
+      node.props = { ...node.props, componentMode: mode };
+      if (mode === 'flex') {
+        this.removeEmptyGridFlexCells(node);
+      }
+      if (mode === 'grid') {
+        this.enforceGridMesh(node);
+      }
+    } else {
+      node.type = mode === 'flex' ? 'block-flex' : 'block-grid';
+      node.props = { ...node.props, componentMode: mode };
+      if (mode === 'flex') {
+        this.removeEmptyGridFlexCells(node);
+      }
+      if (mode === 'grid') {
+        this.enforceGridMesh(node);
+      }
+    }
+
+    DesignUtils.compileResponsiveCssForNode(node, mode === 'flex' ? 'flex' : (mode === 'grid' ? 'grid' : undefined));
+    this.commitHistory();
+    this.emit('TREE_UPDATE');
+    this.emit('NODE_SELECTED');
+  }
+
   morphNodeType(id: string, newType: string) {
-    if (id === 'root-page') return; 
+    if (id === 'root-page') return;
     const node = this.findNode(this.tree, id);
     if (!node || node.type === newType) return;
 
     node.type = newType;
+    node.props = { ...node.props, componentMode: newType === 'block-flex' ? 'flex' : 'grid' };
     
     if (newType === 'block-grid') {
       this.enforceGridMesh(node);
@@ -162,13 +209,15 @@ export class DesignStore {
     return null;
   }
 
-  removeNode(id: string): DesignNode | null {
+  removeNode(id: string, silent: boolean = false): DesignNode | null {
     if (id === 'root-page') return null; // Cannot remove root
     const removed = this._removeNode(this.tree, id);
     if (removed) {
       if (this.selectedNodeId === id) this.selectNode(null);
-      this.commitHistory();
-      this.emit('TREE_UPDATE');
+      if (!silent) {
+        this.commitHistory();
+        this.emit('TREE_UPDATE');
+      }
     }
     return removed;
   }
@@ -188,9 +237,13 @@ export class DesignStore {
   }
 
   insertNode(parentId: string, nodeToInsert: DesignNode, insertIndex?: number) {
-    if (nodeToInsert.type === 'block-grid' || nodeToInsert.type === 'block-page') {
+    if (nodeToInsert.props?.componentMode !== 'html' && (nodeToInsert.type === 'block-grid' || nodeToInsert.type === 'block-page')) {
       this.enforceGridMesh(nodeToInsert);
     }
+
+    const usedIds = new Set<string>();
+    this.collectNodeIds(this.tree, usedIds);
+    this.ensureUniqueNodeIds(nodeToInsert, usedIds);
 
     const parent = this.findNode(this.tree, parentId);
     if (parent) {
@@ -206,17 +259,92 @@ export class DesignStore {
   }
 
   generateId() {
-    return this.uniqueId();
+    const usedIds = new Set<string>();
+    this.collectNodeIds(this.tree, usedIds);
+    return this.generateUniqueId(usedIds);
+  }
+
+  private generateUniqueId(usedIds: Set<string>): string {
+    let nextId = this.uniqueId();
+    while (usedIds.has(nextId)) {
+      nextId = this.uniqueId();
+    }
+    usedIds.add(nextId);
+    return nextId;
+  }
+
+  private collectNodeIds(node: DesignNode | null | undefined, usedIds: Set<string>) {
+    if (!node) return;
+    if (node.id) usedIds.add(node.id);
+    node.children?.forEach((child) => this.collectNodeIds(child, usedIds));
+  }
+
+  private ensureUniqueNodeIds(node: DesignNode, usedIds: Set<string>) {
+    if (!node.id || usedIds.has(node.id)) {
+      node.id = this.generateUniqueId(usedIds);
+    } else {
+      usedIds.add(node.id);
+    }
+
+    node.children?.forEach((child) => this.ensureUniqueNodeIds(child, usedIds));
+  }
+
+  private normalizeTreeIds() {
+    const usedIds = new Set<string>();
+    this.ensureUniqueNodeIds(this.tree, usedIds);
   }
 
   private parseGridCount(str: string): number {
-    if (!str) return 1;
-    const repeatMatch = str.match(/repeat\((\d+)/);
-    if (repeatMatch && repeatMatch[1]) return parseInt(repeatMatch[1]);
-    return str.trim().split(/\s+/).length;
+    const template = (str || '').trim();
+    if (!template) return 1;
+
+    let count = 0;
+    let token = '';
+    let depth = 0;
+
+    const addToken = (value: string) => {
+      const normalized = value.trim();
+      if (!normalized) return;
+
+      const repeatMatch = normalized.match(/^repeat\(\s*(\d+)\s*,/i);
+      count += repeatMatch?.[1] ? parseInt(repeatMatch[1], 10) : 1;
+    };
+
+    for (const char of template) {
+      if (/\s/.test(char) && depth === 0) {
+        addToken(token);
+        token = '';
+        continue;
+      }
+
+      if (char === '(') depth++;
+      if (char === ')') depth = Math.max(0, depth - 1);
+      token += char;
+    }
+
+    addToken(token);
+    return Math.max(1, count);
+  }
+
+  private hasGridTrackCountChanged(node: DesignNode, previousGridTemplate: any, nextGridTemplate: any): boolean {
+    const fallback = node.type === 'block-page' ? 'auto 1fr auto' : '1fr 1fr';
+    return this.parseGridCount(previousGridTemplate || fallback) !== this.parseGridCount(nextGridTemplate || fallback);
+  }
+
+  private removeEmptyGridFlexCells(node: DesignNode) {
+    if (!node.children?.length) return;
+
+    const childrenAreEmptyFlexCells = node.children.every((child) =>
+      child.type === 'block-flex' && (!child.children || child.children.length === 0)
+    );
+    if (childrenAreEmptyFlexCells) {
+      node.children = [];
+    }
   }
 
   private enforceGridMesh(node: DesignNode) {
+    if (node.props?.componentMode === 'html') return;
+
     const count = this.parseGridCount(node.props.gridTemplate || (node.type === 'block-page' ? 'auto 1fr auto' : '1fr 1fr'));
     if (!node.children) node.children = [];
 

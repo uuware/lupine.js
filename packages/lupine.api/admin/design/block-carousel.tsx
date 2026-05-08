@@ -12,14 +12,17 @@ export const BlockCarousel = (props: { node: DesignNode }) => {
     margin: p.margin || '0',
     padding: p.padding || '0',
     minWidth: '0',
-    flex: p.flex === '1' ? '1' : 'none',
+    flex: p.flex === '1' ? '1 0 auto' : '0 0 auto',
+    width: '100%',
     ...(p._sys_css || {}),
+    height: 'auto',
     '.carousel-wrapper': {
       width: '100%',
+      height: 'auto',
     },
     '.card-wrapper': {
       boxShadow: p.cardShadow === true ? 'var(--cover-box-shadow-around)' : 'none',
-      height: '100%',
+      height: 'auto',
       borderRadius: '8px',
     }
   };
@@ -52,11 +55,11 @@ export const BlockCarousel = (props: { node: DesignNode }) => {
               ) : undefined;
 
               return (
-                <div key={card.id || index} class="card-wrapper" style={{ padding: '8px', height: '100%', boxSizing: 'border-box' }}>
+                <div key={card.id || index} class="card-wrapper" style={{ padding: '8px', height: 'auto', boxSizing: 'border-box' }}>
                   <Card
                     cover={linkedCover}
                     description={descriptionHtml}
-                    style={{ height: '100%' }}
+                    style={{ height: 'auto' }}
                   />
                 </div>
               );

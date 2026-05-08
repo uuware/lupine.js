@@ -12,14 +12,14 @@ export const BlockYoutube = (props: { node: DesignNode }) => {
     margin: p.margin || '0',
     padding: p.padding || '0',
     minWidth: '0',
-    flex: p.flex === '1' ? '1' : 'none',
+    flex: p.flex === '1' ? '1 0 auto' : '0 0 auto',
     width: p.width || '100%',
-    height: p.height || 'auto',
     ...(p._sys_css || {}),
+    height: p.height && p.height !== '100%' ? p.height : 'auto',
     '.youtube-wrapper': {
       width: '100%',
-      height: '100%',
-      minHeight: p.height === 'auto' ? '300px' : undefined,
+      height: p.height && p.height !== '100%' ? '100%' : 'auto',
+      // minHeight: !p.height || p.height === 'auto' ? '300px' : undefined,
     }
   };
 

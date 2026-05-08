@@ -18,14 +18,17 @@ export const BlockChart = (props: { node: DesignNode }) => {
   const isPreview = store ? store.isPreviewMode : true;
   const p = props.node.props;
 
+  const chartHeight = p.height && p.height !== 'auto' ? p.height : undefined;
+
   const css: CssProps = {
     margin: p.margin || '0',
     padding: p.padding || '0',
     minWidth: '0',
-    flex: p.flex === '1' ? '1' : 'none',
+    flex: p.flex === '1' ? '1 0 auto' : '0 0 auto',
     width: p.width || '100%',
-    height: p.height || 'auto',
+    minHeight: chartHeight,
     ...(p._sys_css || {}),
+    height: chartHeight || 'auto',
     '.chart-error': {
       width: '100%',
       height: '100%',
@@ -66,7 +69,7 @@ export const BlockChart = (props: { node: DesignNode }) => {
       title: p.chartTitle,
       showLegend: p.showLegend !== false,
       width: '100%',
-      height: '100%',
+      height: chartHeight || 'auto',
     };
 
     switch (p.chartType) {
@@ -106,7 +109,7 @@ export const BlockChart = (props: { node: DesignNode }) => {
 
   return (
     <div css={css} class='block-chart' data-design-id={props.node.id}>
-      <div style={{ width: '100%', height: '100%', pointerEvents: isPreview ? 'auto' : 'none' }}>
+      <div style={{ width: '100%', minHeight: chartHeight, pointerEvents: isPreview ? 'auto' : 'none' }}>
         {renderChart()}
       </div>
     </div>

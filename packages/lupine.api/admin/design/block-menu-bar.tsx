@@ -1,8 +1,26 @@
-import { CssProps, getRenderPageProps, MediaQueryRange } from 'lupine.components';
+import { CssProps, getRenderPageProps, getSiteLangs, MediaQueryRange } from 'lupine.components';
 import { MenuBar } from 'lupine.components';
 import { DesignNode, getDesignStore } from './design-store';
 import { NestMenuItemProps } from 'lupine.components';
-import { DesignUtils } from './design-utils';
+
+const getBrowserLang = () => {
+  if (typeof navigator === 'undefined') {
+    return '';
+  }
+  return (navigator.language || navigator.languages?.[0] || '').slice(0, 2).toLowerCase();
+};
+
+export const getCurrentCmsLang = async () => {
+  const renderProps = getRenderPageProps();
+  const urlParts = (renderProps.url || '').split('/').filter((p) => !!p);
+  const siteLangs = await getSiteLangs();
+  const langCodes = siteLangs.map((lang) => lang.code).filter(Boolean);
+  const defaultLang = langCodes[0] || 'en';
+  const firstPart = urlParts[0] || '';
+  const hasLangPrefix = langCodes.includes(firstPart);
+  const browserLang = getBrowserLang();
+  return hasLangPrefix ? firstPart : (langCodes.includes(browserLang) ? browserLang : defaultLang);
+};
 
 /**
  * Converts flat menu items [level, nav, access, link, text] into nested NestMenuItemProps[].
@@ -62,6 +80,9 @@ export const BlockMenuBar = async (props: { node: DesignNode }) => {
   const menuId = p.menuId || '';
 
   const wrapperCss: CssProps = p._sys_css || {};
+  if (!wrapperCss.zIndex) {
+    wrapperCss.zIndex = 'var(--layer-menu)';
+  }
 
   // In design mode (not preview), show a placeholder
   if (!isPreview) {
@@ -90,7 +111,8 @@ export const BlockMenuBar = async (props: { node: DesignNode }) => {
   let items: NestMenuItemProps[] = [];
   if (menuId) {
     try {
-      const res = await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/get/${menuId}`);
+      const langId = await getCurrentCmsLang();
+      const res = await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/get/${menuId}`, { lang: langId });
       if (res?.json?.status === 'ok' && res.json.result?.items) {
         items = buildNestedItems(res.json.result.items);
       }
