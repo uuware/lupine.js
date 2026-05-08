@@ -6,7 +6,6 @@ import {
   bindRouter,
   PageRouter,
   bindTheme,
-  bindLang,
   setDefaultPageTitle,
   isFrontEnd,
   debugWatch,
@@ -21,8 +20,6 @@ import { HomePage } from '../pages/home-page';
 if (isFrontEnd() && webEnv('NODE_ENV', '') === 'development') {
   debugWatch(webEnv('API_PORT', 0));
 }
-
-bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Lupine Template Responsive Starter');

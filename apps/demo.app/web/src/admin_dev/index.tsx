@@ -5,7 +5,6 @@ import '../styles/app.css';
 import { adminFrameHelper, devAdminPageRouter } from 'lupine.api/admin';
 import {
   bindAppGlobalStyle,
-  bindLang,
   bindRenderPageFunctions,
   bindRouter,
   bindTheme,
@@ -51,8 +50,6 @@ export const checkDevAndAppAuth = async (props: PageProps) => {
   }
   return null;
 };
-
-bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindAppGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Sample - Page Title');

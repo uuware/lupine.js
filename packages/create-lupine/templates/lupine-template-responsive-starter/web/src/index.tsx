@@ -9,7 +9,6 @@ import {
   isFrontEnd,
   PageRouter,
   webEnv,
-  bindLang,
   bindTheme,
   setDefaultPageTitle,
 } from 'lupine.components';
@@ -21,8 +20,6 @@ import { FinancePage } from './pages/finance-page';
 import { AboutPage } from './pages/about-page';
 import { MinePage } from './pages/mine-page';
 import { ToolsPage } from './pages/tools-page';
-
-bindLang('zh-cn', {});
 bindTheme('light', themes);
 bindGlobalStyle('comm-css', baseCss, false, true);
 setDefaultPageTitle('Lupine.js Note Starter');
