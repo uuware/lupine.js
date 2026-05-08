@@ -10,6 +10,7 @@ import {
 import { ActionSheetTimePicker } from './action-sheet-time';
 import { ActionSheetDatePicker } from './action-sheet-date';
 import { ActionSheetColorPicker } from './action-sheet-color';
+import { ActionSheetThemePicker } from './action-sheet-theme';
 import { Button, ButtonSize } from './button';
 
 export const actionSheetDemo: DemoStory<any> = {
@@ -178,6 +179,17 @@ export const actionSheetDemo: DemoStory<any> = {
               value: '#4080ff',
             });
             if (result) console.log('Color selected:', result);
+          }}
+        />
+        <Button
+          text='Show Theme Picker'
+          size={ButtonSize.Medium}
+          onClick={async () => {
+            const result = await ActionSheetThemePicker({
+              title: 'Pick a theme variable',
+              value: 'var(--primary-color)',
+            });
+            if (result) console.log('Theme variable selected:', result);
           }}
         />
       </div>
