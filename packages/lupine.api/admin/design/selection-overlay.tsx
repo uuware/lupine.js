@@ -1,155 +1,217 @@
-import { CssProps, HtmlVar, RefProps } from 'lupine.components';
+import { ActionSheetSelectPromise, CssProps, RefProps } from 'lupine.components';
 import { DesignStore } from './design-store';
 import { ComponentRegistry } from './component-registry';
 
 export const SelectionOverlay = ({ store }: { store: DesignStore }) => {
-  const overlayDom = new HtmlVar(<div style="display:none" />);
   let isUnmounted = false;
+  let selectedEl: HTMLElement | null = null;
+  let actionBarEl: HTMLDivElement | null = null;
 
   const ref: RefProps = {
     onLoad: async () => {
-      let reqId: number;
+      const clearSelectionUi = () => {
+        if (actionBarEl) {
+          actionBarEl.remove();
+          actionBarEl = null;
+        }
 
-      const handleInternalDragStart = (e: any, nodeId: string) => {
-         e.stopPropagation();
-         e.dataTransfer.setData('text/plain', JSON.stringify({
-            action: 'move-component',
-            nodeId: nodeId
-         }));
+        if (selectedEl) {
+          selectedEl.style.outline = selectedEl.dataset.ljPrevOutline || '';
+
+          if (selectedEl.dataset.ljAddedPosition === 'true') {
+            selectedEl.style.position = selectedEl.dataset.ljPrevPosition || '';
+          }
+
+          delete selectedEl.dataset.ljPrevOutline;
+          delete selectedEl.dataset.ljPrevPosition;
+          delete selectedEl.dataset.ljAddedPosition;
+          selectedEl = null;
+        }
       };
 
-      let lastStructureHash = '';
+      const handleInternalDragStart = (e: DragEvent, nodeId: string) => {
+        e.stopPropagation();
+        e.dataTransfer?.setData('text/plain', JSON.stringify({
+          action: 'move-component',
+          nodeId: nodeId
+        }));
+      };
 
-      const updateOverlay = () => {
+      const updateActionBarPosition = (targetEl: HTMLElement) => {
+        if (!actionBarEl) return;
+
+        const rect = targetEl.getBoundingClientRect();
+        const isHuge = rect.height > window.innerHeight * 0.7;
+
+        actionBarEl.style.top = '4px';
+        actionBarEl.style.bottom = 'auto';
+
+        if (!isHuge) {
+          if (rect.top >= 36) {
+            actionBarEl.style.top = '-36px';
+          } else if (window.innerHeight - rect.bottom >= 36) {
+            actionBarEl.style.top = 'auto';
+            actionBarEl.style.bottom = '-36px';
+          }
+        }
+
+        actionBarEl.style.left = 'auto';
+        actionBarEl.style.right = '4px';
+        // If the right edge of the component is too close to the left screen boundary
+        // there won't be enough space for the action bar to grow to the left.
+        if (rect.right < 300) {
+          actionBarEl.style.left = '4px';
+          actionBarEl.style.right = 'auto';
+        }
+      };
+
+      const createActionButton = (text: string, title: string, onClick?: (e: MouseEvent) => void) => {
+        const button = document.createElement('div');
+        button.className = 'action-btn';
+        button.textContent = text;
+        button.title = title;
+        button.style.display = 'flex';
+        button.style.alignItems = 'center';
+        button.style.padding = '2px 4px';
+        button.style.gap = '4px';
+        button.style.borderRadius = '3px';
+        button.onmouseenter = () => button.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+        button.onmouseleave = () => button.style.backgroundColor = '';
+        button.onclick = (e) => {
+          e.stopPropagation();
+          onClick?.(e);
+        };
+        return button;
+      };
+
+      const renderSelectionUi = () => {
         if (isUnmounted) return;
 
+        clearSelectionUi();
+
         const selectedId = store.selectedNodeId;
-        if (!selectedId) {
-          if (lastStructureHash !== '') {
-            overlayDom.value = null;
-            lastStructureHash = '';
-          }
-          reqId = requestAnimationFrame(updateOverlay);
-          return;
+        if (!selectedId) return;
+
+        const escapedSelectedId = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(selectedId) : selectedId.replace(/"/g, '\\"');
+        const nextSelectedEl = document.querySelector(`[data-design-id="${escapedSelectedId}"]`) as HTMLElement | null;
+        if (!nextSelectedEl) return;
+
+        selectedEl = nextSelectedEl;
+        selectedEl.dataset.ljPrevOutline = selectedEl.style.outline;
+        selectedEl.dataset.ljPrevPosition = selectedEl.style.position;
+        selectedEl.style.outline = '2px dashed #1890ff';
+
+        if (window.getComputedStyle(selectedEl).position === 'static') {
+          selectedEl.dataset.ljAddedPosition = 'true';
+          selectedEl.style.position = 'relative';
         }
 
-        const el = document.querySelector(`[data-design-id="${selectedId}"]`);
-        if (!el) {
-          if (lastStructureHash !== '') {
-            overlayDom.value = null;
-            lastStructureHash = '';
-          }
-          // Retry polling in case it hasn't rendered yet
-          reqId = requestAnimationFrame(updateOverlay);
-          return;
-        }
+        if (selectedId === 'root-page') return;
 
-        // We use Math.round to avoid subpixel blurring
-        const rect = el.getBoundingClientRect();
-        
         // Node path for Breadcrumbs
         const nodePath = store.getNodePath(selectedId);
         let ancestors = nodePath ? nodePath.slice(0, -1).reverse() : [];
         ancestors = ancestors.filter(a => a.id !== 'root-page');
 
-        const structureHash = `${selectedId}|${ancestors.map(a => a.id).join(',')}`;
-        const isRootComponent = selectedId === 'root-page';
+        actionBarEl = document.createElement('div');
+        actionBarEl.className = 'lj-selection-action-bar';
+        actionBarEl.style.position = 'absolute';
+        actionBarEl.style.display = 'flex';
+        actionBarEl.style.flexDirection = 'row';
+        actionBarEl.style.alignItems = 'center';
+        actionBarEl.style.gap = '4px';
+        actionBarEl.style.backgroundColor = '#1890ff';
+        actionBarEl.style.color = 'white';
+        actionBarEl.style.padding = '4px 8px';
+        actionBarEl.style.fontSize = '12px';
+        actionBarEl.style.borderRadius = '4px';
+        actionBarEl.style.pointerEvents = 'auto';
+        actionBarEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+        actionBarEl.style.zIndex = '10000';
+        actionBarEl.style.whiteSpace = 'nowrap';
+        actionBarEl.onclick = (e) => e.stopPropagation();
 
-        const isHuge = rect.height > window.innerHeight * 0.7;
-        let actionBarTop = '4px';
-        let actionBarBottom = 'auto';
+        const dragButton = createActionButton('≡', 'Drag to move');
+        dragButton.draggable = true;
+        dragButton.style.cursor = 'grab';
+        dragButton.ondragstart = (e) => handleInternalDragStart(e, selectedId);
+        actionBarEl.appendChild(dragButton);
 
-        if (!isHuge) {
-            if (rect.top >= 36) {
-                actionBarTop = '-36px';
-            } else if (window.innerHeight - rect.bottom >= 36) {
-                actionBarTop = 'auto';
-                actionBarBottom = '-36px';
-            }
-        }
+        const deleteButton = createActionButton('✕', 'Delete', async () => {
+          const index = await ActionSheetSelectPromise({
+            title: 'Delete component?',
+            options: ['OK'],
+            cancelButtonText: 'Cancel',
+          });
+          if (index !== 0) {
+            return;
+          }
+          store.removeNode(selectedId);
+        });
+        deleteButton.style.cursor = 'pointer';
+        deleteButton.style.color = '#ffbba6';
+        actionBarEl.appendChild(deleteButton);
 
-        if (lastStructureHash !== structureHash) {
-            lastStructureHash = structureHash;
-            overlayDom.value = (
-            <div id="lj-selection-box" style={{
-                position: 'absolute',
-                top: `${Math.round(rect.top + window.scrollY)}px`,
-                left: `${Math.round(rect.left + window.scrollX)}px`,
-                width: `${Math.round(rect.width)}px`,
-                height: `${Math.round(rect.height)}px`,
-                border: '2px dashed #1890ff',
-                boxShadow: '0 0 0 2px rgba(24, 144, 255, 0.2)',
-                pointerEvents: 'none',
-                zIndex: 9999,
-                transition: 'all 0.1s ease-out', // smooth layout shifts
-            }}>
-                {(!isRootComponent) && (
-                <div class="action-bar" style={{
-                    position: 'absolute',
-                    top: actionBarTop,
-                    bottom: actionBarBottom,
-                    right: '4px',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: '4px',
-                    backgroundColor: '#1890ff',
-                    color: 'white',
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    borderRadius: '4px',
-                    pointerEvents: 'auto', // Allow clicking the action bar
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }} onClick={(e: any) => e.stopPropagation()}>
-                    <div class="action-btn" draggable={true} onDragStart={(e) => handleInternalDragStart(e, selectedId)} style="cursor: grab" title="Drag to move">≡</div>
-                    <div class="action-btn" onClick={() => confirm('Delete component?') && store.removeNode(selectedId)} style="cursor: pointer; color: #ffbba6" title="Delete">✕</div>
+        ancestors.forEach((ancestor) => {
+          const compDef = ComponentRegistry[ancestor.type];
+          const label = compDef ? compDef.label : ancestor.type;
 
-                    {ancestors.map((ancestor, idx) => {
-                        const compDef = ComponentRegistry[ancestor.type];
-                        const label = compDef ? compDef.label : ancestor.type;
-                        
-                        return (
-                            <div key={ancestor.id} style={{ display: 'flex', alignItems: 'center' }}>
-                            {<div class="separator" style={{ opacity: 0.4, margin: '0 2px', fontSize: '10px' }}>|</div>}
-                            <div 
-                                class="action-btn" 
-                                onClick={(e: any) => { e.stopPropagation(); store.selectNode(ancestor.id); }}
-                                title={`Select ${label}`}
-                                style="cursor: pointer; font-size: 11px;"
-                            >
-                                <span style={{ fontWeight: 'normal', opacity: 0.8 }}>{label}</span>
-                            </div>
-                            </div>
-                        )
-                    })}
-                </div>
-                )}
-            </div>
-            );
-        } else {
-            // Structure hasn't changed. Just perform an ultra-fast DOM update.
-            const boxEl = document.getElementById('lj-selection-box');
-            if (boxEl) {
-                boxEl.style.top = `${Math.round(rect.top + window.scrollY)}px`;
-                boxEl.style.left = `${Math.round(rect.left + window.scrollX)}px`;
-                boxEl.style.width = `${Math.round(rect.width)}px`;
-                boxEl.style.height = `${Math.round(rect.height)}px`;
+          const wrapper = document.createElement('div');
+          wrapper.style.display = 'flex';
+          wrapper.style.alignItems = 'center';
 
-                const actionBarEl = boxEl.querySelector('.action-bar') as HTMLElement;
-                if (actionBarEl) {
-                    actionBarEl.style.top = actionBarTop;
-                    actionBarEl.style.bottom = actionBarBottom;
-                }
-            }
-        }
+          const separator = document.createElement('div');
+          separator.className = 'separator';
+          separator.textContent = '|';
+          separator.style.opacity = '0.4';
+          separator.style.margin = '0 2px';
+          separator.style.fontSize = '10px';
+          wrapper.appendChild(separator);
 
-        reqId = requestAnimationFrame(updateOverlay);
+          const ancestorButton = createActionButton(label, `Select ${label}`, () => store.selectNode(ancestor.id));
+          ancestorButton.style.cursor = 'pointer';
+          ancestorButton.style.fontSize = '11px';
+          ancestorButton.style.fontWeight = 'normal';
+          ancestorButton.style.opacity = '0.8';
+          wrapper.appendChild(ancestorButton);
+
+          actionBarEl!.appendChild(wrapper);
+        });
+
+        // top page property
+        const pagePropertyButton = createActionButton('🏠', 'Page Properties', () => store.selectNode('root-page'));
+        pagePropertyButton.style.cursor = 'pointer';
+        pagePropertyButton.style.fontSize = '13px';
+        actionBarEl.appendChild(pagePropertyButton);
+
+        selectedEl.appendChild(actionBarEl);
+        updateActionBarPosition(selectedEl);
       };
 
-      reqId = requestAnimationFrame(updateOverlay);
+      const handleViewportChange = () => {
+        if (selectedEl) updateActionBarPosition(selectedEl);
+      };
+
+      store.on('NODE_SELECTED', renderSelectionUi);
+      store.on('TREE_UPDATE', renderSelectionUi);
+      store.on('PREVIEW_TOGGLED', renderSelectionUi);
+      window.addEventListener('resize', handleViewportChange);
+      window.addEventListener('scroll', handleViewportChange, true);
+
+      renderSelectionUi();
+
+      (ref as any)._cleanup = () => {
+        store.off('NODE_SELECTED', renderSelectionUi);
+        store.off('TREE_UPDATE', renderSelectionUi);
+        store.off('PREVIEW_TOGGLED', renderSelectionUi);
+        window.removeEventListener('resize', handleViewportChange);
+        window.removeEventListener('scroll', handleViewportChange, true);
+        clearSelectionUi();
+      };
     },
     onUnload: async () => {
       isUnmounted = true;
+      (ref as any)._cleanup?.();
     }
   };
 
@@ -161,21 +223,7 @@ export const SelectionOverlay = ({ store }: { store: DesignStore }) => {
     height: '100%',
     pointerEvents: 'none',
     zIndex: 9999,
-    '.action-btn': {
-        display: 'flex',
-        alignItems: 'center',
-        padding: '2px 4px',
-        gap: '4px',
-        borderRadius: '3px',
-        '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.2)'
-        }
-    },
   };
 
-  return (
-    <div css={css} ref={ref}>
-      {overlayDom.node}
-    </div>
-  );
+  return <div css={css} ref={ref} />;
 };

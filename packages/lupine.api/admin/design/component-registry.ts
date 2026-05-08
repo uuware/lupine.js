@@ -1,4 +1,34 @@
-export type PropEditorType = 'text' | 'number' | 'color' | 'checkbox' | 'select' | 'textarea' | 'html' | 'css' | 'menu-select' | 'image-select' | 'carousel-cards' | 'chart-data';
+export type PropEditorType = 'text' | 'number' | 'color' | 'checkbox' | 'select' | 'textarea' | 'html' | 'css' | 'script' | 'menu-select' | 'image-select' | 'popup-list' | 'css-vars' | 'carousel-cards' | 'chart-data';
+
+const inputSizeOptions = [
+  { label: 'Default', value: '' },
+  { label: 'SS', value: 'ss' },
+  { label: 'S', value: 's' },
+  { label: 'L', value: 'l' },
+  { label: 'LL', value: 'll' },
+];
+
+const buttonTypeOptions = [
+  { label: 'Button', value: 'button' },
+  { label: 'Submit', value: 'submit' },
+  { label: 'Reset', value: 'reset' },
+];
+
+const inputTypeOptions = [
+  { label: 'Text', value: 'text' },
+  { label: 'Email', value: 'email' },
+  { label: 'Telephone', value: 'tel' },
+  { label: 'Number', value: 'number' },
+  { label: 'Password', value: 'password' },
+  { label: 'Textarea', value: 'textarea' },
+  { label: 'Select', value: 'select' },
+  { label: 'Radio Group', value: 'radio' },
+  { label: 'Checkbox', value: 'checkbox' },
+  { label: 'Date', value: 'date' },
+  { label: 'Time', value: 'time' },
+  { label: 'File', value: 'file' },
+  { label: 'Hidden', value: 'hidden' },
+];
 
 export interface PropEditorDef {
   key: string;
@@ -13,12 +43,25 @@ export interface PropEditorDef {
 export interface DesignComponentDef {
   type: string;
   label: string;
+  group: ComponentGroupNames;
   icon?: string;
   defaultProps: Record<string, any>;
   propEditors: PropEditorDef[];
   // If true, this component can accept children (like a grid)
   isContainer?: boolean;
 }
+
+export enum ComponentGroupNames {
+  Layout = 'Layout',
+  Content = 'Content',
+  Form = 'Form',
+  Media = 'Media',
+  Data = 'Data',
+  Navigation = 'Navigation'
+}
+
+const isNotHtmlMode = (p: Record<string, any>) => p.componentMode !== 'html';
+const isHtmlMode = (p: Record<string, any>) => p.componentMode === 'html';
 
 export const SpatialPropEditors: PropEditorDef[] = [
   {
@@ -68,6 +111,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-page': {
     type: 'block-page',
     label: 'Page Layout',
+    group: ComponentGroupNames.Layout,
     isContainer: true,
     defaultProps: {
       siteTitle: 'My Website',
@@ -76,137 +120,72 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       backgroundColor: '',
       padding: '0px',
       overflowY: 'auto',
+      componentMode: 'grid',
+      content: '',
       layoutDirection: 'vertical',
       gridTemplate: 'auto 1fr auto',
+      cssVars: [],
     },
     propEditors: [
       { key: 'siteTitle', label: 'Site Title', type: 'text' },
       { key: 'description', label: 'SEO Description', type: 'textarea' },
       { key: 'keywords', label: 'SEO Keywords', type: 'text' },
       { key: 'backgroundColor', label: 'Base Theme Color', type: 'color' },
+      { key: 'content', label: 'Content', type: 'html', showIf: isHtmlMode },
       { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
       { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
       {
-        key: 'overflowY',
-        label: 'Overflow Y',
+        key: 'overflowX',
+        label: 'Overflow X',
         type: 'select',
         options: [
-          { label: 'Default', value: '' },
+          { label: 'Default', value: 'visible' },
           { label: 'Auto (Scroll if needed)', value: 'auto' },
           { label: 'Hidden (No scroll)', value: 'hidden' },
           { label: 'Scroll (Always scroll)', value: 'scroll' },
         ],
       },
-      { 
-        key: 'layoutDirection', 
-        label: 'Layout Direction', 
-        type: 'select', 
-        options: [{ label: 'Vertical (Column)', value: 'vertical' }, { label: 'Horizontal (Row)', value: 'horizontal' }],
-        responsive: true
+      {
+        key: 'overflowY',
+        label: 'Overflow Y',
+        type: 'select',
+        options: [
+          { label: 'Default', value: 'visible' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
       },
-      { 
-        key: 'gridTemplate', 
-        label: 'Grid Distribution (auto, 1fr, 300px, etc.)', 
-        type: 'text', 
+      {
+        key: 'layoutDirection',
+        label: 'Layout Direction',
+        type: 'select',
+        options: [{ label: 'Vertical', value: 'vertical' }, { label: 'Horizontal', value: 'horizontal' }],
         responsive: true,
+        showIf: (p) => isNotHtmlMode(p) && p.componentMode !== 'flex',
       },
-      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
-    ],
-  },
-  'block-placeholder': {
-    type: 'block-placeholder',
-    label: 'Content Placeholder',
-    isContainer: false,
-    defaultProps: {
-      flex: '1',
-      overflowY: 'auto',
-    },
-    propEditors: [
-      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
-      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
       {
-        key: 'overflowY',
-        label: 'Overflow Y',
-        type: 'select',
-        options: [
-          { label: 'Default', value: '' },
-          { label: 'Auto (Scroll if needed)', value: 'auto' },
-          { label: 'Hidden (No scroll)', value: 'hidden' },
-          { label: 'Scroll (Always scroll)', value: 'scroll' },
-        ],
+        key: 'gridTemplate',
+        label: 'Grid Distribution (auto, 1fr, 300px, etc.)',
+        type: 'text',
+        responsive: true,
+        showIf: (p) => isNotHtmlMode(p) && p.componentMode !== 'flex',
       },
-      ...SpatialPropEditors,
-      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
-    ]
-  },
-  'block-grid': {
-    type: 'block-grid',
-    label: 'Grid Layout',
-    isContainer: true,
-    defaultProps: {
-      flex: '1',
-      layoutDirection: 'horizontal',
-      gridTemplate: '1fr 1fr',
-      gap: '16px',
-      padding: '0px',
-    },
-    propEditors: [
-      { 
-        key: 'layoutDirection', 
-        label: 'Layout Direction', 
-        type: 'select', 
-        options: [{ label: 'Vertical (Column)', value: 'vertical' }, { label: 'Horizontal (Row)', value: 'horizontal' }],
-        responsive: true
-      },
-      { 
-        key: 'gridTemplate', 
-        label: 'Grid Distribution (auto, 1fr, 300px, etc.)', 
-        type: 'text', 
-        responsive: true
-      },
-      { key: 'gap', label: 'Gap Size', type: 'text', responsive: true },
-      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
-      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
-      {
-        key: 'overflowY',
-        label: 'Overflow Y',
-        type: 'select',
-        options: [
-          { label: 'Default', value: '' },
-          { label: 'Auto (Scroll if needed)', value: 'auto' },
-          { label: 'Hidden (No scroll)', value: 'hidden' },
-          { label: 'Scroll (Always scroll)', value: 'scroll' },
-        ],
-      },
-      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
-      ...SpatialPropEditors,
-      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
-    ],
-  },
-  'block-flex': {
-    type: 'block-flex',
-    label: 'Flex Container',
-    isContainer: true,
-    defaultProps: {
-      flexDirection: 'column',
-      flex: '1',
-      gap: '16px',
-      padding: '0px',
-    },
-    propEditors: [
       {
         key: 'flexDirection',
         label: 'Direction',
         type: 'select',
-        options: [{ label: 'Vertical (Column)', value: 'column' }, { label: 'Horizontal (Row)', value: 'row' }],
-        responsive: true
+        options: [{ label: 'Column', value: 'column' }, { label: 'Row', value: 'row' }],
+        responsive: true,
+        showIf: (p) => p.componentMode === 'flex',
       },
       {
         key: 'flexWrap',
         label: 'Wrap Elements',
         type: 'select',
         options: [{ label: 'No Wrap', value: 'nowrap' }, { label: 'Wrap', value: 'wrap' }],
-        responsive: true
+        responsive: true,
+        showIf: (p) => p.componentMode === 'flex',
       },
       {
         key: 'alignItems',
@@ -218,7 +197,8 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
           { label: 'Center', value: 'center' },
           { label: 'End', value: 'flex-end' },
         ],
-        responsive: true
+        responsive: true,
+        showIf: (p) => p.componentMode === 'flex',
       },
       {
         key: 'justifyContent',
@@ -231,17 +211,120 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
           { label: 'Space Between', value: 'space-between' },
           { label: 'Space Around', value: 'space-around' }
         ],
-        responsive: true
+        responsive: true,
+        showIf: (p) => p.componentMode === 'flex',
       },
-      { key: 'gap', label: 'Gap Size', type: 'text', responsive: true },
+      { key: 'gap', label: 'Gap Size', type: 'text', responsive: true, showIf: (p) => p.componentMode === 'flex' },
+      { key: 'cssVars', label: 'CSS Variables', type: 'css-vars', responsive: true },
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-registered-component': {
+    type: 'block-registered-component',
+    label: 'Registered Component',
+    group: ComponentGroupNames.Content,
+    isContainer: false,
+    defaultProps: {
+      componentKey: '',
+      label: 'Registered Component',
+    },
+    propEditors: [
+      { key: 'componentKey', label: 'Component Key', type: 'text' },
+      { key: 'label', label: 'Label', type: 'text' },
+      ...SpatialPropEditors,
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-placeholder': {
+    type: 'block-placeholder',
+    label: 'Content Placeholder',
+    group: ComponentGroupNames.Layout,
+    isContainer: false,
+    defaultProps: {
+      flex: '1',
+      overflowY: 'auto',
+    },
+    propEditors: [
       { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
       { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      {
+        key: 'overflowX',
+        label: 'Overflow X',
+        type: 'select',
+        options: [
+          { label: 'Default', value: 'visible' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
       {
         key: 'overflowY',
         label: 'Overflow Y',
         type: 'select',
         options: [
-          { label: 'Default', value: '' },
+          { label: 'Default', value: 'visible' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
+      ...SpatialPropEditors,
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ]
+  },
+  'block-grid': {
+    type: 'block-grid',
+    label: 'Grid Layout',
+    group: ComponentGroupNames.Layout,
+    isContainer: true,
+    defaultProps: {
+      flex: 'none',
+      componentMode: 'grid',
+      content: '',
+      layoutDirection: 'horizontal',
+      gridTemplate: '1fr 1fr',
+      gap: '16px',
+      padding: '0px',
+      cssVars: [],
+    },
+    propEditors: [
+      { key: 'content', label: 'Content', type: 'html', showIf: isHtmlMode },
+      {
+        key: 'layoutDirection',
+        label: 'Layout Direction',
+        type: 'select',
+        options: [{ label: 'Vertical', value: 'vertical' }, { label: 'Horizontal', value: 'horizontal' }],
+        responsive: true,
+        showIf: isNotHtmlMode,
+      },
+      {
+        key: 'gridTemplate',
+        label: 'Grid Distribution (columns for horizontal, rows for vertical)',
+        type: 'text',
+        responsive: true,
+        showIf: isNotHtmlMode,
+      },
+      { key: 'gap', label: 'Gap Size', type: 'text', responsive: true, showIf: isNotHtmlMode },
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      {
+        key: 'overflowX',
+        label: 'Overflow X',
+        type: 'select',
+        options: [
+          { label: 'Default', value: 'visible' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
+      {
+        key: 'overflowY',
+        label: 'Overflow Y',
+        type: 'select',
+        options: [
+          { label: 'Default', value: 'visible' },
           { label: 'Auto (Scroll if needed)', value: 'auto' },
           { label: 'Hidden (No scroll)', value: 'hidden' },
           { label: 'Scroll (Always scroll)', value: 'scroll' },
@@ -249,12 +332,104 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       },
       { key: 'backgroundColor', label: 'Background Color', type: 'color' },
       ...SpatialPropEditors,
+      { key: 'cssVars', label: 'CSS Variables', type: 'css-vars', responsive: true },
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-flex': {
+    type: 'block-flex',
+    label: 'Flex Container',
+    group: ComponentGroupNames.Layout,
+    isContainer: true,
+    defaultProps: {
+      componentMode: 'flex',
+      content: '',
+      flexDirection: 'row',
+      flex: 'none',
+      gap: '16px',
+      padding: '0px',
+      cssVars: [],
+    },
+    propEditors: [
+      { key: 'content', label: 'Content', type: 'html', showIf: isHtmlMode },
+      {
+        key: 'flexDirection',
+        label: 'Direction',
+        type: 'select',
+        options: [{ label: 'Column', value: 'column' }, { label: 'Row', value: 'row' }],
+        responsive: true,
+        showIf: isNotHtmlMode,
+      },
+      {
+        key: 'flexWrap',
+        label: 'Wrap Elements',
+        type: 'select',
+        options: [{ label: 'No Wrap', value: 'nowrap' }, { label: 'Wrap', value: 'wrap' }],
+        responsive: true,
+        showIf: isNotHtmlMode,
+      },
+      {
+        key: 'alignItems',
+        label: 'Align Items (Cross Axis)',
+        type: 'select',
+        options: [
+          { label: 'Stretch', value: 'stretch' },
+          { label: 'Start', value: 'flex-start' },
+          { label: 'Center', value: 'center' },
+          { label: 'End', value: 'flex-end' },
+        ],
+        responsive: true,
+        showIf: isNotHtmlMode,
+      },
+      {
+        key: 'justifyContent',
+        label: 'Justify Content (Main Axis)',
+        type: 'select',
+        options: [
+          { label: 'Start', value: 'flex-start' },
+          { label: 'Center', value: 'center' },
+          { label: 'End', value: 'flex-end' },
+          { label: 'Space Between', value: 'space-between' },
+          { label: 'Space Around', value: 'space-around' }
+        ],
+        responsive: true,
+        showIf: isNotHtmlMode,
+      },
+      { key: 'gap', label: 'Gap Size', type: 'text', responsive: true, showIf: isNotHtmlMode },
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      {
+        key: 'overflowX',
+        label: 'Overflow X',
+        type: 'select',
+        options: [
+          { label: 'Default', value: 'visible' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
+      {
+        key: 'overflowY',
+        label: 'Overflow Y',
+        type: 'select',
+        options: [
+          { label: 'Default', value: 'visible' },
+          { label: 'Auto (Scroll if needed)', value: 'auto' },
+          { label: 'Hidden (No scroll)', value: 'hidden' },
+          { label: 'Scroll (Always scroll)', value: 'scroll' },
+        ],
+      },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
+      ...SpatialPropEditors,
+      { key: 'cssVars', label: 'CSS Variables', type: 'css-vars', responsive: true },
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
   },
   'block-title': {
     type: 'block-title',
     label: 'Title',
+    group: ComponentGroupNames.Content,
     defaultProps: {
       flex: '1',
       text: 'New Title',
@@ -295,11 +470,13 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-paragraph': {
     type: 'block-paragraph',
     label: 'Paragraph',
+    group: ComponentGroupNames.Content,
     defaultProps: {
       flex: '1',
       text: 'Enter paragraph text here...',
       showTitle: false,
       titleText: 'Paragraph Title',
+      color: '',
     },
     propEditors: [
       { key: 'text', label: 'Content', type: 'html' },
@@ -315,6 +492,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
           { label: 'Right', value: 'right' },
         ],
       },
+      { key: 'color', label: 'Color', type: 'color' },
       ...SpatialPropEditors,
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
@@ -322,6 +500,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-image': {
     type: 'block-image',
     label: 'Image',
+    group: ComponentGroupNames.Media,
     defaultProps: {
       flex: '1',
       src: 'https://via.placeholder.com/150',
@@ -370,9 +549,189 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
       { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
     ],
   },
+  'block-button': {
+    type: 'block-button',
+    label: 'Action Button',
+    group: ComponentGroupNames.Form,
+    defaultProps: {
+      flex: 'none',
+      text: 'Button',
+      buttonType: 'button',
+      size: '',
+      disabled: false,
+      script: '',
+      color: '',
+      backgroundColor: '',
+      padding: '0px',
+    },
+    propEditors: [
+      { key: 'text', label: 'Text', type: 'text' },
+      { key: 'buttonType', label: 'Button Type', type: 'select', options: buttonTypeOptions },
+      { key: 'size', label: 'Size', type: 'select', options: inputSizeOptions },
+      { key: 'disabled', label: 'Disabled', type: 'checkbox' },
+      { key: 'script', label: 'Click Script', type: 'script' },
+      { key: 'color', label: 'Text Color', type: 'color' },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color' },
+      { key: 'textAlign', label: 'Alignment', type: 'select', options: [{ label: 'Left', value: 'left' }, { label: 'Center', value: 'center' }, { label: 'Right', value: 'right' }] },
+      ...SpatialPropEditors,
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-popup': {
+    type: 'block-popup',
+    label: 'Popup Menu',
+    group: ComponentGroupNames.Navigation,
+    defaultProps: {
+      flex: 'none',
+      type: 'button',
+      label: 'Menu',
+      list: [
+        { text: 'Home', url: '/' },
+        { text: 'About', url: '/about' },
+      ],
+      defaultValue: '',
+      tips: '',
+      noUpdateLabel: false,
+      align: 'right',
+      padding: '0px',
+    },
+    propEditors: [
+      { key: 'type', label: 'Popup Type', type: 'select', options: [{ label: 'Button', value: 'button' }, { label: 'Label', value: 'label' }] },
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'list', label: 'Popup Items', type: 'popup-list' },
+      { key: 'defaultValue', label: 'Default Value', type: 'text' },
+      { key: 'tips', label: 'Tips', type: 'text' },
+      { key: 'noUpdateLabel', label: 'Do Not Update Selected Label', type: 'checkbox' },
+      { key: 'align', label: 'Menu Align', type: 'select', options: [{ label: 'Left', value: 'left' }, { label: 'Right', value: 'right' }] },
+      { key: 'textAlign', label: 'Alignment', type: 'select', options: [{ label: 'Left', value: 'left' }, { label: 'Center', value: 'center' }, { label: 'Right', value: 'right' }] },
+      ...SpatialPropEditors,
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-lang': {
+    type: 'block-lang',
+    label: 'Language Switcher',
+    group: ComponentGroupNames.Navigation,
+    defaultProps: {
+      flex: 'none',
+      type: 'button',
+      label: 'Language',
+      defaultValue: '',
+      tips: '',
+      noUpdateLabel: false,
+      align: 'right',
+      padding: '0px',
+    },
+    propEditors: [
+      { key: 'type', label: 'Popup Type', type: 'select', options: [{ label: 'Button', value: 'button' }, { label: 'Label', value: 'label' }] },
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'defaultValue', label: 'Default Value', type: 'text' },
+      { key: 'tips', label: 'Tips', type: 'text' },
+      { key: 'noUpdateLabel', label: 'Do Not Update Selected Label', type: 'checkbox' },
+      { key: 'align', label: 'Menu Align', type: 'select', options: [{ label: 'Left', value: 'left' }, { label: 'Right', value: 'right' }] },
+      { key: 'textAlign', label: 'Alignment', type: 'select', options: [{ label: 'Left', value: 'left' }, { label: 'Center', value: 'center' }, { label: 'Right', value: 'right' }] },
+      ...SpatialPropEditors,
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
+  'block-input': {
+    type: 'block-input',
+    label: 'Form Input',
+    group: ComponentGroupNames.Form,
+    defaultProps: {
+      flex: '1',
+      fieldName: 'field_name',
+      label: 'Field Label',
+      type: 'text',
+      placeholder: '',
+      defaultValue: '',
+      hint: '',
+      errorMessage: '',
+      required: false,
+      disabled: false,
+      readonly: false,
+      min: '',
+      max: '',
+      pattern: '',
+      options: 'Option 1|option1\nOption 2|option2',
+      labelWidth: '120px',
+      inputWidth: '100%',
+      layout: 'vertical',
+      optionsLayout: 'vertical',
+      showLabel: true,
+      size: '',
+      checkboxAsArray: false,
+      padding: '0px',
+    },
+    propEditors: [
+      { key: 'fieldName', label: 'Field Name (same name groups radios)', type: 'text' },
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'showLabel', label: 'Show Label', type: 'checkbox' },
+      {
+        key: 'type',
+        label: 'Field Type',
+        type: 'select',
+        options: inputTypeOptions,
+      },
+      { key: 'size', label: 'Size', type: 'select', options: inputSizeOptions, showIf: (p) => p.type !== 'hidden' },
+      { key: 'placeholder', label: 'Placeholder', type: 'text', showIf: (p) => !['radio', 'checkbox', 'hidden', 'file'].includes(p.type) },
+      { key: 'defaultValue', label: 'Default Value', type: 'text', showIf: (p) => p.type !== 'file' },
+      { key: 'hint', label: 'Hint / Help Text', type: 'textarea', showIf: (p) => p.type !== 'hidden' },
+      { key: 'errorMessage', label: 'Error Message', type: 'text', showIf: (p) => p.type !== 'hidden' },
+      { key: 'required', label: 'Required', type: 'checkbox', showIf: (p) => p.type !== 'hidden' },
+      { key: 'disabled', label: 'Disabled', type: 'checkbox', showIf: (p) => p.type !== 'hidden' },
+      { key: 'readonly', label: 'Readonly', type: 'checkbox', showIf: (p) => !['select', 'radio', 'checkbox', 'file', 'hidden'].includes(p.type) },
+      { key: 'min', label: 'Min', type: 'text', showIf: (p) => ['number', 'date', 'time'].includes(p.type) },
+      { key: 'max', label: 'Max', type: 'text', showIf: (p) => ['number', 'date', 'time'].includes(p.type) },
+      { key: 'pattern', label: 'Pattern (Regex)', type: 'text', showIf: (p) => ['text', 'email', 'tel', 'password'].includes(p.type) },
+      { key: 'options', label: 'Options (label|value per line)', type: 'textarea', showIf: (p) => ['select', 'radio', 'checkbox'].includes(p.type) },
+      { key: 'checkboxAsArray', label: 'Checkbox Name as Array []', type: 'checkbox', showIf: (p) => p.type === 'checkbox' },
+      {
+        key: 'layout',
+        label: 'Label Layout',
+        type: 'select',
+        options: [
+          { label: 'Vertical', value: 'vertical' },
+          { label: 'Horizontal', value: 'horizontal' },
+        ],
+        showIf: (p) => p.type !== 'hidden',
+        responsive: true,
+      },
+      { key: 'labelWidth', label: 'Label Width', type: 'text', showIf: (p) => p.type !== 'hidden' && p.layout === 'horizontal', responsive: true },
+      { key: 'inputWidth', label: 'Input Width', type: 'text', showIf: (p) => p.type !== 'hidden', responsive: true },
+      {
+        key: 'optionsLayout',
+        label: 'Options Layout',
+        type: 'select',
+        options: [
+          { label: 'Vertical', value: 'vertical' },
+          { label: 'Horizontal', value: 'horizontal' },
+        ],
+        showIf: (p) => ['radio', 'checkbox'].includes(p.type),
+        responsive: true,
+      },
+      { key: 'optionsGap', label: 'Options Gap', type: 'text', showIf: (p) => ['radio', 'checkbox'].includes(p.type), responsive: true },
+      { key: 'controlPadding', label: 'Control Padding', type: 'text', showIf: (p) => !['radio', 'checkbox', 'hidden'].includes(p.type), responsive: true },
+      { key: 'borderRadius', label: 'Control Border Radius', type: 'text', showIf: (p) => !['radio', 'checkbox', 'hidden'].includes(p.type), responsive: true },
+      { key: 'labelColor', label: 'Label Color', type: 'color', showIf: (p) => p.type !== 'hidden' },
+      { key: 'controlBackgroundColor', label: 'Control Background', type: 'color', showIf: (p) => !['radio', 'checkbox', 'hidden'].includes(p.type) },
+      { key: 'controlColor', label: 'Control Text Color', type: 'color', showIf: (p) => p.type !== 'hidden' },
+      ...SpatialPropEditors,
+      { key: 'margin', label: 'External Margin', type: 'text', responsive: true },
+      { key: 'padding', label: 'Internal Padding', type: 'text', responsive: true },
+      { key: 'customCss', label: 'Custom Inline Styles (CSS)', type: 'css' },
+    ],
+  },
   'block-carousel': {
     type: 'block-carousel',
     label: 'Carousel',
+    group: ComponentGroupNames.Media,
     defaultProps: {
       flex: '1',
       showDots: true,
@@ -396,6 +755,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-youtube': {
     type: 'block-youtube',
     label: 'YouTube Player',
+    group: ComponentGroupNames.Media,
     defaultProps: {
       flex: '1',
       width: '100%',
@@ -427,6 +787,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-chart': {
     type: 'block-chart',
     label: 'Data Chart',
+    group: ComponentGroupNames.Data,
     defaultProps: {
       flex: '1',
       width: '100%',
@@ -470,6 +831,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-menu-bar': {
     type: 'block-menu-bar',
     label: 'Menu Bar',
+    group: ComponentGroupNames.Navigation,
     defaultProps: {
       menuId: '',
       textColor: '',
@@ -492,6 +854,7 @@ export const ComponentRegistry: Record<string, DesignComponentDef> = {
   'block-menu-list': {
     type: 'block-menu-list',
     label: 'Menu Sidebar',
+    group: ComponentGroupNames.Navigation,
     defaultProps: {
       menuId: '',
       mobileMenu: false,

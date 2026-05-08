@@ -8,6 +8,7 @@ export * from './admin-release';
 export * from './admin-tokens';
 export * from './admin-performance';
 export * from './design/render-page';
+export * from './design/register-page';
 
 export * from './admin-setting-web';
 export * from './admin-setting-api';

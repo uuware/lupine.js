@@ -7,12 +7,15 @@ import {
   NotificationColor,
   PopupMenuWithButton,
   ActionSheetColorPicker,
+  ActionSheetThemePicker,
   ToggleButton,
+  ActionSheetSelectPromise,
 } from 'lupine.components';
 import { DesignStore } from './design-store';
 import { LayerTreePanel } from './layer-tree-panel';
 import { DesignUtils } from './design-utils';
-import { ComponentRegistry } from './component-registry';
+import { ComponentGroupNames, ComponentRegistry } from './component-registry';
+import { cmsGetRegisteredComponents } from './register-page';
 import { AdminSelectPage } from '../admin-page-list';
 import { AdminSelectMenu } from '../admin-menu-list';
 import { AdminSelectImage } from '../admin-images';
@@ -30,8 +33,21 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
   let currentContextPackage = 'default';
   let currentContextRemark = '';
   let currentContextIsComponent = false;
+  let currentContextAccesslevel = '0';
   let currentUpdatetime = 0;
   let savedComponents: any[] = [];
+  const openedComponentGroups = new Set<string>();
+
+  const handleRegisteredComponentDragStart = (e: any, componentKey: string, label: string) => {
+    e.dataTransfer.setData(
+      'text/plain',
+      JSON.stringify({
+        action: 'add-registered-component',
+        componentKey,
+        label,
+      })
+    );
+  };
 
   const handleDragStart = (e: any, type: string) => {
     const comp = ComponentRegistry[type];
@@ -43,14 +59,6 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
     });
     e.dataTransfer.setData('text/plain', payload);
   };
-
-  const savedComponentsListDom = new HtmlVar(
-    (
-      <div class='p-m' style={{ color: '#aaa', fontSize: '12px', textAlign: 'center' }}>
-        Loading...
-      </div>
-    )
-  );
 
   const removePinnedComponent = async (pageid: string, e: Event) => {
     e.stopPropagation();
@@ -81,9 +89,8 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
     } catch (err) {}
   };
 
-  const renderSavedComponents = () => {
-    savedComponentsListDom.value = (
-      <>
+  const renderSavedComponentsContent = () => (
+    <>
         {savedComponents.map((saved: any) => (
           <div
             key={saved.name}
@@ -95,7 +102,8 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                 'text/plain',
                 JSON.stringify({
                   action: 'add-saved-component',
-                  tree: saved.tree,
+                  pageid: saved.pageid,
+                  name: saved.name,
                 })
               );
             }}
@@ -110,7 +118,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                 top: '50%',
                 transform: 'translateY(-50%)',
                 cursor: 'pointer',
-                color: '#999',
+                color: '#ff0000',
                 fontSize: '14px',
                 fontWeight: 'bold',
               }}
@@ -129,8 +137,13 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
         <button class='button-base button-d mt-m' style={{ width: '100%' }} onClick={loadMoreComponents}>
           Load More
         </button>
-      </>
-    );
+    </>
+  );
+
+  const renderSavedComponents = () => {
+    if (activeSidebarTab === 'components') {
+      renderSidebarState();
+    }
   };
 
   const fetchSavedComponents = async () => {
@@ -166,6 +179,88 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
     );
   };
 
+  const renderRegisteredComponents = () => {
+    const components = cmsGetRegisteredComponents();
+    if (components.length === 0) {
+      return null;
+    }
+
+    return (
+      <div class='component-group'>
+        <div
+          class='sidebar-section-title'
+          style={{
+            padding: '8px 12px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: '#999',
+            backgroundColor: '#f9f9f9',
+            textTransform: 'uppercase',
+          }}
+        >
+          Registered Components
+        </div>
+        {components.map((comp) => (
+          <div
+            key={comp.key}
+            class='tool-item'
+            draggable={true}
+            onDragStart={(e: any) => handleRegisteredComponentDragStart(e, comp.key, comp.label)}
+          >
+            {comp.label}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderComponentGroup = (groupName: string) => {
+    const components = Object.values(ComponentRegistry)
+      .filter((comp) => comp.type !== 'block-page' && comp.type !== 'block-registered-component' && comp.group === groupName);
+    if (components.length === 0) {
+      return null;
+    }
+
+    const isOpen = openedComponentGroups.has(groupName);
+    return (
+      <div class='component-group'>
+        <div
+          class='sidebar-section-title'
+          style={{
+            padding: '8px 12px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: '#777',
+            backgroundColor: '#f9f9f9',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            userSelect: 'none',
+            borderBottom: '1px solid #eee',
+          }}
+          onClick={() => {
+            if (isOpen) {
+              openedComponentGroups.delete(groupName);
+            } else {
+              openedComponentGroups.add(groupName);
+            }
+            renderSidebarState();
+          }}
+        >
+          <span>{groupName}</span>
+          <span style={{ fontSize: '12px', color: '#aaa' }}>{isOpen ? '▾' : '▸'}</span>
+        </div>
+        {isOpen && components.map((comp) => (
+          <div class='tool-item' draggable={true} onDragStart={(e: any) => handleDragStart(e, comp.type)}>
+            {comp.label}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderSidebarState = () => {
     sidebarTabsDom.value = (
       <div class='sidebar-tabs'>
@@ -194,26 +289,8 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
       <>
         {activeSidebarTab === 'components' && (
           <div class='toolbox'>
-            <div
-              class='sidebar-section-title'
-              style={{
-                padding: '8px 12px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                color: '#999',
-                backgroundColor: '#f9f9f9',
-                textTransform: 'uppercase',
-              }}
-            >
-              Built-in Primitives
-            </div>
-            {Object.values(ComponentRegistry)
-              .filter((comp) => comp.type !== 'block-page')
-              .map((comp) => (
-                <div class='tool-item' draggable={true} onDragStart={(e: any) => handleDragStart(e, comp.type)}>
-                  {comp.label}
-                </div>
-              ))}
+            {Object.values(ComponentGroupNames).map((groupName) => renderComponentGroup(groupName))}
+            {renderRegisteredComponents()}
 
             <div
               class='sidebar-section-title'
@@ -228,7 +305,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
             >
               My Components
             </div>
-            {savedComponentsListDom.node}
+            {renderSavedComponentsContent()}
           </div>
         )}
 
@@ -259,7 +336,11 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
             cursor: canUndo ? 'pointer' : 'not-allowed',
             opacity: canUndo ? 1 : 0.4,
           }}
-          onClick={() => canUndo && store.undo()}
+          onClick={() => {
+            if (!canUndo) return;
+            store.undo();
+            renderPropertyPanel();
+          }}
           title='Undo (Ctrl+Z)'
         >
           ↶
@@ -273,7 +354,11 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
             cursor: canRedo ? 'pointer' : 'not-allowed',
             opacity: canRedo ? 1 : 0.4,
           }}
-          onClick={() => canRedo && store.redo()}
+          onClick={() => {
+            if (!canRedo) return;
+            store.redo();
+            renderPropertyPanel();
+          }}
           title='Redo (Ctrl+Shift+Z)'
         >
           ↷
@@ -313,7 +398,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
           <strong>{compDef.label}</strong>
           <div class='property-id'>#{node.id}</div>
         </div>
-        {(node.type === 'block-grid' || node.type === 'block-flex') && node.id !== 'root-page' && (
+        {(['block-page', 'block-grid', 'block-flex'].includes(node.type)) && (
           <div
             class='prop-row'
             style={{
@@ -326,14 +411,17 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
             <div class='prop-control'>
               <select
                 class='prop-input'
-                value={node.type}
-                onChange={(e: any) => store.morphNodeType(node.id, e.target.value)}
+                value={node.props.componentMode || (node.type === 'block-flex' ? 'flex' : 'grid')}
+                onChange={(e: any) => store.setNodeComponentMode(node.id, e.target.value)}
               >
-                <option value='block-flex' selected={node.type === 'block-flex'}>
+                <option value='grid' selected={(node.props.componentMode || (node.type === 'block-flex' ? 'flex' : 'grid')) === 'grid'}>
+                  Grid Layout
+                </option>
+                <option value='flex' selected={(node.props.componentMode || (node.type === 'block-flex' ? 'flex' : 'grid')) === 'flex'}>
                   Flex Container
                 </option>
-                <option value='block-grid' selected={node.type === 'block-grid'}>
-                  Grid Layout
+                <option value='html' selected={(node.props.componentMode || (node.type === 'block-flex' ? 'flex' : 'grid')) === 'html'}>
+                  HTML Mode
                 </option>
               </select>
             </div>
@@ -416,7 +504,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                     }}
                   />
                 );
-              } else if (editor.type === 'html' || editor.type === 'css') {
+              } else if (editor.type === 'html' || editor.type === 'css' || editor.type === 'script') {
                 const openEditor = () => {
                   const latestVal =
                     node.props[actualKey] ?? (mediaValue === '' ? compDef.defaultProps?.[actualKey] ?? '' : '');
@@ -464,17 +552,31 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                   </div>
                 );
               } else if (editor.type === 'color') {
+                const commitColorValue = (result: string) => {
+                  handlePropChange(actualKey, result, true);
+                  setTimeout(() => {
+                    store.commitHistory();
+                    store.emit('TREE_UPDATE');
+                  }, 150);
+                };
+
                 const openColorPicker = async () => {
                   const result = await ActionSheetColorPicker({
                     value: val,
                     title: `Select ${editor.label}`,
                   });
                   if (result !== undefined) {
-                    handlePropChange(actualKey, result, true);
-                    setTimeout(() => {
-                      store.commitHistory();
-                      store.emit('TREE_UPDATE');
-                    }, 150);
+                    commitColorValue(result);
+                  }
+                };
+
+                const openThemePicker = async () => {
+                  const result = await ActionSheetThemePicker({
+                    value: val,
+                    title: `Select Theme for ${editor.label}`,
+                  });
+                  if (result !== undefined) {
+                    commitColorValue(result);
                   }
                 };
 
@@ -514,6 +616,21 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                       }}
                       onClick={openColorPicker}
                       title='Pick Color'
+                    />
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '24px',
+                        background:
+                          'linear-gradient(135deg, var(--primary-color, #1890ff) 0%, var(--success-color, #52c41a) 35%, var(--warning-color, #faad14) 68%, var(--error-color, #ff4d4f) 100%)',
+                        borderRadius: '4px',
+                        border: '1px solid #dae1e7',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.35), 0 1px 3px rgba(0,0,0,0.18)',
+                      }}
+                      onClick={openThemePicker}
+                      title='Pick Theme Variable'
                     />
                   </div>
                 );
@@ -730,6 +847,139 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                     <button class='button-base button-d' style={{ padding: '8px', fontSize: '13px' }} onClick={addCard}>+ Add Card</button>
                   </div>
                 );
+              } else if (editor.type === 'popup-list') {
+                const items = Array.isArray(val) ? val : [];
+
+                const commitPopupItems = (newItems: any[]) => {
+                  handlePropChange(actualKey, newItems, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                const updatePopupItem = (index: number, patch: any, requiresRender: boolean = false) => {
+                  const newItems = [...items];
+                  newItems[index] = { ...newItems[index], ...patch };
+                  handlePropChange(actualKey, newItems, requiresRender, !requiresRender);
+                };
+
+                const addPopupItem = () => {
+                  commitPopupItems([...items, { text: `Item ${items.length + 1}`, url: '' }]);
+                };
+
+                const deletePopupItem = (index: number) => {
+                  const newItems = [...items];
+                  newItems.splice(index, 1);
+                  commitPopupItems(newItems);
+                };
+
+                inputEl = (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                    {items.map((item: any, index: number) => {
+                      let isDirtyText = false;
+                      let isDirtyUrl = false;
+
+                      return (
+                        <div key={index} style={{ border: '1px solid var(--primary-border)', borderRadius: '6px', padding: '10px', backgroundColor: 'var(--secondary-bg-color)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '12px', color: 'var(--primary-color)' }}>Item {index + 1}</strong>
+                            <button class='button-base color-red' style={{ padding: '2px 6px', fontSize: '12px', backgroundColor: 'transparent', border: '1px solid var(--error-color)' }} onClick={() => deletePopupItem(index)}>✕</button>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>Text</label>
+                            <input type='text' class='prop-input' style={{ fontSize: '12px', padding: '6px' }} value={item.text || ''}
+                              onInput={(e: any) => { isDirtyText = true; updatePopupItem(index, { text: e.target.value }); }}
+                              onBlur={() => { if (isDirtyText) { isDirtyText = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
+                              onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>URL</label>
+                            <input type='text' class='prop-input' style={{ fontSize: '12px', padding: '6px' }} value={item.url || ''}
+                              onInput={(e: any) => { isDirtyUrl = true; updatePopupItem(index, { url: e.target.value }); }}
+                              onBlur={() => { if (isDirtyUrl) { isDirtyUrl = false; setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150); } }}
+                              onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <button class='button-base button-d' style={{ padding: '8px', fontSize: '13px' }} onClick={addPopupItem}>+ Add Item</button>
+                  </div>
+                );
+              } else if (editor.type === 'css-vars') {
+                const items = Array.isArray(val) ? val : [];
+
+                const normalizeVarName = (name: string) => {
+                  const trimmed = String(name || '').trim();
+                  if (!trimmed) return '--variable-name';
+                  return trimmed.startsWith('--') ? trimmed : `--${trimmed}`;
+                };
+
+                const commitCssVars = (newItems: any[]) => {
+                  handlePropChange(actualKey, newItems, true);
+                  setTimeout(() => { store.commitHistory(); store.emit('TREE_UPDATE'); }, 150);
+                };
+
+                const commitCssVarValue = (index: number, patch: any) => {
+                  const newItems = [...items];
+                  newItems[index] = { ...newItems[index], ...patch };
+                  commitCssVars(newItems);
+                };
+
+                const addCssVar = () => {
+                  commitCssVars([...items, { name: '--variable-name', value: '' }]);
+                };
+
+                const deleteCssVar = (index: number) => {
+                  const newItems = [...items];
+                  newItems.splice(index, 1);
+                  commitCssVars(newItems);
+                };
+
+                inputEl = (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                    {items.map((item: any, index: number) => {
+                      return (
+                        <div key={index} style={{ border: '1px solid var(--primary-border)', borderRadius: '6px', padding: '10px', backgroundColor: 'var(--secondary-bg-color)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '12px', color: 'var(--primary-color)' }}>CSS Variable {index + 1}</strong>
+                            <button class='button-base color-red' style={{ padding: '2px 6px', fontSize: '12px', backgroundColor: 'transparent', border: '1px solid var(--error-color)' }} onClick={() => deleteCssVar(index)}>✕</button>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>Variable Name</label>
+                            <input type='text' class='prop-input' style={{ fontSize: '12px', padding: '6px', fontFamily: 'monospace' }} defaultValue={item.name || ''}
+                              onBlur={(e: any) => {
+                                const normalizedName = normalizeVarName(e.target.value);
+                                if (normalizedName !== (item.name || '')) {
+                                  e.target.value = normalizedName;
+                                  commitCssVarValue(index, { name: normalizedName });
+                                }
+                              }}
+                              onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--primary-color-dim, #666)' }}>Value</label>
+                            <input type='text' class='prop-input' style={{ fontSize: '12px', padding: '6px', fontFamily: 'monospace' }} defaultValue={item.value || ''}
+                              onBlur={(e: any) => {
+                                const nextValue = e.target.value;
+                                if (nextValue !== (item.value || '')) {
+                                  commitCssVarValue(index, { value: nextValue });
+                                }
+                              }}
+                              onKeyDown={(e: any) => e.key === 'Enter' && e.target.blur()}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {items.length === 0 && (
+                      <div style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: 'var(--secondary-text, #999)', border: '1px dashed var(--primary-border)', borderRadius: '6px' }}>
+                        No CSS variables defined.
+                      </div>
+                    )}
+                    <button class='button-base button-d' style={{ padding: '8px', fontSize: '13px' }} onClick={addCssVar}>+ Add CSS Variable</button>
+                  </div>
+                );
               } else if (editor.type === 'chart-data') {
                 const sampleDataMap: Record<string, string> = {
                   default: JSON.stringify({ labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], series: [{ name: 'Series 1', data: [31, 40, 28, 51, 42, 109, 100] }, { name: 'Series 2', data: [11, 32, 45, 32, 34, 52, 41] }] }, null, 2),
@@ -871,7 +1121,9 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
 
                       // init first responsive prop to trigger display immediately
                       const firstResp = compDef.propEditors.find((e: any) => e.responsive);
-                      if (firstResp) handlePropChange(firstResp.key + m.value, '');
+                      if (firstResp) {
+                        handlePropChange(firstResp.key + m.value, firstResp.type === 'css-vars' ? [] : '');
+                      }
                       renderPropertyPanel();
                     }
                   }}
@@ -894,7 +1146,17 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
           if (node.id === 'root-page' || isChildOfGrid) return null;
 
           return (
-            <button class='btn-delete mt-l' onClick={() => store.removeNode(node.id)}>
+            <button class='btn-delete mt-l' onClick={async () => {
+              const index = await ActionSheetSelectPromise({
+                title: 'Delete component?',
+                options: ['OK'],
+                cancelButtonText: 'Cancel',
+              });
+              if (index !== 0) {
+                return;
+              }
+              store.removeNode(node.id);
+            }}>
               Delete Component
             </button>
           );
@@ -1073,6 +1335,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
               currentContextId = data.result.pageid || '';
               currentContextName = data.result.name || '';
               currentContextPackage = data.result.package || 'default';
+              currentContextAccesslevel = data.result.accesslevel || '0';
               currentContextRemark = data.result.remark || '';
               currentContextIsComponent = data.result.is_component === 1;
               currentUpdatetime = data.result.updatetime || 0;
@@ -1096,8 +1359,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                     }
                   };
                   computeCss(tree);
-                  store.tree = tree;
-                  store.emit('TREE_UPDATE');
+                  store.setTree(tree);
                 } catch (e) {
                   console.error('Failed to parse page json', e);
                 }
@@ -1151,6 +1413,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                 currentContextId,
                 currentContextName,
                 currentContextPackage,
+                currentContextAccesslevel,
                 currentContextRemark,
                 currentContextIsComponent,
                 currentUpdatetime,
@@ -1159,6 +1422,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                   newId: string,
                   newName: string,
                   newPackage: string,
+                  newAccesslevel: string,
                   newRemark: string,
                   isComponent: boolean,
                   newStamp: number
@@ -1166,6 +1430,7 @@ export const AdminDesignControl = (props: { pageId?: string }) => {
                   currentContextId = newId;
                   currentContextName = newName;
                   currentContextPackage = newPackage;
+                  currentContextAccesslevel = newAccesslevel;
                   currentContextRemark = newRemark;
                   currentContextIsComponent = isComponent;
                   currentUpdatetime = newStamp;

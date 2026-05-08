@@ -2,7 +2,7 @@ import { CssProps, getRenderPageProps, MediaQueryRange } from 'lupine.components
 import { MenuSidebar } from 'lupine.components';
 import { DesignNode, getDesignStore } from './design-store';
 import { NestMenuItemProps } from 'lupine.components';
-import { buildNestedItems } from './block-menu-bar';
+import { buildNestedItems, getCurrentCmsLang } from './block-menu-bar';
 import { DesignUtils } from './design-utils';
 
 export const BlockMenuList = async (props: { node: DesignNode }) => {
@@ -42,7 +42,8 @@ export const BlockMenuList = async (props: { node: DesignNode }) => {
   let items: NestMenuItemProps[] = [];
   if (menuId) {
     try {
-      const res = await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/get/${menuId}`);
+      const langId = await getCurrentCmsLang();
+      const res = await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/get/${menuId}`, { lang: langId });
       if (res?.json?.status === 'ok' && res.json.result?.items) {
         items = buildNestedItems(res.json.result.items);
       }

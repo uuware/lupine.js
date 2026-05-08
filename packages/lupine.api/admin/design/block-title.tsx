@@ -13,7 +13,7 @@ export const BlockTitle = (props: { node: DesignNode }) => {
     textAlign: p.textAlign || 'left',
     color: p.color || 'inherit',
     minWidth: '0',
-    flex: p.flex === '1' ? '1' : 'none',
+    flex: p.flex === '1' ? '1 0 auto' : '0 0 auto',
     ...(p._sys_css || {})
   };
 

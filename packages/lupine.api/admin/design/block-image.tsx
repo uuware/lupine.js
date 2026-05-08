@@ -10,7 +10,8 @@ export const BlockImage = (props: { node: DesignNode }) => {
     margin: p.margin || '0',
     padding: p.padding || '0',
     minWidth: '0',
-    flex: p.flex === '1' ? '1' : 'none',
+    minHeight: '0',
+    flex: p.flex === '1' ? '1 1 auto' : '0 0 auto',
     backgroundColor: p.backgroundColor || 'transparent',
     boxShadow: p.showShadow === true ? 'var(--cover-box-shadow-around)' : 'none',
     display: 'flex',
@@ -18,20 +19,24 @@ export const BlockImage = (props: { node: DesignNode }) => {
     ...(p._sys_css || {}),
     '.image-title': {
        fontWeight: 'bold',
+       marginTop: '4px',
        marginBottom: '4px',
        textAlign: p.titleAlign || 'left',
     },
     '.image-description': {
        marginTop: '4px',
+       marginBottom: '8px',
        fontSize: '14px',
        color: 'var(--text-color, #666)',
        textAlign: p.descriptionAlign || 'left',
     },
     '.image-element': {
        width: p.width || '100%',
-       height: p.height || 'auto',
+       height: !p.height || p.height === '100%' ? 'auto' : p.height,
        objectFit: p.objectFit || 'cover',
        maxWidth: '100%',
+       minHeight: '0',
+       flex: '0 0 auto',
     }
   };
 
