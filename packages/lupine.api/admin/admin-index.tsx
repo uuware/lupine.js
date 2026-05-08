@@ -2,7 +2,7 @@ import { PageProps, PageRouter, DomUtils, Redirect } from 'lupine.components';
 import { adminFrameHelper } from './admin-frame-helper';
 import { AdminLoginPage } from './admin-login';
 import { AdminMenuSinglePage } from './admin-menu-list';
-import { AdminDesignPage } from './design/admin-design';
+import { AdminDesignPage } from './cms/admin-design';
 import { AdminFrame } from './admin-frame';
 
 const fetchAuth = async (props: PageProps) => {
