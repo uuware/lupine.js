@@ -100,7 +100,7 @@ export const MenuSidebar = ({
     '.menu-sidebar-sub-box.open > .menu-sidebar-item::after': {
       transform: 'rotate(0deg)',
     },
-    '&.mobile .menu-sidebar-sub-box > .menu-sidebar-item::after': {
+    '&.mobile .menu-sidebar-sub-box.open > .menu-sidebar-item::after': {
       transform: 'rotate(0deg)',
     },
     // '.menu-sidebar-sub-box .menu-sidebar-sub > .menu-sidebar-item': {
@@ -170,15 +170,17 @@ export const MenuSidebar = ({
         display: 'block',
       },
       '&.mobile.open': {
-        position: 'absolute',
+        position: 'fixed',
+        inset: 0,
         width: '100%',
         height: '100%',
+        minHeight: '100dvh',
         top: 0,
         left: 0,
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#ccccccc2',
-        zIndex: 'var(--layer-sidebar)',
+        zIndex: 'var(--layer-menu-sub)',
       },
       '.menu-sidebar-top': {
         display: 'none',
@@ -195,7 +197,7 @@ export const MenuSidebar = ({
         marginLeft: 'unset',
         justifyContent: 'start',
       },
-      '.menu-sidebar-top.open .menu-sidebar-sub-box > .menu-sidebar-sub': {
+      '.menu-sidebar-top.open .menu-sidebar-sub-box.open > .menu-sidebar-sub': {
         display: 'flex',
         position: 'unset',
         '.menu-sidebar-item': {
@@ -230,7 +232,7 @@ export const MenuSidebar = ({
             }
             let ref: RefProps = {};
             return item.items ? (
-              <div ref={ref} class={`menu-sidebar-sub-box ${defaultOpenAll ? 'open' : ''}`} onClick={() => onItemToggleClick(ref)}>
+              <div ref={ref} class={`menu-sidebar-sub-box ${defaultOpenAll ? 'open' : ''}`} onClick={(event) => onItemToggleClick(event, ref)}>
                 <div class='menu-sidebar-item'>{item.text}</div>
                 {renderItems(item.items, 'menu-sidebar-sub')}
               </div>
@@ -241,8 +243,10 @@ export const MenuSidebar = ({
                 alt={item.alt || item.text}
                 onClick={(event) => {
                   stopPropagation(event);
-                  // hide menu
-                  onToggleClick(event);
+                  // hide menu only when the mobile overlay is open
+                  if (ref.current?.classList.contains('open')) {
+                    onToggleClick(event);
+                  }
                   item.js && item.js();
                 }}
               >
@@ -280,17 +284,23 @@ export const MenuSidebar = ({
     const topMenu = ref.$('.menu-sidebar-top');
     topMenu.classList.toggle('open');
     const isOpen = ref.current.classList.toggle('open');
-    
+
     if (isOpen) {
+      if (ref.current.classList.contains('mobile')) {
+        ref.current.querySelectorAll('.menu-sidebar-sub-box').forEach((item: Element) => {
+          item.classList.add('open');
+        });
+      }
       ref.current.setAttribute('data-back-action', backActionHelper.genBackActionId());
     } else {
       ref.current.removeAttribute('data-back-action');
     }
   };
-  const onItemToggleClick = (ref: RefProps) => {
-    // if (event.target != ref.current && (event.target as any).parentNode != ref.current) {
-    //   return;
-    // }
+  const onItemToggleClick = (event: Event, ref: RefProps) => {
+    stopPropagation(event);
+    if (event.target != ref.current && (event.target as any).parentNode != ref.current) {
+      return;
+    }
     ref.current.classList.toggle('open');
   };
 
