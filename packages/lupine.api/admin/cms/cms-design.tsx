@@ -27,7 +27,7 @@ const markComponentRefTree = (tree: any, componentId: string, componentName: str
   return clonedTree;
 };
 
-export const AdminDesignPage = async (props: PageProps) => {
+export const CmsDesignPage = async (props: PageProps) => {
   if (!isFrontEnd()) {
     return <div>No SSR.</div>;
   }

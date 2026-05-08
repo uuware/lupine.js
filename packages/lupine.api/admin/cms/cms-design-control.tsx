@@ -25,7 +25,7 @@ import { baseUrl } from '../service';
 // HtmlVars remain inside because they might belong strictly to the render cycle.
 // State must be within AdminDesignControl to allow multiple instances (tabs) to isolate data.
 
-export const AdminDesignControl = (props: { pageId?: string }) => {
+export const CmsDesignControl = (props: { pageId?: string }) => {
   const store = new DesignStore();
   let activeSidebarTab: 'components' | 'layers' = 'components';
   let currentContextId = '';
