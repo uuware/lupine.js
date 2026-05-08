@@ -11,15 +11,7 @@ import {
   ActionSheetSelectPromise,
   FloatWindow,
 } from 'lupine.components';
-
-// Access level constants
-const ACCESS_LEVELS = [
-  { value: '0', label: 'Public' },
-  { value: '2', label: 'Logged In' },
-  { value: '3', label: 'Admin' },
-  { value: '9', label: 'Site Admin' },
-];
-const getAccessLabel = (val: string) => ACCESS_LEVELS.find((a) => a.value === val)?.label || 'Public';
+import { getAccessLabel, getAccessLevelOptions } from './admin-props';
 
 // Menu item data structure: [level, nav, access, link, text]
 interface MenuItem {
@@ -142,8 +134,8 @@ const MenuItemCard = (props: {
                 value={item.access}
                 onChange={(e: any) => props.onUpdate('access', e.target.value)}
               >
-                {ACCESS_LEVELS.map((al) => (
-                  <option value={al.value}>{al.label}</option>
+                {getAccessLevelOptions(item.access).map((al) => (
+                  <option value={al.value} selected={al.selected}>{al.label}</option>
                 ))}
               </select>
             </div>
@@ -159,6 +151,7 @@ export const AdminMenuEditPage = (menuId: string) => {
   let savedName = '';
   let savedRemark = '';
   let savedPackage = '';
+  let savedAccesslevel = '0';
   let savedUpdatetime: number = 0;
   let items: MenuItem[] = [];
 
@@ -192,6 +185,10 @@ export const AdminMenuEditPage = (menuId: string) => {
         <div>
           <span class='hdr-label'>Package: </span>
           <span class='hdr-value'>{savedPackage || '(none)'}</span>
+        </div>
+        <div>
+          <span class='hdr-label'>Access Level: </span>
+          <span class='hdr-value'>{getAccessLabel(savedAccesslevel)}</span>
         </div>
       </div>
     );
@@ -338,6 +335,7 @@ export const AdminMenuEditPage = (menuId: string) => {
     savedName = result.name || '';
     savedRemark = result.remark || '';
     savedPackage = result.package || '';
+    savedAccesslevel = result.accesslevel || '0';
     savedUpdatetime = result.updatetime || 0;
 
     items = [];
@@ -366,6 +364,7 @@ export const AdminMenuEditPage = (menuId: string) => {
     let name = savedName || '';
     let remark = savedRemark || '';
     let pkg = savedPackage || '';
+    let accesslevel = savedAccesslevel || '0';
 
     FloatWindow.show({
       title: 'Save Menu',
@@ -392,6 +391,7 @@ export const AdminMenuEditPage = (menuId: string) => {
               name,
               remark,
               package: pkg,
+              accesslevel,
               json: menuItems,
               checkExists: !overwrite,
               idReadonly: false,
@@ -411,6 +411,7 @@ export const AdminMenuEditPage = (menuId: string) => {
               savedName = name;
               savedRemark = remark;
               savedPackage = pkg;
+              savedAccesslevel = accesslevel;
               savedUpdatetime = json.newUpdatetime;
               renderHeader();
               NotificationMessage.sendMessage('Menu saved.', NotificationColor.Success);
@@ -470,6 +471,17 @@ export const AdminMenuEditPage = (menuId: string) => {
             class="input-base"
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Access Level:</label>
+          <select
+            value={accesslevel}
+            onChange={(e: any) => accesslevel = e.target.value}
+            class="input-base"
+            style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
+          >
+            {getAccessLevelOptions(accesslevel).map((al) => (
+              <option value={al.value} selected={al.selected}>{al.label}</option>
+            ))}
+          </select>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
           <input 
             type="text" 
@@ -500,6 +512,7 @@ export const AdminMenuEditPage = (menuId: string) => {
       savedName = '';
       savedRemark = '';
       savedPackage = '';
+      savedAccesslevel = '0';
       savedUpdatetime = 0;
       items = [];
       renderHeader();

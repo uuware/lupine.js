@@ -13,6 +13,7 @@ import {
   FloatWindow,
 } from 'lupine.components';
 import { adminFrameHelper } from './admin-frame-helper';
+import { getAccessLabel, getAccessLevelOptions } from './admin-props';
 
 // --- Interfaces based on CONVERSION-GUIDE.md ---
 export interface ItemDef {
@@ -338,6 +339,10 @@ export const AdminProcessEditPage = (processId: string) => {
           <span class='hdr-label'>Package: </span>
           <span class='hdr-value'>{state.packageId || '(none)'}</span>
         </div>
+        <div>
+          <span class='hdr-label'>Access Level: </span>
+          <span class='hdr-value'>{getAccessLabel(state.accesslevel)}</span>
+        </div>
       </div>
     );
   };
@@ -385,6 +390,7 @@ export const AdminProcessEditPage = (processId: string) => {
     let processId = state.processId || '';
     let name = state.name || '';
     let packageId = state.packageId || 'default';
+    let accesslevel = state.accesslevel || '0';
     let remark = state.remark || '';
 
     FloatWindow.show({
@@ -431,7 +437,7 @@ export const AdminProcessEditPage = (processId: string) => {
               name: name.trim(),
               package: packageId.trim(),
               remark: remark,
-              accesslevel: state.accesslevel,
+              accesslevel: accesslevel,
               json: { items: cleanItems, classes: cleanClasses },
               checkExists: !overwrite,
               originalUpdatetime: passUpdatetime,
@@ -443,6 +449,7 @@ export const AdminProcessEditPage = (processId: string) => {
               state.processId = processId.trim();
               state.name = name.trim();
               state.packageId = packageId.trim();
+              state.accesslevel = accesslevel;
               state.remark = remark;
               state.updatetime = result.newUpdatetime || 0;
               reRenderAll();
@@ -511,6 +518,17 @@ export const AdminProcessEditPage = (processId: string) => {
             class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Access Level:</label>
+          <select
+            value={accesslevel}
+            onChange={(e: any) => (accesslevel = e.target.value)}
+            class='input-base'
+            style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
+          >
+            {getAccessLevelOptions(accesslevel).map((al) => (
+              <option value={al.value} selected={al.selected}>{al.label}</option>
+            ))}
+          </select>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
           <input
             type='text'

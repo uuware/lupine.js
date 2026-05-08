@@ -1,4 +1,4 @@
-import { DomUtils, HtmlVar, NotificationColor, NotificationMessage } from 'lupine.components';
+import { ActionSheetSelectPromise, DomUtils, HtmlVar, NotificationColor, NotificationMessage } from 'lupine.components';
 import { getRenderPageProps, PageProps, RefProps, CssProps } from 'lupine.web';
 
 export const AdminUserPage = async (props: PageProps) => {
@@ -29,7 +29,12 @@ export const AdminUserPage = async (props: PageProps) => {
   const onUpdate = async (user: any) => {
     const usertype = DomUtils.getValue(`.row-${user.id} .u-usertype`);
     const pass = DomUtils.getValue(`.row-${user.id} .u-pass`);
-    if (!confirm('Do you want to update user: ' + user.username + '?')) {
+    const updateIndex = await ActionSheetSelectPromise({
+      title: 'Do you want to update user: ' + user.username + '?',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (updateIndex !== 0) {
       return;
     }
     const result = await getRenderPageProps().renderPageFunctions.fetchData('/api/user-update', {
@@ -50,7 +55,12 @@ export const AdminUserPage = async (props: PageProps) => {
 
   const onBlock = async (user: any, block: string) => {
     const blockText = block === '1' ? 'Block' : 'Allow';
-    if (!confirm('Do you want to ' + blockText + ' this user login?')) {
+    const blockIndex = await ActionSheetSelectPromise({
+      title: 'Do you want to ' + blockText + ' this user login?',
+      options: ['OK'],
+      cancelButtonText: 'Cancel',
+    });
+    if (blockIndex !== 0) {
       return;
     }
     const result = await getRenderPageProps().renderPageFunctions.fetchData(

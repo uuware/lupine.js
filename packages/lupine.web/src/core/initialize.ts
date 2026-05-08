@@ -89,6 +89,19 @@ export const initializePage = async (newUrl?: string) => {
   };
   bindRequestContext(() => defaultContext);
 
+  const json = document.querySelector('#web-env')?.textContent;
+  if (json) {
+    initWebEnv(JSON.parse(json));
+  } else {
+    console.warn('web-env is not defined');
+  }
+  const json2 = document.querySelector('#web-setting')?.textContent;
+  if (json2) {
+    WebConfig.initFromData(JSON.parse(json2));
+  } else {
+    console.warn('web-setting is not defined');
+  }
+
   const currentPageInitialized = _initSaved.pageInitialized;
   _initSaved.pageInitialized = true;
   console.log('initializePage: ', newUrl);
