@@ -2,6 +2,7 @@ import { CssProps } from '../jsx';
 import { ThemesProps } from '../models';
 import { ISimpleStorage } from './simple-storage-props';
 
+export type SiteLangProps = { code: string; text: string };
 export type LangProps = { [key: string]: string };
 export type LangsProps = { [key: string]: LangProps };
 
@@ -14,7 +15,11 @@ export type StylesProps = Map<string, { topUniqueClassName: string; noTopClassNa
 export type AppDataProps = {
   defaultPageTitle: string;
 
-  defaultLang: string;
+  siteDefaultLang: string;
+  siteLangs: SiteLangProps[];
+
+  // defaultLang is be getting from user settings
+  // defaultLang: string;
   langs: LangsProps;
 
   defaultTheme: string;

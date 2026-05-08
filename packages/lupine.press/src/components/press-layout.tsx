@@ -1,8 +1,8 @@
-import { getCurrentLang } from 'lupine.web';
 import { PressFrame } from '../frames/press-frame';
 import { PageHeader } from './press-header';
 import { PressSidemenu } from './press-sidemenu';
 import { PressContent } from './press-content';
+import { getPressLangs } from '../services';
 
 export const PressLayout = (props: {
   children: any;
@@ -18,7 +18,7 @@ export const PressLayout = (props: {
 }) => {
   const isHome = props.data?.layout === 'home';
   const headings = props.headings || [];
-  const currentLang = props.lang || getCurrentLang().langName;
+  const currentLang = props.lang || getPressLangs()?.[0].id || 'en';
 
   const sidebar = props.sidebar || [];
   const content = (
