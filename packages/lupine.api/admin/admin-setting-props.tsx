@@ -1,9 +1,11 @@
 import { FloatWindow, RefProps, HEditor } from "lupine.components";
+import { AdminSelectPage } from './admin-page-list';
 
 export interface SettingItem {
   label: string;
   type: string;
   name: string;
+  tip?: string;
   options?: { value: string; label: string }[];
 }
 
@@ -49,36 +51,61 @@ export const SettingItemRender = ({ item, ref }: { item: SettingItem, ref: RefPr
     });
   };
 
+  const openCmsPageSelector = async (key: string) => {
+    const currentValue = ref.$(`.f-${key}`).value;
+    await AdminSelectPage({
+      isMultiple: false,
+      selectedIds: currentValue ? [currentValue] : [],
+      isComponentOnly: false,
+      handleSelectedIds: (ids: string[]) => {
+        ref.$(`.f-${key}`).value = ids[0] || '';
+      },
+    });
+  };
+
   return (
-    <div class='row-box mb-m'>
+    <div class='row-box mb-m cfg-item-row'>
       <label class='cfg-label'>{item.label}:</label>
 
-      {(item.type === 'text' || item.type === 'number' || item.type === 'color') && (
-        <input type={item.type} class={`cfg-input input-base f-${key}`} />
-      )}
+      <div class='cfg-control flex-1'>
+        {(item.type === 'text' || item.type === 'number' || item.type === 'color') && (
+          <input type={item.type} class={`cfg-input input-base f-${key}`} />
+        )}
 
-      {item.type === 'select' && (
-        <select class={`cfg-input input-base f-${key}`}>
-          {item.options?.map((opt: any) => (
-            <option value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      )}
+        {item.type === 'select' && (
+          <select class={`cfg-input input-base f-${key}`}>
+            {item.options?.map((opt: any) => (
+              <option value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        )}
 
-      {item.type === 'checkbox' && (
-        <div class="row-box flex-1">
-          <input type="checkbox" class={`f-${key}`} style={{ marginRight: '8px' }} />
-        </div>
-      )}
+        {item.type === 'checkbox' && (
+          <div class="row-box flex-1">
+            <input type="checkbox" class={`f-${key}`} style={{ marginRight: '8px' }} />
+          </div>
+        )}
 
-      {item.type === 'html' && (
-        <div class="row-box flex-1">
-          <input type='text' class={`cfg-input input-base f-${key}`} />
-          <button class='button-base html-editor-btn' onClick={() => openHtmlEditor(key, item.label)}>
-            ...
-          </button>
-        </div>
-      )}
+        {item.type === 'html' && (
+          <div class="row-box flex-1">
+            <input type='text' class={`cfg-input input-base f-${key}`} />
+            <button class='button-base html-editor-btn' onClick={() => openHtmlEditor(key, item.label)}>
+              ...
+            </button>
+          </div>
+        )}
+
+        {item.type === 'cms-page' && (
+          <div class="row-box flex-1">
+            <input type='text' class={`cfg-input input-base f-${key}`} />
+            <button class='button-base html-editor-btn' onClick={() => openCmsPageSelector(key)}>
+              ...
+            </button>
+          </div>
+        )}
+
+        {item.tip && <div class='cfg-tip'>{item.tip}</div>}
+      </div>
     </div>
   );
 };
