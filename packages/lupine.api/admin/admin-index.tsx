@@ -2,7 +2,7 @@ import { PageProps, PageRouter, DomUtils, Redirect } from 'lupine.components';
 import { adminFrameHelper } from './admin-frame-helper';
 import { AdminLoginPage } from './admin-login';
 import { AdminMenuSinglePage } from './admin-menu-list';
-import { AdminDesignPage } from './cms/admin-design';
+import { CmsDesignPage } from './cms/cms-design';
 import { AdminFrame } from './admin-frame';
 
 const fetchAuth = async (props: PageProps) => {
@@ -58,7 +58,7 @@ const devAdminPageRouter = new PageRouter();
 devAdminPageRouter.setFilter(checkAuth);
 
 devAdminPageRouter.use('/menu', AdminMenuSinglePage);
-devAdminPageRouter.use('/design', AdminDesignPage);
+devAdminPageRouter.use('/cms', CmsDesignPage);
 devAdminPageRouter.use('/login', AdminLoginPage);
 devAdminPageRouter.use('/*', AdminIndexPage);
 
