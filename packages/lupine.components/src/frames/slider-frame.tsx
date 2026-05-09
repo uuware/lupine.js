@@ -12,7 +12,7 @@
     </div>
   );
 */
-import { VNode, CssProps, HtmlVar, RefProps, stopPropagation, MediaQueryRange } from 'lupine.components';
+import { VNode, CssProps, HtmlVar, RefProps, stopPropagation, MediaQueryRange, isFrontEnd } from 'lupine.components';
 
 // addClass(SliderFramePosition) is used to show two SliderFrames for big screens,
 // so when the second is showing, it needs to set this on the first one
@@ -58,7 +58,19 @@ export const SliderFrame = (props: SliderFrameProps) => {
     };
   }
   const dom = new HtmlVar(<div class='slider-frame-default'>{props.defaultContent || '(No Content)'}</div>);
-  const ref: RefProps = {};
+  const ref: RefProps = {
+    onLoad: async (el: Element) => {
+      // Keep fixed sliders out of padded/top-frame layout containers on iOS.
+      // iOS WebView can treat fixed children inside safe-area padded app frames inconsistently;
+      // mounting the slider at body level also makes z-index compare globally.
+      if (isFrontEnd()) {
+        const root = (window.parent as any).document.querySelector('.lupine-root') as HTMLElement;
+        if (root && el.parentElement !== root) {
+          root.appendChild(el);
+        }
+      }
+    },
+  };
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
