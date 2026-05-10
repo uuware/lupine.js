@@ -1,7 +1,20 @@
 import { CssProps, RefProps, bindGlobalStyle, getGlobalStylesId } from 'lupine.web';
 import { IconMenuItemProps } from '../../components/mobile-components/icon-menu-item-props';
 
+export const FloatingIconSize = {
+  SmallSmall: { w: 30, h: 30 },
+  Small: { w: 43, h: 50 },
+  Medium: { w: 56, h: 56 },
+  Large: { w: 69, h: 69 },
+  LargeLarge: { w: 85, h: 85 },
+};
+export type FloatingIconSizeProps = {
+  w: number;
+  h: number;
+};
+
 export interface FloatingIconMenuProps {
+  size?: FloatingIconSizeProps;
   mainIcon: IconMenuItemProps;
   items: IconMenuItemProps[];
   className?: string;
@@ -9,16 +22,20 @@ export interface FloatingIconMenuProps {
   left?: string;
   right?: string;
   bottom?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  zIndex?: string;
   direction?: 'up' | 'down' | 'left' | 'right';
 }
 
 export const FloatingIconMenu = (props: FloatingIconMenuProps) => {
+  const size = props.size || FloatingIconSize.Medium;
   const css: CssProps = {
     position: 'fixed',
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
-    zIndex: '1000',
+    zIndex: props.zIndex || 'var(--layer-header-footer)',
 
     '&.dir-up': { flexDirection: 'column-reverse' },
     '&.dir-up .&-children': { flexDirection: 'column-reverse' },
@@ -33,11 +50,11 @@ export const FloatingIconMenu = (props: FloatingIconMenuProps) => {
     '&.dir-right .&-children': { flexDirection: 'row' },
 
     '.&-main-btn': {
-      width: '56px',
-      height: '56px',
+      width: `${size.w}px`,
+      height: `${size.h}px`,
       borderRadius: '50%',
-      backgroundColor: 'var(--primary-color)',
-      color: 'var(--primary-bg-color)',
+      backgroundColor: props.backgroundColor || 'var(--primary-color)',
+      color: props.textColor || 'var(--primary-bg-color)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -65,8 +82,8 @@ export const FloatingIconMenu = (props: FloatingIconMenuProps) => {
     },
 
     '.&-child-item': {
-      width: '48px',
-      height: '48px',
+      width: `${size.w - 8}px`,
+      height: `${size.h - 8}px`,
       borderRadius: '50%',
       backgroundColor: 'var(--primary-bg-color)',
       color: 'var(--primary-color)',
