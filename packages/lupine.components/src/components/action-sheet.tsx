@@ -206,7 +206,7 @@ export class ActionSheet {
       </div>
     );
     base.style.position = 'fixed';
-    base.style.zIndex = zIndex || 'var(--layer-actionsheet-window)';
+    base.style.zIndex = zIndex || 'var(--layer-notice)';
     document.body.appendChild(base);
     await mountInnerComponent(base, component);
     return handleClose;
