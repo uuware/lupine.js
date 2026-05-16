@@ -17,11 +17,7 @@ const sideMenuMockCss: CssProps = {
     borderBottom: '1px solid var(--primary-border-color)',
   },
   '.msm-header-icon': {
-    width: '32px',
-    height: '32px',
     marginRight: '12px',
-    borderRadius: '4px',
-    backgroundColor: 'var(--primary-color)',
   },
   '.msm-header-title': {
     fontSize: '18px',
@@ -90,7 +86,7 @@ export const SideMenuMock = ({
   return (
     <div ref={ref} style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
       <div class='msm-header'>
-        <div class='msm-header-icon'></div>
+        <div class='msm-header-icon'><i class='ifc-icon ma-home-outline'></i></div>
         <div class='msm-header-title'>{title}</div>
       </div>
 

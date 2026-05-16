@@ -59,6 +59,7 @@ export class MobileSideMenuHelper {
     let touchstartX = 0;
     let direction = '';
     let moveStart = false;
+    let pendingOpen = false;
     let isOpen = false;
     let menuWidth = 0;
 
@@ -71,6 +72,7 @@ export class MobileSideMenuHelper {
       touchstartX = e.touches[0].clientX;
       direction = '';
       moveStart = false;
+      pendingOpen = false;
       isOpen = maskDom.classList.contains('show');
       
       const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
@@ -87,35 +89,53 @@ export class MobileSideMenuHelper {
         }
       } else {
         if (touchstartX < 40) {
-          moveStart = true;
-          // Pre-show the mask to allow rendering the menu while dragging
-          maskDom.classList.add('show');
-          if (menuDom) {
-            menuDom.style.transition = 'none'; // Disable transition for 1:1 finger tracking
-            menuDom.style.transform = `translateX(-100%)`; // Start fully hidden left
-          }
+          // Do not start the drawer immediately on touchstart. A tap on a left-edge
+          // header button should still receive its normal click/touchend event.
+          // The drawer gesture is confirmed later in touchmove after a horizontal drag.
+          pendingOpen = true;
         }
       }
     });
 
     document.addEventListener('touchmove', (e) => {
-      if (!moveStart) {
-        return;
-      }
-
       const maskDom = document.querySelector('.mobile-side-menu-mask') as HTMLDivElement;
       if (!maskDom) return;
 
       const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
       const deltaX = currentX - touchstartX;
+      const deltaY = currentY - touchstartY;
 
-      if (direction === '') {
-        if (Math.abs(deltaX) > 0) {
-          direction = 'X';
-        } else {
-          moveStart = false;
+      if (!moveStart) {
+        if (!pendingOpen) {
           return;
         }
+
+        // Confirm the side-menu gesture only after the finger clearly drags
+        // right horizontally. Simple taps on left-edge buttons will fall through.
+        if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) {
+          return;
+        }
+        if (deltaX <= 0 || Math.abs(deltaX) <= Math.abs(deltaY)) {
+          pendingOpen = false;
+          return;
+        }
+
+        moveStart = true;
+        pendingOpen = false;
+        maskDom.classList.add('show');
+
+        const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
+        if (menuDom) {
+          menuDom.style.transition = 'none'; // Disable transition for 1:1 finger tracking
+          menuDom.style.transform = `translateX(-100%)`; // Start fully hidden left
+        }
+      }
+
+      e.preventDefault();
+
+      if (direction === '') {
+        direction = 'X';
       }
 
       const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
@@ -144,7 +164,7 @@ export class MobileSideMenuHelper {
           }
         }
       }
-    });
+    }, { passive: false });
 
     document.addEventListener('touchend', (e) => {
       if (!moveStart) return;
