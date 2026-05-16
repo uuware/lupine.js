@@ -1,4 +1,4 @@
-import { bindGlobalStyle, CssProps, encodeHtml, HtmlVar, isFrontEnd, PageProps } from 'lupine.components';
+import { bindGlobalStyle, CssProps, encodeHtml, HtmlVar, isFrontEnd, MediaQueryMaxWidth, PageProps } from 'lupine.components';
 import { demoRegistry } from './demo-registry';
 import { demoIconsCss } from './mock/demo-icons';
 
@@ -65,12 +65,16 @@ export const DemoRenderPage = async (props: PageProps) => {
     width: '100%',
     height: '100%',
     // Reset any body margins if they exist, though typically handled by global css
-    margin: 0,
+    margin: '0 auto',
     boxSizing: 'border-box',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center', // Center components by default
     overflow: 'auto',
+    transform: 'translateX(0)', // Traps position: fixed children inside this container's dimensions
+    maxWidth: MediaQueryMaxWidth.DesktopMax,
+    borderRight: '1px solid var(--primary-border-color)',
+    borderLeft: '1px solid var(--primary-border-color)',
     '>fragment>div': {
       width: '100%',
       height: '100%',
@@ -80,7 +84,8 @@ export const DemoRenderPage = async (props: PageProps) => {
   bindGlobalStyle('demo-icons', demoIconsCss, false, true);
 
   return (
-    <div css={css} class='demo-render-page'>
+    // responsive-frame is for containning slider-frame
+    <div css={css} class='demo-render-page responsive-frame'>
       {dom.node}
     </div>
   );

@@ -153,7 +153,6 @@ const NestedDemoMockContent = () => {
 };
 
 export const NestedDemoMock = (props: { sliderFrameHook: SliderFrameHookProps }) => {
-  props.sliderFrameHook.addClass!('desktop-slide-right');
 
   return (
     <HeaderWithBackFrame
@@ -297,7 +296,6 @@ const UserSettingsMockContent = () => {
 };
 
 export const UserSettingsMock = (props: { sliderFrameHook: SliderFrameHookProps }) => {
-  props.sliderFrameHook.addClass!('desktop-slide-left');
 
   return (
     <HeaderWithBackFrame

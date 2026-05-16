@@ -1,7 +1,8 @@
 import { DemoStory } from '../demo/demo-types';
-import { SliderFrame, SliderFrameHookProps } from '../frames/slider-frame';
-import { HeaderWithBackFrame } from './mobile-components/mobile-header-with-back';
-import { Button, ButtonSize } from './button';
+import { SliderFrame, SliderFrameHookProps } from './slider-frame';
+import { SliderHelper, SliderHelperCloseProps } from './slider-helper';
+import { HeaderWithBackFrame } from '../components/mobile-components/mobile-header-with-back';
+import { Button, ButtonSize } from '../components/button';
 
 // A dummy component to load inside the slider
 const DummyInnerPage = ({ hook }: { hook: SliderFrameHookProps }) => {
@@ -38,13 +39,36 @@ export const sliderFrameDemo: DemoStory<any> = {
         <p style={{ color: '#666', marginBottom: '20px' }}>
           This demo shows how to use SliderFrame to slide in a new full-cover page over the current view.
         </p>
-        <Button
-          text='Open Slider'
-          size={ButtonSize.Medium}
-          onClick={() => {
-            sliderHook.load!(<DummyInnerPage hook={sliderHook} />);
-          }}
-        />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <Button
+            text='Open Slider'
+            size={ButtonSize.Medium}
+            onClick={() => {
+              sliderHook.load!(<DummyInnerPage hook={sliderHook} />);
+            }}
+          />
+          <Button
+            text='Open Slider Helper'
+            size={ButtonSize.Medium}
+            onClick={async () => {
+              let close: SliderHelperCloseProps;
+              close = await SliderHelper.show({
+                direction: args.direction,
+                children: (
+                  <HeaderWithBackFrame title='Slider Helper Inner Page' onBack={() => close()}>
+                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      <h3>This is the SliderHelper inner page content!</h3>
+                      <p>It uses a static show function and shows a mask on larger screens.</p>
+                      <div>
+                        <Button text='Close SliderHelper via Button' size={ButtonSize.Medium} onClick={() => close()} />
+                      </div>
+                    </div>
+                  </HeaderWithBackFrame>
+                ),
+              });
+            }}
+          />
+        </div>
 
         {/* The SliderFrame is placed here but initially hidden */}
         <SliderFrame hook={sliderHook} direction={args.direction} defaultContent='' />
