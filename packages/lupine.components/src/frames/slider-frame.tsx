@@ -12,7 +12,8 @@
     </div>
   );
 */
-import { VNode, CssProps, HtmlVar, RefProps, stopPropagation, MediaQueryRange, isFrontEnd } from 'lupine.components';
+import { VNode, stopPropagation } from 'lupine.components';
+import { SliderHelper, SliderHelperCloseProps } from './slider-helper';
 
 // addClass(SliderFramePosition) is used to show two SliderFrames for big screens,
 // so when the second is showing, it needs to set this on the first one
@@ -30,107 +31,39 @@ export type SliderFrameProps = {
   hook?: SliderFrameHookProps;
   afterClose?: () => void | Promise<void>;
 };
+// deprecated
 export const SliderFrame = (props: SliderFrameProps) => {
+  let closeSlider: SliderHelperCloseProps | undefined;
+  let opened = false;
+  let className = '';
+
   if (props.hook) {
     props.hook.load = (children) => {
-      dom.value = children;
-      ref.current?.classList.remove('d-none');
-      setTimeout(() => {
-        ref.current?.classList.add('show');
-      }, 100);
+      opened = true;
+      SliderHelper.show({
+        direction: props.direction || 'right',
+        children,
+        className,
+        closeEvent: () => {
+          opened = false;
+          closeSlider = undefined;
+          props.afterClose?.();
+        },
+      }).then((close) => {
+        closeSlider = close;
+      });
     };
     props.hook.close = (event: Event) => {
       stopPropagation(event);
-      ref.current?.classList.remove('show');
-      setTimeout(async () => {
-        ref.current?.classList.add('d-none');
-        dom.value = '';
-        if (props.afterClose) {
-          await props.afterClose();
-        }
-      }, 400);
+      closeSlider?.();
     };
-    props.hook.addClass = (className) => {
-      ref.current?.classList.add(className);
+    // deprecated
+    props.hook.addClass = (newClassName) => {
+      className = [className, newClassName].join(' ').trim();
     };
     props.hook.isOpened = () => {
-      return ref.current?.classList.contains('show');
+      return opened;
     };
   }
-  const dom = new HtmlVar(<div class='slider-frame-default'>{props.defaultContent || '(No Content)'}</div>);
-  const ref: RefProps = {
-    onLoad: async (el: Element) => {
-      // Keep fixed sliders out of padded/top-frame layout containers on iOS.
-      // iOS WebView can treat fixed children inside safe-area padded app frames inconsistently;
-      // mounting the slider at body level also makes z-index compare globally.
-      if (isFrontEnd()) {
-        const root = (window.parent as any).document.querySelector('.lupine-root') as HTMLElement;
-        if (root && el.parentElement !== root) {
-          root.appendChild(el);
-        }
-      }
-    },
-  };
-  const css: CssProps = {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'fixed',
-    top: '0',
-    left: 'var(--auto-sidemenu-left-offset, 0px)',
-    right: '0',
-    bottom: '0',
-    zIndex: 'var(--layer-slider)',
-    transform: props.direction === 'bottom' ? 'translateY(100%)' : 'translateX(100%)',
-    transition: 'transform 0.4s ease-in-out',
-    backgroundColor: 'var(--primary-bg-color)',
-    // trick: to put two padding-top properties
-    'padding-top ': 'constant(safe-area-inset-top)',
-    'padding-top': 'env(safe-area-inset-top)',
-    '&.show': {
-      transform: props.direction === 'bottom' ? 'translateY(0)' : 'translateX(0)',
-    },
-    '& > *': {
-      '--auto-sidemenu-left-offset': '0px',
-    },
-    '& > fragment': {
-      height: '100%',
-      '--auto-sidemenu-left-offset': '0px',
-    },
-    '&.desktop-slide-left': {
-      [MediaQueryRange.TabletAbove]: {
-        '.header-back-content': {
-          width: '30%',
-        },
-      },
-    },
-    '&.desktop-slide-right': {
-      [MediaQueryRange.TabletAbove]: {
-        top: '59px', // Just below DesktopHeader
-        left: 'calc(max(var(--auto-sidemenu-left-offset, 0px), 30%))',
-        transform: 'translateX(0)',
-        // notice: here is connected with mobile-header-title-icon.tsx
-        '.mobile-header-title-icon-top': {
-          width: '100%',
-          boxShadow: 'unset',
-        },
-        '.header-back-content': {
-          width: '100%',
-        },
-        '.mhti-title': {
-          fontSize: '15px',
-        },
-        '.mhti-left, .mhti-right': {
-          display: 'none',
-        },
-        '&.d-none': {
-          display: 'unset !important',
-        },
-      },
-    },
-  };
-  return (
-    <div ref={ref} css={css} class='slider-frame d-none'>
-      {dom.node}
-    </div>
-  );
+  return <></>;
 };

@@ -29,7 +29,7 @@ import { toggleButtonDemo } from '../components/toggle-button-demo';
 import { messageBoxDemo } from '../components/message-box-demo';
 import { loadingSpinDemo } from '../components/loading-spin-demo';
 import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
-import { sliderFrameDemo } from '../components/slider-frame-demo';
+import { sliderFrameDemo } from '../frames/slider-frame-demo';
 import { rangeDemo, gaugeDemo } from '../component-pool/range';
 import { badgeDemo } from '../component-pool/badge';
 import { timelineDemo } from '../component-pool/timeline';

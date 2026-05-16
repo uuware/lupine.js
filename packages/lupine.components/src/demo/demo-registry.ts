@@ -27,7 +27,7 @@ import { messageBoxDemo } from '../components/message-box-demo';
 import { loadingSpinDemo } from '../components/loading-spin-demo';
 import { mobileSideMenuDemo } from '../components/mobile-components/mobile-side-menu-demo';
 import { responsiveFrameDemo } from '../frames/responsive-frame-demo';
-import { sliderFrameDemo } from '../components/slider-frame-demo';
+import { sliderFrameDemo } from '../frames/slider-frame-demo';
 import { carouselDemo } from '../component-pool/carousel';
 import { rangeDemo, gaugeDemo } from '../component-pool/range';
 import { cascaderDemo } from '../component-pool/cascader';
