@@ -12,16 +12,12 @@
     </div>
   );
 */
-import { VNode, stopPropagation } from 'lupine.components';
+import { MediaQueryMaxWidth, VNode, stopPropagation } from 'lupine.components';
 import { SliderHelper, SliderHelperCloseProps } from './slider-helper';
 
-// addClass(SliderFramePosition) is used to show two SliderFrames for big screens,
-// so when the second is showing, it needs to set this on the first one
-export type SliderFramePosition = 'desktop-slide-left' | 'desktop-slide-right';
 export type SliderFrameHookProps = {
   load?: (children: VNode<any>) => void;
   close?: (event: Event) => void;
-  addClass?: (className: SliderFramePosition) => void;
   isOpened?: () => boolean;
 };
 
@@ -30,12 +26,11 @@ export type SliderFrameProps = {
   direction?: 'right' | 'bottom';
   hook?: SliderFrameHookProps;
   afterClose?: () => void | Promise<void>;
+  maxWidth?: string;
 };
-// deprecated
 export const SliderFrame = (props: SliderFrameProps) => {
   let closeSlider: SliderHelperCloseProps | undefined;
   let opened = false;
-  let className = '';
 
   if (props.hook) {
     props.hook.load = (children) => {
@@ -43,7 +38,7 @@ export const SliderFrame = (props: SliderFrameProps) => {
       SliderHelper.show({
         direction: props.direction || 'right',
         children,
-        className,
+        maxWidth: props.maxWidth || MediaQueryMaxWidth.MobileMax,
         closeEvent: () => {
           opened = false;
           closeSlider = undefined;
@@ -56,10 +51,6 @@ export const SliderFrame = (props: SliderFrameProps) => {
     props.hook.close = (event: Event) => {
       stopPropagation(event);
       closeSlider?.();
-    };
-    // deprecated
-    props.hook.addClass = (newClassName) => {
-      className = [className, newClassName].join(' ').trim();
     };
     props.hook.isOpened = () => {
       return opened;
