@@ -41,11 +41,14 @@ export const ToggleBase = (props: ToggleBaseProps) => {
     },
   };
   const onClick = (e: MouseEvent) => {
+    e.preventDefault();
     if (disabled) {
       return;
     }
 
-    const checked = (e.target as HTMLInputElement).checked;
+    const input = ref.$('input.toggle-base-checkbox') as HTMLInputElement;
+    const checked = !input.checked;
+    input.checked = checked;
     !props.noToggle && applyToggle(checked, disabled);
     if (props.onClick) {
       props.onClick(checked);
@@ -77,6 +80,12 @@ export const ToggleBase = (props: ToggleBaseProps) => {
       width: `100%`,
       height: `100%`,
     },
+    '.toggle-base-box': {
+      cursor: 'pointer',
+      userSelect: 'none',
+      '-webkit-tap-highlight-color': 'transparent',
+      touchAction: 'manipulation',
+    },
     '.toggle-base-checkbox': {
       opacity: 0,
       width: 0,
@@ -95,14 +104,13 @@ export const ToggleBase = (props: ToggleBaseProps) => {
       }}
       class={['toggle-base-component', props.className].join(' ').trim()}
     >
-      <label class='toggle-base-box'>
+      <label class='toggle-base-box' onClick={onClick}>
         <div class='toggle-base-container'>{props.children}</div>
         <input
           type='checkbox'
           class='toggle-base-checkbox'
           checked={props.checked || false}
           disabled={disabled}
-          onClick={onClick}
         />
       </label>
     </div>
