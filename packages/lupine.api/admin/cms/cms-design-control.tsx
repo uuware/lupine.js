@@ -69,7 +69,7 @@ export const CmsDesignControl = (props: { pageId?: string }) => {
       ids = ids.filter((id) => id !== pageid);
       localStorage.setItem('lupine_design_pinned_components', JSON.stringify(ids));
       await fetchSavedComponents();
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const loadMoreComponents = async () => {
@@ -86,57 +86,57 @@ export const CmsDesignControl = (props: { pageId?: string }) => {
           await fetchSavedComponents();
         },
       });
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const renderSavedComponentsContent = () => (
     <>
-        {savedComponents.map((saved: any) => (
-          <div
-            key={saved.name}
-            class='tool-item'
-            style={{ borderLeft: '3px solid var(--primary-color)', position: 'relative', paddingRight: '24px' }}
-            draggable={true}
-            onDragStart={(e: any) => {
-              e.dataTransfer.setData(
-                'text/plain',
-                JSON.stringify({
-                  action: 'add-saved-component',
-                  pageid: saved.pageid,
-                  name: saved.name,
-                })
-              );
+      {savedComponents.map((saved: any) => (
+        <div
+          key={saved.name}
+          class='tool-item'
+          style={{ borderLeft: '3px solid var(--primary-color)', position: 'relative', paddingRight: '24px' }}
+          draggable={true}
+          onDragStart={(e: any) => {
+            e.dataTransfer.setData(
+              'text/plain',
+              JSON.stringify({
+                action: 'add-saved-component',
+                pageid: saved.pageid,
+                name: saved.name,
+              })
+            );
+          }}
+        >
+          <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {saved.name}
+          </span>
+          <span
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              cursor: 'pointer',
+              color: '#ff0000',
+              fontSize: '14px',
+              fontWeight: 'bold',
             }}
+            onClick={(e) => removePinnedComponent(saved.pageid, e)}
+            title='Remove from sidebar'
           >
-            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {saved.name}
-            </span>
-            <span
-              style={{
-                position: 'absolute',
-                right: '8px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                cursor: 'pointer',
-                color: '#ff0000',
-                fontSize: '14px',
-                fontWeight: 'bold',
-              }}
-              onClick={(e) => removePinnedComponent(saved.pageid, e)}
-              title='Remove from sidebar'
-            >
-              ✕
-            </span>
-          </div>
-        ))}
-        {savedComponents.length === 0 && (
-          <div style={{ padding: '16px', textAlign: 'center', fontSize: '12px', color: '#aaa' }}>
-            No components pinned manually.
-          </div>
-        )}
-        <button class='button-base button-d mt-m' style={{ width: '100%' }} onClick={loadMoreComponents}>
-          Load More
-        </button>
+            ✕
+          </span>
+        </div>
+      ))}
+      {savedComponents.length === 0 && (
+        <div style={{ padding: '16px', textAlign: 'center', fontSize: '12px', color: '#aaa' }}>
+          No components pinned manually.
+        </div>
+      )}
+      <button class='button-base button-d mt-m' style={{ width: '100%' }} onClick={loadMoreComponents}>
+        Load More
+      </button>
     </>
   );
 
@@ -1311,7 +1311,7 @@ export const CmsDesignControl = (props: { pageId?: string }) => {
           cw._lj_designInit(store);
         }
       };
-      ifr.src = `/admin_dev/design`;
+      ifr.src = `/admin_dev/cms`;
       store.on('NODE_SELECTED', renderPropertyPanel);
       store.on('HISTORY_CHANGED', renderHistoryNav);
       store.on('COMPONENT_SAVED', fetchSavedComponents);
