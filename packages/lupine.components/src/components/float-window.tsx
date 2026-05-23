@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
+import { CssProps, RefProps, VNode, callUnload, mountInnerComponent } from 'lupine.web';
 import { stopPropagation, backActionHelper } from '../lib';
 
 export type FloatWindowCloseProps = () => void;
@@ -57,7 +57,8 @@ export class FloatWindow {
       closeEvent?.();
       ref.current.classList.add('transition');
       ref.current.classList.remove('animation');
-      setTimeout(() => {
+      setTimeout(async () => {
+        await callUnload(base);
         base.remove();
       }, 300);
     };

@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
+import { CssProps, RefProps, VNode, callUnload, mountInnerComponent } from 'lupine.web';
 import { backActionHelper, stopPropagation } from '../lib';
 import { MediaQueryMaxWidth, MediaQueryRange } from '../styles';
 
@@ -41,7 +41,8 @@ export class SliderHelper {
       closeEvent?.();
       ref.current?.classList.remove('show');
       ref.current?.classList.add(closeClassName);
-      setTimeout(() => {
+      setTimeout(async () => {
+        await callUnload(base);
         base.remove();
       }, 400);
     };
