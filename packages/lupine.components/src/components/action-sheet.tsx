@@ -1,4 +1,4 @@
-import { CssProps, RefProps, VNode, mountInnerComponent } from 'lupine.web';
+import { CssProps, RefProps, VNode, callUnload, mountInnerComponent } from 'lupine.web';
 import { backActionHelper } from '../lib';
 import { NotificationColor, NotificationMessage } from './notice-message';
 
@@ -55,7 +55,8 @@ export class ActionSheet {
     const handleClose = (reason?: ActionSheetCloseReasonProps) => {
       closeEvent?.(reason);
       ref.current.classList.remove('animation-open');
-      setTimeout(() => {
+      setTimeout(async () => {
+        await callUnload(base);
         base.remove();
       }, 300);
     };

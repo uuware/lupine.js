@@ -1,5 +1,5 @@
 import { RefProps, Spinner02, SpinnerSize } from 'lupine.components';
-import { CssProps, mountInnerComponent } from 'lupine.components';
+import { CssProps, callUnload, mountInnerComponent } from 'lupine.components';
 
 export type LoadingSpinHookProps = {
   show?: () => void;
@@ -46,7 +46,8 @@ export const LoadingSpinComponent = (props: LoadingSpinProps) => {
 
 export class LoadingSpin {
   static async show(): Promise<() => void> {
-    const handleClose = () => {
+    const handleClose = async () => {
+      await callUnload(base);
       base.remove();
     };
 
