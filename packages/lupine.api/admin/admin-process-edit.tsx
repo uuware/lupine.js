@@ -181,12 +181,15 @@ const cssTheme: CssProps = {
     opacity: 0.8,
   },
   // Cards / Nodes
+  '.&-items-top, .&-class-top': {
+    position: 'relative',
+  },
   '.&-node-card': {
     backgroundColor: 'var(--primary-bg-color)',
     border: '1px solid var(--primary-border)',
     borderRadius: '0',
     padding: '4px',
-    marginBottom: '2px',
+    marginBottom: '4px',
     cursor: 'pointer',
     position: 'relative',
     userSelect: 'none',
@@ -206,6 +209,17 @@ const cssTheme: CssProps = {
   '.&-node-sub': {
     fontSize: '11px',
     color: 'var(--secondary-color)',
+  },
+  '.&-class-top .&-node-card': {
+    backgroundColor: '#d1d1d1ff',
+  },
+  '.&-class-top .&-node-card.selected': {
+    backgroundColor: 'green',
+    color: '#ffffff',
+    borderColor: 'green',
+  },
+  '.&-class-top .&-node-card.selected .&-node-title': {
+    backgroundColor: 'green',
   },
   // Connection Ports
   '.&-port-right': {
@@ -752,7 +766,7 @@ export const AdminProcessEditPage = (processId: string) => {
         const icon = item.children && item.children.length > 0 ? '[-]' : level === 0 ? '[+]' : '';
 
         return (
-          <div ref={{ globalCssId: gCssId }}>
+          <div>
             <div
               class={`&-node-card ${isSelected ? 'selected' : ''}`}
               id={`item-node-${item._uid}`}
@@ -775,19 +789,18 @@ export const AdminProcessEditPage = (processId: string) => {
       });
     };
 
-    itemsTreeDom.value = <div style={{ position: 'relative' }}>{renderNodes(state.items)}</div>;
+    itemsTreeDom.value = <div ref={{ globalCssId: gCssId }} class='&-items-top'>{renderNodes(state.items)}</div>;
   };
 
   // --- Right Pane: Classes List ---
   const renderClassesList = () => {
     classesListDom.value = (
-      <div style={{ position: 'relative' }}>
+      <div ref={{ globalCssId: gCssId }} class='&-class-top'>
         {state.classes.map((cls) => {
           const isSelectedClass = state.selectedClassUid === cls._uid;
 
           return (
             <div
-              ref={{ globalCssId: gCssId }}
               class={`&-node-card ${isSelectedClass ? 'selected' : ''}`}
               id={`class-node-${cls._uid}`}
               data-uid={cls._uid}
@@ -800,7 +813,6 @@ export const AdminProcessEditPage = (processId: string) => {
             >
               <div
                 class='&-node-title'
-                style={{ backgroundColor: isSelectedClass ? 'blue' : 'blue', color: 'white', padding: '2px' }}
               >
                 {cls.name}
               </div>
@@ -1154,10 +1166,10 @@ export const AdminProcessEditPage = (processId: string) => {
           <div class='&-pane-half'>{classPropsDom.node}</div>
         </div>
         <div class='&-right-pane'>
+          <div class='&-toolbar-col'>{itemsToolbarDom.node}</div>
           <div class='&-col &-col-items' onScroll={drawConnections}>
             {itemsTreeDom.node}
           </div>
-          <div class='&-toolbar-col'>{itemsToolbarDom.node}</div>
           <div class='&-col &-col-mid'>
             {svgDom.node}
             <div class='&-toolbar-line'>

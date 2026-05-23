@@ -1,6 +1,6 @@
 {
   "name": "lupine.api",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "license": "MIT",
   "author": "uuware.com",
   "homepage": "https://github.com/uuware/lupine.js",
@@ -34,12 +34,12 @@
     "./server": {
       "types": "./src/app /index.ts",
       "import": "./src/server/index.ts",
-      "require": "./src/server/index.ts" 
+      "require": "./src/server/index.ts"
     },
     "./server-loader": {
       "types": "./src/server-loader/server-loader.ts",
       "import": "./src/server-loader/server-loader.ts",
-      "require": "./src/server-loader/server-loader.ts" 
+      "require": "./src/server-loader/server-loader.ts"
     }
   },
   "keywords": [
