@@ -24,4 +24,5 @@ export * from './path-utils';
 export * from './promise-timeout';
 export * from './simple-storage';
 export * from './stop-propagation';
+export * from './support-safe-area';
 export * from './upload-file';

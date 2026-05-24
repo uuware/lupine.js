@@ -1,4 +1,5 @@
 import { backActionHelper, CssProps, RefProps, VNode, MediaQueryRange } from 'lupine.components';
+import { isSafeAreaSupported } from '../../lib/support-safe-area';
 
 export class MobileSideMenuHelper {
   static show() {
@@ -74,7 +75,7 @@ export class MobileSideMenuHelper {
       moveStart = false;
       pendingOpen = false;
       isOpen = maskDom.classList.contains('show');
-      
+
       const menuDom = maskDom.querySelector('.mobile-side-menu') as HTMLDivElement;
       if (menuDom) {
         menuWidth = menuDom.offsetWidth || 210; // Fallback width roughly 70% of 300px
@@ -243,8 +244,8 @@ export const MobileSideMenu = (props: { children: VNode<any>; autoExtend?: boole
       overflowY: 'auto',
       transform: 'translateX(-100%)',
       boxShadow: 'var(--cover-box-shadow)',
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
+      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '0',
+      'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '0',
     },
     [MediaQueryRange.TabletAbove]: {
       '&.auto-extend .mobile-side-menu-mask': {

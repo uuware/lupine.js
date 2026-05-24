@@ -6,6 +6,7 @@ import {
   RefProps,
   MediaQueryMaxWidth,
   isFrontEnd,
+  isSafeAreaSupported,
 } from 'lupine.components';
 import { pressLoad } from '../services/press-load';
 import { getSidebarScroll, setSidebarScroll } from '../services';
@@ -95,8 +96,8 @@ export const PressFrame = (props: PressFrameProps) => {
       maxWidth: MediaQueryMaxWidth.DesktopMax,
       margin: 'auto',
       // trick: to put two padding-top properties
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
+      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
+      'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
     },
     '.press-frame-header': {
       display: 'flex',

@@ -2,13 +2,14 @@
 sliderFrameHook is for slider frame from right or bottom used in side-menu
 */
 
-import { VNode, CssProps, MediaQueryRange, SliderFrameHookProps, SliderFrame, RefProps } from 'lupine.components';
+import { VNode, CssProps, MediaQueryRange, RefProps } from 'lupine.components';
 import { MobileFooterMenu } from '../components/mobile-components/mobile-footer-menu';
 import { DesktopFooter } from '../components/desktop-footer';
 import { DesktopHeader } from '../components/desktop-header';
 import { MobileHeaderComponent } from '../components/mobile-components/mobile-header-component';
 import { MobileSideMenu } from '../components/mobile-components/mobile-side-menu';
 import { IconMenuItemProps } from '../components/mobile-components/icon-menu-item-props';
+import { isSafeAreaSupported } from '../lib/support-safe-area';
 
 export interface ResponsiveFrameProps {
   placeholderClassname: string;
@@ -37,8 +38,8 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     margin: '0 auto',
     overflowX: 'hidden',
     ...(!props.noSafeAreaTop ? {
-      'padding-top ': 'constant(safe-area-inset-top)',
-      'padding-top': 'env(safe-area-inset-top)',
+      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
+      'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
     } : {}),
     '.frame-top-menu': {
       display: 'flex',
