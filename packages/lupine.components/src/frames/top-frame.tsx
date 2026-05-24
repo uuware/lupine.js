@@ -2,6 +2,7 @@
 place to set safe-area-inset-top and other common styles
 */
 import { VNode, CssProps } from 'lupine.components';
+import { isSafeAreaSupported } from '../lib/support-safe-area';
 
 // TopFrame and ResponsiveFrame both contain safe-area-inset-top, so can't use them togother
 export const TopFrame = async ({
@@ -27,9 +28,9 @@ export const TopFrame = async ({
       // trick: to put two padding-top properties
       ...(!noSafeAreaTop
         ? {
-            'padding-top ': 'constant(safe-area-inset-top)',
-            'padding-top': 'env(safe-area-inset-top)',
-          }
+          'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
+          'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
+        }
         : {}),
     },
   };

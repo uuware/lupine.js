@@ -1,6 +1,7 @@
 import { CssProps, RefProps, VNode, callUnload, mountInnerComponent } from 'lupine.web';
 import { backActionHelper, stopPropagation } from '../lib';
 import { MediaQueryMaxWidth, MediaQueryRange } from '../styles';
+import { isSafeAreaSupported } from '../lib/support-safe-area';
 
 export type SliderHelperDirection = 'right' | 'left' | 'bottom' | 'top';
 export type SliderHelperCloseProps = () => void;
@@ -96,21 +97,21 @@ export class SliderHelper {
 
     const contentCss: CssProps = isHorizontal
       ? {
-          top: '0',
-          bottom: '0',
-          width: '100%',
-          maxWidth,
-          [direction]: '0',
-        }
+        top: '0',
+        bottom: '0',
+        width: '100%',
+        maxWidth,
+        [direction]: '0',
+      }
       : {
-          top: direction === 'top' ? '0' : 'auto',
-          bottom: direction === 'bottom' ? '0' : 'auto',
-          left: 'auto',
-          right: '0',
-          width: '100%',
-          maxWidth,
-          height: '100%',
-        };
+        top: direction === 'top' ? '0' : 'auto',
+        bottom: direction === 'bottom' ? '0' : 'auto',
+        left: 'auto',
+        right: '0',
+        width: '100%',
+        maxWidth,
+        height: '100%',
+      };
 
     const cssContainer: CssProps = {
       display: 'flex',
@@ -156,8 +157,8 @@ export class SliderHelper {
         transform: startTransform,
         transition: 'transform 0.4s ease-in-out',
         // trick: to put two padding-top properties
-        'padding-top ': 'constant(safe-area-inset-top)',
-        'padding-top': 'env(safe-area-inset-top)',
+        'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '0',
+        'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '0',
         ...contentCss,
         '&::-webkit-scrollbar': {
           display: 'none',
