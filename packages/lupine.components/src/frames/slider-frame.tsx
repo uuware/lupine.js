@@ -38,7 +38,7 @@ export const SliderFrame = (props: SliderFrameProps) => {
       SliderHelper.show({
         direction: props.direction || 'right',
         children,
-        maxWidth: props.maxWidth || MediaQueryMaxWidth.MobileMax,
+        maxWidth: props.maxWidth,
         closeEvent: () => {
           opened = false;
           closeSlider = undefined;
