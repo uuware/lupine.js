@@ -25,7 +25,7 @@ export class SliderHelper {
     closeEvent,
     closeWhenClickOutside = true,
     zIndex,
-    maxWidth = MediaQueryMaxWidth.MobileMax,
+    maxWidth,
     className = '',
     contentClassName = '',
     mountTarget,
