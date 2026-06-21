@@ -211,7 +211,7 @@ export const DatePicker = (props: DatePickerProps) => {
   const globalCssId = getGlobalStylesId(datePickerCss);
   bindGlobalStyle(globalCssId, datePickerCss);
 
-  const ref: RefProps = { globalCssId };
+  const ref: RefProps = { referToCssId: globalCssId };
   let currentValue = props.value || '';
 
   const parseDate = (val: string) => {
@@ -241,7 +241,7 @@ export const DatePicker = (props: DatePickerProps) => {
     let isYearMenuOpen = false;
 
     const renderPanel = () => {
-      const panelRef: RefProps = { globalCssId };
+      const panelRef: RefProps = { referToCssId: globalCssId };
       const gridVar = new HtmlVar('');
 
       const refreshGrid = () => {
@@ -332,7 +332,7 @@ export const DatePicker = (props: DatePickerProps) => {
           );
         }
 
-        const ref2: RefProps = { globalCssId }; // used to replace the & in css
+        const ref2: RefProps = { referToCssId: globalCssId }; // used to replace the & in css
         return (
           <div class='&-grid' ref={ref2}>
             {daysNodes}
@@ -411,7 +411,7 @@ export const DatePicker = (props: DatePickerProps) => {
   };
 
   return (
-    <div class='&-container' css={{ ...datePickerCss, ...props.style }} ref={ref}>
+    <div class={[globalCssId, '&-container'].join(' ')} css={{ ...datePickerCss, ...props.style }} ref={ref}>
       <input
         class={['&-input', props.className || 'input-base'].join(' ')}
         placeholder={props.placeholder || 'Select date'}

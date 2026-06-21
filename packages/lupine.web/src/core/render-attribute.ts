@@ -11,6 +11,10 @@ const escapeAttr = (val: any) => {
 };
 
 export const genUniqueId = (props: any) => {
+  // if id is assigned manually
+  if (props['ref'] && props['ref'].id) {
+    props._id = props['ref'].id;
+  }
   if (!props._id) {
     props._id = domUniqueId();
   }
@@ -22,7 +26,7 @@ export const renderAttribute = (
   props: any,
   jsxNodes: any,
   uniqueClassName?: string,
-  globalCssId?: string
+  referToCssId?: string,
 ) => {
   const html = [];
   // data-refid is used for nested components like this:
@@ -36,7 +40,9 @@ export const renderAttribute = (
   for (let i in props) {
     if (i === 'ref') {
       if (props[i]) {
-        props[i].id = genUniqueId(props);
+        if (!props[i].id) {
+          props[i].id = genUniqueId(props);
+        }
         // used in callUnload
         html.push('data-ref');
       }
@@ -70,28 +76,26 @@ export const renderAttribute = (
         if (props[i] !== undefined && props[i] !== false && props[i] !== 'false') {
           html.push(`${i}="${escapeAttr(props[i])}"`);
         }
-      } else if (i === 'class' || i === 'className') {
+      } else if (i === 'class') {
         let classNameList = props[i].split(' ').filter((item: string) => item && item !== '');
-        if ((props['css'] || props['ref']) && !classNameList.includes(props._id)) {
-          // add as the first
-          classNameList.unshift(props._id);
-        }
-        if (props['ref'] && props['ref'].globalCssId && !classNameList.includes(props['ref'].globalCssId)) {
-          // add as the first
-          classNameList.unshift(props['ref'].globalCssId);
-        }
-        if (globalCssId && uniqueClassName) {
-          // &xx -> globalCssId + xx and uniqueClassName+xx
+        if (referToCssId && uniqueClassName && referToCssId !== uniqueClassName) {
+          // &xx -> bindId + xx and uniqueClassName + xx
           classNameList = classNameList.flatMap((item: string) => {
             if (item.includes('&')) {
-              return [item.replace(/&/g, globalCssId), item.replace(/&/g, uniqueClassName)];
+              return [item.replace(/&/g, referToCssId), item.replace(/&/g, uniqueClassName)];
             }
             return [item];
           });
-        } else if (globalCssId) {
-          classNameList = classNameList.map((item: string) => item.replace(/&/g, globalCssId));
+        } else if (referToCssId) {
+          classNameList = classNameList.map((item: string) => item.replace(/&/g, referToCssId));
         } else if (uniqueClassName) {
           classNameList = classNameList.map((item: string) => item.replace(/&/g, uniqueClassName));
+        }
+
+        // must be after all replacements (& -> l00 and g00)
+        if ((props['css'] || props['ref']) && !classNameList.includes(props._id)) {
+          // add as the first
+          classNameList.unshift(props._id);
         }
         html.push(`class="${classNameList.join(' ')}"`);
       } else if (i !== 'dangerouslySetInnerHTML') {

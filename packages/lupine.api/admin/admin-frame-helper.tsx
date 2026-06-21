@@ -21,6 +21,7 @@ import { AdminImagesAssetPage } from './admin-images-asset';
 import { AdminWebSettingPage } from './admin-setting-web';
 import { AdminApiSettingPage } from './admin-setting-api';
 import { AdminDataPage } from './admin-data';
+import { TestCssComponent } from './admin-test-css';
 
 const chineseMenuText: { text: string; zh: string }[] = [
   { text: 'Contents', zh: '内容管理' },
@@ -212,6 +213,12 @@ export class AdminFrameHelper {
           text: 'Test Themes',
           url: '',
           js: () => this.addPanel('Test Themes', TestThemesPage()),
+        },
+        {
+          id: 'test-css',
+          text: 'Test CSS',
+          url: '',
+          js: () => this.addPanel('Test CSS', TestCssComponent()),
         },
         {
           id: 'test-component',

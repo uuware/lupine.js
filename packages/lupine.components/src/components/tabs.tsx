@@ -251,7 +251,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
   bindGlobalStyle(tabGlobalCssId, css);
 
   const ref: RefProps = {
-    globalCssId: tabGlobalCssId,
+    referToCssId: tabGlobalCssId,
   };
 
   // but we also want to create unique id for the current tab
@@ -264,7 +264,7 @@ export const Tabs = ({ pages, defaultIndex, topClassName, pagePadding, hook: ref
     },
   };
   return (
-    <div ref={ref} css={cssTab} class={topClassName ? ' ' + topClassName : ''}>
+    <div ref={ref} css={cssTab} class={[tabGlobalCssId, topClassName].filter(Boolean).join(' ')}>
       <div class='&tabs tabs'>
         {pages.map((i, index) => {
           const className = index === newIndex ? ' active' : '';

@@ -5,3 +5,4 @@ export * from './logger';
 export * from './unique-id';
 export * from './web-config';
 export * from './web-env';
+export * from './encode-html';

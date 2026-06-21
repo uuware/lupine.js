@@ -125,8 +125,8 @@ export const buildStateRef = (store: ComponentStateStore, existingRef?: RefProps
     store._userOnUnload = existingRef?.onUnload ?? null;
   }
 
-  if (existingRef?.globalCssId) {
-    target.globalCssId = existingRef.globalCssId;
+  if (existingRef?.referToCssId) {
+    target.referToCssId = existingRef.referToCssId;
   }
 
   // Install a fresh wrapper every render so bindRef always calls OUR function.
@@ -173,9 +173,9 @@ export async function evaluateComponentWithStore(store: ComponentStateStore<any>
   // ① Set _currentStore so that useState() calls inside componentFn read from THIS store.
   setCurrentStore(store);
   const resultMaybePromise = store.componentFn.call(null, store.componentProps);
-  
+
   // ← Clear global pointer BEFORE any await (Node.js single-thread guarantee keeps this safe)
-  clearCurrentStore(); 
+  clearCurrentStore();
 
   let dom: any = null;
   if (

@@ -87,22 +87,22 @@ const processStyleSub = (
         const newClassSelector = !classSelector
           ? i
           : classSelector
-              .split(',')
-              .map((key0) => key0.trim())
-              .map((key0) => {
-                return i
-                  .split(',')
-                  .map((key) => key.trim())
-                  .map((key) => {
-                    // not needed to "+" as them share same parents?
-                    // return key.split('+').map(key2 => key2.startsWith('&') ? key0 + key2.substring(1) : key0 + ' ' + key2).join('+');
-                    // return key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
-                    const newKey = key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
-                    return newKey.replace(/&/g, topUniqueClassName);
-                  })
-                  .join(',');
-              })
-              .join(',');
+            .split(',')
+            .map((key0) => key0.trim())
+            .map((key0) => {
+              return i
+                .split(',')
+                .map((key) => key.trim())
+                .map((key) => {
+                  // not needed to "+" as them share same parents?
+                  // return key.split('+').map(key2 => key2.startsWith('&') ? key0 + key2.substring(1) : key0 + ' ' + key2).join('+');
+                  // return key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
+                  const newKey = key.startsWith('&') ? key0 + key.substring(1) : key0 + ' ' + key;
+                  return newKey.replace(/&/g, topUniqueClassName);
+                })
+                .join(',');
+            })
+            .join(',');
         const ret = processStyleSub(topUniqueClassName, newClassSelector, value, mediaQuery);
         css.push(...ret);
       }
@@ -112,8 +112,8 @@ const processStyleSub = (
   return css;
 };
 // topUniqueClassName is used to replace '&' in className, and '.' + topUniqueClassName is used as selector in styles ".xxx {}"
-export const processStyle = (topUniqueClassName: string, style: CssProps): string[] => {
-  return processStyleSub(topUniqueClassName, topUniqueClassName ? `.${topUniqueClassName}` : '', style);
+export const processStyle = (topUniqueClassName: string, style: CssProps, noTopClassName = false): string[] => {
+  return processStyleSub(topUniqueClassName, !noTopClassName && topUniqueClassName ? `.${topUniqueClassName}` : '', style);
 };
 
 // mount-components has the same name `sty-`
@@ -187,7 +187,7 @@ export const bindAppGlobalStyle = (
   if (typeof document !== 'undefined') {
     let cssDom = document.getElementById(`sty-${topUniqueClassName}`);
     if (forceUpdate || !cssDom) {
-      updateCssDom(topUniqueClassName, processStyle(noTopClassName ? '' : topUniqueClassName, style).join(''), cssDom);
+      updateCssDom(topUniqueClassName, processStyle(topUniqueClassName, style, noTopClassName).join(''), cssDom);
     }
   } else {
     const _globalStyle = appData.appGlobalStyles;
@@ -208,7 +208,7 @@ export const bindGlobalStyle = (
   if (typeof document !== 'undefined') {
     let cssDom = document.getElementById(`sty-${topUniqueClassName}`);
     if (forceUpdate || !cssDom) {
-      updateCssDom(topUniqueClassName, processStyle(noTopClassName ? '' : topUniqueClassName, style).join(''), cssDom);
+      updateCssDom(topUniqueClassName, processStyle(topUniqueClassName, style, noTopClassName).join(''), cssDom);
     }
   } else {
     const _globalStyle = getRequestContext().globalStyles;
@@ -257,12 +257,12 @@ export const generateAllGlobalStyles = () => {
   result.push(`<style id="sty-${themeCookieName}">${generateThemeStyles()}</style>`);
   // app common styles first
   for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of appData.appGlobalStyles) {
-    const cssText = processStyle(noTopClassName ? '' : topUniqueClassName, style).join('');
+    const cssText = processStyle(topUniqueClassName, style, noTopClassName).join('');
     result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);
   }
   // per session styles
   for (let [uniqueStyleId, { topUniqueClassName, noTopClassName, style }] of getRequestContext().globalStyles) {
-    const cssText = processStyle(noTopClassName ? '' : topUniqueClassName, style).join('');
+    const cssText = processStyle(topUniqueClassName, style, noTopClassName).join('');
     result.push(`<style id="sty-${uniqueStyleId}">${cssText}</style>`);
   }
 

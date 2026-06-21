@@ -1,6 +1,5 @@
 // import { bindPageResetEvent } from '../core/page-reset-events';
-import { addMetaDataTags } from 'lupine.web';
-import { encodeHtml } from '../lib';
+import { addMetaDataTags, encodeHtml } from 'lupine.web';
 type NameMeta = { name: string; content: string };
 type PropertyMeta = { property: string; content: string };
 type HttpEquivMeta = { httpEquiv: string; content: string };

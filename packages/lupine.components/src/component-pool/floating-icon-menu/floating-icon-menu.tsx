@@ -156,7 +156,7 @@ export const FloatingIconMenu = (props: FloatingIconMenuProps) => {
   bindGlobalStyle(globalCssId, css);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const toggleMenu = () => {
@@ -197,7 +197,8 @@ export const FloatingIconMenu = (props: FloatingIconMenuProps) => {
     labelPos = top !== undefined ? 'bottom' : 'top';
   }
 
-  const wrapperClass = ['floating-icon-menu', `dir-${direction}`, `label-pos-${labelPos}`, props.className]
+  // to avoid nest css, here need to add globalCssId as a class name
+  const wrapperClass = [globalCssId, 'floating-icon-menu', `dir-${direction}`, `label-pos-${labelPos}`, props.className]
     .filter(Boolean)
     .join(' ');
 

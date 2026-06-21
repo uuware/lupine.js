@@ -125,7 +125,7 @@ export const Avatar = (props: AvatarProps) => {
   const avatarContent = new HtmlVar(renderContent());
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   return (
@@ -149,7 +149,7 @@ export const AvatarGroup = (props: AvatarGroupProps) => {
   bindGlobalStyle(globalCssId, groupCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const children = Array.isArray(props.children) ? props.children : [props.children];
@@ -176,7 +176,7 @@ export const AvatarGroup = (props: AvatarGroupProps) => {
   }
 
   return (
-    <div ref={ref} class={['&-group', props.class].join(' ').trim()} css={props.style}>
+    <div ref={ref} class={[globalCssId, '&-group', props.class].join(' ').trim()} css={props.style}>
       {items}
     </div>
   );

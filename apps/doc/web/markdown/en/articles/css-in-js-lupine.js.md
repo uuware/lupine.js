@@ -196,7 +196,8 @@ const globalUtils = {
 };
 
 // Inject into <head> with ID 'global-utils'
-bindGlobalStyle('global-utils', globalUtils);
+// Passing noTopClassName = true (the 4th parameter) ensures it won't prepend .global-utils to the selectors.
+bindGlobalStyle('global-utils', globalUtils, false, true);
 ```
 
 ## 7. The Traditionalist: Importing .css Files

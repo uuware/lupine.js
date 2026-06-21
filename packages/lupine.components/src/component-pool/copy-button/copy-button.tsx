@@ -114,7 +114,7 @@ export const CopyButton = (props: CopyButtonProps) => {
   };
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const variantClass = `variant-${props.variant || 'outline'}`;
@@ -132,7 +132,7 @@ export const CopyButton = (props: CopyButtonProps) => {
 
   return (
     <button
-      class={['&-container', variantClass, props.class].join(' ').trim()}
+      class={[globalCssId, '&-container', variantClass, props.class].join(' ').trim()}
       ref={ref}
       css={props.style}
       type='button'

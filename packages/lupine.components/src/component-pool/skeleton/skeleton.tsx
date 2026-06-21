@@ -34,7 +34,7 @@ export const Skeleton = (props: SkeletonProps) => {
   bindGlobalStyle(globalCssId, css);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const isAnimated = props.animated !== false; // defaults to true
@@ -50,7 +50,7 @@ export const Skeleton = (props: SkeletonProps) => {
 
   return (
     <div
-      class={['&-container', isAnimated ? 'is-animated' : '', isCircle ? 'is-circle' : '', props.class]
+      class={[globalCssId, '&-container', isAnimated ? 'is-animated' : '', isCircle ? 'is-circle' : '', props.class]
         .join(' ')
         .trim()}
       ref={ref}

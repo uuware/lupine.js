@@ -16,9 +16,13 @@ exports.copyFolder = async (copyCache, src, dest, isDev) => {
 
     if (!statDest) {
       try {
-        await fs.access(dest);
-        copyCache.set(src, stat);
-        statDest = stat;
+        const dStat = await fs.stat(dest);
+        if (stat.mtime.getTime() > dStat.mtime.getTime()) {
+          isDestMissing = true;
+        } else {
+          copyCache.set(src, stat);
+          statDest = stat;
+        }
       } catch (err) {
         isDestMissing = true;
       }

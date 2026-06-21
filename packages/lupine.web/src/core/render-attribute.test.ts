@@ -38,7 +38,7 @@ describe('renderAttribute', () => {
     renderAttribute('div', props1, null);
     assert.ok(props1._id);
 
-    const props2: any = { onClick: () => {} };
+    const props2: any = { onClick: () => { } };
     renderAttribute('button', props2, null);
     assert.ok(props2._id);
   });
@@ -61,15 +61,15 @@ describe('renderAttribute', () => {
     assert.equal(fakeRef.id, props._id);
   });
 
-  it('should handle class and className joining, appending unique and global markers automatically', () => {
-    const props: any = { className: 'my-class', css: 'body { }' };
+  it('should append unique marker automatically when css is present', () => {
+    const props: any = { class: 'my-class', css: 'body { }' };
     genUniqueId(props);
     const result = renderAttribute('div', props, null);
     // Because css is present, props._id should be injected as the first class
     assert.ok(result.includes(`class="${props._id} my-class"`));
   });
 
-  it('should resolve ampersand & markers in classes with globalCssId and uniqueClassName', () => {
+  it('should resolve ampersand & markers in classes with referToCssId and uniqueClassName', () => {
     const props = { class: 'btn &-active' };
     // Just testing string replacement logic for global CSS
     const result = renderAttribute('div', props, null, 'unique123', 'global456');
@@ -80,7 +80,7 @@ describe('renderAttribute', () => {
   it('should resolve ampersand & markers with only global or only unique prefixes', () => {
     let result = renderAttribute('div', { class: '&-hover' }, null, undefined, 'global-only');
     assert.ok(result.includes('class="global-only-hover"'));
-    
+
     result = renderAttribute('div', { class: '&-hover' }, null, 'unique-only', undefined);
     assert.ok(result.includes('class="unique-only-hover"'));
   });

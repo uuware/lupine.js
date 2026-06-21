@@ -23,6 +23,10 @@ export type SideMenuContentProps = {
 
 const sideMenuContentCss: CssProps = {
   margin: '0 -12px',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  height: '100%',
   '.msm-header': {
     display: 'flex',
     alignItems: 'center',
@@ -101,7 +105,7 @@ export const SideMenuContent = ({
   bindGlobalStyle(globalCssId, sideMenuContentCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const handleAction = (item: string) => {
@@ -122,7 +126,7 @@ export const SideMenuContent = ({
   };
 
   return (
-    <div ref={ref} style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
+    <div ref={ref} class={globalCssId}>
       <div class='msm-header'>
         {/* <div class='msm-header-icon'></div> */}
         <div class='msm-header-title'>{title}</div>
@@ -162,7 +166,7 @@ export const SideMenuContent = ({
             class='msm-item'
             onClick={() => {
               settingSliderHook.load!(
-                <MineSettingsPage sliderFrameHook={settingSliderHook} onDataChanged={() => {}} />
+                <MineSettingsPage sliderFrameHook={settingSliderHook} onDataChanged={() => { }} />
               );
               MobileSideMenuHelper.hide();
             }}

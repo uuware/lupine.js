@@ -91,7 +91,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
   let timer: any = null;
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       if (!autoCollapse) return;
       const container = ref.current as HTMLElement;
@@ -157,7 +157,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
 
   return (
     <nav
-      class={['&-container', autoCollapse ? 'is-initializing' : '', props.class].join(' ').trim()}
+      class={[globalCssId, '&-container', autoCollapse ? 'is-initializing' : '', props.class].join(' ').trim()}
       ref={ref}
       css={props.style}
       aria-label='Breadcrumb'

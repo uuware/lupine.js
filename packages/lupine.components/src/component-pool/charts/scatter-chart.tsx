@@ -1,4 +1,4 @@
-import { bindGlobalStyle, getGlobalStylesId, HtmlVar } from 'lupine.components';
+import { bindGlobalStyle, getGlobalStylesId, HtmlVar, RefProps } from 'lupine.components';
 import { chartCommonCss, getChartColor, BasicChartProps } from './chart-utils';
 import { Tooltip } from '../tooltip';
 
@@ -192,8 +192,8 @@ export const ScatterChart = (props: ScatterChartProps) => {
 
   const chartVar = new HtmlVar(renderChart(1000, 300));
 
-  const ref = {
-    globalCssId,
+  const ref: RefProps = {
+    referToCssId: globalCssId,
     onLoad: async (el: Element) => {
       const ro = new ResizeObserver((entries) => {
         const { width, height } = entries[0].contentRect;
@@ -217,7 +217,7 @@ export const ScatterChart = (props: ScatterChartProps) => {
   const styleStr = `width: ${props.width || '100%'};`;
 
   return (
-    <div ref={ref} class='&-container' style={styleStr}>
+    <div ref={ref} class={[globalCssId, '&-container'].join(' ')} style={styleStr}>
       {props.title && <div class='chart-title'>{props.title}</div>}
 
       <div style={{ flex: 1, position: 'relative', minHeight: 0, paddingTop }}>{chartVar.node}</div>

@@ -258,7 +258,7 @@ const ContentMenuContainer = (props: {
   bindGlobalStyle(globalCssId, contentMenuCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       props.onRef(ref);
     },
@@ -307,7 +307,7 @@ const ContentMenuContainer = (props: {
   };
 
   return (
-    <div class='&-container' ref={ref}>
+    <div class={[globalCssId, '&-container'].join(' ')} ref={ref}>
       {props.list.map((item) => {
         if (item === '-' || item === '') return <div class='&-divider'></div>;
 
@@ -403,7 +403,7 @@ export const PopupMenu = ({
     },
   };
 
-  let ref: RefProps = { id: '' };
+  let ref: RefProps = {};
   let selectedValue = defaultValue;
 
   const openMenu = (event?: MouseEvent) => {

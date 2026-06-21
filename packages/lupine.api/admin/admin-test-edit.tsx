@@ -104,7 +104,7 @@ const showBookEditItem = async (item: SampleDataProps, update: (item: SampleData
 
 // edit one item
 export const BookEditItem = (props: { item: SampleDataProps; update: SampleDataUpdateProps }) => {
-  const ref: RefProps = { id: '' };
+  const ref: RefProps = {};
   const css: CssProps = {
     padding: '10px',
     border: 'solid 1px gray',

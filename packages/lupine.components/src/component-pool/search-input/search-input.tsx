@@ -69,7 +69,7 @@ export const SearchInput = (props: InputWithClearProps) => {
   bindGlobalStyle(globalCssId, css);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const onSearch = () => {
@@ -97,7 +97,7 @@ export const SearchInput = (props: InputWithClearProps) => {
   }
 
   return (
-    <div ref={ref} class={['search-input', props.class].join(' ').trim()}>
+    <div ref={ref} class={[globalCssId, 'search-input', props.class].join(' ').trim()}>
       <input
         type='text'
         maxLength={30}

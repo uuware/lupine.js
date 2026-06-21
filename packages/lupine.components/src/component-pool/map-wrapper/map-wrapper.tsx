@@ -45,12 +45,11 @@ export const MapWrapper = (props: MapWrapperProps) => {
   const zoom = props.zoom ?? 13;
 
   const buildSrc = (lat: number, lng: number, zoom: number) =>
-    `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.05},${lat - 0.05},${lng + 0.05},${
-      lat + 0.05
+    `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.05},${lat - 0.05},${lng + 0.05},${lat + 0.05
     }&layer=mapnik&marker=${lat},${lng}`;
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       const iframe = ref.$('.&-iframe') as HTMLIFrameElement;
       if (!iframe) return;
@@ -69,7 +68,7 @@ export const MapWrapper = (props: MapWrapperProps) => {
   const height = props.height || '300px';
 
   return (
-    <div class={['&-container', props.class].join(' ').trim()} ref={ref} css={{ width, height, ...props.style }}>
+    <div class={[globalCssId, '&-container', props.class].join(' ').trim()} ref={ref} css={{ width, height, ...props.style }}>
       <iframe
         class='&-iframe'
         src={buildSrc(lat, lng, zoom)}

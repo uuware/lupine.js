@@ -144,7 +144,8 @@ const globalUtils = {
 };
 
 // 注入到 &lt;head&gt; 中，ID 为 &#39;global-utils&#39;
-bindGlobalStyle(&#39;global-utils&#39;, globalUtils);
+// 第四个参数 noTopClassName = true 确保不会在选择器前面拼装 .global-utils 前缀
+bindGlobalStyle(&#39;global-utils&#39;, globalUtils, false, true);
 </code></pre>
 <h2 id="7-传统派-导入-css-文件"><a class="header-anchor" href="#7-传统派-导入-css-文件">#</a>7. 传统派：导入 .css 文件</h2><p>当然，Lupine.js 并没有忘记这一最基础的需求。如果你有一个庞大的旧项目需要迁移，或者就是喜欢写 <code>.css</code> 文件，完全没有问题。</p>
 <p>你可以在任何 <code>.tsx</code> 文件中直接导入 CSS 文件：</p>

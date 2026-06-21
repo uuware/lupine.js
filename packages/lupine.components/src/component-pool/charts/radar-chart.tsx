@@ -109,13 +109,13 @@ export const RadarChart = (props: RadarChartProps) => {
 
       // Fill area
       seriesGroupElements.push(
-        <polygon 
+        <polygon
           class="radar-polygon"
-          points={pointsStr} 
-          fill={color} 
-          fillOpacity='0.15' 
-          stroke={color} 
-          strokeWidth='2' 
+          points={pointsStr}
+          fill={color}
+          fillOpacity='0.15'
+          stroke={color}
+          strokeWidth='2'
           style={{ transition: 'fill-opacity 0.2s ease' }}
         />
       );
@@ -171,9 +171,9 @@ export const RadarChart = (props: RadarChartProps) => {
       };
 
       dataElements.push(
-        <g 
-          class="radar-series" 
-          onMouseEnter={handleGroupMouseEnter} 
+        <g
+          class="radar-series"
+          onMouseEnter={handleGroupMouseEnter}
           onMouseLeave={handleGroupMouseLeave}
         >
           {seriesGroupElements}
@@ -185,7 +185,7 @@ export const RadarChart = (props: RadarChartProps) => {
   };
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const ratio = props.aspectRatio ?? 16 / 9;
@@ -194,7 +194,7 @@ export const RadarChart = (props: RadarChartProps) => {
   const styleStr = `width: ${props.width || '100%'};`;
 
   return (
-    <div ref={ref} class='&-container' style={styleStr}>
+    <div ref={ref} class={[globalCssId, '&-container'].join(' ')} style={styleStr}>
       {props.title && <div class='chart-title'>{props.title}</div>}
 
       <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 0, paddingTop }}>

@@ -133,7 +133,7 @@ export const TimePicker = (props: TimePickerProps) => {
   const globalCssId = getGlobalStylesId(timePickerCss);
   bindGlobalStyle(globalCssId, timePickerCss);
 
-  const ref: RefProps = { globalCssId };
+  const ref: RefProps = { referToCssId: globalCssId };
   let currentValue = props.value || '';
 
   const parseValue = (val: string) => {
@@ -189,7 +189,7 @@ export const TimePicker = (props: TimePickerProps) => {
       const seconds = Array.from({ length: 60 }, (_, i) => i);
 
       const panelRef: RefProps = {
-        globalCssId,
+        referToCssId: globalCssId,
         onLoad: async () => {
           setTimeout(highlightSelection, 10);
         },
@@ -285,7 +285,7 @@ export const TimePicker = (props: TimePickerProps) => {
   };
 
   return (
-    <div class='&-container' css={props.style} ref={ref}>
+    <div class={[globalCssId, '&-container'].join(' ')} css={props.style} ref={ref}>
       <input
         class={['&-input', props.className || 'input-base'].join(' ')}
         placeholder={props.placeholder || 'Select time'}
