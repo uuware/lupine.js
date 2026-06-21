@@ -75,7 +75,7 @@ export const DemoRenderPage = async (props: PageProps) => {
     maxWidth: MediaQueryMaxWidth.DesktopMax,
     borderRight: '1px solid var(--primary-border-color)',
     borderLeft: '1px solid var(--primary-border-color)',
-    '>fragment>div': {
+    '>div': {
       flex: 1,
       alignSelf: 'stretch', // overwrite parent's align-items: center
       width: '100%',
