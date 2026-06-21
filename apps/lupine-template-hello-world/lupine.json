@@ -10,14 +10,14 @@
   "apiEntryPoint": "api/src/index.ts",
   "copyFiles": [
     {
-      "type": "web",
+      "env": "all",
       "from": "web/assets",
-      "to": "assets"
+      "to": "web/assets"
     },
     {
-      "type": "data",
+      "env": "all",
       "from": "api/resources",
-      "to": "resources"
+      "to": "data/resources"
     }
   ]
 }

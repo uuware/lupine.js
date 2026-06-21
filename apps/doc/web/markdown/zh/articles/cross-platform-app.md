@@ -101,7 +101,7 @@ WEB.API_BASE_URL=https://api.your-production-site.com
 
 ```json
 "scripts": {
-  "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1"
+  "build-mobile": "lupine-build --env=.env.mobile --dev=0 --mobile=1"
 }
 ```
 

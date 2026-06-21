@@ -15,7 +15,7 @@ const {
   markdownProcessOnEnd,
   obfuscatePlugin,
   sha256,
-} = require('lupine.api/dev');
+} = require('./index.js');
 
 const triggerHandle = {
   restart: null,
@@ -87,7 +87,7 @@ const watchServerLoader = async (isDev, npmCmd, httpPort, serverRootPath) => {
 };
 
 // watch server code changes
-const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
+const watchServer = async (isDev, npmCmd, httpPort, serverRootPath, extraExternals = []) => {
   const cmd = isDev ? esbuild.context : esbuild.build;
   const ctx = await cmd({
     entryPoints: ['apps/server/src/index.ts'],
@@ -98,7 +98,7 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
     bundle: true,
     treeShaking: true,
     metafile: true,
-    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp'],
+    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp', ...extraExternals],
     loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
     minify: !isDev,
     plugins: [watchServerPlugin(isDev, npmCmd, httpPort)],
@@ -112,7 +112,8 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
 const copyCache = new Map();
 const writeBuildTimeFiles = async (saved) => {
   if (!saved.webVersionFile) return;
-  const buildTimeContent = JSON.stringify({ version: new Date().toISOString() }, null, 2) + '\n';
+  const versionStr = new Date().toISOString();
+  const buildTimeContent = `export const version = "${versionStr}";\n`;
   const sourceBuildTimePath = path.join(saved.appDir, saved.webVersionFile);
   await fs.writeFile(sourceBuildTimePath, buildTimeContent, 'utf8');
 };
@@ -132,8 +133,8 @@ const clientProcessOnEnd = async (saved) => {
 
   const assets = saved['copyFiles'];
   if (assets) {
-    for (oneDir of assets) {
-      await copyFolder(copyCache, oneDir.from, oneDir.to, saved.isDev);
+    for (const oneDir of assets) {
+      await copyFolder(copyCache, oneDir.from, oneDir.to, saved.isDev, oneDir.ignore);
     }
   }
 
@@ -182,10 +183,26 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     format: 'iife',
     bundle: true,
     treeShaking: true,
-    external: [],
+    external: [...(saved.externals || [])],
     metafile: true,
     minify: !isDev,
-    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
+    loader: {
+      '.svg': 'text',
+      '.glsl': 'text',
+      '.html': 'text',
+      '.png': 'file',
+      '.jpg': 'file',
+      '.jpeg': 'file',
+      '.gif': 'file',
+      '.webp': 'file',
+      '.ico': 'file',
+      '.woff': 'file',
+      '.woff2': 'file',
+      '.ttf': 'file',
+      '.mp3': 'file',
+      '.wav': 'file',
+      ...(saved.customLoaders || {}),
+    },
     assetNames: '/pub_assets/[name]-[hash]',
     publicPath: saved.outdirSub,
     jsxImportSource: 'lupine.web',
@@ -202,12 +219,12 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
   isDev && console.log(`[dev-client:${saved.appName}] Watching...`);
 };
 
-const watchApiPlugin = (isDev, httpPort) => {
+const watchApiPlugin = (saved, isDev, httpPort) => {
   return {
     name: 'watchApiPlugin',
     setup(build) {
       build.onEnd(async (res) => {
-        console.log(`[dev-api] Build finished`);
+        console.log(`[dev-api:${saved.appName}] Build finished`);
 
         if (isDev) {
           await triggerRefreshServer(isDev, httpPort);
@@ -229,10 +246,10 @@ const watchApi = async (saved, isDev, entryPoints) => {
     bundle: true,
     treeShaking: true,
     metafile: true,
-    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp'],
-    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
+    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp', ...(saved.externals || [])],
+    loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text', ...(saved.customLoaders || {}) },
     minify: !isDev,
-    plugins: [watchApiPlugin(isDev, saved.httpPort)],
+    plugins: [watchApiPlugin(saved, isDev, saved.httpPort)],
   });
 
   isDev && (await ctx.watch());
@@ -312,6 +329,8 @@ const start = async () => {
   const apps = (process.env['APPS'] || '').split(',');
 
   const httpPort = process.env['HTTP_PORT'];
+  const globalExternals = new Set();
+
   for (const app of apps) {
     const appJson = `apps/${app}/lupine.json`;
     const additionalFiles = [];
@@ -321,9 +340,23 @@ const start = async () => {
     if (appCfg['watchFiles']) {
       appCfg['watchFiles'].forEach((item) => additionalFiles.push(`${appDir}/${item}`));
     }
+    if (appCfg['externals']) {
+      appCfg['externals'].forEach((item) => globalExternals.add(item));
+    }
+
+    const outdirWeb = `${serverRootPath}/${appName}_web`;
+    const outdirApi = `${serverRootPath}/${appName}_api`;
+    const outdirData = `${serverRootPath}/${appName}_data`;
+    if (!isDev) {
+      console.log(`[dev] Removing old building files:`);
+      console.log(`[dev]  ${outdirWeb}`);
+      console.log(`[dev]  ${outdirApi}`);
+      await fs.rm(outdirWeb, { recursive: true, force: true });
+      await fs.rm(outdirApi, { recursive: true, force: true });
+    }
 
     // create data folder
-    await fs.mkdir(`${serverRootPath}/${appName}_data`, { recursive: true });
+    await fs.mkdir(outdirData, { recursive: true });
 
     const saved = {
       isDev,
@@ -336,21 +369,32 @@ const start = async () => {
       skipObfuscateFiles: (appCfg['skipObfuscateFiles'] || []).map((p) => path.normalize(p)),
       httpPort,
       serverRoot: serverRootPath,
-      outdirWeb: `${serverRootPath}/${appName}_web`,
-      outdirApi: `${serverRootPath}/${appName}_api`,
-      outdirData: `${serverRootPath}/${appName}_data`,
-      copyFiles: appCfg['copyFiles'].map((item) => ({
-        from: `${appDir}/${item.from}`,
-        to:
-          item.type == 'data'
-            ? `${serverRootPath}/${appName}_data/${item.to}`
-            : `${serverRootPath}/${appName}_web/${item.to}`,
-      })),
+      outdirWeb,
+      outdirApi,
+      outdirData,
+      customLoaders: appCfg['customLoaders'] || {},
+      externals: appCfg['externals'] || [],
+      copyFiles: (appCfg['copyFiles'] || []).reduce((acc, item) => {
+        const env = item.env || 'all'; // default all
+        if (env === 'web' && isMobile) return acc;
+        if (env === 'mobile' && !isMobile) return acc;
+
+        if (!item.to.startsWith('web/') && !item.to.startsWith('api/') && !item.to.startsWith('data/')) {
+          console.warn(`[dev] Warning: Skipping copyFiles item. 'to' must start with 'web/', 'api/', or 'data/'. Invalid config: ${item.to}`);
+          return acc;
+        }
+        acc.push({
+          from: `${appDir}/${item.from}`,
+          to: `${serverRootPath}/${appName}_${item.to}`,
+          ignore: item.ignore ? (isMobile ? item.ignore.mobile : item.ignore.web) : null,
+        });
+        return acc;
+      }, []),
     };
 
     appCfg['webEntryPoints'].forEach((item, index) => {
       const entryPoint = `${appDir}/${item.index}`;
-      const indexHtml = `${appDir}/${item.html}`;
+      const indexHtml = item.html ? `${appDir}/${item.html}` : undefined;
       watchClient(
         {
           ...saved,
@@ -363,7 +407,7 @@ const start = async () => {
         [entryPoint],
         path.dirname(entryPoint)
       );
-      additionalFiles.push(indexHtml);
+      if (indexHtml) additionalFiles.push(indexHtml);
     });
 
     if (appCfg['apiEntryPoint']) {
@@ -383,7 +427,8 @@ const start = async () => {
     }
   }
 
-  watchServer(isDev, npmCmd, httpPort, serverRootPath);
+  const allExternals = Array.from(globalExternals);
+  watchServer(isDev, npmCmd, httpPort, serverRootPath, allExternals);
   watchServerLoader(isDev, npmCmd, httpPort, serverRootPath);
 };
-start();
+exports.start = start;
