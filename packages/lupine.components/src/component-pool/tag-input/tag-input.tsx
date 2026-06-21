@@ -89,7 +89,7 @@ export const TagInput = ({
   bindGlobalStyle(globalCssId, tagInputCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   let currentSelection = [...selectedIndices];
@@ -97,7 +97,7 @@ export const TagInput = ({
   const renderTags = () => {
     // pass globalCssId for & in classname
     const tempRef: RefProps = {
-      globalCssId,
+      referToCssId: globalCssId,
     };
     if (currentSelection.length === 0) {
       return (
@@ -158,13 +158,8 @@ export const TagInput = ({
   };
 
   const dom = new HtmlVar(renderTags());
-
-  // Combine native classes, framework namespace (from globalCssId), and optional extra classes
-  let finalClass = cls || '';
-  if (disabled) finalClass += ' disabled';
-
   return (
-    <div ref={ref} css={extraCss} class={finalClass} onClick={openSelector}>
+    <div ref={ref} css={extraCss} class={[globalCssId, cls, disabled ? 'disabled' : ''].filter(Boolean).join(' ')} onClick={openSelector}>
       {dom.node}
     </div>
   );

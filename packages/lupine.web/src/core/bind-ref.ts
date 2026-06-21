@@ -4,7 +4,7 @@ import { MounterProps } from '../models/mounter-props';
 
 export const bindRef = (type: any, newProps: any, el: Element, mounters: MounterProps) => {
   // console.log('========', newProps, el);
-  const id = newProps._id;
+  const id = newProps.id || newProps._id;
   // newProps["ref"].id = id; // this is set at bindAttributes
   (el as any)._lj = (el as any)._lj || {};
   (el as any)._lj.ref = newProps['ref'];
@@ -28,32 +28,38 @@ export const bindRef = (type: any, newProps: any, el: Element, mounters: Mounter
    * @returns Element
    */
   newProps['ref'].$ = (selector: string) => {
-    if (newProps['ref'].globalCssId) {
-      const gId = newProps['ref'].globalCssId;
+    if (!selector || selector === '&') return el;
+
+    if (newProps['ref'].referToCssId) {
+      const gId = newProps['ref'].referToCssId;
       if (selector.startsWith('&')) {
-        return el.querySelector(`.${gId}${selector.substring(1).replace(/&/g, gId)}`);
+        // top node may not have the gId classname
+        return el.querySelector(`.${id}${selector.substring(1).replace(/&/g, gId)}`);
       }
-      return el.querySelector(`.${gId} ${selector.replace(/&/g, gId)}`);
+      return el.querySelector(selector.replace(/&/g, gId));
     }
 
     if (selector.startsWith('&')) {
       return el.querySelector(`.${id}${selector.substring(1).replace(/&/g, id)}`);
     }
-    return el.querySelector(`.${id} ${selector.replace(/&/g, id)}`);
+    return el.querySelector(selector.replace(/&/g, id));
   };
   newProps['ref'].$all = (selector: string) => {
-    if (newProps['ref'].globalCssId) {
-      const gId = newProps['ref'].globalCssId;
+    if (!selector || selector === '&') return [el];
+
+    if (newProps['ref'].referToCssId) {
+      const gId = newProps['ref'].referToCssId;
       if (selector.startsWith('&')) {
-        return el.querySelectorAll(`.${gId}${selector.substring(1).replace(/&/g, gId)}`);
+        // top node may not have the gId classname
+        return el.querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, gId)}`);
       }
-      return el.querySelectorAll(`.${gId} ${selector.replace(/&/g, gId)}`);
+      return el.querySelectorAll(selector.replace(/&/g, gId));
     }
 
     if (selector.startsWith('&')) {
       return el.querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, id)}`);
     }
-    return el.querySelectorAll(`.${id} ${selector.replace(/&/g, id)}`);
+    return el.querySelectorAll(selector.replace(/&/g, id));
   };
 
   newProps['ref'].mountInnerComponent = async (content: string | VNode<any>) => {

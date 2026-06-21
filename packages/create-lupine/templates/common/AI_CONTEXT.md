@@ -191,91 +191,174 @@ export const MyComponent = () => {
 
 ## 4. CSS Placement Strategies & Sharing Scopes
 
-Lupine.js provides two main ways to inject component CSS (`css={}` vs `bindGlobalStyle`). Additionally, you must actively manage how dynamic separated DOM chunks share the same CSS Scope.
+Lupine.js handles CSS scoping by generating unique IDs and replacing the `&` symbol in class names. Depending on where your components live, you have three strategies for sharing this CSS scope.
 
-### Strategy A: The `css={}` Prop (Dynamic / Single-Use)
+### 4.1 Sharing CSS inside a method (Component Level)
 
-**Best for**: Pages, views, or high-level containers that are only rendered once per screen.
+**Best for**: Complex components or pages where you define a single `const css: CssProps` and share it across sub-components rendered in the same function.
 
-When you pass `css={css}` to a JSX element, Lupine automatically evaluates it and injects a new `<style>` tag directly wrapping that element.
+When you assign `css={css}` to the root element, a unique ID is generated (e.g., `l01`).
 
-- **Pros**: Perfect isolation.
-- **Cons**: If you render 100 items using `css={}`, it will inject 100 identical `<style>` blocks into the DOM, severely bloating the page.
-
-### Strategy B: `bindGlobalStyle` (Reusable Components)
-
-**Best for**: Reusable UI components (Buttons, Toggles, List Items, Modals) that will be rendered multiple times.
-
-`bindGlobalStyle`, combined with `getGlobalStylesId`, places the `<style>` block in the `<head>` of the document **exactly once**. All instances of the component share the same CSS class names, but those names are still guaranteed to be collision-free!
-
-**How it works seamlessly with `&`**:
-
-1. Generate an ID based on the `CssProps` content: `const globalCssId = getGlobalStylesId(css);`. (Call this _inside_ the component!)
-2. Bind the style block globally once: `bindGlobalStyle(globalCssId, css);`
-3. Assign this ID to the component's `ref` to link the scope: `const ref: RefProps = { globalCssId };` / `<div ref={ref}>`
-4. Use `class="&-item"` normally. Lupine replaces `&` with the identical `globalCssId` across all instances.
-
-> [!WARNING]
-> Because `getGlobalStylesId` relies on `getRequestContext()` data to correctly attach and track styles (especially across SSR and interactive client renders), `getGlobalStylesId` and `bindGlobalStyle` **MUST** be called inside the component function scope. Calling them at the file/module level will result in runtime errors like: `Uncaught Error: Request context is not initialized`.
-
-### ⚠️ IMPORTANT: The "Static `CssProps`" Rule
-
-Because `bindGlobalStyle` injects your `<style>` tags into the `<head>` globally, your `CssProps` definition **MUST** be entirely static.
-
-**ANTI-PATTERN:** Putting variables (like `isVertical`, `size`, `color`) directly inside the `CssProps` object structure. Every time the component re-renders with a different prop, it will generate conflicting CSS IDs and the latter will overwrite the former's styles, corrupting the layout. Define one immutable `const css: CssProps = {...}` and handle visual variations by appending standard class names to your root element (`class={isVertical ? '&-vertical' : '&-horizontal'}`) and map those variations inside your static `CssProps`.
-
-### 🔗 Sharing the same CSS scope (`globalCssId`) among Separated DOMs
-
-If your component divides its logic so that some internal floating DOM elements are rendered dynamically later (e.g. through a function passed to `HtmlVar`) _separated_ from the root return statement, the inner DOM will automatically generate a **new, mismatched** CSS ID if not linked. Its internal `class="&-item"` references will break and styles will fail to apply.
-
-To force separated local DOM partitions to share the exact same `&` CSS Scope as their parent page, explicitly share a globally unique CSS ID using `globalStyleUniqueId()`:
+1. **Automatic Inheritance**: The top node's CSS ID will be automatically inherited by all descendant nodes in most cases. You **do not** need to pass it manually. 
+2. **HtmlVar Support**: Detached DOMs rendered via `HtmlVar` now automatically inherit the CSS ID of the element they are mounted into!
+3. **Explicit Linking (`referToCssId`)**: The **ONLY** time the inheritance chain is broken is when a sub-component defines its OWN `css` property (which creates a new CSS scope). If you want descendants of that sub-component to still use the top parent's CSS ID instead of the new one, you must explicitly pass `referToCssId`.
 
 ```tsx
-import { globalStyleUniqueId, HtmlVar, RefProps, CssProps } from 'lupine.components';
+import { domUniqueId, HtmlVar, RefProps, CssProps } from 'lupine.components';
 
-export const HomePage = () => {
-  // 1. Generate a manual ID for the container scope beforehand
-  const cssId = globalStyleUniqueId();
+export const TestCssShareInside = () => {
+  const cssInner: CssProps = {
+    // Top-level rules apply to the root component
+    display: 'flex',
+    '.&-content': { color: 'red' },
+    '.&-sub-title': { fontWeight: 'bold' },
+    '.&-list-item': { color: 'blue' }
+  };
 
+  const ref: RefProps = { id: domUniqueId() };
+
+  // Example of a detached DOM using HtmlVar. 
+  // It automatically inherits the CSS ID when mounted inside the component!
   const listDom = new HtmlVar('');
-
   const renderList = () => {
-    // 2. Explicitly bind the inner detached DOM to the parent's globalCssId
     listDom.value = (
-      <div ref={{ globalCssId: cssId }} class='&-bundle-container'>
-        <div class='&-bundle-name'>Basic Bundle</div>
+      <div class='&-list'>
+        <div class='&-list-item'>HtmlVar List Item</div>
       </div>
     );
   };
 
-  const ref: RefProps = {
-    globalCssId: cssId, // 3. The parent registers the ID as well
-    onLoad: async () => renderList(),
+  const SubContent1 = () => {
+    const ref2: RefProps = { onLoad: async () => {} };
+    // This sub-component only has a ref, so it naturally inherits the parent's css ID!
+    return <div ref={ref2} class='&-sub-top'>Sub component without css.</div>;
   };
-  const css: CssProps = { '.&-bundle-name': { color: 'red' } };
+
+  const SubContent2 = (props: { children: VNode<any> }) => {
+    // ⚠️ This sub-component has its own `css`, which would break inheritance!
+    const css2: CssProps = { color: 'blue' };
+    const ref2: RefProps = {
+      // So we MUST explicitly link it using referToCssId if we still want parent's css id.
+      referToCssId: ref.id,
+      onLoad: async () => renderList()
+    };
+    
+    return (
+      <div ref={ref2} css={css2} class='&-sub-top'>
+        <div class='&-sub-title'>Sub component with its own css.</div>
+        {listDom.node}
+        {props.children}
+      </div>
+    );
+  };
 
   return (
-    <div css={css} ref={ref}>
-      {/* 4. The dynamically injected nodes will properly map their &- prefixes */}
-      {listDom.node}
+    // 1. Assign css to the top node.
+    <div ref={ref} css={cssInner}>
+      {/* 2. Normal elements automatically inherit the CSS ID */}
+      <div class='&-content'>Content</div>
+      
+      {/* 3. SubContent1 automatically inherits */}
+      <SubContent1 />
+
+      {/* 4. SubContent2 explicitly overrides inheritance internally */}
+      <SubContent2>
+        <div class='&-sub'>Passed as parameter</div>
+      </SubContent2>
     </div>
   );
 };
 ```
 
-### Using `&` on Top-Level Tags
+### 4.2 Sharing CSS between components (Module Level)
 
-The following example illustrates how to correctly use `&` in the `class` of a top-level tag.
+**Best for**: Reusable UI components (Buttons, Modals, List Items) that are rendered multiple times across the application, or when sharing a common style block between a few specific components.
 
-Generally, you should not need to use `&` classes on the top-level tag because you can reference the top-level tag directly via `ref.current`. For styling, the first-level styles defined directly under your `CssProps` object are automatically applied to the top-level tag (e.g., `color: 'red'` below).
+If you render 100 items using `css={}`, it injects 100 identical `<style>` blocks. To avoid this bloat, use `bindGlobalStyle` to inject the `<style>` block exactly once into the `<head>`, and share its ID using `referToCssId`.
 
-However, when there is a special need to use an `&-` class prefix on the top-level tag, you must be careful: **`"&.&-box"`** is the correct syntax. This is because the standalone `&` selector is replaced by both the explicit `gCssId` and the CSS ID automatically generated for this top-level tag.
+**How to share:**
+1. Define the CSS outside or inside of the component method.
+2. Inside the component, get the ID and bind it globally using `bindGlobalStyle()`.
+3. Assign `referToCssId` to the root element's `ref`, **and** add the `globalCssId` to the tag's `class` attribute.
+```tsx
+// 1. Define shared CSS
+const cssShared: CssProps = {
+  display: 'flex',
+  '.&-content': { color: 'red' },
+};
 
-For instance, if `gCssId="g00"` and the auto-generated CSS ID applied by the `ref` is `"l01"`, then `"&.&-box"` compiles to `"g00.g00-box, l01.l01-box"`.
+export const TestGlobalCss = () => {
+  // 2. Get the unique ID and bind it globally (only happens once)
+  // By default, noTopClassName is false, meaning the globalCssId will be prefixed to top level selectors (e.g., '.g00 .g00-content').
+  const globalCssId = getGlobalStylesId(cssShared);
+  bindGlobalStyle(globalCssId, cssShared);
 
-Similarly, a nested selector like `"&.&-box .&-item"` will be compiled into `"g00.g00-box .g00-item, l01.l01-box .l01-item"`.
+  return (
+    // 3. Assign referToCssId AND manually add the globalCssId as a class name!
+    // Since bindGlobalStyle added `.g00` to the selectors, we MUST add `g00` to the top tag.
+    <div ref={{ referToCssId: globalCssId }} class={globalCssId}>
+      {/* & is automatically replaced by globalCssId */}
+      <div class='&-content'>Share CSS cross components</div>
+    </div>
+  );
+};
+```
 
-_(Alternatively, if you define the class without the `&-` prefix like `class="box"`, you would target it using `"&.box"`)._
+### 4.3 The `noTopClassName` Parameter
+
+When using `bindGlobalStyle` or `bindAppGlobalStyle`, the `noTopClassName` parameter (4th argument) dictates how top-level CSS selectors are compiled.
+
+- **`noTopClassName = false` (Default)**: 
+  `bindGlobalStyle(globalCssId, cssShared)` will prepend the ID to all top-level selectors.
+  If `cssShared` is `{ '.selector-1': {} }` and `globalCssId` is `g00`, it compiles to:
+  `'.g00 .selector-1' { ... }`
+  This is why you **must** add `class={globalCssId}` to the top tag. In this mode, `cssShared` can also contain styles applied directly to the top tag (e.g., `display: 'flex'`).
+
+- **`noTopClassName = true`**: 
+  `bindGlobalStyle(globalCssId, cssShared, false, true)` will NOT prepend the ID.
+  It compiles to:
+  `'.selector-1' { ... }`
+  In this mode, you **cannot** define top-level styles directly on the root component without a selector, and you **do not** need to add `globalCssId` to the top tag's class name.
+
+> [!WARNING]
+> Because `bindGlobalStyle` injects your `<style>` tags into the `<head>` globally, your `CssProps` definition **MUST** be entirely static. Do not put variables (like `size` or `color`) directly inside the `CssProps` object structure.
+
+### 4.4 Sharing CSS at application level (Global Scope)
+
+**Best for**: True global styles like general utility classes, typography, or theme-wide resets.
+
+In this case, you define an application-level CSS block and add it to the header when the app initializes. 
+
+- You **cannot** use the `&` ampersand to represent a dynamic unique ID prefix (like `&-content`). However, you **can** still use `&` in nested structures to refer to the parent selector (e.g., `&.title` compiles to `.app-header.title`), though explicitly using absolute selectors is generally recommended for clarity.
+- You do not need to pass `referToCssId`. You just use the standard global class names in your JSX.
+
+```tsx
+// 1. Define the shared CSS with absolute selectors
+export const appSharedCss = {
+  '.app-header': {
+    fontSize: '14px',
+    // Using & here refers to the parent selector (.app-header), 
+    // resulting in .app-header.title
+    '&.title': { fontSize: '24px' },
+  },
+  '.app-warning-color': { color: 'red' },
+};
+
+// 2. Add this in your app's initialization (e.g., index.tsx)
+// The 4th parameter (noTopClassName = true) is critical here!
+bindAppGlobalStyle('app-shared-css', appSharedCss, false, true);
+
+// 3. Use it anywhere
+export const AnyComponent = () => (
+  // Use the absolute class names directly
+  <div class="app-header title">Hello</div>
+);
+```
+
+### 4.5 Using `&` on Top-Level Tags
+
+When there is a special need to use an `&-` class prefix on a top-level tag, use the `&.&-box` syntax. The standalone `&` selector is replaced by the CSS ID automatically generated for this top-level tag.
+For instance, `"&.&-box"` compiles to `"l01.l01-box"`.
 
 ```typescript
 export const Component1 = () => {
@@ -288,17 +371,16 @@ export const Component1 = () => {
   bindGlobalStyle(gCssId, css);
 
   const ref: RefProps = {
-    globalCssId: gCssId,
+    referToCssId: gCssId,
   };
+  
   return (
-    <div ref={ref} class='&-box'>
+    <div ref={ref} class={[gCssId, '&-box'].join(' ')}>
       <div class='&-item'>item</div>
     </div>
   );
 };
 ```
-
----
 
 ## 5. Common Patterns ("The Lupine Way")
 

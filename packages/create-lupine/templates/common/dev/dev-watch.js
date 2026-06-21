@@ -110,6 +110,13 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath) => {
 
 // copy files to output directory
 const copyCache = new Map();
+const writeBuildTimeFiles = async (saved) => {
+  if (!saved.webVersionFile) return;
+  const buildTimeContent = JSON.stringify({ version: new Date().toISOString() }, null, 2) + '\n';
+  const sourceBuildTimePath = path.join(saved.appDir, saved.webVersionFile);
+  await fs.writeFile(sourceBuildTimePath, buildTimeContent, 'utf8');
+};
+
 const clientProcessOnEnd = async (saved) => {
   saved.indexHtml &&
     cpIndexHtml(
@@ -140,6 +147,10 @@ const watchClientPlugin = (saved) => {
   return {
     name: 'watchClientPlugin',
     setup(build) {
+      build.onStart(async () => {
+        await writeBuildTimeFiles(saved);
+      });
+
       build.onEnd(async (res) => {
         // console.log(`Build meta data: `, res);
         console.log(`[dev-client:${saved.appName}] Build finished`);
@@ -180,7 +191,11 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     jsxImportSource: 'lupine.web',
     jsx: 'automatic',
     target: ['chrome87'],
-    plugins: [watchClientPlugin(saved), pluginIfelse(ifPluginVars), obfuscatePlugin(saved.isObfuscate, [])],
+    plugins: [
+      watchClientPlugin(saved),
+      pluginIfelse(ifPluginVars),
+      obfuscatePlugin(saved.isObfuscate, saved.skipObfuscateFiles || []),
+    ],
   });
 
   isDev && (await ctx.watch());
@@ -316,6 +331,9 @@ const start = async () => {
       isObfuscate,
       defaultThemeName: 'light',
       appName,
+      appDir,
+      webVersionFile: appCfg['webVersionFile'],
+      skipObfuscateFiles: (appCfg['skipObfuscateFiles'] || []).map((p) => path.normalize(p)),
       httpPort,
       serverRoot: serverRootPath,
       outdirWeb: `${serverRootPath}/${appName}_web`,

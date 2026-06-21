@@ -86,7 +86,7 @@ export const RadialProgress = (props: RadialProgressProps) => {
   }
 
   const containerRef: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const progressColor = props.color || 'var(--primary-accent-color, #0a74c9)';
@@ -94,7 +94,7 @@ export const RadialProgress = (props: RadialProgressProps) => {
   const sizeClass = props.size || ButtonSize.Medium;
 
   return (
-    <div class={['&-container', sizeClass, props.class].join(' ').trim()} ref={containerRef} css={props.style}>
+    <div class={[globalCssId, '&-container', sizeClass, props.class].join(' ').trim()} ref={containerRef} css={props.style}>
       <SvgSvg class='&-svg' viewBox='0 0 100 100'>
         <SvgCircle class='&-track' cx='50' cy='50' r='45' style={{ stroke: trackColor }} />
         <SvgCircle

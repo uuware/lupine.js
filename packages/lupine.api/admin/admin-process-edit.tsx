@@ -65,17 +65,15 @@ class ProcessEditorState {
 }
 
 const cssTheme: CssProps = {
-  '&.&-editor-container': {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'var(--primary-bg-color)',
-  },
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: 'var(--primary-bg-color)',
   '.&-header': {
     display: 'flex',
     padding: '16px',
@@ -570,7 +568,7 @@ export const AdminProcessEditPage = (processId: string) => {
 
         content = (
           <div
-            ref={{ globalCssId: gCssId }}
+            ref={{ referToCssId: gCssId }}
             style={{
               padding: '8px',
               border: '1px solid blue',
@@ -692,7 +690,7 @@ export const AdminProcessEditPage = (processId: string) => {
       if (cls) {
         content = (
           <div
-            ref={{ globalCssId: gCssId }}
+            ref={{ referToCssId: gCssId }}
             style={{ padding: '8px', border: '1px solid green', backgroundColor: 'var(--secondary-bg-color)' }}
           >
             <div
@@ -789,13 +787,13 @@ export const AdminProcessEditPage = (processId: string) => {
       });
     };
 
-    itemsTreeDom.value = <div ref={{ globalCssId: gCssId }} class='&-items-top'>{renderNodes(state.items)}</div>;
+    itemsTreeDom.value = <div ref={{ referToCssId: gCssId }} class='&-items-top'>{renderNodes(state.items)}</div>;
   };
 
   // --- Right Pane: Classes List ---
   const renderClassesList = () => {
     classesListDom.value = (
-      <div ref={{ globalCssId: gCssId }} class='&-class-top'>
+      <div ref={{ referToCssId: gCssId }} class='&-class-top'>
         {state.classes.map((cls) => {
           const isSelectedClass = state.selectedClassUid === cls._uid;
 
@@ -849,7 +847,7 @@ export const AdminProcessEditPage = (processId: string) => {
   // --- Toolbars ---
   const renderToolbars = () => {
     itemsToolbarDom.value = (
-      <div ref={{ globalCssId: gCssId }}>
+      <div ref={{ referToCssId: gCssId }}>
         <div class='&-toolbar-btn' title='Add Group' onClick={onAddGroup}>
           [+]
         </div>
@@ -886,7 +884,7 @@ export const AdminProcessEditPage = (processId: string) => {
     );
 
     classesToolbarDom.value = (
-      <div ref={{ globalCssId: gCssId }}>
+      <div ref={{ referToCssId: gCssId }}>
         <div class='&-toolbar-btn' title='Add Class' onClick={onAddClass}>
           [+]
         </div>
@@ -1132,14 +1130,14 @@ export const AdminProcessEditPage = (processId: string) => {
     });
 
     svgDom.value = (
-      <svg ref={{ globalCssId: gCssId }} class='&-svg-canvas'>
+      <svg ref={{ referToCssId: gCssId }} class='&-svg-canvas'>
         {paths}
       </svg>
     );
   };
 
   const ref: RefProps = {
-    globalCssId: gCssId,
+    referToCssId: gCssId,
     onLoad: async () => {
       await loadData();
       window.addEventListener('resize', drawConnections);
@@ -1150,7 +1148,7 @@ export const AdminProcessEditPage = (processId: string) => {
   };
 
   return (
-    <div ref={ref} class='&-editor-container'>
+    <div ref={ref} class={gCssId}>
       <div class='&-header'>
         {headerDom.node}
         <button class='button-base button-outline' onClick={loadData}>

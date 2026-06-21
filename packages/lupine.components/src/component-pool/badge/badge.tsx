@@ -64,7 +64,7 @@ export const Badge = (props: BadgeProps) => {
   bindGlobalStyle(globalCssId, badgeCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   let displayContent = props.content;
@@ -85,7 +85,7 @@ export const Badge = (props: BadgeProps) => {
   const showBubble = props.dot || isSup;
 
   return (
-    <div class={['&-container', props.class].join(' ').trim()} ref={ref} css={props.style} onClick={props.onClick}>
+    <div class={[globalCssId, '&-container', props.class].join(' ').trim()} ref={ref} css={props.style} onClick={props.onClick}>
       {/* The Anchor Element */}
       {props.children}
 

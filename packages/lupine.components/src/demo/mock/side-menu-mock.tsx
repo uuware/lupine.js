@@ -9,69 +9,66 @@ export type SideMenuMockProps = {
   onAction?: (action: string) => void;
 };
 
-const sideMenuMockCss: CssProps = {
-  '.msm-header': {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '16px',
-    borderBottom: '1px solid var(--primary-border-color)',
-  },
-  '.msm-header-icon': {
-    marginRight: '12px',
-  },
-  '.msm-header-title': {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: 'var(--primary-color)',
-  },
-  '.msm-content': {
-    flex: '1',
-    overflowY: 'auto',
-    padding: '12px 0',
-  },
-  '.msm-item': {
-    padding: '12px 0px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    '&:hover': {
-      backgroundColor: 'var(--activatable-bg-color-hover, rgba(0,0,0,0.04))',
-    },
-  },
-  '.msm-footer': {
-    borderTop: '1px solid var(--primary-border-color)',
-    padding: '16px 0',
-  },
-  '.msm-footer-cfg': {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  '.msm-footer-cfg .msm-item': {
-    padding: '12px',
-  },
-  '.msm-footer-version': {
-    textAlign: 'center',
-    fontSize: '12px',
-    color: 'var(--secondary-color, #999)',
-    marginTop: '16px',
-  },
-};
-
 export const SideMenuMock = ({
   menuItems = ['Home', 'Profile', 'Messages', 'Settings'],
   title = 'My App Menu',
   version = '1.0.0',
   onAction,
 }: SideMenuMockProps): VNode<any> => {
-  const globalCssId = getGlobalStylesId(sideMenuMockCss);
-  bindGlobalStyle(globalCssId, sideMenuMockCss);
-
-  const ref: RefProps = {
-    globalCssId,
+  const css: CssProps = {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    height: '100%',
+    '.msm-header': {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '16px',
+      borderBottom: '1px solid var(--primary-border-color)',
+    },
+    '.msm-header-icon': {
+      marginRight: '12px',
+    },
+    '.msm-header-title': {
+      fontSize: '18px',
+      fontWeight: 'bold',
+      color: 'var(--primary-color)',
+    },
+    '.msm-content': {
+      flex: '1',
+      overflowY: 'auto',
+      padding: '12px 0',
+    },
+    '.msm-item': {
+      padding: '12px 0px',
+      fontSize: '16px',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      '&:hover': {
+        backgroundColor: 'var(--activatable-bg-color-hover, rgba(0,0,0,0.04))',
+      },
+    },
+    '.msm-footer': {
+      borderTop: '1px solid var(--primary-border-color)',
+      padding: '16px 0',
+    },
+    '.msm-footer-cfg': {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    '.msm-footer-cfg .msm-item': {
+      padding: '12px',
+    },
+    '.msm-footer-version': {
+      textAlign: 'center',
+      fontSize: '12px',
+      color: 'var(--secondary-color, #999)',
+      marginTop: '16px',
+    },
   };
 
   const handleAction = (item: string) => {
@@ -84,7 +81,7 @@ export const SideMenuMock = ({
   };
 
   return (
-    <div ref={ref} style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
+    <div css={css}>
       <div class='msm-header'>
         <div class='msm-header-icon'><i class='ifc-icon ma-home-outline'></i></div>
         <div class='msm-header-title'>{title}</div>

@@ -222,14 +222,14 @@ const TooltipContent = (props: {
   bindGlobalStyle(globalCssId, tooltipCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       props.onRef(ref);
     },
   };
 
   return (
-    <div class={['&-container', props.position].join(' ')} ref={ref}>
+    <div class={[globalCssId, '&-container', props.position].join(' ')} ref={ref}>
       <div class='&-box'>
         {props.content}
         {props.showArrow && <div class='&-arrow' />}

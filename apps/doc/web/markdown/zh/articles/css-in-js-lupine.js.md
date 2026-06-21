@@ -196,7 +196,8 @@ const globalUtils = {
 };
 
 // 注入到 <head> 中，ID 为 'global-utils'
-bindGlobalStyle('global-utils', globalUtils);
+// 第四个参数 noTopClassName = true 确保不会在选择器前面拼装 .global-utils 前缀
+bindGlobalStyle('global-utils', globalUtils, false, true);
 ```
 
 ## 7. 传统派：导入 .css 文件

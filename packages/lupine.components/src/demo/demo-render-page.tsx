@@ -76,6 +76,8 @@ export const DemoRenderPage = async (props: PageProps) => {
     borderRight: '1px solid var(--primary-border-color)',
     borderLeft: '1px solid var(--primary-border-color)',
     '>fragment>div': {
+      flex: 1,
+      alignSelf: 'stretch', // overwrite parent's align-items: center
       width: '100%',
       height: '100%',
     },

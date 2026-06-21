@@ -24,9 +24,11 @@ const selfClosingTags = [
 let _yieldCounter = 0;
 const YIELD_THRESHOLD = 50;
 
-async function renderChildrenAsync(html: string[], children: any, uniqueClassName?: string, globalCssId?: string) {
+import { encodeHtml } from '../lib/encode-html';
+
+async function renderChildrenAsync(html: string[], children: any, uniqueClassName?: string, referToCssId?: string) {
   if (typeof children === 'string') {
-    html.push(children);
+    html.push(encodeHtml(children));
   } else if (children === false || children === null || typeof children === 'undefined') {
     // add nothing
   } else if (typeof children === 'number' || typeof children === 'boolean') {
@@ -34,10 +36,10 @@ async function renderChildrenAsync(html: string[], children: any, uniqueClassNam
     html.push(children.toString());
   } else if (Array.isArray(children)) {
     for (const item of children) {
-      await renderChildrenAsync(html, item, uniqueClassName, globalCssId);
+      await renderChildrenAsync(html, item, uniqueClassName, referToCssId);
     }
   } else if (children.type && children.props) {
-    await renderComponentAsync(children.type, children.props, uniqueClassName, globalCssId);
+    await renderComponentAsync(children.type, children.props, uniqueClassName, referToCssId);
     html.push(...children.props._html);
     children.props._html.length = 0;
   } else {
@@ -45,7 +47,7 @@ async function renderChildrenAsync(html: string[], children: any, uniqueClassNam
   }
 }
 
-export const renderComponentAsync = async (type: VNodeType<any>, props: VNodeProps<any>, uniqueClassName?: string, globalCssId?: string) => {
+export const renderComponentAsync = async (type: VNodeType<any>, props: VNodeProps<any>, uniqueClassName?: string, referToCssId?: string) => {
   _yieldCounter++;
   if (_yieldCounter >= YIELD_THRESHOLD) {
     _yieldCounter = 0;
@@ -56,7 +58,7 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
 
   if (Array.isArray(props)) {
     const jsxNodes = { type: 'Fragment', props: { children: props } } as any;
-    await renderComponentAsync(jsxNodes.type, jsxNodes.props, uniqueClassName, globalCssId);
+    await renderComponentAsync(jsxNodes.type, jsxNodes.props, uniqueClassName, referToCssId);
     return;
   }
 
@@ -70,7 +72,7 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
     }
 
     if (typeof props._result.type === 'function') {
-      await renderComponentAsync(props._result.type, props._result.props, uniqueClassName, globalCssId);
+      await renderComponentAsync(props._result.type, props._result.props, uniqueClassName, referToCssId);
       if (props._result.props._html) {
         props._html.push(...props._result.props._html);
         props._result.props._html.length = 0;
@@ -86,19 +88,35 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
     // if (newProps._id) {
     //   console.warn('This component reference is used more than once:', newProps);
     // }
+    if (newProps['class'] && newProps['className']) {
+      console.warn(`One tag can't have both class and className, and className will be ignored.`, newProps);
+      delete newProps['className'];
+    } else if (newProps['className']) {
+      newProps['class'] = newProps['className'];
+      delete newProps['className'];
+    }
 
     let newUniqueClassName = uniqueClassName;
     // if having css, we need to replace & for mapping css and classnames
     // if having ref, we still need to replace & for searching
     if (newProps['css'] || newProps['ref']) {
       newUniqueClassName = genUniqueId(newProps);
-      if (!newProps['class'] && !newProps['className']) newProps['class'] = newUniqueClassName;
+      if (!newProps['class']) newProps['class'] = newUniqueClassName;
+      if (newProps['css'] || !referToCssId) referToCssId = newUniqueClassName;
     }
 
-    let newGlobalCssId = globalCssId;
-    if (newProps['ref'] && newProps['ref'].globalCssId) newGlobalCssId = newProps['ref'].globalCssId;
+    let newReferToCssId = referToCssId;
+    if (newProps['ref']) {
+      if (newProps['ref'].referToCssId) {
+        newReferToCssId = newProps['ref'].referToCssId;
+      }
 
-    const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName, newGlobalCssId);
+      // save for outerComponent/innerComponent loading
+      newProps['ref']._refCssId = newReferToCssId;
+      newProps['ref']._cssName = newUniqueClassName;
+    }
+
+    const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName, newReferToCssId);
 
     if (selfClosingTags.includes(newType.toLowerCase())) {
       if (newType !== 'Fragment' || newProps.ref) {
@@ -109,15 +127,14 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
         props._html.push(`<${newType}${attrs ? ' ' : ''}${attrs}>`);
       }
 
-      if (newProps['css']) {
-        // notice: if globalCssId is provided, it will be used to replace & in css
-        const realCssId = newProps['ref']?.globalCssId || newUniqueClassName;
-        const cssText = processStyle(realCssId, newProps['css']).join('');
+      if (newProps['css'] && newUniqueClassName) {
+        // notice: if referToCssId is provided, it should be only used in classnames.
+        const cssText = processStyle(newUniqueClassName, newProps['css'], false).join('');
         props._html.push(`<style id="sty-${newUniqueClassName}">${cssText}</style>`);
       }
 
       if (newProps.children || newProps.children === 0) {
-        await renderChildrenAsync(props._html, newProps.children, newUniqueClassName, newGlobalCssId);
+        await renderChildrenAsync(props._html, newProps.children, newUniqueClassName, newReferToCssId);
       } else if (newProps['dangerouslySetInnerHTML']) {
         props._html.push(newProps['dangerouslySetInnerHTML']);
       }
@@ -127,7 +144,7 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
       }
     }
   } else if (newType.name === 'Fragment') {
-    await renderChildrenAsync(props._html, newProps.children, uniqueClassName, globalCssId);
+    await renderChildrenAsync(props._html, newProps.children, uniqueClassName, referToCssId);
   } else {
     console.warn('Unknown type: ', type, props, newType, newProps);
   }

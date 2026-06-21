@@ -10,6 +10,7 @@ export type GaugeChartProps = {
   color?: string;
   width?: string | number;
   height?: string | number;
+  aspectRatio?: number;
   valueFormatter?: (value: number) => string;
 };
 
@@ -60,7 +61,7 @@ export const GaugeChart = (props: GaugeChartProps) => {
       : '';
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const ratio = props.aspectRatio ?? 16 / 9;
@@ -69,7 +70,7 @@ export const GaugeChart = (props: GaugeChartProps) => {
   const styleStr = `width: ${props.width || '100%'};`;
 
   return (
-    <div ref={ref} class='&-container' style={styleStr}>
+    <div ref={ref} class={[globalCssId, '&-container'].join(' ')} style={styleStr}>
       {props.title && <div class='chart-title'>{props.title}</div>}
 
       <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 0, paddingTop }}>

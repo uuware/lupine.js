@@ -160,7 +160,7 @@ export const Cascader = (props: CascaderProps) => {
   };
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const toggleClass = showCircle ? 'circle' : '';
@@ -190,7 +190,7 @@ export const Cascader = (props: CascaderProps) => {
 
   return (
     <div
-      class={['&-container', props.class, initialState ? 'open' : ''].join(' ').trim()}
+      class={[globalCssId, '&-container', props.class, initialState ? 'open' : ''].join(' ').trim()}
       ref={ref}
       css={props.style}
       data-cascader-group={props.group}

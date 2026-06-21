@@ -53,7 +53,7 @@ describe('use-state Core Engine', () => {
       };
 
       assert.equal(getCurrentStore(), null); // Before
-      
+
       const store = new ComponentStateStore(TestComp, {});
       await evaluateComponentWithStore(store);
 
@@ -77,7 +77,7 @@ describe('use-state Core Engine', () => {
     });
 
     it('should inject ref wrapper onto VNode if user already passed a ref', async () => {
-      const userRef = { current: null, globalCssId: 'test-global-css' };
+      const userRef = { current: null, referToCssId: 'test-global-css' };
       const RefComp = () => {
         // No hook used here, but user passes an existing ref
         return { type: 'div', props: { ref: userRef } };
@@ -88,8 +88,8 @@ describe('use-state Core Engine', () => {
 
       assert.ok(result.props.ref);
       assert.equal(result.props.ref, userRef, 'It should merge into the original user ref object');
-      assert.equal(result.props.ref.globalCssId, 'test-global-css'); 
-      assert.equal(typeof result.props.ref.onLoad, 'function', 'Wrapper added successfully'); 
+      assert.equal(result.props.ref.referToCssId, 'test-global-css');
+      assert.equal(typeof result.props.ref.onLoad, 'function', 'Wrapper added successfully');
     });
   });
 });

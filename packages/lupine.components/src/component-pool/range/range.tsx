@@ -328,7 +328,7 @@ export const Range = (props: RangeProps) => {
   }
 
   const ref: RefProps & { onUnload?: (el: Element) => Promise<void> | void } = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       if (isVertical) {
         const wrapper = ref.$('.&-wrapper') as HTMLElement;
@@ -366,7 +366,7 @@ export const Range = (props: RangeProps) => {
 
   return (
     <div
-      class={['&-container', props.class, props.disabled ? 'disabled' : '', isVertical ? 'vertical' : 'horizontal']
+      class={[globalCssId, '&-container', props.class, props.disabled ? 'disabled' : '', isVertical ? 'vertical' : 'horizontal']
         .join(' ')
         .trim()}
       ref={ref}

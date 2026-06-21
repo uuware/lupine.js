@@ -120,14 +120,14 @@ export const Card = (props: CardProps) => {
   bindGlobalStyle(globalCssId, cardCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const isHorizontal = props.horizontal ? 'horizontal' : '';
   const isHoverable = props.hoverable ? 'hoverable' : '';
 
   return (
-    <div class={['&-container', isHorizontal, isHoverable, props.class].join(' ').trim()} ref={ref} css={props.style}>
+    <div class={[globalCssId, '&-container', isHorizontal, isHoverable, props.class].join(' ').trim()} ref={ref} css={props.style}>
       {props.cover && <div class='&-cover'>{props.cover}</div>}
 
       <div class='&-body'>

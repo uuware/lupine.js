@@ -213,7 +213,7 @@ const TestStyles = () => {
       },
     },
   };
-  let ref: RefProps = { id: '' };
+  let ref: RefProps = {};
   const onClick = () => {
     css.color = css.color === 'blue' ? 'green' : 'blue';
     updateStyles(`${ref.id}`, css);
@@ -347,7 +347,7 @@ export const AdminTestAnimationsPage = () => {
 
       <div class='pt-m'>
         ToggleButton
-        <ToggleButton onText='On' offText='Off' />
+        <ToggleButton text='On' />
       </div>
 
       <div class='p2'>

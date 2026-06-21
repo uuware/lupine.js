@@ -22,7 +22,7 @@ export const PieChart = (props: PieChartProps) => {
   const viewBoxSize = 200;
   const center = viewBoxSize / 2;
   const maxRadius = (viewBoxSize / 2) * 0.9; // 90% of container to leave margin for stroke/anti-aliasing
-  
+
   const globalInnerRadius = maxRadius * innerRadiusRatio;
   const numSeries = seriesList.length;
   // If only 1 series and innerRadiusRatio is 0, ringThickness is maxRadius.
@@ -94,7 +94,7 @@ export const PieChart = (props: PieChartProps) => {
   });
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const ratio = props.aspectRatio ?? 16 / 9;
@@ -103,7 +103,7 @@ export const PieChart = (props: PieChartProps) => {
   const styleStr = `width: ${props.width || '100%'}; min-height: 200px;`;
 
   return (
-    <div ref={ref} class='&-container' style={styleStr}>
+    <div ref={ref} class={[globalCssId, '&-container'].join(' ')} style={styleStr}>
       {props.title && <div class='chart-title'>{props.title}</div>}
 
       <div

@@ -43,7 +43,7 @@ export const SkeletonCard = (props: SkeletonCardProps) => {
   const contentRef: RefProps = {};
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       const container = ref.current as HTMLElement;
 
@@ -106,7 +106,7 @@ export const SkeletonCard = (props: SkeletonCardProps) => {
 
   // Avatar size is fixed to 48px to represent a typical user profile
   return (
-    <div class={['&-container', props.class].join(' ').trim()} ref={ref} css={mergedStyle} aria-hidden='true'>
+    <div class={[globalCssId, '&-container', props.class].join(' ').trim()} ref={ref} css={mergedStyle} aria-hidden='true'>
       <Skeleton width='48px' height='48px' circle={true} animated={animated} />
       <div class='&-content' ref={contentRef}></div>
     </div>

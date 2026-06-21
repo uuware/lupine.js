@@ -73,7 +73,7 @@ describe('renderComponentAsync', () => {
     it('should recursively render nested component children tree', async () => {
       const nestedChild = { type: 'strong', props: { _html: [], children: ['bold content'] } };
       const props = { _html: [], children: ['A ', nestedChild, ' end.'] };
-      
+
       await renderComponentAsync('p', props);
       assert.equal(getHtml(props), '<p>A <strong>bold content</strong> end.</p>');
     });
@@ -95,7 +95,7 @@ describe('renderComponentAsync', () => {
           props: { children: [p.title] }
         };
       };
-      
+
       const props = { _html: [], title: 'Lupine Test' };
       await renderComponentAsync(MockComponent as any, props);
       assert.equal(getHtml(props), '<h1>Lupine Test</h1>');
@@ -110,7 +110,7 @@ describe('renderComponentAsync', () => {
           props: { children: ['Data Loaded'] }
         };
       };
-      
+
       const props = { _html: [] };
       await renderComponentAsync(AsyncMockComponent as any, props);
       assert.equal(getHtml(props), '<span>Data Loaded</span>');
@@ -125,7 +125,7 @@ describe('renderComponentAsync', () => {
     });
 
     it('should omit wrapper when using named Fragment function', async () => {
-      const FragmentFunc = () => {};
+      const FragmentFunc = () => { };
       Object.defineProperty(FragmentFunc, 'name', { value: 'Fragment' });
 
       const props = { _html: [], children: ['named function wrapper'] };
@@ -137,9 +137,9 @@ describe('renderComponentAsync', () => {
   describe('CSS Mapping and Unique ID Implementations', () => {
     it('should inject global and unique IDs into the class attribute matching ampersand symbol', async () => {
       const props = { _html: [], class: 'base-cls &-item' };
-      // Passing defined uniqueClassName and globalCssId
+      // Passing defined uniqueClassName and referToCssId
       await renderComponentAsync('div', props, 'u-id', 'g-id');
-      
+
       // Based on renderAttribute logic, it replaces "&" with both global and unique IDs 
       assert.equal(getHtml(props), '<div class="base-cls g-id-item u-id-item"></div>');
     });
@@ -148,7 +148,7 @@ describe('renderComponentAsync', () => {
       // css must be an object, not a plain string, for processStyle to parse it correctly
       const props = { _html: [], css: { '.&-item': { color: 'block' } } };
       await renderComponentAsync('div', props);
-      
+
       const output = getHtml(props);
       // Because Date.now() is mocked and baseTime is lazily initialized, 
       // the generated ID will always predictably be "l00"

@@ -25,7 +25,7 @@ export const AspectRatio = (props: AspectRatioProps) => {
   bindGlobalStyle(globalCssId, css);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const ratio = props.ratio ?? 16 / 9;
@@ -34,7 +34,7 @@ export const AspectRatio = (props: AspectRatioProps) => {
   const paddingTop = `${(1 / ratio) * 100}%`;
 
   return (
-    <div class={['&-container', props.class].join(' ').trim()} ref={ref} css={{ paddingTop, ...props.style }}>
+    <div class={[globalCssId, '&-container', props.class].join(' ').trim()} ref={ref} css={{ paddingTop, ...props.style }}>
       <div class='&-inner'>{props.children}</div>
     </div>
   );

@@ -96,7 +96,7 @@ export const Timeline = (props: TimelineProps) => {
   bindGlobalStyle(globalCssId, timelineCss);
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
   };
 
   const lineColor = props.lineColor || 'var(--secondary-border-color, #ccc)';
@@ -108,7 +108,7 @@ export const Timeline = (props: TimelineProps) => {
   };
 
   return (
-    <div class={['&-container', props.class].join(' ').trim()} ref={ref} css={containerStyle}>
+    <div class={[globalCssId, '&-container', props.class].join(' ').trim()} ref={ref} css={containerStyle}>
       <div class='&-line' style={{ backgroundColor: lineColor }}></div>
 
       {(props.items || []).map((item, index) => {

@@ -179,7 +179,7 @@ export const Carousel = (props: CarouselProps) => {
   };
 
   const ref: RefProps = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       updateIndicators(0);
       startAutoplay();
@@ -191,7 +191,7 @@ export const Carousel = (props: CarouselProps) => {
 
   return (
     <div
-      class={['&-container', props.class].join(' ').trim()}
+      class={[globalCssId, '&-container', props.class].join(' ').trim()}
       css={props.style}
       ref={ref}
       onMouseEnter={stopAutoplay}

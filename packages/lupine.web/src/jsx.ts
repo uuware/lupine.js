@@ -20,8 +20,8 @@ export type Ref<T> = RefObject<T> | RefCallback<T>;
 // Ref can only apply to a DOM element (not a function component)
 export type RefProps = {
   id?: string;
-  // if a component has global styles, and also has "&" classNames, then globalCssId is needed to replace "&"
-  globalCssId?: string;
+  // referToCssId will be used to replace "&" in current and all sub-nodes classNames.
+  referToCssId?: string;
   current?: any; // Element | null,
   onLoad?: (el: Element) => Promise<void>;
   onUnload?: (el: Element) => Promise<void>;
@@ -178,19 +178,19 @@ export namespace JSXInternal {
     accumulate?: 'none' | 'sum';
     additive?: 'replace' | 'sum';
     alignmentBaseline?:
-      | 'auto'
-      | 'baseline'
-      | 'before-edge'
-      | 'text-before-edge'
-      | 'middle'
-      | 'central'
-      | 'after-edge'
-      | 'text-after-edge'
-      | 'ideographic'
-      | 'alphabetic'
-      | 'hanging'
-      | 'mathematical'
-      | 'inherit';
+    | 'auto'
+    | 'baseline'
+    | 'before-edge'
+    | 'text-before-edge'
+    | 'middle'
+    | 'central'
+    | 'after-edge'
+    | 'text-after-edge'
+    | 'ideographic'
+    | 'alphabetic'
+    | 'hanging'
+    | 'mathematical'
+    | 'inherit';
     allowReorder?: 'no' | 'yes';
     alphabetic?: number | string;
     amplitude?: number | string;
@@ -679,7 +679,7 @@ export namespace JSXInternal {
 
   export interface HTMLAttributes<RefProps extends EventTarget = EventTarget>
     extends ClassAttributes<RefProps>,
-      DOMAttributes<RefProps> {
+    DOMAttributes<RefProps> {
     dangerouslySetInnerHTML?: string;
     // Standard HTML Attributes
     accept?: string;
@@ -789,14 +789,14 @@ export namespace JSXInternal {
     readonly?: boolean;
     readOnly?: boolean;
     referrerpolicy?:
-      | 'no-referrer'
-      | 'no-referrer-when-downgrade'
-      | 'origin'
-      | 'origin-when-cross-origin'
-      | 'same-origin'
-      | 'strict-origin'
-      | 'strict-origin-when-cross-origin'
-      | 'unsafe-url';
+    | 'no-referrer'
+    | 'no-referrer-when-downgrade'
+    | 'origin'
+    | 'origin-when-cross-origin'
+    | 'same-origin'
+    | 'strict-origin'
+    | 'strict-origin-when-cross-origin'
+    | 'unsafe-url';
     rel?: string;
     required?: boolean;
     reversed?: boolean;

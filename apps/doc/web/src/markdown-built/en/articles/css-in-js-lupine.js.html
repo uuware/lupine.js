@@ -144,7 +144,8 @@ const globalUtils = {
 };
 
 // Inject into &lt;head&gt; with ID &#39;global-utils&#39;
-bindGlobalStyle(&#39;global-utils&#39;, globalUtils);
+// Passing noTopClassName = true (the 4th parameter) ensures it won&#39;t prepend .global-utils to the selectors.
+bindGlobalStyle(&#39;global-utils&#39;, globalUtils, false, true);
 </code></pre>
 <h2 id="7-the-traditionalist-importing-css-files"><a class="header-anchor" href="#7-the-traditionalist-importing-css-files">#</a>7. The Traditionalist: Importing .css Files</h2><p>Of course, Lupine.js hasn&#39;t forgotten the most basic need. If you have a massive legacy project to migrate, or you simply prefer writing standard <code>.css</code> files, that&#39;s completely fine.</p>
 <p>You can import CSS files directly in any <code>.tsx</code> file:</p>

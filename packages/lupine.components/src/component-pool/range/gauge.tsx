@@ -291,7 +291,7 @@ export const Gauge = (props: GaugeProps) => {
   }
 
   const ref: RefProps & { onUnload?: (el: Element) => Promise<void> } = {
-    globalCssId,
+    referToCssId: globalCssId,
     onLoad: async () => {
       updateVisuals();
     },
@@ -341,7 +341,7 @@ export const Gauge = (props: GaugeProps) => {
 
   return (
     <div
-      class={['&-container', props.class, props.disabled ? 'disabled' : '', isReadonly ? 'readonly' : '']
+      class={[globalCssId, '&-container', props.class, props.disabled ? 'disabled' : '', isReadonly ? 'readonly' : '']
         .join(' ')
         .trim()}
       ref={ref}

@@ -123,7 +123,7 @@ const showTokenEditItem = async (item: TokenProps, update: (item: TokenProps) =>
 
 // edit one item
 export const TokenEditItem = (props: { item: TokenProps; update: TokenDataUpdateProps }) => {
-  const ref: RefProps = { id: '' };
+  const ref: RefProps = {};
   const css: CssProps = {
     padding: '10px',
     border: 'solid 1px gray',
