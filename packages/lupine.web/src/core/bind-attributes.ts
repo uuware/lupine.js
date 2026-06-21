@@ -1,7 +1,7 @@
 import { bindRef } from './bind-ref';
 import { MounterProps } from '../models/mounter-props';
 
-export const bindAttributesChildren = (topEl: Element, children: any, mounters: MounterProps) => {
+export const bindAttributesChildren = (topEl: Element | Node, children: any, mounters: MounterProps) => {
   for (let i = 0; i < children.length; i++) {
     const item = children[i];
     if (item && item.type && item.props) {
@@ -20,12 +20,22 @@ export const bindAttributesChildren = (topEl: Element, children: any, mounters: 
   }
 };
 
-export const bindAttributes = (topEl: Element, type: any, props: any, mounters: MounterProps) => {
+export const bindAttributes = (topEl: Element | Node, type: any, props: any, mounters: MounterProps) => {
   const newProps = (props._result && props._result.props) || props;
   if (newProps._id) {
-    let el = topEl.querySelector(`[${newProps._id}]`);
-    if (!el && topEl.getAttribute(newProps._id) === '') {
-      el = topEl;
+    let el: Element | Node | null = null;
+    if ((topEl as Element).querySelector) {
+      el = (topEl as Element).querySelector(`[${newProps._id}]`);
+      if (!el && (topEl as Element).getAttribute && (topEl as Element).getAttribute(newProps._id) === '') {
+        el = topEl;
+      }
+    }
+    
+    // Resolve beacon to Comment Node and remove beacon
+    if (el && (el as Element).tagName === 'FRAGMENT' && el.previousSibling?.nodeType === 8) {
+      const commentNode = el.previousSibling;
+      el.parentNode?.removeChild(el);
+      el = commentNode;
     }
     if (el) {
       for (let i in newProps) {
@@ -38,7 +48,9 @@ export const bindAttributes = (topEl: Element, type: any, props: any, mounters: 
           if (name.toLowerCase() in el) name = name.toLowerCase().slice(2);
           else name = name.slice(2);
           // console.log('===bind event', name, el);
-          el.addEventListener(name, newProps[i]);
+          if (el.nodeType !== 8) { // Don't add event listeners to comment nodes
+            (el as Element).addEventListener(name, newProps[i]);
+          }
         }
       }
     }

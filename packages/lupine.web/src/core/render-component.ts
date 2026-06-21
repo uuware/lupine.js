@@ -119,11 +119,15 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
     const attrs = renderAttribute(newType, newProps, { type, props }, newUniqueClassName, newReferToCssId);
 
     if (selfClosingTags.includes(newType.toLowerCase())) {
-      if (newType !== 'Fragment' || newProps.ref) {
+      if (newType === 'Fragment' && newProps.ref) {
+        props._html.push(`<!--[ref-${newProps._id}]--><fragment ${newProps._id}></fragment>`);
+      } else if (newType !== 'Fragment') {
         props._html.push(`<${newType}${attrs ? ' ' : ''}${attrs} />`);
       }
     } else {
-      if (newType !== 'Fragment' || newProps.ref) {
+      if (newType === 'Fragment' && newProps.ref) {
+        props._html.push(`<!--[ref-${newProps._id}]--><fragment ${newProps._id}></fragment>`);
+      } else if (newType !== 'Fragment') {
         props._html.push(`<${newType}${attrs ? ' ' : ''}${attrs}>`);
       }
 
@@ -139,7 +143,9 @@ export const renderComponentAsync = async (type: VNodeType<any>, props: VNodePro
         props._html.push(newProps['dangerouslySetInnerHTML']);
       }
 
-      if (newType !== 'Fragment' || newProps.ref) {
+      if (newType === 'Fragment' && newProps.ref) {
+        props._html.push(`<!--/[ref-${newProps._id}]-->`);
+      } else if (newType !== 'Fragment') {
         props._html.push(`</${newType}>`);
       }
     }

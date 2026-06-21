@@ -2,7 +2,7 @@ import { VNode } from '../jsx';
 import { replaceInnerhtml } from './replace-innerhtml';
 import { MounterProps } from '../models/mounter-props';
 
-export const bindRef = (type: any, newProps: any, el: Element, mounters: MounterProps) => {
+export const bindRef = (type: any, newProps: any, el: Element | Node, mounters: MounterProps) => {
   // console.log('========', newProps, el);
   const id = newProps.id || newProps._id;
   // newProps["ref"].id = id; // this is set at bindAttributes
@@ -29,48 +29,56 @@ export const bindRef = (type: any, newProps: any, el: Element, mounters: Mounter
    */
   newProps['ref'].$ = (selector: string) => {
     if (!selector || selector === '&') return el;
+    if (el.nodeType === 8) {
+      console.warn('Cannot use querySelector on a Comment node');
+      return null;
+    }
 
     if (newProps['ref'].referToCssId) {
       const gId = newProps['ref'].referToCssId;
       if (selector.startsWith('&')) {
         // top node may not have the gId classname
-        return el.querySelector(`.${id}${selector.substring(1).replace(/&/g, gId)}`);
+        return (el as Element).querySelector(`.${id}${selector.substring(1).replace(/&/g, gId)}`);
       }
-      return el.querySelector(selector.replace(/&/g, gId));
+      return (el as Element).querySelector(selector.replace(/&/g, gId));
     }
 
     if (selector.startsWith('&')) {
-      return el.querySelector(`.${id}${selector.substring(1).replace(/&/g, id)}`);
+      return (el as Element).querySelector(`.${id}${selector.substring(1).replace(/&/g, id)}`);
     }
-    return el.querySelector(selector.replace(/&/g, id));
+    return (el as Element).querySelector(selector.replace(/&/g, id));
   };
   newProps['ref'].$all = (selector: string) => {
     if (!selector || selector === '&') return [el];
+    if (el.nodeType === 8) {
+      console.warn('Cannot use querySelectorAll on a Comment node');
+      return [];
+    }
 
     if (newProps['ref'].referToCssId) {
       const gId = newProps['ref'].referToCssId;
       if (selector.startsWith('&')) {
         // top node may not have the gId classname
-        return el.querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, gId)}`);
+        return (el as Element).querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, gId)}`);
       }
-      return el.querySelectorAll(selector.replace(/&/g, gId));
+      return (el as Element).querySelectorAll(selector.replace(/&/g, gId));
     }
 
     if (selector.startsWith('&')) {
-      return el.querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, id)}`);
+      return (el as Element).querySelectorAll(`.${id}${selector.substring(1).replace(/&/g, id)}`);
     }
-    return el.querySelectorAll(selector.replace(/&/g, id));
+    return (el as Element).querySelectorAll(selector.replace(/&/g, id));
   };
 
   newProps['ref'].mountInnerComponent = async (content: string | VNode<any>) => {
     if (typeof content === 'object' && content.type && content.props) {
-      mounters.mountInnerComponent && await mounters.mountInnerComponent(el, content);
+      mounters.mountInnerComponent && await mounters.mountInnerComponent(el as Element, content);
     } else {
-      await replaceInnerhtml(el, content as string);
+      await replaceInnerhtml(el as Element, content as string);
     }
   };
   newProps['ref'].mountOuterComponent = async (content: VNode<any>) => {
-    mounters.mountOuterComponent && await mounters.mountOuterComponent(el, content);
+    mounters.mountOuterComponent && await mounters.mountOuterComponent(el as Element, content);
   };
 
   if (!newProps['ref'].refresh) {

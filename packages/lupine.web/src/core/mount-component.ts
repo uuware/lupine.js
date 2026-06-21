@@ -2,28 +2,36 @@ import { bindAttributes } from './bind-attributes';
 import { bindLinks } from './bind-links';
 // import { Logger } from '../lib/logger';
 // import { bindPageResetEvent } from './page-reset-events';
-import { callUnload, replaceInnerhtml } from './replace-innerhtml';
+import { callUnload, replaceInnerhtml, replaceBetweenComments } from './replace-innerhtml';
 import { renderComponentAsync } from './render-component';
 import { VNode } from '../jsx';
 
 // const logger = new Logger('mount-components');
-export const mountInnerComponent = async (selector: string | null | Element, jsxNodes: VNode<any>) => {
-  const el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
+export const mountInnerComponent = async (selector: string | null | Element | Node, jsxNodes: VNode<any>) => {
+  const el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector) as Element | Node;
   const uniqueClassName = el && (el as any)._lj?.ref?._cssName;
   const referToCssId = el && (el as any)._lj?.ref?._refCssId;
   await renderComponentAsync(jsxNodes.type, jsxNodes.props, uniqueClassName, referToCssId);
   if (el) {
-    // call unload before releace innerHTML
-    await replaceInnerhtml(el, jsxNodes.props._html.join(''));
+    if (el.nodeType === 8) {
+      await replaceBetweenComments(el as Comment, jsxNodes.props._html.join(''));
+      if (el.parentNode) {
+        bindAttributes(el.parentNode, jsxNodes.type, jsxNodes.props, { mountInnerComponent, mountOuterComponent });
+        bindLinks(el.parentNode as Element);
+      }
+    } else {
+      // call unload before releace innerHTML
+      await replaceInnerhtml(el as Element, jsxNodes.props._html.join(''));
 
-    bindAttributes(el, jsxNodes.type, jsxNodes.props, { mountInnerComponent, mountOuterComponent });
-    bindLinks(el);
+      bindAttributes(el as Element, jsxNodes.type, jsxNodes.props, { mountInnerComponent, mountOuterComponent });
+      bindLinks(el as Element);
+    }
   }
 };
 
 // suggest to use HtmlVar.
-export const mountOuterComponent = async (selector: string | Element, jsxNodes: VNode<any>) => {
-  let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector);
+export const mountOuterComponent = async (selector: string | Element | Node, jsxNodes: VNode<any>) => {
+  let el = selector && (typeof selector === 'string' ? document.querySelector(selector) : selector) as Element | Node;
   const uniqueClassName = el && (el as any)._lj?.ref?._cssName;
   const referToCssId = el && (el as any)._lj?.ref?._refCssId;
   await renderComponentAsync(jsxNodes.type, jsxNodes.props, uniqueClassName, referToCssId);
@@ -38,7 +46,11 @@ export const mountOuterComponent = async (selector: string | Element, jsxNodes: 
       console.error('renderComponent should only have one element: ', template.content.children.length);
     const newEl = template.content.firstChild as Element;
     // el.replaceWith(newEl);
-    await callUnload(el);
+    if (el.nodeType === 8) {
+      console.warn('mountOuterComponent on Comment node is not fully supported yet');
+    } else {
+      await callUnload(el as Element);
+    }
     el.parentNode?.replaceChild(newEl, el);
     bindAttributes(newEl, jsxNodes.type, jsxNodes.props, { mountInnerComponent, mountOuterComponent });
     bindLinks(newEl);

@@ -84,9 +84,14 @@ export const TestCssShareInside = () => {
   const renderList = () => {
     // Explicitly bind the inner detached DOM to the parent's id using referToCssId
     listDom.value = (
-      <div class='&-list'>
-        <div class='&-list-item'>HtmlVar List Item</div>
-      </div>
+      <>
+        <div class='&-list'>
+          <div class='&-list-item'>HtmlVar List Item</div>
+        </div>
+        <div class='&-list'>
+          <div class='&-list-item'>HtmlVar List Item</div>
+        </div>
+      </>
     );
   };
 
