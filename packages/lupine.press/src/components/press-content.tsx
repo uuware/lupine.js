@@ -115,7 +115,13 @@ export const PressContent = (props: {
       )}
 
       <main class='press-content'>
-        {props.isHome ? <LayoutHome data={props.data} /> : <article class='markdown-body'>{props.children}</article>}
+        {props.isHome ? (
+          <LayoutHome data={props.data} />
+        ) : typeof props.children === 'string' ? (
+          <article class='markdown-body' dangerouslySetInnerHTML={props.children as string}></article>
+        ) : (
+          <article class='markdown-body'>{props.children}</article>
+        )}
       </main>
       <aside class='page-heading-container'>
         <PageHeading headings={props.headings} />
