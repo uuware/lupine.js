@@ -11,7 +11,7 @@ It is designed to work seamlessly with the `lupine` ecosystem, powering document
 - **Sidebar Navigation**: Automatically generates a multi-level sidebar based on your configuration.
 - **Theming**: Built-in support for multiple themes (e.g., light/dark mode) via `lupine.components` theme system.
 - **Routing**: explicit integration with `PageRouter` for handling client-side navigation.
-- **多语言支持**：自动扫描多语言目录的 markdown 文件，多语言显示切换。
+- **Multi-language Support**: Automatically scans markdown files in multi-language directories and supports switching between languages.
 
 ## Usage Guide
 
