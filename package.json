@@ -25,15 +25,14 @@
     "app1:open-ios": "npm run open-ios --workspace=demo.app-web",
     "app1:open-android": "npm run open-android --workspace=demo.app-web",
     "app1:icons": "node ./apps/demo.app/web/icons-font.config.js",
-    "dev": "node ./dev/dev-watch --env=.env.development --dev=1 --cmd=start-dev",
-    "build": "node ./dev/dev-watch --env=.env.production --dev=0 --obfuscate=0",
-    "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1 --obfuscate=0",
+    "dev": "lupine-build --env=.env.development --dev=1 --cmd=start-dev",
+    "build": "lupine-build --env=.env.production --dev=0 --obfuscate=0",
+    "build-mobile": "lupine-build --env=.env.mobile --dev=0 --mobile=1 --obfuscate=0",
     "cp-docs": "node dev/cp-folder.js dist/server_root/doc_web/lupine.js docs",
     "cp-temps": "node dev/cp-temps.js",
     "start-dev": "node dist/server_root/server/server-loader.js --env=.env.development",
     "start-production": "node dist/server_root/server/server-loader.js --env=.env.production",
     "test": "npm run test --workspaces --if-present",
-    "rm-map": "node dev/rm-map.js",
     "format": "prettier --write \"**/*.{js,json,css,scss,md,html,yaml,ts,jsx,tsx}\""
   },
   "dependencies": {

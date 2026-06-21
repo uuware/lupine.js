@@ -17,27 +17,29 @@
     }
   ],
   "apiEntryPoint": "api/src/index.ts",
-  "watchFiles": ["web/markdown/**/*.md"],
+  "watchFiles": [
+    "web/markdown/**/*.md"
+  ],
   "copyFiles": [
     {
-      "type": "web",
+      "env": "all",
       "from": "web/assets",
-      "to": "assets"
+      "to": "web/assets"
     },
     {
-      "type": "web",
+      "env": "all",
       "from": "web/src/lupine.js/assets",
-      "to": "lupine.js/assets"
+      "to": "web/lupine.js/assets"
     },
     {
-      "type": "web",
+      "env": "all",
       "from": "web/src/lupine.js/404.html",
-      "to": "lupine.js/404.html"
+      "to": "web/lupine.js/404.html"
     },
     {
-      "type": "data",
+      "env": "all",
       "from": "api/resources",
-      "to": "resources"
+      "to": "data/resources"
     }
   ]
 }

@@ -2,13 +2,22 @@ const fs = require('fs/promises');
 const path = require('path');
 const esbuild = require('esbuild');
 
-exports.copyFolder = async (copyCache, src, dest, isDev) => {
+exports.copyFolder = async (copyCache, src, dest, isDev, ignoreList = null) => {
+  if (ignoreList && ignoreList.length > 0) {
+    const fileName = path.basename(src);
+    for (const pattern of ignoreList) {
+      if ((pattern.startsWith('*.') && fileName.endsWith(pattern.substring(1))) || fileName === pattern) {
+        return;
+      }
+    }
+  }
+
   const stat = await fs.stat(src);
   if (stat.isDirectory()) {
     await fs.mkdir(dest, { recursive: true });
     const children = await fs.readdir(src);
     for (const childItemName of children) {
-      await exports.copyFolder(copyCache, path.join(src, childItemName), path.join(dest, childItemName), isDev);
+      await exports.copyFolder(copyCache, path.join(src, childItemName), path.join(dest, childItemName), isDev, ignoreList);
     }
   } else if (stat.isFile()) {
     let statDest = copyCache.get(src);

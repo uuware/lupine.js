@@ -154,7 +154,7 @@ npm run build-mobile
 ````
 
 此命令对应 `package.json` 中的脚本：
-`node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1`
+`lupine-build --env=.env.mobile --dev=0 --mobile=1`
 
 ### 条件编译 (Conditional Compilation)
 

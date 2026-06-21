@@ -154,7 +154,7 @@ npm run build-mobile
 ````
 
 This corresponds to the script in `package.json`:
-`node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1`
+`lupine-build --env=.env.mobile --dev=0 --mobile=1`
 
 ### Conditional Compilation
 

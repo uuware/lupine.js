@@ -101,7 +101,7 @@ Add a script to your `package.json` to build for mobile:
 
 ```json
 "scripts": {
-  "build-mobile": "node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1"
+  "build-mobile": "lupine-build --env=.env.mobile --dev=0 --mobile=1"
 }
 ```
 

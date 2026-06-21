@@ -978,12 +978,24 @@ Please report this to https://github.com/markedjs/marked.`,e){let n="<p>An error
 `;var ih=e=>i("header",{css:{width:"100%",display:"flex",alignItems:"center",padding:"0.75rem 2rem",justifyContent:"space-between",".press-navbar-left":{display:"flex",alignItems:"center",".title":{fontWeight:"bold",fontSize:"1.2rem",marginRight:"1rem"},".nav":{display:"flex",gap:"1rem"}},".press-navbar-right":{display:"flex",alignItems:"center",gap:"1.25rem",".navbar-item":{display:"flex",alignItems:"center",textDecoration:"none",transition:"color 0.2s","&:hover":{color:"var(--press-brand-color)"}}}},class:"press-navbar",children:[i("div",{class:"press-navbar-left",children:[i("div",{class:"title",children:i("a",{href:Vo("/"+e.currentLang),children:e.title})}),i("nav",{class:"nav",children:e.nav.map(o=>i("a",{href:Vo(o.link),target:o.target,children:o.text}))})]}),i("div",{class:"press-navbar-right",children:[e.langs.length>1&&i(eh,{className:"navbar-item",currentLang:e.currentLang,langs:e.langs||[]}),i(Xn,{className:"navbar-item",icon:i(Zo,{children:oh}),noUpdateLabel:!0}),e.github&&e.github.url&&i("a",{href:e.github.url,target:"_blank",rel:"noopener noreferrer",class:"navbar-item",title:e.github.title,children:i(Zo,{children:th})})]})]});var nh=e=>e.headings.length===0?null:i("div",{css:{".&-title":{fontWeight:"bold",fontSize:"0.8rem",textTransform:"uppercase",letterSpacing:"0.05em",color:"var(--primary-color)",marginBottom:"0.8rem"},".&-list":{listStyle:"none",padding:0,margin:0,borderLeft:"1px solid var(--press-border-color)"},".&-item":{padding:"0.2rem 0 0.2rem 1rem",fontSize:"0.85rem","&.level-3":{paddingLeft:"2rem"},a:{display:"block",transition:"color 0.2s",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}},children:[i("div",{class:"&-title",children:"On this page"}),i("ul",{class:"&-list",children:e.headings.map(o=>i("li",{class:`&-item level-${o.level}`,children:i("a",{href:`#${o.id}`,children:o.text})}))})]});var rh=e=>{var r;let{hero:t,features:o}=e.data||{};return i("div",{css:{".&-hero":{padding:"64px 32px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center"},".&-hero-name":{fontSize:"56px",lineHeight:"64px",fontWeight:"bold",background:"linear-gradient(135deg, var(--press-brand-color) 30%, #4facfe 100%)","-webkit-background-clip":"text","-webkit-text-fill-color":"transparent"},".&-hero-text":{fontSize:"56px",lineHeight:"64px",fontWeight:"bold",marginTop:"8px"},".&-hero-tagline":{fontSize:"24px",lineHeight:"36px",color:"var(--secondary-color)",marginTop:"24px",maxWidth:"576px"},".&-hero-actions":{display:"flex",gap:"12px",marginTop:"48px"},".&-button":{display:"inline-block",padding:"0 20px",lineHeight:"38px",borderRadius:"20px",fontWeight:"600",textDecoration:"none",fontSize:"14px"},".&-button.brand":{backgroundColor:"var(--press-brand-color)",color:"#fff"},".&-button.alt":{backgroundColor:"var(--secondary-bg-color)",color:"var(--primary-color)",border:"1px solid var(--press-border-color)"},".&-features":{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(256px, 1fr))",gap:"24px",padding:"48px 32px",maxWidth:"1152px",margin:"0 auto"},".&-feature-card":{backgroundColor:"var(--secondary-bg-color)",padding:"24px",borderRadius:"12px",border:"1px solid var(--press-border-color)"},".&-feature-title":{fontSize:"20px",fontWeight:"bold",marginBottom:"8px"},".&-feature-details":{fontSize:"14px",color:"var(--secondary-color)",lineHeight:"22px"}},children:[i("section",{class:"&-hero",children:[i("h1",{class:"&-hero-name",children:t.name}),i("p",{class:"&-hero-text",children:t.text}),i("p",{class:"&-hero-tagline",children:t.tagline}),i("div",{class:"&-hero-actions",children:(r=t.actions)==null?void 0:r.map(a=>i("a",{href:Vo(a.link),class:`&-button ${a.theme}`,children:a.text}))})]}),o&&i("section",{class:"&-features",children:o.map(a=>i("div",{class:"&-feature-card",children:[i("h2",{class:"&-feature-title",children:a.title}),i("p",{class:"&-feature-details",children:a.details})]}))})]})};var ah=e=>{ye()&&(window.lpPressLoad=Ki);let o={display:"flex",flexDirection:"column",width:"100%",height:"100%",minHeight:"100%",position:"relative",...{h1:{fontSize:"1.7rem"},h2:{fontSize:"1.4rem"},h3:{fontSize:"1.2rem"},"h1, h2, h3":{borderBottom:"1px solid var(--press-border-color)",paddingBottom:"0.3em",marginTop:"1.5em",position:"relative",scrollMarginTop:"80px",fontWeight:"bold","&:first-child":{marginTop:0},"&:hover .header-anchor":{opacity:1}},".header-anchor":{position:"absolute",left:"-1.5rem",width:"1rem",opacity:0,textDecoration:"none",color:"var(--press-brand-color)",fontSize:"0.8em",transition:"opacity 0.2s"},ol:{listStyleType:"disc"},"li, p":{margin:"0.5em 0"},pre:{backgroundColor:"var(--secondary-bg-color)",padding:"1rem",borderRadius:"8px",overflowX:"auto"},code:{fontFamily:"var(--font-family-mono, monospace)"},img:{maxWidth:"100%",boxShadow:"var(--cover-box-shadow)"}},...e.css,".press-frame-box":{display:"flex",flex:"1",flexDirection:"column",height:"100%",width:"100%",maxWidth:De.DesktopMax,margin:"auto","padding-top ":Je()?"constant(safe-area-inset-top)":"","padding-top":Je()?"env(safe-area-inset-top)":""},".press-frame-header":{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 16px 4px 0px",width:"100%"},".press-frame-main":{display:"flex",flex:"1",flexDirection:"row",overflowY:"auto",scrollbarWidth:"none",borderTop:"1px solid var(--press-border-color)",minHeight:"0",scrollBehavior:"smooth","&::-webkit-scrollbar":{display:"none"}},".press-frame-main .padding-block":{padding:"0 16px"},".press-frame-content":{display:"flex",flex:"1",flexDirection:"column",overflowY:"auto",scrollbarWidth:"none"},".press-frame-sidemenu":{width:e.sidemenuWidth||"260px",display:"flex",borderRight:"1px solid var(--press-border-color)",overflowX:"hidden",overflowY:"auto",color:"var(--sidebar-color)",scrollbarWidth:"none","&::-webkit-scrollbar":{display:"none"}},[le.TabletBelow]:{".press-frame-sidemenu":{display:"none"}}};return i("div",{ref:{onLoad:async r=>{vi(r);let a=r.querySelector(".press-frame-sidemenu");a&&(a.scrollTop=mc(),a.addEventListener("scroll",()=>{yr(a.scrollTop)}))}},css:o,class:"press-frame",children:i("div",{class:"press-frame-box",children:[i("div",{class:"press-frame-header",children:e.header}),i("div",{class:"press-frame-main",children:[!e.hideSidemenu&&i("div",{class:"press-frame-sidemenu",children:e.sidemenu}),i("div",{class:"press-frame-content",children:e.content})]})]})})};var sh=e=>{let t={},o={width:"100%",padding:"0 8px 8px",height:"max-content",".&-item":{marginBottom:"0.5rem",display:"block",color:"var(--text-color)",textDecoration:"none","&:hover":{color:"var(--primary-accent-color)"},transition:"color 0.2s"},".&-item.active":{color:"var(--primary-accent-color)",fontWeight:"bold"},".&-group-title":{fontWeight:"bold",marginTop:"0.5rem",marginBottom:"0.5rem",fontSize:"15px","&.group-level-0":{marginTop:"1.5rem",fontSize:"19px"},"&.group-level-1":{marginTop:"0.75rem",fontSize:"17px"}}},n=s=>{let l=s||window.location.href,c=t.$all("&-item");c&&c.forEach(d=>{d.classList.remove("active");let h=d.getAttribute("data-link");h&&l.endsWith(h)&&(d.classList.add("active"),d.scrollIntoView({behavior:"smooth",block:"nearest"}))})};t.onLoad=async()=>{n()};let r=e.sidebar||[],a=1;return i("aside",{css:o,ref:t,children:r.map((s,l)=>{let c={paddingLeft:`${s.level*a}rem`};if(s.type==="group")return i("div",{class:"&-group-title"+(" group-level-"+s.level),style:c,children:s.text},l);{let d=Vo(s.link);return i("a",{class:"&-item",style:c,href:"javascript:void(0)","data-link":d,onClick:()=>(n(d),Ki(d),!1),children:s.text},l)}})})};var lh=`<svg viewBox='0 0 24 24' width='20' height='20' fill='currentColor'>\r
     <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />\r
 </svg>\r
-`;var ch=e=>{let t={display:"flex",flex:1,maxWidth:"100vw",margin:"0 auto",width:"100%",".press-content":{flex:1,padding:e.isHome?"0":"2rem 4rem",width:"100%",margin:e.isHome?"0":"0 auto",minWidth:0,a:{textDecoration:"underline"}},".page-heading-container":{width:"240px",minWidth:"240px",padding:"2rem 1rem",position:"sticky",top:"64px",maxHeight:"calc(100vh - 64px)",overflowY:"auto",alignSelf:"flex-start",display:e.isHome||e.headings.length===0?"none":"block"},".markdown-body":{lineHeight:1.6},".press-mobile-toc":{display:"none",borderRadius:"6px",alignItems:"center",padding:"4px",position:"fixed",top:"74px",right:"7px",zIndex:90,fontSize:"0.9rem",cursor:"pointer",textTransform:"uppercase",backgroundColor:"var(--primary-bg-color)"},".press-mobile-sidebar":{display:"none",borderRadius:"6px",alignItems:"center",padding:"4px",position:"fixed",top:"74px",left:"7px",zIndex:90,fontSize:"0.9rem",cursor:"pointer",[le.TabletBelow]:{display:"flex"}},[le.MobileBelow]:{".page-heading-container":{display:"none"},".press-mobile-toc":{display:"flex"},".press-content":{padding:e.isHome?"0":"2rem 1rem"}}};return i("main",{css:t,children:[!e.isHome&&e.sidebar.length>0&&i("div",{class:"press-mobile-sidebar",children:i(rt,{list:e.sidebar.map(o=>({text:o.text,id:o.link||"",url:o.link||"",indent:o.level,visible:!!o.type,disabled:o.type==="group",bold:o.type==="group"})),defaultValue:"Menu",tips:"",width:"max-content",maxHeight:"400px",align:"left",handleSelected:(o,n)=>{n&&n.url&&Ki(n.url)},noUpdateLabel:!0,icon:i(Zo,{children:lh})})}),i("main",{class:"press-content",children:e.isHome?i(rh,{data:e.data}):i("article",{class:"markdown-body",children:e.children})}),i("aside",{class:"page-heading-container",children:i(nh,{headings:e.headings})}),!e.isHome&&e.headings.length>0&&i("div",{class:"press-mobile-toc",children:i(rt,{list:e.headings.map(o=>({text:o.text,id:o.id,indent:o.level-2})),defaultValue:"On this page",tips:"",width:"max-content",maxHeight:"300px",align:"right",handleSelected:o=>{var a;let n=o.trim(),r=e.headings.find(s=>s.text===n);r&&((a=document.getElementById(r.id))==null||a.scrollIntoView(!0))},noUpdateLabel:!0})})]})};var dh=e=>{var s,l;let t=((s=e.data)==null?void 0:s.layout)==="home",o=e.headings||[],n=e.lang||((l=xc())==null?void 0:l[0].id)||"en",r=e.sidebar||[],a=i(ch,{sidebar:r,isHome:t,headings:o,data:e.data,children:e.children});return i(ah,{header:i(ih,{title:e.title,nav:e.nav,langs:e.langs||[],currentLang:n,github:e.github}),sidemenu:i(sh,{sidebar:r}),content:a,hideSidemenu:t,sidemenuWidth:e.sidemenuWidth})};var ph=async e=>{var y,w;if(!ye())return i("div",{});let t=Ni(),o=uc(),n=window.location.pathname;t&&n.startsWith(t)&&(n=n.substring(t.length));let a=n.split("/")[1],s=((y=o["/"])==null?void 0:y.data)||{},l=Array.isArray(s.lang)?s.lang:[{title:"English",id:"en"},{title:"Chinese",id:"zh"}];fc(l);let c=l.map(k=>k.id),d=c.includes(a)?a:c[0]||"en",h=n;h===""||h==="/"?h=`/${d}/index`:(h.endsWith("/")&&h.length>1&&(h=h.substring(0,h.length-1)),h===`/${d}`&&(h=`/${d}/index`));let p=o[h];if(!p&&window.location.pathname[0]==="/"&&!window.location.pathname.startsWith(t+"/")){window.location.href=window.location.href;return}let u=p?p.html:`<h1>404 - Page Not Found</h1><p>Path: ${h}</p>`,m=((w=o[`/${d}/index`])==null?void 0:w.data)||{},g=m.nav||[],f=m.sidebar||[],x=m.title||"Lupine.js",v=m.styles||{};E("customer-css",v,!1,!0);let b=l.map(k=>{var C;let S=((C=o[`${k.id}/index`])==null?void 0:C.data)||{},M=Array.isArray(S.lang)?S.lang[0]:S.lang||{};return{text:M.text||M.title||M.label||k.title,id:k.id}});return i(dh,{title:x,nav:g,sidebar:f,lang:d,langs:b,data:p==null?void 0:p.data,headings:p==null?void 0:p.headings,sidemenuWidth:m["sidemenu-width"],github:{url:m["github-link"],title:m["github-title"]},children:u})};var hh={light:{...ia.light,"--press-border-color":"#e2e2e3","--press-brand-color":"#3eaf7c"},dark:{...ia.dark,"--press-border-color":"#2e2e32","--press-brand-color":"#3eaf7c"}};var uh={a:{textDecoration:"none",color:"inherit","&:hover":{color:"var(--press-brand-color)"}},body:{backgroundColor:"var(--primary-bg-color)",color:"var(--primary-color)",fontSize:"var(--font-size-base)",lineHeight:"var(--line-height-base)",fontFamily:"var(--font-family-base)",fontWeight:"var(--font-weight-base)"}};var mh="";var gh=`<p>The &quot;Write Once, Run Everywhere&quot; dream is often promised but rarely delivered without significant compromises. Heavy frameworks, conditional spaghetti code, and poor performance usually plague cross-platform attempts.</p>
-<p><strong>Lupine.js</strong> changes the game. It is designed from the ground up to be a <strong>Universal Framework</strong>. By leveraging <strong>Capacitor</strong> for Mobile and <strong>Electron</strong> for Desktop, you can deploy your application to the Web, iOS, Android, Windows, macOS, and Linux \u2014 all from a single TypeScript codebase.</p>
+`;var ch=e=>{let t={display:"flex",flex:1,maxWidth:"100vw",margin:"0 auto",width:"100%",".press-content":{flex:1,padding:e.isHome?"0":"2rem 4rem",width:"100%",margin:e.isHome?"0":"0 auto",minWidth:0,a:{textDecoration:"underline"}},".page-heading-container":{width:"240px",minWidth:"240px",padding:"2rem 1rem",position:"sticky",top:"64px",maxHeight:"calc(100vh - 64px)",overflowY:"auto",alignSelf:"flex-start",display:e.isHome||e.headings.length===0?"none":"block"},".markdown-body":{lineHeight:1.6},".press-mobile-toc":{display:"none",borderRadius:"6px",alignItems:"center",padding:"4px",position:"fixed",top:"74px",right:"7px",zIndex:90,fontSize:"0.9rem",cursor:"pointer",textTransform:"uppercase",backgroundColor:"var(--primary-bg-color)"},".press-mobile-sidebar":{display:"none",borderRadius:"6px",alignItems:"center",padding:"4px",position:"fixed",top:"74px",left:"7px",zIndex:90,fontSize:"0.9rem",cursor:"pointer",[le.TabletBelow]:{display:"flex"}},[le.MobileBelow]:{".page-heading-container":{display:"none"},".press-mobile-toc":{display:"flex"},".press-content":{padding:e.isHome?"0":"2rem 1rem"}}};return i("main",{css:t,children:[!e.isHome&&e.sidebar.length>0&&i("div",{class:"press-mobile-sidebar",children:i(rt,{list:e.sidebar.map(o=>({text:o.text,id:o.link||"",url:o.link||"",indent:o.level,visible:!!o.type,disabled:o.type==="group",bold:o.type==="group"})),defaultValue:"Menu",tips:"",width:"max-content",maxHeight:"400px",align:"left",handleSelected:(o,n)=>{n&&n.url&&Ki(n.url)},noUpdateLabel:!0,icon:i(Zo,{children:lh})})}),i("main",{class:"press-content",children:e.isHome?i(rh,{data:e.data}):i("article",{class:"markdown-body",children:e.children})}),i("aside",{class:"page-heading-container",children:i(nh,{headings:e.headings})}),!e.isHome&&e.headings.length>0&&i("div",{class:"press-mobile-toc",children:i(rt,{list:e.headings.map(o=>({text:o.text,id:o.id,indent:o.level-2})),defaultValue:"On this page",tips:"",width:"max-content",maxHeight:"300px",align:"right",handleSelected:o=>{var a;let n=o.trim(),r=e.headings.find(s=>s.text===n);r&&((a=document.getElementById(r.id))==null||a.scrollIntoView(!0))},noUpdateLabel:!0})})]})};var dh=e=>{var s,l;let t=((s=e.data)==null?void 0:s.layout)==="home",o=e.headings||[],n=e.lang||((l=xc())==null?void 0:l[0].id)||"en",r=e.sidebar||[],a=i(ch,{sidebar:r,isHome:t,headings:o,data:e.data,children:e.children});return i(ah,{header:i(ih,{title:e.title,nav:e.nav,langs:e.langs||[],currentLang:n,github:e.github}),sidemenu:i(sh,{sidebar:r}),content:a,hideSidemenu:t,sidemenuWidth:e.sidemenuWidth})};var ph=async e=>{var y,w;if(!ye())return i("div",{});let t=Ni(),o=uc(),n=window.location.pathname;t&&n.startsWith(t)&&(n=n.substring(t.length));let a=n.split("/")[1],s=((y=o["/"])==null?void 0:y.data)||{},l=Array.isArray(s.lang)?s.lang:[{title:"English",id:"en"},{title:"Chinese",id:"zh"}];fc(l);let c=l.map(k=>k.id),d=c.includes(a)?a:c[0]||"en",h=n;h===""||h==="/"?h=`/${d}/index`:(h.endsWith("/")&&h.length>1&&(h=h.substring(0,h.length-1)),h===`/${d}`&&(h=`/${d}/index`));let p=o[h];if(!p&&window.location.pathname[0]==="/"&&!window.location.pathname.startsWith(t+"/")){window.location.href=window.location.href;return}let u=p?p.html:`<h1>404 - Page Not Found</h1><p>Path: ${h}</p>`,m=((w=o[`/${d}/index`])==null?void 0:w.data)||{},g=m.nav||[],f=m.sidebar||[],x=m.title||"Lupine.js",v=m.styles||{};E("customer-css",v,!1,!0);let b=l.map(k=>{var C;let S=((C=o[`${k.id}/index`])==null?void 0:C.data)||{},M=Array.isArray(S.lang)?S.lang[0]:S.lang||{};return{text:M.text||M.title||M.label||k.title,id:k.id}});return i(dh,{title:x,nav:g,sidebar:f,lang:d,langs:b,data:p==null?void 0:p.data,headings:p==null?void 0:p.headings,sidemenuWidth:m["sidemenu-width"],github:{url:m["github-link"],title:m["github-title"]},children:u})};var hh={light:{...ia.light,"--press-border-color":"#e2e2e3","--press-brand-color":"#3eaf7c"},dark:{...ia.dark,"--press-border-color":"#2e2e32","--press-brand-color":"#3eaf7c"}};var uh={a:{textDecoration:"none",color:"inherit","&:hover":{color:"var(--press-brand-color)"}},body:{backgroundColor:"var(--primary-bg-color)",color:"var(--primary-color)",fontSize:"var(--font-size-base)",lineHeight:"var(--line-height-base)",fontFamily:"var(--font-family-base)",fontWeight:"var(--font-weight-base)"}};var mh="";var gh=`<p>The &quot;Write Once, Run Everywhere&quot; dream is often promised but rarely delivered without significant
+  compromises. Heavy frameworks, conditional spaghetti code, and poor performance usually plague cross-platform
+  attempts.</p>
+<p><strong>Lupine.js</strong> changes the game. It is designed from the ground up to be a <strong>Universal
+    Framework</strong>. By leveraging <strong>Capacitor</strong> for Mobile and <strong>Electron</strong> for Desktop,
+  you can deploy your application to the Web, iOS, Android, Windows, macOS, and Linux \u2014 all from a single TypeScript
+  codebase.</p>
 <p><img src="/lupine.js/assets/architecture_cross_platform.png" alt="Lupine.js Architecture"></p>
-<p>In this guide, we will walk through how to take a standard Lupine.js web application and expand it to Mobile and Desktop, using a will be online soon real-world production app <strong>Lupine Sample App</strong> (Sample App) as a reference.</p>
-<h2 id="1-the-core-a-responsive-web-app"><a class="header-anchor" href="#1-the-core-a-responsive-web-app">#</a>1. The Core: A Responsive Web App</h2><p>Before we touch any native code, we need a responsive web application. Lupine.js makes this easy with built-in responsive tools working alongside its CSS-in-JS engine.</p>
-<h3 id="responsive-styling"><a class="header-anchor" href="#responsive-styling">#</a>Responsive Styling</h3><p>Instead of writing separate CSS files for mobile, use <code>MediaQueryRange</code> directly in your component styles:</p>
+<p>In this guide, we will walk through how to take a standard Lupine.js web application and expand it to Mobile and
+  Desktop, using a will be online soon real-world production app <strong>Lupine Sample App</strong> (Sample App) as a
+  reference.</p>
+<h2 id="1-the-core-a-responsive-web-app"><a class="header-anchor" href="#1-the-core-a-responsive-web-app">#</a>1. The
+  Core: A Responsive Web App</h2>
+<p>Before we touch any native code, we need a responsive web application. Lupine.js makes this easy with built-in
+  responsive tools working alongside its CSS-in-JS engine.</p>
+<h3 id="responsive-styling"><a class="header-anchor" href="#responsive-styling">#</a>Responsive Styling</h3>
+<p>Instead of writing separate CSS files for mobile, use <code>MediaQueryRange</code> directly in your component styles:
+</p>
 <pre><code class="language-tsx">import { MediaQueryRange, CssProps } from &#39;lupine.web&#39;;
 
 const css: CssProps = {
@@ -999,7 +1011,9 @@ const css: CssProps = {
   },
 };
 </code></pre>
-<h3 id="adaptive-frames"><a class="header-anchor" href="#adaptive-frames">#</a>Adaptive Frames</h3><p>For navigation, the <code>ResponsiveFrame</code> component automatically switches between a Desktop Top-Menu and a Mobile Bottom-Bar based on the device.</p>
+<h3 id="adaptive-frames"><a class="header-anchor" href="#adaptive-frames">#</a>Adaptive Frames</h3>
+<p>For navigation, the <code>ResponsiveFrame</code> component automatically switches between a Desktop Top-Menu and a
+  Mobile Bottom-Bar based on the device.</p>
 <pre><code class="language-tsx">&lt;ResponsiveFrame
   desktopHeaderTitle=&#39;My App&#39;
   // ... desktop menu items
@@ -1010,8 +1024,13 @@ const css: CssProps = {
   mainContent={&lt;PageComponent /&gt;}
 /&gt;
 </code></pre>
-<h2 id="2-going-mobile-ios-android"><a class="header-anchor" href="#2-going-mobile-ios-android">#</a>2. Going Mobile (iOS &amp; Android)</h2><p>Lupine.js uses <strong>Capacitor</strong> to wrap your web app into a native mobile binary. This allows you to access native features (Camera, Filesystem) while keeping your web workflow.</p>
-<h3 id="step-2-1-setup-capacitor"><a class="header-anchor" href="#step-2-1-setup-capacitor">#</a>Step 2.1: Setup Capacitor</h3><p>In your project root, install the necessary dependencies:</p>
+<h2 id="2-going-mobile-ios-android"><a class="header-anchor" href="#2-going-mobile-ios-android">#</a>2. Going Mobile
+  (iOS &amp; Android)</h2>
+<p>Lupine.js uses <strong>Capacitor</strong> to wrap your web app into a native mobile binary. This allows you to access
+  native features (Camera, Filesystem) while keeping your web workflow.</p>
+<h3 id="step-2-1-setup-capacitor"><a class="header-anchor" href="#step-2-1-setup-capacitor">#</a>Step 2.1: Setup
+  Capacitor</h3>
+<p>In your project root, install the necessary dependencies:</p>
 <pre><code class="language-bash"># Core Capacitor libs
 npm install @capacitor/cli@latest @capacitor/core@latest
 npm install @capacitor/android @capacitor/ios
@@ -1023,19 +1042,25 @@ npm install @capacitor-community/keep-awake
 # Initialize
 npx cap init [MyAppName] [com.example.app]
 </code></pre>
-<h3 id="step-2-2-add-platforms"><a class="header-anchor" href="#step-2-2-add-platforms">#</a>Step 2.2: Add Platforms</h3><pre><code class="language-bash"># Add Android
+<h3 id="step-2-2-add-platforms"><a class="header-anchor" href="#step-2-2-add-platforms">#</a>Step 2.2: Add Platforms
+</h3>
+<pre><code class="language-bash"># Add Android
 npx cap add android
 
 # Add iOS (requires Xcode on Mac)
 npx cap add ios
 </code></pre>
-<h3 id="step-2-3-configure-mobile-environment"><a class="header-anchor" href="#step-2-3-configure-mobile-environment">#</a>Step 2.3: Configure Mobile Environment</h3><p>Mobile apps run from the local file system (<code>file://</code>), so they cannot use relative paths for API calls. create a <code>.env.mobile</code> file:</p>
+<h3 id="step-2-3-configure-mobile-environment"><a class="header-anchor"
+    href="#step-2-3-configure-mobile-environment">#</a>Step 2.3: Configure Mobile Environment</h3>
+<p>Mobile apps run from the local file system (<code>file://</code>), so they cannot use relative paths for API calls.
+  create a <code>.env.mobile</code> file:</p>
 <pre><code class="language-ini"># .env.mobile
 WEB.API_BASE_URL=https://api.your-production-site.com
 </code></pre>
-<h3 id="step-2-4-build-sync"><a class="header-anchor" href="#step-2-4-build-sync">#</a>Step 2.4: Build &amp; Sync</h3><p>Add a script to your <code>package.json</code> to build for mobile:</p>
+<h3 id="step-2-4-build-sync"><a class="header-anchor" href="#step-2-4-build-sync">#</a>Step 2.4: Build &amp; Sync</h3>
+<p>Add a script to your <code>package.json</code> to build for mobile:</p>
 <pre><code class="language-json">&quot;scripts&quot;: {
-  &quot;build-mobile&quot;: &quot;node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1&quot;
+  &quot;build-mobile&quot;: &quot;lupine-build --env=.env.mobile --dev=0 --mobile=1&quot;
 }
 </code></pre>
 <p>Then build and sync to the native projects:</p>
@@ -1043,7 +1068,10 @@ WEB.API_BASE_URL=https://api.your-production-site.com
 npx cap sync
 npx cap open android  # Opens Android Studio
 </code></pre>
-<h3 id="step-2-5-native-logic-optional"><a class="header-anchor" href="#step-2-5-native-logic-optional">#</a>Step 2.5: Native Logic (Optional)</h3><p>You can use the <code>#if MOBILE</code> compiler directive to write platform-specific code without bloating your web bundle:</p>
+<h3 id="step-2-5-native-logic-optional"><a class="header-anchor" href="#step-2-5-native-logic-optional">#</a>Step 2.5:
+  Native Logic (Optional)</h3>
+<p>You can use the <code>#if MOBILE</code> compiler directive to write platform-specific code without bloating your web
+  bundle:</p>
 <pre><code class="language-javascript">// #if MOBILE
 import { Camera } from &#39;@capacitor/camera&#39;;
 
@@ -1057,13 +1085,18 @@ const takePhoto = async () =&gt; {
 };
 // #endif
 </code></pre>
-<h2 id="3-going-desktop-windows-mac-linux"><a class="header-anchor" href="#3-going-desktop-windows-mac-linux">#</a>3. Going Desktop (Windows, Mac, Linux)</h2><p>For desktop, Lupine.js integrates with <strong>Electron</strong>.</p>
-<h3 id="structure"><a class="header-anchor" href="#structure">#</a>Structure</h3><p>Every Lupine project comes with an <code>electron</code> folder containing the main process logic.</p>
+<h2 id="3-going-desktop-windows-mac-linux"><a class="header-anchor" href="#3-going-desktop-windows-mac-linux">#</a>3.
+  Going Desktop (Windows, Mac, Linux)</h2>
+<p>For desktop, Lupine.js integrates with <strong>Electron</strong>.</p>
+<h3 id="structure"><a class="header-anchor" href="#structure">#</a>Structure</h3>
+<p>Every Lupine project comes with an <code>electron</code> folder containing the main process logic.</p>
 <ul>
-<li><code>electron/main.js</code>: The entry point for the Electron app.</li>
-<li><code>electron/preload.js</code>: Bridge for secure communication between Renderer (Web) and Main process.</li>
+  <li><code>electron/main.js</code>: The entry point for the Electron app.</li>
+  <li><code>electron/preload.js</code>: Bridge for secure communication between Renderer (Web) and Main process.</li>
 </ul>
-<h3 id="building-for-desktop"><a class="header-anchor" href="#building-for-desktop">#</a>Building for Desktop</h3><p>Lupine allows you to package your app into an <code>.exe</code>, <code>.dmg</code>, or <code>.snap</code> file using <code>electron-builder</code>.</p>
+<h3 id="building-for-desktop"><a class="header-anchor" href="#building-for-desktop">#</a>Building for Desktop</h3>
+<p>Lupine allows you to package your app into an <code>.exe</code>, <code>.dmg</code>, or <code>.snap</code> file using
+  <code>electron-builder</code>.</p>
 <p>Run the build commands provided in <code>package.json</code>:</p>
 <pre><code class="language-bash"># Build for Windows
 npm run app:build-win
@@ -1073,13 +1106,15 @@ npm run app:build-mac
 </code></pre>
 <p>The build process will:</p>
 <ol>
-<li>Compile your Lupine.js web app into static files.</li>
-<li>Bundle these files with the Electron runtime.</li>
-<li>Output a standalone installer.</li>
+  <li>Compile your Lupine.js web app into static files.</li>
+  <li>Bundle these files with the Electron runtime.</li>
+  <li>Output a standalone installer.</li>
 </ol>
-<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2><p>With <strong>Lupine.js</strong>, you don&#39;t need three separate teams for Web, Mobile, and Desktop. You can maintain <strong>one</strong> codebase, use <strong>one</strong> set of components, and deploy everywhere.</p>
-<p>Whether you are building a SaaS platform, a consumer app, or an internal tool, Lupine.js gives you the reach of a native app with the speed of web development.</p>
-`;var fh=`<h1 id="zero-dependencies-native-power-mastering-css-in-js-in-lupine-js"><a class="header-anchor" href="#zero-dependencies-native-power-mastering-css-in-js-in-lupine-js">#</a>Zero Dependencies, Native Power - Mastering CSS-in-JS in Lupine.js</h1><p>In modern frontend development, we often face a dilemma: suffer through the maintenance headache of separate CSS files, or import heavy CSS-in-JS libraries (like Styled-components or Emotion) that bloat your bundle size.</p>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>Conclusion</h2>
+<p>With <strong>Lupine.js</strong>, you don&#39;t need three separate teams for Web, Mobile, and Desktop. You can
+  maintain <strong>one</strong> codebase, use <strong>one</strong> set of components, and deploy everywhere.</p>
+<p>Whether you are building a SaaS platform, a consumer app, or an internal tool, Lupine.js gives you the reach of a
+  native app with the speed of web development.</p>`;var fh=`<h1 id="zero-dependencies-native-power-mastering-css-in-js-in-lupine-js"><a class="header-anchor" href="#zero-dependencies-native-power-mastering-css-in-js-in-lupine-js">#</a>Zero Dependencies, Native Power - Mastering CSS-in-JS in Lupine.js</h1><p>In modern frontend development, we often face a dilemma: suffer through the maintenance headache of separate CSS files, or import heavy CSS-in-JS libraries (like Styled-components or Emotion) that bloat your bundle size.</p>
 <p><strong>Lupine.js takes a different path.</strong></p>
 <p>It comes with an ultra-lightweight CSS-in-JS engine <strong>built right in</strong>. No extra dependencies required. It allows you to write styles comfortably within your components, supporting nesting, media queries, and keyframe animations\u2014all with incredible runtime efficiency.</p>
 <p>Let&#39;s dive into how it works and how to use it elegantly in your projects.</p>
@@ -2200,16 +2235,25 @@ const onToggleEdit = () =&gt; {
 };
 </code></pre>
 <h2 id="summary"><a class="header-anchor" href="#summary">#</a>Summary</h2><p>While this approach requires writing a bit more &quot;explicit&quot; code (defining <code>HtmlVar</code> and <code>makeDom</code>), it gives you <strong>control</strong> and <strong>performance</strong> that are hard to beat in heavy data applications. You are effectively acting as your own &quot;Compiler&quot;, telling the browser exactly what to update and when.</p>
-`;var Rh=`<h1 id="mobile-desktop-adaptation"><a class="header-anchor" href="#mobile-desktop-adaptation">#</a>Mobile &amp; Desktop Adaptation</h1><p>One of the core design philosophies of Lupine.js is &quot;One Codebase, Multiple Platforms.&quot; With built-in responsive design tools and components, you can easily build applications that adapt to Web, Mobile (iOS/Android), and Desktop (Electron).</p>
-<h2 id="1-responsive-layout-media-query"><a class="header-anchor" href="#1-responsive-layout-media-query">#</a>1. Responsive Layout (Media Query)</h2><p><code>lupine.components</code> provides powerful media query tools to help you adjust layouts based on screen width.</p>
-<h3 id="breakpoints"><a class="header-anchor" href="#breakpoints">#</a>Breakpoints</h3><p>The system predefines the following breakpoints (customizable in <code>MediaQueryMaxWidth</code>):</p>
+`;var Rh=`<h1 id="mobile-desktop-adaptation"><a class="header-anchor" href="#mobile-desktop-adaptation">#</a>Mobile &amp; Desktop
+  Adaptation</h1>
+<p>One of the core design philosophies of Lupine.js is &quot;One Codebase, Multiple Platforms.&quot; With built-in
+  responsive design tools and components, you can easily build applications that adapt to Web, Mobile (iOS/Android), and
+  Desktop (Electron).</p>
+<h2 id="1-responsive-layout-media-query"><a class="header-anchor" href="#1-responsive-layout-media-query">#</a>1.
+  Responsive Layout (Media Query)</h2>
+<p><code>lupine.components</code> provides powerful media query tools to help you adjust layouts based on screen width.
+</p>
+<h3 id="breakpoints"><a class="header-anchor" href="#breakpoints">#</a>Breakpoints</h3>
+<p>The system predefines the following breakpoints (customizable in <code>MediaQueryMaxWidth</code>):</p>
 <ul>
-<li><strong>ExtraSmall</strong>: &lt; 480px</li>
-<li><strong>Mobile</strong>: &lt; 767px (Grid: col-1)</li>
-<li><strong>Tablet</strong>: &lt; 991px (Grid: col-1-md)</li>
-<li><strong>Desktop</strong>: &lt; 1399px (Grid: col-1-lg)</li>
+  <li><strong>ExtraSmall</strong>: &lt; 480px</li>
+  <li><strong>Mobile</strong>: &lt; 767px (Grid: col-1)</li>
+  <li><strong>Tablet</strong>: &lt; 991px (Grid: col-1-md)</li>
+  <li><strong>Desktop</strong>: &lt; 1399px (Grid: col-1-lg)</li>
 </ul>
-<h3 id="usage-in-css-in-js"><a class="header-anchor" href="#usage-in-css-in-js">#</a>Usage in CSS-in-JS</h3><p>You can use <code>MediaQueryRange</code> to write responsive styles easily:</p>
+<h3 id="usage-in-css-in-js"><a class="header-anchor" href="#usage-in-css-in-js">#</a>Usage in CSS-in-JS</h3>
+<p>You can use <code>MediaQueryRange</code> to write responsive styles easily:</p>
 <pre><code class="language-tsx">import { MediaQueryRange, MediaQueryMaxWidth } from &#39;lupine.components&#39;;
 
 const css: CssProps = {
@@ -2229,11 +2273,16 @@ const css: CssProps = {
   },
 };
 </code></pre>
-<h2 id="2-adaptive-frames"><a class="header-anchor" href="#2-adaptive-frames">#</a>2. Adaptive Frames</h2><p>Lupine provides frame components specifically designed for building responsive applications.</p>
-<h3 id="responsiveframe"><a class="header-anchor" href="#responsiveframe">#</a>ResponsiveFrame</h3><p><code>ResponsiveFrame</code> is the ultimate solution for handling hybrid layouts. It automatically switches UI structure based on the device type:</p>
+<h2 id="2-adaptive-frames"><a class="header-anchor" href="#2-adaptive-frames">#</a>2. Adaptive Frames</h2>
+<p>Lupine provides frame components specifically designed for building responsive applications.</p>
+<h3 id="responsiveframe"><a class="header-anchor" href="#responsiveframe">#</a>ResponsiveFrame</h3>
+<p><code>ResponsiveFrame</code> is the ultimate solution for handling hybrid layouts. It automatically switches UI
+  structure based on the device type:</p>
 <ul>
-<li><strong>Desktop</strong>: Displays top menu (<code>DesktopHeader</code>), footer (<code>DesktopFooter</code>), and sidebar.</li>
-<li><strong>Mobile</strong>: Automatically switches to a mobile layout, hiding desktop-specific elements and enabling mobile-specific navigation (<code>MobileBottomMenu</code>).</li>
+  <li><strong>Desktop</strong>: Displays top menu (<code>DesktopHeader</code>), footer (<code>DesktopFooter</code>), and
+    sidebar.</li>
+  <li><strong>Mobile</strong>: Automatically switches to a mobile layout, hiding desktop-specific elements and enabling
+    mobile-specific navigation (<code>MobileBottomMenu</code>).</li>
 </ul>
 <pre><code class="language-tsx">&lt;ResponsiveFrame
   desktopHeaderTitle=&quot;My App&quot;
@@ -2242,12 +2291,19 @@ const css: CssProps = {
   mainContent={&lt;MyPageContent /&gt;}
 /&gt;
 </code></pre>
-<h3 id="sliderframe"><a class="header-anchor" href="#sliderframe">#</a>SliderFrame</h3><p><code>SliderFrame</code> implements the common &quot;slide-in&quot; interaction experience found in mobile apps. It is typically used for sliding in detail pages from the right or menus from the bottom.</p>
+<h3 id="sliderframe"><a class="header-anchor" href="#sliderframe">#</a>SliderFrame</h3>
+<p><code>SliderFrame</code> implements the common &quot;slide-in&quot; interaction experience found in mobile apps. It
+  is typically used for sliding in detail pages from the right or menus from the bottom.</p>
 <ul>
-<li>Supports <code>Right-to-Left</code> and <code>Bottom-to-Top</code> animations.</li>
-<li>Configurable as a slide-out panel on Desktop.</li>
+  <li>Supports <code>Right-to-Left</code> and <code>Bottom-to-Top</code> animations.</li>
+  <li>Configurable as a slide-out panel on Desktop.</li>
 </ul>
-<h2 id="3-mobile-navigation-interaction"><a class="header-anchor" href="#3-mobile-navigation-interaction">#</a>3. Mobile Navigation &amp; Interaction</h2><h3 id="global-back-button-handling-backactionhelper"><a class="header-anchor" href="#global-back-button-handling-backactionhelper">#</a>Global Back Button Handling (BackActionHelper)</h3><p>Handling the physical back button is crucial in mobile apps (especially Android). <code>BackActionHelper</code> provides a global queue to manage back actions, ensuring a smooth user experience.</p>
+<h2 id="3-mobile-navigation-interaction"><a class="header-anchor" href="#3-mobile-navigation-interaction">#</a>3. Mobile
+  Navigation &amp; Interaction</h2>
+<h3 id="global-back-button-handling-backactionhelper"><a class="header-anchor"
+    href="#global-back-button-handling-backactionhelper">#</a>Global Back Button Handling (BackActionHelper)</h3>
+<p>Handling the physical back button is crucial in mobile apps (especially Android). <code>BackActionHelper</code>
+  provides a global queue to manage back actions, ensuring a smooth user experience.</p>
 <p><strong>Usage Example</strong>:</p>
 <pre><code class="language-typescript">import { backActionHelper } from &#39;lupine.components&#39;;
 
@@ -2260,11 +2316,13 @@ App.addListener(&#39;backButton&#39;, async () =&gt; {
   // Otherwise, exit app or perform other logic
 });
 </code></pre>
-<h3 id="actionsheet"><a class="header-anchor" href="#actionsheet">#</a>ActionSheet</h3><p><code>ActionSheet</code> is a very common bottom modal component in mobile apps, used for option selection, information prompts, or simple inputs.</p>
+<h3 id="actionsheet"><a class="header-anchor" href="#actionsheet">#</a>ActionSheet</h3>
+<p><code>ActionSheet</code> is a very common bottom modal component in mobile apps, used for option selection,
+  information prompts, or simple inputs.</p>
 <ul>
-<li><strong>ActionSheetSelect</strong>: Bottom options menu.</li>
-<li><strong>ActionSheetInput</strong>: Bottom input box.</li>
-<li><strong>ActionSheetMessage</strong>: Bottom message prompt.</li>
+  <li><strong>ActionSheetSelect</strong>: Bottom options menu.</li>
+  <li><strong>ActionSheetInput</strong>: Bottom input box.</li>
+  <li><strong>ActionSheetMessage</strong>: Bottom message prompt.</li>
 </ul>
 <pre><code class="language-tsx">import { ActionSheetSelectPromise } from &#39;lupine.components&#39;;
 
@@ -2280,13 +2338,17 @@ const handleSelect = async () =&gt; {
   }
 };
 </code></pre>
-<h3 id="mobileheader"><a class="header-anchor" href="#mobileheader">#</a>MobileHeader</h3><p><code>MobileHeaderComponent</code> provides flexible header customization. You can dynamically update the Left, Center, and Right areas of the header using <code>MobileHeaderHelper</code> or helper components.</p>
+<h3 id="mobileheader"><a class="header-anchor" href="#mobileheader">#</a>MobileHeader</h3>
+<p><code>MobileHeaderComponent</code> provides flexible header customization. You can dynamically update the Left,
+  Center, and Right areas of the header using <code>MobileHeaderHelper</code> or helper components.</p>
 <pre><code class="language-tsx">// Dynamically update Header inside a page component
 &lt;MobileHeaderCenter&gt;
   &lt;MobileHeaderTitleIcon title=&#39;User Settings&#39; left={&lt;BackIcon /&gt;} right={&lt;SaveIcon /&gt;} /&gt;
 &lt;/MobileHeaderCenter&gt;
 </code></pre>
-<h3 id="slidetabcomponent"><a class="header-anchor" href="#slidetabcomponent">#</a>SlideTabComponent</h3><p>A tab switching component that supports gesture-based left/right sliding, providing a smooth experience close to native applications.</p>
+<h3 id="slidetabcomponent"><a class="header-anchor" href="#slidetabcomponent">#</a>SlideTabComponent</h3>
+<p>A tab switching component that supports gesture-based left/right sliding, providing a smooth experience close to
+  native applications.</p>
 <pre><code class="language-tsx">&lt;SlideTabComponent
   pages={[
     { title: &#39;Hot&#39;, content: &lt;HotList /&gt; },
@@ -2308,8 +2370,12 @@ Since mobile apps typically run as standalone files (using the \`file://\` proto
 npm run build-mobile
 </code></pre>
 <p>This corresponds to the script in <code>package.json</code>:
-<code>node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1</code></p>
-<h3 id="conditional-compilation"><a class="header-anchor" href="#conditional-compilation">#</a>Conditional Compilation</h3><p>Lupine provides the <code>pluginIfelse</code> plugin, allowing you to write platform-specific logic. This is particularly useful for handling mobile-specific API endpoints or behaviors.</p>
+  <code>lupine-build --env=.env.mobile --dev=0 --mobile=1</code>
+</p>
+<h3 id="conditional-compilation"><a class="header-anchor" href="#conditional-compilation">#</a>Conditional Compilation
+</h3>
+<p>Lupine provides the <code>pluginIfelse</code> plugin, allowing you to write platform-specific logic. This is
+  particularly useful for handling mobile-specific API endpoints or behaviors.</p>
 <p><strong>Usage Example</strong>:</p>
 <pre><code class="language-javascript">// #if MOBILE
 const apiBase = &#39;https://api.myapp.com&#39;;
@@ -2322,17 +2388,26 @@ console.log(&#39;Debug mode&#39;);
 // #endif
 </code></pre>
 <blockquote>
-<p>Only code blocks matching the condition will be included in the final bundle, reducing bundle size and preventing runtime errors.</p>
+  <p>Only code blocks matching the condition will be included in the final bundle, reducing bundle size and preventing
+    runtime errors.</p>
 </blockquote>
-<h3 id="adding-ios-and-android"><a class="header-anchor" href="#adding-ios-and-android">#</a>Adding iOS and Android</h3><p>Please refer to the official Capacitor documentation for detailed steps on adding platforms:
-<a href="https://capacitorjs.com/docs/getting-started">https://capacitorjs.com/docs/getting-started</a></p>
-<h2 id="5-desktop-deployment"><a class="header-anchor" href="#5-desktop-deployment">#</a>5. Desktop Deployment</h2><p>Lupine.js uses <strong>Electron</strong> to build cross-platform desktop applications.</p>
-<h3 id="desktop-structure"><a class="header-anchor" href="#desktop-structure">#</a>Desktop Structure</h3><p>When you create a new Lupine project, it automatically includes an <code>electron</code> directory (e.g., <code>apps/your-app/electron</code>), which contains the necessary main process code and resources for the desktop app.</p>
+<h3 id="adding-ios-and-android"><a class="header-anchor" href="#adding-ios-and-android">#</a>Adding iOS and Android</h3>
+<p>Please refer to the official Capacitor documentation for detailed steps on adding platforms:
+  <a href="https://capacitorjs.com/docs/getting-started">https://capacitorjs.com/docs/getting-started</a>
+</p>
+<h2 id="5-desktop-deployment"><a class="header-anchor" href="#5-desktop-deployment">#</a>5. Desktop Deployment</h2>
+<p>Lupine.js uses <strong>Electron</strong> to build cross-platform desktop applications.</p>
+<h3 id="desktop-structure"><a class="header-anchor" href="#desktop-structure">#</a>Desktop Structure</h3>
+<p>When you create a new Lupine project, it automatically includes an <code>electron</code> directory (e.g.,
+  <code>apps/your-app/electron</code>), which contains the necessary main process code and resources for the desktop
+  app.</p>
 <ul>
-<li>Your Web code runs directly as the Electron renderer process.</li>
-<li><code>lupine.components</code> automatically detects the runtime environment and adapts the UI for desktop (e.g., hiding unnecessary mobile tabs).</li>
+  <li>Your Web code runs directly as the Electron renderer process.</li>
+  <li><code>lupine.components</code> automatically detects the runtime environment and adapts the UI for desktop (e.g.,
+    hiding unnecessary mobile tabs).</li>
 </ul>
-<h3 id="build-commands"><a class="header-anchor" href="#build-commands">#</a>Build Commands</h3><p><code>package.json</code> provides preset build scripts for compiling installers for different platforms:</p>
+<h3 id="build-commands"><a class="header-anchor" href="#build-commands">#</a>Build Commands</h3>
+<p><code>package.json</code> provides preset build scripts for compiling installers for different platforms:</p>
 <pre><code class="language-bash"># Windows
 npm run app1:build-win
 
@@ -2342,8 +2417,7 @@ npm run app1:build-linux
 # macOS
 npm run app1:build-mac
 </code></pre>
-<p>You can find and customize these commands in the <code>scripts</code> section of your <code>package.json</code>.</p>
-`;var Ah=`<h1 id="page-router"><a class="header-anchor" href="#page-router">#</a>Page Router</h1><p>The <code>PageRouter</code> in <strong>Lupine.web</strong> is a powerful client-side routing system designed to be <strong>isomorphic</strong> in logic to the backend <code>ApiRouter</code> (in <code>lupine.api</code>). It supports nested routing, middleware filters, dynamic parameters, and layout frames.</p>
+<p>You can find and customize these commands in the <code>scripts</code> section of your <code>package.json</code>.</p>`;var Ah=`<h1 id="page-router"><a class="header-anchor" href="#page-router">#</a>Page Router</h1><p>The <code>PageRouter</code> in <strong>Lupine.web</strong> is a powerful client-side routing system designed to be <strong>isomorphic</strong> in logic to the backend <code>ApiRouter</code> (in <code>lupine.api</code>). It supports nested routing, middleware filters, dynamic parameters, and layout frames.</p>
 <h2 id="1-versus-other-frameworks"><a class="header-anchor" href="#1-versus-other-frameworks">#</a>1. \u2696\uFE0F Versus Other Frameworks</h2><p>Compared to generic routers (like <code>react-router</code> or <code>vue-router</code>):</p>
 <ul>
 <li><strong>Logic Parity</strong>: It shares the exact same routing philosophy as the backend <code>ApiRouter</code>. If you know how to write a backend API in Lupine, you know how to write a frontend route.</li>
@@ -3468,11 +3542,14 @@ pageRouter.use(&#39;/dashboard/*&#39;, DashboardRouter);
 <h3 id="internationalization-i18n"><a class="header-anchor" href="#internationalization-i18n">#</a>\u{1F30D} Internationalization (i18n)</h3><p>Go global with ease. Built-in support for multi-language applications allows you to switch languages dynamically without complex configuration.</p>
 <h3 id="environment-configuration"><a class="header-anchor" href="#environment-configuration">#</a>\u{1F6E0}\uFE0F Environment Configuration</h3><p>Manage your application environments efficiently. <code>lupine.web</code> supports loading environment variables (from <code>.env</code> files via <code>lupine.api</code>) and injecting strictly filtered configurations into the frontend.</p>
 `;var Fu=`<p>\u201C\u4E00\u6B21\u7F16\u5199\uFF0C\u5230\u5904\u8FD0\u884C\u201D\u7684\u68A6\u60F3\u5F80\u5F80\u4F34\u968F\u7740\u5DE8\u5927\u7684\u59A5\u534F\u3002\u6C89\u91CD\u7684\u6846\u67B6\u3001\u6DF7\u4E71\u7684\u6761\u4EF6\u5224\u65AD\u4EE3\u7801\u4EE5\u53CA\u7CDF\u7CD5\u7684\u6027\u80FD\uFF0C\u901A\u5E38\u662F\u8DE8\u5E73\u53F0\u5F00\u53D1\u7684\u5669\u68A6\u3002</p>
-<p><strong>Lupine.js</strong> \u6539\u53D8\u4E86\u8FD9\u4E00\u5207\u3002\u5B83\u4ECE\u5E95\u5C42\u8BBE\u8BA1\u5F00\u59CB\u5C31\u662F\u4E00\u4E2A<strong>\u901A\u7528\u6846\u67B6</strong>\u3002\u901A\u8FC7\u5229\u7528 <strong>Capacitor</strong> (\u79FB\u52A8\u7AEF) \u548C <strong>Electron</strong> (\u684C\u9762\u7AEF)\uFF0C\u4F60\u53EF\u4EE5\u5229\u7528\u540C\u4E00\u5957 TypeScript \u4EE3\u7801\u5E93\uFF0C\u5C06\u5E94\u7528\u53D1\u5E03\u5230 Web\u3001iOS\u3001Android\u3001Windows\u3001macOS \u548C Linux\u3002</p>
+<p><strong>Lupine.js</strong> \u6539\u53D8\u4E86\u8FD9\u4E00\u5207\u3002\u5B83\u4ECE\u5E95\u5C42\u8BBE\u8BA1\u5F00\u59CB\u5C31\u662F\u4E00\u4E2A<strong>\u901A\u7528\u6846\u67B6</strong>\u3002\u901A\u8FC7\u5229\u7528 <strong>Capacitor</strong> (\u79FB\u52A8\u7AEF) \u548C
+  <strong>Electron</strong> (\u684C\u9762\u7AEF)\uFF0C\u4F60\u53EF\u4EE5\u5229\u7528\u540C\u4E00\u5957 TypeScript \u4EE3\u7801\u5E93\uFF0C\u5C06\u5E94\u7528\u53D1\u5E03\u5230 Web\u3001iOS\u3001Android\u3001Windows\u3001macOS \u548C Linux\u3002</p>
 <p><img src="/lupine.js/assets/architecture_cross_platform.png" alt="Lupine.js \u67B6\u6784"></p>
 <p>\u5728\u672C\u6307\u5357\u4E2D\uFF0C\u6211\u4EEC\u5C06\u4EE5\u5373\u5C06\u771F\u5B9E\u4E0A\u7EBF\u7684 <strong>Lupine \u793A\u4F8B\u5E94\u7528</strong> \u5E94\u7528\u4E3A\u4F8B\uFF0C\u6F14\u793A\u5982\u4F55\u5C06\u4E00\u4E2A\u6807\u7684 Lupine.js Web \u5E94\u7528\u6269\u5C55\u5230\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u3002</p>
-<h2 id="1-\u6838\u5FC3-\u54CD\u5E94\u5F0F-web-\u5E94\u7528"><a class="header-anchor" href="#1-\u6838\u5FC3-\u54CD\u5E94\u5F0F-web-\u5E94\u7528">#</a>1. \u6838\u5FC3\uFF1A\u54CD\u5E94\u5F0F Web \u5E94\u7528</h2><p>\u5728\u63A5\u89E6\u4EFB\u4F55\u539F\u751F\u4EE3\u7801\u4E4B\u524D\uFF0C\u6211\u4EEC\u9700\u8981\u4E00\u4E2A\u54CD\u5E94\u5F0F\u7684 Web \u5E94\u7528\u3002Lupine.js \u901A\u8FC7\u5185\u7F6E\u7684\u54CD\u5E94\u5F0F\u5DE5\u5177\u548C CSS-in-JS \u5F15\u64CE\uFF0C\u8BA9\u8FD9\u4E00\u5207\u53D8\u5F97\u7B80\u5355\u3002</p>
-<h3 id="\u54CD\u5E94\u5F0F\u6837\u5F0F"><a class="header-anchor" href="#\u54CD\u5E94\u5F0F\u6837\u5F0F">#</a>\u54CD\u5E94\u5F0F\u6837\u5F0F</h3><p>\u4F60\u4E0D\u9700\u8981\u4E3A\u79FB\u52A8\u7AEF\u7F16\u5199\u5355\u72EC\u7684 CSS \u6587\u4EF6\uFF0C\u800C\u662F\u76F4\u63A5\u5728\u7EC4\u4EF6\u6837\u5F0F\u4E2D\u4F7F\u7528 <code>MediaQueryRange</code>\uFF1A</p>
+<h2 id="1-\u6838\u5FC3-\u54CD\u5E94\u5F0F-web-\u5E94\u7528"><a class="header-anchor" href="#1-\u6838\u5FC3-\u54CD\u5E94\u5F0F-web-\u5E94\u7528">#</a>1. \u6838\u5FC3\uFF1A\u54CD\u5E94\u5F0F Web \u5E94\u7528</h2>
+<p>\u5728\u63A5\u89E6\u4EFB\u4F55\u539F\u751F\u4EE3\u7801\u4E4B\u524D\uFF0C\u6211\u4EEC\u9700\u8981\u4E00\u4E2A\u54CD\u5E94\u5F0F\u7684 Web \u5E94\u7528\u3002Lupine.js \u901A\u8FC7\u5185\u7F6E\u7684\u54CD\u5E94\u5F0F\u5DE5\u5177\u548C CSS-in-JS \u5F15\u64CE\uFF0C\u8BA9\u8FD9\u4E00\u5207\u53D8\u5F97\u7B80\u5355\u3002</p>
+<h3 id="\u54CD\u5E94\u5F0F\u6837\u5F0F"><a class="header-anchor" href="#\u54CD\u5E94\u5F0F\u6837\u5F0F">#</a>\u54CD\u5E94\u5F0F\u6837\u5F0F</h3>
+<p>\u4F60\u4E0D\u9700\u8981\u4E3A\u79FB\u52A8\u7AEF\u7F16\u5199\u5355\u72EC\u7684 CSS \u6587\u4EF6\uFF0C\u800C\u662F\u76F4\u63A5\u5728\u7EC4\u4EF6\u6837\u5F0F\u4E2D\u4F7F\u7528 <code>MediaQueryRange</code>\uFF1A</p>
 <pre><code class="language-tsx">import { MediaQueryRange, CssProps } from &#39;lupine.web&#39;;
 
 const css: CssProps = {
@@ -3488,7 +3565,8 @@ const css: CssProps = {
   },
 };
 </code></pre>
-<h3 id="\u81EA\u9002\u5E94\u6846\u67B6-layout"><a class="header-anchor" href="#\u81EA\u9002\u5E94\u6846\u67B6-layout">#</a>\u81EA\u9002\u5E94\u6846\u67B6 Layout</h3><p>\u5BF9\u4E8E\u5BFC\u822A\uFF0C<code>ResponsiveFrame</code> \u7EC4\u4EF6\u4F1A\u6839\u636E\u8BBE\u5907\u81EA\u52A8\u5728\u201C\u684C\u9762\u9876\u90E8\u83DC\u5355\u201D\u548C\u201C\u79FB\u52A8\u7AEF\u5E95\u90E8\u5BFC\u822A\u680F\u201D\u4E4B\u95F4\u5207\u6362\u3002</p>
+<h3 id="\u81EA\u9002\u5E94\u6846\u67B6-layout"><a class="header-anchor" href="#\u81EA\u9002\u5E94\u6846\u67B6-layout">#</a>\u81EA\u9002\u5E94\u6846\u67B6 Layout</h3>
+<p>\u5BF9\u4E8E\u5BFC\u822A\uFF0C<code>ResponsiveFrame</code> \u7EC4\u4EF6\u4F1A\u6839\u636E\u8BBE\u5907\u81EA\u52A8\u5728\u201C\u684C\u9762\u9876\u90E8\u83DC\u5355\u201D\u548C\u201C\u79FB\u52A8\u7AEF\u5E95\u90E8\u5BFC\u822A\u680F\u201D\u4E4B\u95F4\u5207\u6362\u3002</p>
 <pre><code class="language-tsx">&lt;ResponsiveFrame
   desktopHeaderTitle=&#39;\u6211\u7684\u5E94\u7528&#39;
   // ... \u684C\u9762\u83DC\u5355\u9879
@@ -3499,8 +3577,10 @@ const css: CssProps = {
   mainContent={&lt;PageComponent /&gt;}
 /&gt;
 </code></pre>
-<h2 id="2-\u8FDB\u519B\u79FB\u52A8\u7AEF-ios-android"><a class="header-anchor" href="#2-\u8FDB\u519B\u79FB\u52A8\u7AEF-ios-android">#</a>2. \u8FDB\u519B\u79FB\u52A8\u7AEF (iOS &amp; Android)</h2><p>Lupine.js \u4F7F\u7528 <strong>Capacitor</strong> \u5C06\u4F60\u7684 Web \u5E94\u7528\u5305\u88C5\u6210\u539F\u751F App\u3002\u8FD9\u8BA9\u4F60\u65E2\u80FD\u8BBF\u95EE\u539F\u751F\u529F\u80FD\uFF08\u76F8\u673A\u3001\u6587\u4EF6\u7CFB\u7EDF\uFF09\uFF0C\u53C8\u80FD\u4FDD\u6301 Web \u5F00\u53D1\u7684\u6D41\u7545\u5DE5\u4F5C\u6D41\u3002</p>
-<h3 id="\u6B65\u9AA4-2-1-\u5B89\u88C5-capacitor"><a class="header-anchor" href="#\u6B65\u9AA4-2-1-\u5B89\u88C5-capacitor">#</a>\u6B65\u9AA4 2.1: \u5B89\u88C5 Capacitor</h3><p>\u5728\u9879\u76EE\u6839\u76EE\u5F55\uFF0C\u5B89\u88C5\u5FC5\u8981\u7684\u4F9D\u8D56\uFF1A</p>
+<h2 id="2-\u8FDB\u519B\u79FB\u52A8\u7AEF-ios-android"><a class="header-anchor" href="#2-\u8FDB\u519B\u79FB\u52A8\u7AEF-ios-android">#</a>2. \u8FDB\u519B\u79FB\u52A8\u7AEF (iOS &amp; Android)</h2>
+<p>Lupine.js \u4F7F\u7528 <strong>Capacitor</strong> \u5C06\u4F60\u7684 Web \u5E94\u7528\u5305\u88C5\u6210\u539F\u751F App\u3002\u8FD9\u8BA9\u4F60\u65E2\u80FD\u8BBF\u95EE\u539F\u751F\u529F\u80FD\uFF08\u76F8\u673A\u3001\u6587\u4EF6\u7CFB\u7EDF\uFF09\uFF0C\u53C8\u80FD\u4FDD\u6301 Web \u5F00\u53D1\u7684\u6D41\u7545\u5DE5\u4F5C\u6D41\u3002</p>
+<h3 id="\u6B65\u9AA4-2-1-\u5B89\u88C5-capacitor"><a class="header-anchor" href="#\u6B65\u9AA4-2-1-\u5B89\u88C5-capacitor">#</a>\u6B65\u9AA4 2.1: \u5B89\u88C5 Capacitor</h3>
+<p>\u5728\u9879\u76EE\u6839\u76EE\u5F55\uFF0C\u5B89\u88C5\u5FC5\u8981\u7684\u4F9D\u8D56\uFF1A</p>
 <pre><code class="language-bash"># Capacitor \u6838\u5FC3\u5E93
 npm install @capacitor/cli@latest @capacitor/core@latest
 npm install @capacitor/android @capacitor/ios
@@ -3512,19 +3592,22 @@ npm install @capacitor-community/keep-awake
 # \u521D\u59CB\u5316
 npx cap init [MyAppName] [com.example.app]
 </code></pre>
-<h3 id="\u6B65\u9AA4-2-2-\u6DFB\u52A0\u5E73\u53F0"><a class="header-anchor" href="#\u6B65\u9AA4-2-2-\u6DFB\u52A0\u5E73\u53F0">#</a>\u6B65\u9AA4 2.2: \u6DFB\u52A0\u5E73\u53F0</h3><pre><code class="language-bash"># \u6DFB\u52A0 Android
+<h3 id="\u6B65\u9AA4-2-2-\u6DFB\u52A0\u5E73\u53F0"><a class="header-anchor" href="#\u6B65\u9AA4-2-2-\u6DFB\u52A0\u5E73\u53F0">#</a>\u6B65\u9AA4 2.2: \u6DFB\u52A0\u5E73\u53F0</h3>
+<pre><code class="language-bash"># \u6DFB\u52A0 Android
 npx cap add android
 
 # \u6DFB\u52A0 iOS (\u9700\u8981 Mac \u548C Xcode)
 npx cap add ios
 </code></pre>
-<h3 id="\u6B65\u9AA4-2-3-\u914D\u7F6E\u79FB\u52A8\u7AEF\u73AF\u5883"><a class="header-anchor" href="#\u6B65\u9AA4-2-3-\u914D\u7F6E\u79FB\u52A8\u7AEF\u73AF\u5883">#</a>\u6B65\u9AA4 2.3: \u914D\u7F6E\u79FB\u52A8\u7AEF\u73AF\u5883</h3><p>\u79FB\u52A8\u7AEF\u5E94\u7528\u901A\u5E38\u901A\u8FC7\u672C\u5730\u6587\u4EF6\u7CFB\u7EDF (<code>file://</code>) \u8FD0\u884C\uFF0C\u56E0\u6B64\u65E0\u6CD5\u50CF Web \u90A3\u6837\u4F7F\u7528\u76F8\u5BF9\u8DEF\u5F84\u8BF7\u6C42 API\u3002\u4F60\u9700\u8981\u521B\u5EFA\u4E00\u4E2A <code>.env.mobile</code> \u6587\u4EF6\uFF1A</p>
+<h3 id="\u6B65\u9AA4-2-3-\u914D\u7F6E\u79FB\u52A8\u7AEF\u73AF\u5883"><a class="header-anchor" href="#\u6B65\u9AA4-2-3-\u914D\u7F6E\u79FB\u52A8\u7AEF\u73AF\u5883">#</a>\u6B65\u9AA4 2.3: \u914D\u7F6E\u79FB\u52A8\u7AEF\u73AF\u5883</h3>
+<p>\u79FB\u52A8\u7AEF\u5E94\u7528\u901A\u5E38\u901A\u8FC7\u672C\u5730\u6587\u4EF6\u7CFB\u7EDF (<code>file://</code>) \u8FD0\u884C\uFF0C\u56E0\u6B64\u65E0\u6CD5\u50CF Web \u90A3\u6837\u4F7F\u7528\u76F8\u5BF9\u8DEF\u5F84\u8BF7\u6C42 API\u3002\u4F60\u9700\u8981\u521B\u5EFA\u4E00\u4E2A <code>.env.mobile</code> \u6587\u4EF6\uFF1A</p>
 <pre><code class="language-ini"># .env.mobile
 WEB.API_BASE_URL=https://api.your-production-site.com
 </code></pre>
-<h3 id="\u6B65\u9AA4-2-4-\u6784\u5EFA\u4E0E\u540C\u6B65"><a class="header-anchor" href="#\u6B65\u9AA4-2-4-\u6784\u5EFA\u4E0E\u540C\u6B65">#</a>\u6B65\u9AA4 2.4: \u6784\u5EFA\u4E0E\u540C\u6B65</h3><p>\u5728 <code>package.json</code> \u4E2D\u6DFB\u52A0\u6784\u5EFA\u811A\u672C\uFF1A</p>
+<h3 id="\u6B65\u9AA4-2-4-\u6784\u5EFA\u4E0E\u540C\u6B65"><a class="header-anchor" href="#\u6B65\u9AA4-2-4-\u6784\u5EFA\u4E0E\u540C\u6B65">#</a>\u6B65\u9AA4 2.4: \u6784\u5EFA\u4E0E\u540C\u6B65</h3>
+<p>\u5728 <code>package.json</code> \u4E2D\u6DFB\u52A0\u6784\u5EFA\u811A\u672C\uFF1A</p>
 <pre><code class="language-json">&quot;scripts&quot;: {
-  &quot;build-mobile&quot;: &quot;node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1&quot;
+  &quot;build-mobile&quot;: &quot;lupine-build --env=.env.mobile --dev=0 --mobile=1&quot;
 }
 </code></pre>
 <p>\u7136\u540E\u6267\u884C\u6784\u5EFA\u5E76\u540C\u6B65\u5230\u539F\u751F\u9879\u76EE\uFF1A</p>
@@ -3532,7 +3615,8 @@ WEB.API_BASE_URL=https://api.your-production-site.com
 npx cap sync
 npx cap open android  # \u6253\u5F00 Android Studio
 </code></pre>
-<h3 id="\u6B65\u9AA4-2-5-\u539F\u751F\u903B\u8F91-\u53EF\u9009"><a class="header-anchor" href="#\u6B65\u9AA4-2-5-\u539F\u751F\u903B\u8F91-\u53EF\u9009">#</a>\u6B65\u9AA4 2.5: \u539F\u751F\u903B\u8F91 (\u53EF\u9009)</h3><p>\u4F60\u53EF\u4EE5\u4F7F\u7528 <code>#if MOBILE</code> \u7F16\u8BD1\u6307\u4EE4\u6765\u7F16\u5199\u5E73\u53F0\u7279\u5B9A\u4EE3\u7801\uFF0C\u800C\u4E14\u4E0D\u4F1A\u5BFC\u81F4 Web \u5305\u4F53\u79EF\u81A8\u80C0\uFF1A</p>
+<h3 id="\u6B65\u9AA4-2-5-\u539F\u751F\u903B\u8F91-\u53EF\u9009"><a class="header-anchor" href="#\u6B65\u9AA4-2-5-\u539F\u751F\u903B\u8F91-\u53EF\u9009">#</a>\u6B65\u9AA4 2.5: \u539F\u751F\u903B\u8F91 (\u53EF\u9009)</h3>
+<p>\u4F60\u53EF\u4EE5\u4F7F\u7528 <code>#if MOBILE</code> \u7F16\u8BD1\u6307\u4EE4\u6765\u7F16\u5199\u5E73\u53F0\u7279\u5B9A\u4EE3\u7801\uFF0C\u800C\u4E14\u4E0D\u4F1A\u5BFC\u81F4 Web \u5305\u4F53\u79EF\u81A8\u80C0\uFF1A</p>
 <pre><code class="language-javascript">// #if MOBILE
 import { Camera } from &#39;@capacitor/camera&#39;;
 
@@ -3546,13 +3630,17 @@ const takePhoto = async () =&gt; {
 };
 // #endif
 </code></pre>
-<h2 id="3-\u8FDB\u519B\u684C\u9762\u7AEF-windows-mac-linux"><a class="header-anchor" href="#3-\u8FDB\u519B\u684C\u9762\u7AEF-windows-mac-linux">#</a>3. \u8FDB\u519B\u684C\u9762\u7AEF (Windows, Mac, Linux)</h2><p>\u5BF9\u4E8E\u684C\u9762\u7AEF\uFF0CLupine.js \u96C6\u6210\u4E86 <strong>Electron</strong>\u3002</p>
-<h3 id="\u7ED3\u6784"><a class="header-anchor" href="#\u7ED3\u6784">#</a>\u7ED3\u6784</h3><p>\u6BCF\u4E2A Lupine \u9879\u76EE\u90FD\u81EA\u5E26\u4E00\u4E2A <code>electron</code> \u76EE\u5F55\uFF0C\u5305\u542B\u4E3B\u8FDB\u7A0B\u903B\u8F91\uFF1A</p>
+<h2 id="3-\u8FDB\u519B\u684C\u9762\u7AEF-windows-mac-linux"><a class="header-anchor" href="#3-\u8FDB\u519B\u684C\u9762\u7AEF-windows-mac-linux">#</a>3. \u8FDB\u519B\u684C\u9762\u7AEF (Windows,
+  Mac, Linux)</h2>
+<p>\u5BF9\u4E8E\u684C\u9762\u7AEF\uFF0CLupine.js \u96C6\u6210\u4E86 <strong>Electron</strong>\u3002</p>
+<h3 id="\u7ED3\u6784"><a class="header-anchor" href="#\u7ED3\u6784">#</a>\u7ED3\u6784</h3>
+<p>\u6BCF\u4E2A Lupine \u9879\u76EE\u90FD\u81EA\u5E26\u4E00\u4E2A <code>electron</code> \u76EE\u5F55\uFF0C\u5305\u542B\u4E3B\u8FDB\u7A0B\u903B\u8F91\uFF1A</p>
 <ul>
-<li><code>electron/main.js</code>: Electron \u5E94\u7528\u7684\u5165\u53E3\u70B9\u3002</li>
-<li><code>electron/preload.js</code>: \u6E32\u67D3\u8FDB\u7A0B (Web) \u548C \u4E3B\u8FDB\u7A0B \u4E4B\u95F4\u7684\u5B89\u5168\u901A\u4FE1\u6865\u6881\u3002</li>
+  <li><code>electron/main.js</code>: Electron \u5E94\u7528\u7684\u5165\u53E3\u70B9\u3002</li>
+  <li><code>electron/preload.js</code>: \u6E32\u67D3\u8FDB\u7A0B (Web) \u548C \u4E3B\u8FDB\u7A0B \u4E4B\u95F4\u7684\u5B89\u5168\u901A\u4FE1\u6865\u6881\u3002</li>
 </ul>
-<h3 id="\u6784\u5EFA\u684C\u9762\u5E94\u7528"><a class="header-anchor" href="#\u6784\u5EFA\u684C\u9762\u5E94\u7528">#</a>\u6784\u5EFA\u684C\u9762\u5E94\u7528</h3><p>Lupine \u5141\u8BB8\u4F60\u4F7F\u7528 <code>electron-builder</code> \u5C06\u5E94\u7528\u6253\u5305\u4E3A <code>.exe</code>, <code>.dmg</code>, \u6216 <code>.snap</code> \u5B89\u88C5\u5305\u3002</p>
+<h3 id="\u6784\u5EFA\u684C\u9762\u5E94\u7528"><a class="header-anchor" href="#\u6784\u5EFA\u684C\u9762\u5E94\u7528">#</a>\u6784\u5EFA\u684C\u9762\u5E94\u7528</h3>
+<p>Lupine \u5141\u8BB8\u4F60\u4F7F\u7528 <code>electron-builder</code> \u5C06\u5E94\u7528\u6253\u5305\u4E3A <code>.exe</code>, <code>.dmg</code>, \u6216 <code>.snap</code> \u5B89\u88C5\u5305\u3002</p>
 <p>\u8FD0\u884C <code>package.json</code> \u4E2D\u9884\u8BBE\u7684\u6784\u5EFA\u547D\u4EE4\uFF1A</p>
 <pre><code class="language-bash"># \u6784\u5EFA Windows \u7248
 npm run app:build-win
@@ -3562,13 +3650,14 @@ npm run app:build-mac
 </code></pre>
 <p>\u6784\u5EFA\u8FC7\u7A0B\u5C06\u4F1A\uFF1A</p>
 <ol>
-<li>\u5C06 Lupine.js Web \u5E94\u7528\u7F16\u8BD1\u4E3A\u9759\u6001\u6587\u4EF6\u3002</li>
-<li>\u5C06\u8FD9\u4E9B\u6587\u4EF6\u4E0E Electron \u8FD0\u884C\u65F6\u6346\u7ED1\u3002</li>
-<li>\u8F93\u51FA\u72EC\u7ACB\u7684\u5B89\u88C5\u7A0B\u5E8F\u3002</li>
+  <li>\u5C06 Lupine.js Web \u5E94\u7528\u7F16\u8BD1\u4E3A\u9759\u6001\u6587\u4EF6\u3002</li>
+  <li>\u5C06\u8FD9\u4E9B\u6587\u4EF6\u4E0E Electron \u8FD0\u884C\u65F6\u6346\u7ED1\u3002</li>
+  <li>\u8F93\u51FA\u72EC\u7ACB\u7684\u5B89\u88C5\u7A0B\u5E8F\u3002</li>
 </ol>
-<h2 id="\u603B\u7ED3"><a class="header-anchor" href="#\u603B\u7ED3">#</a>\u603B\u7ED3</h2><p>\u4F7F\u7528 <strong>Lupine.js</strong>\uFF0C\u4F60\u4E0D\u9700\u8981\u4E3A Web\u3001\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u7EC4\u5EFA\u4E09\u4E2A\u72EC\u7ACB\u7684\u56E2\u961F\u3002\u4F60\u53EF\u4EE5\u7EF4\u62A4<strong>\u4E00\u5957</strong>\u4EE3\u7801\u5E93\uFF0C\u4F7F\u7528<strong>\u4E00\u5957</strong>\u7EC4\u4EF6\uFF0C\u7136\u540E\u53D1\u5E03\u5230\u6240\u6709\u5E73\u53F0\u3002</p>
-<p>\u65E0\u8BBA\u4F60\u662F\u6784\u5EFA SaaS \u5E73\u53F0\u3001\u6D88\u8D39\u8005 App \u8FD8\u662F\u5185\u90E8\u5DE5\u5177\uFF0CLupine.js \u90FD\u80FD\u8BA9\u4F60\u540C\u65F6\u62E5\u6709\u539F\u751F\u5E94\u7528\u7684\u89E6\u8FBE\u7387\u548C Web \u5F00\u53D1\u7684\u9AD8\u6548\u7387\u3002</p>
-`;var Ou=`<h1 id="\u96F6\u4F9D\u8D56-lupine-js-\u5982\u4F55\u5B9E\u73B0\u539F\u751F-css-in-js"><a class="header-anchor" href="#\u96F6\u4F9D\u8D56-lupine-js-\u5982\u4F55\u5B9E\u73B0\u539F\u751F-css-in-js">#</a>\u96F6\u4F9D\u8D56\uFF0CLupine.js \u5982\u4F55\u5B9E\u73B0\u539F\u751F CSS-in-JS\uFF1F</h1><p>\u5728\u73B0\u4EE3\u524D\u7AEF\u5F00\u53D1\u4E2D\uFF0C\u6211\u4EEC\u5E38\u5E38\u9762\u4E34\u4E00\u4E2A\u4E24\u96BE\u7684\u9009\u62E9\uFF1A\u662F\u5FCD\u53D7 CSS \u6587\u4EF6\u5206\u79BB\u5E26\u6765\u7684\u7EF4\u62A4\u75DB\u82E6\uFF0C\u8FD8\u662F\u5F15\u5165\u5E9E\u5927\u7684 CSS-in-JS \u5E93\uFF08\u5982 Styled-components \u6216 Emotion\uFF09\u5BFC\u81F4\u5305\u4F53\u79EF\u5267\u589E\uFF1F</p>
+<h2 id="\u603B\u7ED3"><a class="header-anchor" href="#\u603B\u7ED3">#</a>\u603B\u7ED3</h2>
+<p>\u4F7F\u7528 <strong>Lupine.js</strong>\uFF0C\u4F60\u4E0D\u9700\u8981\u4E3A
+  Web\u3001\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u7EC4\u5EFA\u4E09\u4E2A\u72EC\u7ACB\u7684\u56E2\u961F\u3002\u4F60\u53EF\u4EE5\u7EF4\u62A4<strong>\u4E00\u5957</strong>\u4EE3\u7801\u5E93\uFF0C\u4F7F\u7528<strong>\u4E00\u5957</strong>\u7EC4\u4EF6\uFF0C\u7136\u540E\u53D1\u5E03\u5230\u6240\u6709\u5E73\u53F0\u3002</p>
+<p>\u65E0\u8BBA\u4F60\u662F\u6784\u5EFA SaaS \u5E73\u53F0\u3001\u6D88\u8D39\u8005 App \u8FD8\u662F\u5185\u90E8\u5DE5\u5177\uFF0CLupine.js \u90FD\u80FD\u8BA9\u4F60\u540C\u65F6\u62E5\u6709\u539F\u751F\u5E94\u7528\u7684\u89E6\u8FBE\u7387\u548C Web \u5F00\u53D1\u7684\u9AD8\u6548\u7387\u3002</p>`;var Ou=`<h1 id="\u96F6\u4F9D\u8D56-lupine-js-\u5982\u4F55\u5B9E\u73B0\u539F\u751F-css-in-js"><a class="header-anchor" href="#\u96F6\u4F9D\u8D56-lupine-js-\u5982\u4F55\u5B9E\u73B0\u539F\u751F-css-in-js">#</a>\u96F6\u4F9D\u8D56\uFF0CLupine.js \u5982\u4F55\u5B9E\u73B0\u539F\u751F CSS-in-JS\uFF1F</h1><p>\u5728\u73B0\u4EE3\u524D\u7AEF\u5F00\u53D1\u4E2D\uFF0C\u6211\u4EEC\u5E38\u5E38\u9762\u4E34\u4E00\u4E2A\u4E24\u96BE\u7684\u9009\u62E9\uFF1A\u662F\u5FCD\u53D7 CSS \u6587\u4EF6\u5206\u79BB\u5E26\u6765\u7684\u7EF4\u62A4\u75DB\u82E6\uFF0C\u8FD8\u662F\u5F15\u5165\u5E9E\u5927\u7684 CSS-in-JS \u5E93\uFF08\u5982 Styled-components \u6216 Emotion\uFF09\u5BFC\u81F4\u5305\u4F53\u79EF\u5267\u589E\uFF1F</p>
 <p><strong>Lupine.js \u9009\u62E9\u4E86\u4E00\u6761\u4E0D\u540C\u7684\u8DEF\u3002</strong></p>
 <p>\u5B83\u5185\u7F6E\u4E86\u4E00\u4E2A\u8D85\u8F7B\u91CF\u7EA7\u7684 CSS-in-JS \u5F15\u64CE\uFF0C<strong>\u65E0\u9700\u4EFB\u4F55\u989D\u5916\u4F9D\u8D56</strong>\uFF0C\u5373\u53EF\u8BA9\u4F60\u5728\u7EC4\u4EF6\u5185\u90E8\u8212\u9002\u5730\u7F16\u5199\u6837\u5F0F\u3002\u5B83\u4E0D\u4EC5\u652F\u6301\u5D4C\u5957\u3001\u5A92\u4F53\u67E5\u8BE2\u3001\u5173\u952E\u5E27\u52A8\u753B\uFF0C\u8FD8\u62E5\u6709\u6781\u9AD8\u7684\u8FD0\u884C\u6548\u7387\u3002</p>
 <p>\u8BA9\u6211\u4EEC\u6765\u770B\u770B\u5B83\u662F\u5982\u4F55\u5DE5\u4F5C\u7684\uFF0C\u4EE5\u53CA\u5982\u4F55\u5728\u4F60\u7684\u9879\u76EE\u4E2D\u4F18\u96C5\u5730\u4F7F\u7528\u5B83\u3002</p>
@@ -4690,16 +4779,21 @@ const onToggleEdit = () =&gt; {
 };
 </code></pre>
 <h2 id="\u603B\u7ED3"><a class="header-anchor" href="#\u603B\u7ED3">#</a>\u603B\u7ED3</h2><p>\u867D\u7136\u8FD9\u79CD\u65B9\u6CD5\u9700\u8981\u7F16\u5199\u7A0D\u5FAE\u591A\u4E00\u70B9\u7684\u201C\u663E\u5F0F\u201D\u4EE3\u7801\uFF08\u5B9A\u4E49 <code>HtmlVar</code> \u548C <code>makeDom</code>\uFF09\uFF0C\u4F46\u5B83\u4E3A\u4F60\u63D0\u4F9B\u4E86\u5728\u91CD\u6570\u636E\u5E94\u7528\u4E2D\u96BE\u4EE5\u5339\u654C\u7684 <strong>\u63A7\u5236\u529B</strong> \u548C <strong>\u9AD8\u6027\u80FD</strong>\u3002\u5B9E\u9645\u4E0A\uFF0C\u4F60\u5C31\u50CF\u662F\u81EA\u5DF1\u7684\u201C\u7F16\u8BD1\u5668\u201D\uFF0C\u7CBE\u786E\u5730\u544A\u8BC9\u6D4F\u89C8\u5668\u5728\u4F55\u65F6\u66F4\u65B0\u4EC0\u4E48\u5185\u5BB9\u3002</p>
-`;var om=`<h1 id="\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u9002\u914D-mobile-desktop"><a class="header-anchor" href="#\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u9002\u914D-mobile-desktop">#</a>\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u9002\u914D (Mobile &amp; Desktop)</h1><p>Lupine.js \u7684\u6838\u5FC3\u8BBE\u8BA1\u7406\u5FF5\u4E4B\u4E00\u662F\u201C\u4E00\u5957\u4EE3\u7801\uFF0C\u591A\u7AEF\u8FD0\u884C\u201D\u3002\u901A\u8FC7\u5185\u7F6E\u7684\u54CD\u5E94\u5F0F\u8BBE\u8BA1\u5DE5\u5177\u548C\u7EC4\u4EF6\uFF0C\u4F60\u53EF\u4EE5\u8F7B\u677E\u6784\u5EFA\u540C\u65F6\u9002\u5E94 Web\u3001\u79FB\u52A8\u7AEF\uFF08iOS/Android\uFF09\u548C\u684C\u9762\u7AEF\uFF08Electron\uFF09\u7684\u5E94\u7528\u7A0B\u5E8F\u3002</p>
-<h2 id="1-\u54CD\u5E94\u5F0F\u5E03\u5C40-media-query"><a class="header-anchor" href="#1-\u54CD\u5E94\u5F0F\u5E03\u5C40-media-query">#</a>1. \u54CD\u5E94\u5F0F\u5E03\u5C40 (Media Query)</h2><p><code>lupine.components</code> \u63D0\u4F9B\u4E86\u5F3A\u5927\u7684\u5A92\u4F53\u67E5\u8BE2\u5DE5\u5177\uFF0C\u5E2E\u52A9\u4F60\u6839\u636E\u5C4F\u5E55\u5BBD\u5EA6\u8C03\u6574\u5E03\u5C40\u3002</p>
-<h3 id="\u65AD\u70B9\u5B9A\u4E49-breakpoints"><a class="header-anchor" href="#\u65AD\u70B9\u5B9A\u4E49-breakpoints">#</a>\u65AD\u70B9\u5B9A\u4E49 (Breakpoints)</h3><p>\u7CFB\u7EDF\u9884\u5B9A\u4E49\u4E86\u4EE5\u4E0B\u65AD\u70B9\uFF08\u53EF\u5728 <code>MediaQueryMaxWidth</code> \u4E2D\u81EA\u5B9A\u4E49\uFF09\uFF1A</p>
+`;var om=`<h1 id="\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u9002\u914D-mobile-desktop"><a class="header-anchor" href="#\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u9002\u914D-mobile-desktop">#</a>\u79FB\u52A8\u7AEF\u548C\u684C\u9762\u7AEF\u9002\u914D (Mobile &amp;
+  Desktop)</h1>
+<p>Lupine.js \u7684\u6838\u5FC3\u8BBE\u8BA1\u7406\u5FF5\u4E4B\u4E00\u662F\u201C\u4E00\u5957\u4EE3\u7801\uFF0C\u591A\u7AEF\u8FD0\u884C\u201D\u3002\u901A\u8FC7\u5185\u7F6E\u7684\u54CD\u5E94\u5F0F\u8BBE\u8BA1\u5DE5\u5177\u548C\u7EC4\u4EF6\uFF0C\u4F60\u53EF\u4EE5\u8F7B\u677E\u6784\u5EFA\u540C\u65F6\u9002\u5E94 Web\u3001\u79FB\u52A8\u7AEF\uFF08iOS/Android\uFF09\u548C\u684C\u9762\u7AEF\uFF08Electron\uFF09\u7684\u5E94\u7528\u7A0B\u5E8F\u3002</p>
+<h2 id="1-\u54CD\u5E94\u5F0F\u5E03\u5C40-media-query"><a class="header-anchor" href="#1-\u54CD\u5E94\u5F0F\u5E03\u5C40-media-query">#</a>1. \u54CD\u5E94\u5F0F\u5E03\u5C40 (Media Query)</h2>
+<p><code>lupine.components</code> \u63D0\u4F9B\u4E86\u5F3A\u5927\u7684\u5A92\u4F53\u67E5\u8BE2\u5DE5\u5177\uFF0C\u5E2E\u52A9\u4F60\u6839\u636E\u5C4F\u5E55\u5BBD\u5EA6\u8C03\u6574\u5E03\u5C40\u3002</p>
+<h3 id="\u65AD\u70B9\u5B9A\u4E49-breakpoints"><a class="header-anchor" href="#\u65AD\u70B9\u5B9A\u4E49-breakpoints">#</a>\u65AD\u70B9\u5B9A\u4E49 (Breakpoints)</h3>
+<p>\u7CFB\u7EDF\u9884\u5B9A\u4E49\u4E86\u4EE5\u4E0B\u65AD\u70B9\uFF08\u53EF\u5728 <code>MediaQueryMaxWidth</code> \u4E2D\u81EA\u5B9A\u4E49\uFF09\uFF1A</p>
 <ul>
-<li><strong>ExtraSmall</strong>: &lt; 480px</li>
-<li><strong>Mobile</strong>: &lt; 767px (Grid: col-1)</li>
-<li><strong>Tablet</strong>: &lt; 991px (Grid: col-1-md)</li>
-<li><strong>Desktop</strong>: &lt; 1399px (Grid: col-1-lg)</li>
+  <li><strong>ExtraSmall</strong>: &lt; 480px</li>
+  <li><strong>Mobile</strong>: &lt; 767px (Grid: col-1)</li>
+  <li><strong>Tablet</strong>: &lt; 991px (Grid: col-1-md)</li>
+  <li><strong>Desktop</strong>: &lt; 1399px (Grid: col-1-lg)</li>
 </ul>
-<h3 id="\u5728-css-in-js-\u4E2D\u4F7F\u7528"><a class="header-anchor" href="#\u5728-css-in-js-\u4E2D\u4F7F\u7528">#</a>\u5728 CSS-in-JS \u4E2D\u4F7F\u7528</h3><p>\u4F60\u53EF\u4EE5\u4F7F\u7528 <code>MediaQueryRange</code> \u8F7B\u677E\u7F16\u5199\u54CD\u5E94\u5F0F\u6837\u5F0F\uFF1A</p>
+<h3 id="\u5728-css-in-js-\u4E2D\u4F7F\u7528"><a class="header-anchor" href="#\u5728-css-in-js-\u4E2D\u4F7F\u7528">#</a>\u5728 CSS-in-JS \u4E2D\u4F7F\u7528</h3>
+<p>\u4F60\u53EF\u4EE5\u4F7F\u7528 <code>MediaQueryRange</code> \u8F7B\u677E\u7F16\u5199\u54CD\u5E94\u5F0F\u6837\u5F0F\uFF1A</p>
 <pre><code class="language-tsx">import { MediaQueryRange, MediaQueryMaxWidth } from &#39;lupine.components&#39;;
 
 const css: CssProps = {
@@ -4719,11 +4813,14 @@ const css: CssProps = {
   },
 };
 </code></pre>
-<h2 id="2-\u81EA\u9002\u5E94\u6846\u67B6-adaptive-frames"><a class="header-anchor" href="#2-\u81EA\u9002\u5E94\u6846\u67B6-adaptive-frames">#</a>2. \u81EA\u9002\u5E94\u6846\u67B6 (Adaptive Frames)</h2><p>Lupine \u63D0\u4F9B\u4E86\u4E13\u95E8\u7528\u4E8E\u6784\u5EFA\u54CD\u5E94\u5F0F\u5E94\u7528\u7684\u6846\u67B6\u7EC4\u4EF6\u3002</p>
-<h3 id="responsiveframe"><a class="header-anchor" href="#responsiveframe">#</a>ResponsiveFrame</h3><p><code>ResponsiveFrame</code> \u662F\u5904\u7406\u6DF7\u5408\u5E03\u5C40\u7684\u7EC8\u6781\u89E3\u51B3\u65B9\u6848\u3002\u5B83\u80FD\u81EA\u52A8\u6839\u636E\u8BBE\u5907\u7C7B\u578B\u5207\u6362 UI \u7ED3\u6784\uFF1A</p>
+<h2 id="2-\u81EA\u9002\u5E94\u6846\u67B6-adaptive-frames"><a class="header-anchor" href="#2-\u81EA\u9002\u5E94\u6846\u67B6-adaptive-frames">#</a>2. \u81EA\u9002\u5E94\u6846\u67B6 (Adaptive
+  Frames)</h2>
+<p>Lupine \u63D0\u4F9B\u4E86\u4E13\u95E8\u7528\u4E8E\u6784\u5EFA\u54CD\u5E94\u5F0F\u5E94\u7528\u7684\u6846\u67B6\u7EC4\u4EF6\u3002</p>
+<h3 id="responsiveframe"><a class="header-anchor" href="#responsiveframe">#</a>ResponsiveFrame</h3>
+<p><code>ResponsiveFrame</code> \u662F\u5904\u7406\u6DF7\u5408\u5E03\u5C40\u7684\u7EC8\u6781\u89E3\u51B3\u65B9\u6848\u3002\u5B83\u80FD\u81EA\u52A8\u6839\u636E\u8BBE\u5907\u7C7B\u578B\u5207\u6362 UI \u7ED3\u6784\uFF1A</p>
 <ul>
-<li><strong>\u684C\u9762\u7AEF</strong>: \u663E\u793A\u9876\u90E8\u83DC\u5355 (<code>DesktopHeader</code>)\u3001\u5E95\u90E8\u9875\u811A (<code>DesktopFooter</code>) \u548C\u4FA7\u8FB9\u680F\u3002</li>
-<li><strong>\u79FB\u52A8\u7AEF</strong>: \u81EA\u52A8\u5207\u6362\u4E3A\u79FB\u52A8\u7AEF\u5E03\u5C40\uFF0C\u9690\u85CF\u684C\u9762\u7AEF\u7279\u6709\u5143\u7D20\uFF0C\u542F\u7528\u79FB\u52A8\u7AEF\u7279\u5B9A\u7684\u5BFC\u822A (<code>MobileBottomMenu</code>)\u3002</li>
+  <li><strong>\u684C\u9762\u7AEF</strong>: \u663E\u793A\u9876\u90E8\u83DC\u5355 (<code>DesktopHeader</code>)\u3001\u5E95\u90E8\u9875\u811A (<code>DesktopFooter</code>) \u548C\u4FA7\u8FB9\u680F\u3002</li>
+  <li><strong>\u79FB\u52A8\u7AEF</strong>: \u81EA\u52A8\u5207\u6362\u4E3A\u79FB\u52A8\u7AEF\u5E03\u5C40\uFF0C\u9690\u85CF\u684C\u9762\u7AEF\u7279\u6709\u5143\u7D20\uFF0C\u542F\u7528\u79FB\u52A8\u7AEF\u7279\u5B9A\u7684\u5BFC\u822A (<code>MobileBottomMenu</code>)\u3002</li>
 </ul>
 <pre><code class="language-tsx">&lt;ResponsiveFrame
   desktopHeaderTitle=&quot;\u6211\u7684\u5E94\u7528&quot;
@@ -4732,12 +4829,16 @@ const css: CssProps = {
   mainContent={&lt;MyPageContent /&gt;}
 /&gt;
 </code></pre>
-<h3 id="sliderframe"><a class="header-anchor" href="#sliderframe">#</a>SliderFrame</h3><p><code>SliderFrame</code> \u5B9E\u73B0\u4E86\u79FB\u52A8\u7AEF\u5E38\u89C1\u7684\u201C\u4FA7\u6ED1\u201D\u4EA4\u4E92\u4F53\u9A8C\u3002\u5B83\u901A\u5E38\u7528\u4E8E\u4ECE\u53F3\u4FA7\u6ED1\u51FA\u8BE6\u7EC6\u9875\u9762\uFF0C\u6216\u4ECE\u5E95\u90E8\u6ED1\u51FA\u83DC\u5355\u3002</p>
+<h3 id="sliderframe"><a class="header-anchor" href="#sliderframe">#</a>SliderFrame</h3>
+<p><code>SliderFrame</code> \u5B9E\u73B0\u4E86\u79FB\u52A8\u7AEF\u5E38\u89C1\u7684\u201C\u4FA7\u6ED1\u201D\u4EA4\u4E92\u4F53\u9A8C\u3002\u5B83\u901A\u5E38\u7528\u4E8E\u4ECE\u53F3\u4FA7\u6ED1\u51FA\u8BE6\u7EC6\u9875\u9762\uFF0C\u6216\u4ECE\u5E95\u90E8\u6ED1\u51FA\u83DC\u5355\u3002</p>
 <ul>
-<li>\u652F\u6301 <code>Right-to-Left</code> (\u53F3\u6ED1\u5165) \u548C <code>Bottom-to-Top</code> (\u4E0A\u6ED1\u5165) \u52A8\u753B\u3002</li>
-<li>\u5728\u684C\u9762\u7AEF\u53EF\u914D\u7F6E\u4E3A\u4FA7\u8FB9\u680F\u5F39\u51FA\u6A21\u5F0F\u3002</li>
+  <li>\u652F\u6301 <code>Right-to-Left</code> (\u53F3\u6ED1\u5165) \u548C <code>Bottom-to-Top</code> (\u4E0A\u6ED1\u5165) \u52A8\u753B\u3002</li>
+  <li>\u5728\u684C\u9762\u7AEF\u53EF\u914D\u7F6E\u4E3A\u4FA7\u8FB9\u680F\u5F39\u51FA\u6A21\u5F0F\u3002</li>
 </ul>
-<h2 id="3-\u79FB\u52A8\u7AEF\u5BFC\u822A\u4E0E\u4EA4\u4E92"><a class="header-anchor" href="#3-\u79FB\u52A8\u7AEF\u5BFC\u822A\u4E0E\u4EA4\u4E92">#</a>3. \u79FB\u52A8\u7AEF\u5BFC\u822A\u4E0E\u4EA4\u4E92</h2><h3 id="\u5168\u5C40\u8FD4\u56DE\u952E\u5904\u7406-backactionhelper"><a class="header-anchor" href="#\u5168\u5C40\u8FD4\u56DE\u952E\u5904\u7406-backactionhelper">#</a>\u5168\u5C40\u8FD4\u56DE\u952E\u5904\u7406 (BackActionHelper)</h3><p>\u5728\u79FB\u52A8\u5E94\u7528\uFF08\u7279\u522B\u662F Android\uFF09\u4E2D\uFF0C\u5904\u7406\u7269\u7406\u8FD4\u56DE\u952E\u81F3\u5173\u91CD\u8981\u3002<code>BackActionHelper</code> \u63D0\u4F9B\u4E86\u4E00\u4E2A\u5168\u5C40\u961F\u5217\u6765\u7BA1\u7406\u8FD4\u56DE\u884C\u4E3A\uFF0C\u786E\u4FDD\u7528\u6237\u4F53\u9A8C\u6D41\u7545\u3002</p>
+<h2 id="3-\u79FB\u52A8\u7AEF\u5BFC\u822A\u4E0E\u4EA4\u4E92"><a class="header-anchor" href="#3-\u79FB\u52A8\u7AEF\u5BFC\u822A\u4E0E\u4EA4\u4E92">#</a>3. \u79FB\u52A8\u7AEF\u5BFC\u822A\u4E0E\u4EA4\u4E92</h2>
+<h3 id="\u5168\u5C40\u8FD4\u56DE\u952E\u5904\u7406-backactionhelper"><a class="header-anchor" href="#\u5168\u5C40\u8FD4\u56DE\u952E\u5904\u7406-backactionhelper">#</a>\u5168\u5C40\u8FD4\u56DE\u952E\u5904\u7406
+  (BackActionHelper)</h3>
+<p>\u5728\u79FB\u52A8\u5E94\u7528\uFF08\u7279\u522B\u662F Android\uFF09\u4E2D\uFF0C\u5904\u7406\u7269\u7406\u8FD4\u56DE\u952E\u81F3\u5173\u91CD\u8981\u3002<code>BackActionHelper</code> \u63D0\u4F9B\u4E86\u4E00\u4E2A\u5168\u5C40\u961F\u5217\u6765\u7BA1\u7406\u8FD4\u56DE\u884C\u4E3A\uFF0C\u786E\u4FDD\u7528\u6237\u4F53\u9A8C\u6D41\u7545\u3002</p>
 <p><strong>\u4F7F\u7528\u793A\u4F8B</strong>:</p>
 <pre><code class="language-typescript">import { backActionHelper } from &#39;lupine.components&#39;;
 
@@ -4750,11 +4851,12 @@ App.addListener(&#39;backButton&#39;, async () =&gt; {
   // \u5426\u5219\u6267\u884C\u9000\u51FA\u5E94\u7528\u6216\u5176\u4ED6\u903B\u8F91
 });
 </code></pre>
-<h3 id="actionsheet-\u52A8\u4F5C\u9762\u677F"><a class="header-anchor" href="#actionsheet-\u52A8\u4F5C\u9762\u677F">#</a>ActionSheet (\u52A8\u4F5C\u9762\u677F)</h3><p><code>ActionSheet</code> \u662F\u79FB\u52A8\u7AEF\u975E\u5E38\u5E38\u7528\u7684\u5E95\u90E8\u5F39\u7A97\u7EC4\u4EF6\uFF0C\u7528\u4E8E\u9009\u9879\u9009\u62E9\u3001\u4FE1\u606F\u63D0\u793A\u6216\u7B80\u5355\u7684\u8F93\u5165\u3002</p>
+<h3 id="actionsheet-\u52A8\u4F5C\u9762\u677F"><a class="header-anchor" href="#actionsheet-\u52A8\u4F5C\u9762\u677F">#</a>ActionSheet (\u52A8\u4F5C\u9762\u677F)</h3>
+<p><code>ActionSheet</code> \u662F\u79FB\u52A8\u7AEF\u975E\u5E38\u5E38\u7528\u7684\u5E95\u90E8\u5F39\u7A97\u7EC4\u4EF6\uFF0C\u7528\u4E8E\u9009\u9879\u9009\u62E9\u3001\u4FE1\u606F\u63D0\u793A\u6216\u7B80\u5355\u7684\u8F93\u5165\u3002</p>
 <ul>
-<li><strong>ActionSheetSelect</strong>: \u5E95\u90E8\u9009\u9879\u83DC\u5355\u3002</li>
-<li><strong>ActionSheetInput</strong>: \u5E95\u90E8\u8F93\u5165\u6846\u3002</li>
-<li><strong>ActionSheetMessage</strong>: \u5E95\u90E8\u6D88\u606F\u63D0\u793A\u3002</li>
+  <li><strong>ActionSheetSelect</strong>: \u5E95\u90E8\u9009\u9879\u83DC\u5355\u3002</li>
+  <li><strong>ActionSheetInput</strong>: \u5E95\u90E8\u8F93\u5165\u6846\u3002</li>
+  <li><strong>ActionSheetMessage</strong>: \u5E95\u90E8\u6D88\u606F\u63D0\u793A\u3002</li>
 </ul>
 <pre><code class="language-tsx">import { ActionSheetSelectPromise } from &#39;lupine.components&#39;;
 
@@ -4770,13 +4872,16 @@ const handleSelect = async () =&gt; {
   }
 };
 </code></pre>
-<h3 id="mobileheader-\u79FB\u52A8\u7AEF\u6807\u9898\u680F"><a class="header-anchor" href="#mobileheader-\u79FB\u52A8\u7AEF\u6807\u9898\u680F">#</a>MobileHeader (\u79FB\u52A8\u7AEF\u6807\u9898\u680F)</h3><p><code>MobileHeaderComponent</code> \u63D0\u4F9B\u4E86\u7075\u6D3B\u7684\u5934\u90E8\u5B9A\u5236\u529F\u80FD\u3002\u4F60\u53EF\u4EE5\u968F\u65F6\u901A\u8FC7 <code>MobileHeaderHelper</code> \u6216\u8F85\u52A9\u7EC4\u4EF6\u66F4\u65B0\u6807\u9898\u680F\u7684\u5DE6\u3001\u4E2D\u3001\u53F3\u533A\u57DF\u3002</p>
+<h3 id="mobileheader-\u79FB\u52A8\u7AEF\u6807\u9898\u680F"><a class="header-anchor" href="#mobileheader-\u79FB\u52A8\u7AEF\u6807\u9898\u680F">#</a>MobileHeader (\u79FB\u52A8\u7AEF\u6807\u9898\u680F)</h3>
+<p><code>MobileHeaderComponent</code> \u63D0\u4F9B\u4E86\u7075\u6D3B\u7684\u5934\u90E8\u5B9A\u5236\u529F\u80FD\u3002\u4F60\u53EF\u4EE5\u968F\u65F6\u901A\u8FC7 <code>MobileHeaderHelper</code> \u6216\u8F85\u52A9\u7EC4\u4EF6\u66F4\u65B0\u6807\u9898\u680F\u7684\u5DE6\u3001\u4E2D\u3001\u53F3\u533A\u57DF\u3002</p>
 <pre><code class="language-tsx">// \u5728\u9875\u9762\u7EC4\u4EF6\u4E2D\u52A8\u6001\u66F4\u65B0 Header
 &lt;MobileHeaderCenter&gt;
   &lt;MobileHeaderTitleIcon title=&#39;\u7528\u6237\u8BBE\u7F6E&#39; left={&lt;BackIcon /&gt;} right={&lt;SaveIcon /&gt;} /&gt;
 &lt;/MobileHeaderCenter&gt;
 </code></pre>
-<h3 id="slidetabcomponent-\u6ED1\u52A8\u6807\u7B7E\u9875"><a class="header-anchor" href="#slidetabcomponent-\u6ED1\u52A8\u6807\u7B7E\u9875">#</a>SlideTabComponent (\u6ED1\u52A8\u6807\u7B7E\u9875)</h3><p>\u652F\u6301\u624B\u52BF\u5DE6\u53F3\u6ED1\u52A8\u7684 Tab \u5207\u6362\u7EC4\u4EF6\uFF0C\u63D0\u4F9B\u63A5\u8FD1\u539F\u751F\u5E94\u7528\u7684\u6D41\u7545\u4F53\u9A8C\u3002</p>
+<h3 id="slidetabcomponent-\u6ED1\u52A8\u6807\u7B7E\u9875"><a class="header-anchor" href="#slidetabcomponent-\u6ED1\u52A8\u6807\u7B7E\u9875">#</a>SlideTabComponent (\u6ED1\u52A8\u6807\u7B7E\u9875)
+</h3>
+<p>\u652F\u6301\u624B\u52BF\u5DE6\u53F3\u6ED1\u52A8\u7684 Tab \u5207\u6362\u7EC4\u4EF6\uFF0C\u63D0\u4F9B\u63A5\u8FD1\u539F\u751F\u5E94\u7528\u7684\u6D41\u7545\u4F53\u9A8C\u3002</p>
 <pre><code class="language-tsx">&lt;SlideTabComponent
   pages={[
     { title: &#39;\u70ED\u95E8&#39;, content: &lt;HotList /&gt; },
@@ -4798,8 +4903,11 @@ Lupine.js \u63A8\u8350\u4F7F\u7528 **Capacitor** \u5C06 Web \u5E94\u7528\u6253\u
 npm run build-mobile
 </code></pre>
 <p>\u6B64\u547D\u4EE4\u5BF9\u5E94 <code>package.json</code> \u4E2D\u7684\u811A\u672C\uFF1A
-<code>node ./dev/dev-watch --env=.env.mobile --dev=0 --mobile=1</code></p>
-<h3 id="\u6761\u4EF6\u7F16\u8BD1-conditional-compilation"><a class="header-anchor" href="#\u6761\u4EF6\u7F16\u8BD1-conditional-compilation">#</a>\u6761\u4EF6\u7F16\u8BD1 (Conditional Compilation)</h3><p>Lupine \u63D0\u4F9B\u4E86 <code>pluginIfelse</code> \u63D2\u4EF6\uFF0C\u5141\u8BB8\u4F60\u7F16\u5199\u9488\u5BF9\u7279\u5B9A\u5E73\u53F0\u7684\u903B\u8F91\u4EE3\u7801\u3002\u8FD9\u5BF9\u4E8E\u5904\u7406\u79FB\u52A8\u7AEF\u7279\u6709\u7684 API \u7AEF\u70B9\u6216\u903B\u8F91\u975E\u5E38\u6709\u7528\u3002</p>
+  <code>lupine-build --env=.env.mobile --dev=0 --mobile=1</code>
+</p>
+<h3 id="\u6761\u4EF6\u7F16\u8BD1-conditional-compilation"><a class="header-anchor" href="#\u6761\u4EF6\u7F16\u8BD1-conditional-compilation">#</a>\u6761\u4EF6\u7F16\u8BD1
+  (Conditional Compilation)</h3>
+<p>Lupine \u63D0\u4F9B\u4E86 <code>pluginIfelse</code> \u63D2\u4EF6\uFF0C\u5141\u8BB8\u4F60\u7F16\u5199\u9488\u5BF9\u7279\u5B9A\u5E73\u53F0\u7684\u903B\u8F91\u4EE3\u7801\u3002\u8FD9\u5BF9\u4E8E\u5904\u7406\u79FB\u52A8\u7AEF\u7279\u6709\u7684 API \u7AEF\u70B9\u6216\u903B\u8F91\u975E\u5E38\u6709\u7528\u3002</p>
 <p><strong>\u4F7F\u7528\u793A\u4F8B</strong>:</p>
 <pre><code class="language-javascript">// #if MOBILE
 const apiBase = &#39;https://api.myapp.com&#39;;
@@ -4812,17 +4920,24 @@ console.log(&#39;Debug mode&#39;);
 // #endif
 </code></pre>
 <blockquote>
-<p>\u53EA\u6709\u6EE1\u8DB3\u6761\u4EF6\u7684\u4EE3\u7801\u5757\u4F1A\u88AB\u7F16\u8BD1\u5230\u6700\u7EC8\u4EA7\u7269\u4E2D\uFF0C\u4ECE\u800C\u51CF\u5C0F\u5305\u4F53\u79EF\u5E76\u907F\u514D\u8FD0\u884C\u65F6\u9519\u8BEF\u3002</p>
+  <p>\u53EA\u6709\u6EE1\u8DB3\u6761\u4EF6\u7684\u4EE3\u7801\u5757\u4F1A\u88AB\u7F16\u8BD1\u5230\u6700\u7EC8\u4EA7\u7269\u4E2D\uFF0C\u4ECE\u800C\u51CF\u5C0F\u5305\u4F53\u79EF\u5E76\u907F\u514D\u8FD0\u884C\u65F6\u9519\u8BEF\u3002</p>
 </blockquote>
-<h3 id="\u6DFB\u52A0-ios-\u548C-android"><a class="header-anchor" href="#\u6DFB\u52A0-ios-\u548C-android">#</a>\u6DFB\u52A0 iOS \u548C Android</h3><p>\u8BF7\u53C2\u8003 Capacitor \u5B98\u65B9\u6587\u6863\u4E86\u89E3\u8BE6\u7EC6\u7684\u6DFB\u52A0\u5E73\u53F0\u6B65\u9AA4\uFF1A
-<a href="https://capacitorjs.com/docs/getting-started">https://capacitorjs.com/docs/getting-started</a></p>
-<h2 id="5-\u684C\u9762\u7AEF\u53D1\u5E03-desktop-deployment"><a class="header-anchor" href="#5-\u684C\u9762\u7AEF\u53D1\u5E03-desktop-deployment">#</a>5. \u684C\u9762\u7AEF\u53D1\u5E03 (Desktop Deployment)</h2><p>Lupine.js \u4F7F\u7528 <strong>Electron</strong> \u6765\u6784\u5EFA\u8DE8\u5E73\u53F0\u684C\u9762\u5E94\u7528\u3002</p>
-<h3 id="\u684C\u9762\u7AEF\u7ED3\u6784"><a class="header-anchor" href="#\u684C\u9762\u7AEF\u7ED3\u6784">#</a>\u684C\u9762\u7AEF\u7ED3\u6784</h3><p>\u5F53\u4F60\u521B\u5EFA\u4E00\u4E2A\u65B0\u7684 Lupine \u9879\u76EE\u65F6\uFF0C\u5B83\u4F1A\u81EA\u52A8\u5305\u542B\u4E00\u4E2A <code>electron</code> \u76EE\u5F55\uFF08\u4F8B\u5982 <code>apps/your-app/electron</code>\uFF09\uFF0C\u5176\u4E2D\u5305\u542B\u4E86\u684C\u9762\u7AEF\u6240\u9700\u7684\u4E3B\u8FDB\u7A0B\u4EE3\u7801\u548C\u8D44\u6E90\u3002</p>
+<h3 id="\u6DFB\u52A0-ios-\u548C-android"><a class="header-anchor" href="#\u6DFB\u52A0-ios-\u548C-android">#</a>\u6DFB\u52A0 iOS \u548C Android</h3>
+<p>\u8BF7\u53C2\u8003 Capacitor \u5B98\u65B9\u6587\u6863\u4E86\u89E3\u8BE6\u7EC6\u7684\u6DFB\u52A0\u5E73\u53F0\u6B65\u9AA4\uFF1A
+  <a href="https://capacitorjs.com/docs/getting-started">https://capacitorjs.com/docs/getting-started</a>
+</p>
+<h2 id="5-\u684C\u9762\u7AEF\u53D1\u5E03-desktop-deployment"><a class="header-anchor" href="#5-\u684C\u9762\u7AEF\u53D1\u5E03-desktop-deployment">#</a>5. \u684C\u9762\u7AEF\u53D1\u5E03 (Desktop
+  Deployment)</h2>
+<p>Lupine.js \u4F7F\u7528 <strong>Electron</strong> \u6765\u6784\u5EFA\u8DE8\u5E73\u53F0\u684C\u9762\u5E94\u7528\u3002</p>
+<h3 id="\u684C\u9762\u7AEF\u7ED3\u6784"><a class="header-anchor" href="#\u684C\u9762\u7AEF\u7ED3\u6784">#</a>\u684C\u9762\u7AEF\u7ED3\u6784</h3>
+<p>\u5F53\u4F60\u521B\u5EFA\u4E00\u4E2A\u65B0\u7684 Lupine \u9879\u76EE\u65F6\uFF0C\u5B83\u4F1A\u81EA\u52A8\u5305\u542B\u4E00\u4E2A <code>electron</code> \u76EE\u5F55\uFF08\u4F8B\u5982 <code>apps/your-app/electron</code>\uFF09\uFF0C\u5176\u4E2D\u5305\u542B\u4E86\u684C\u9762\u7AEF\u6240\u9700\u7684\u4E3B\u8FDB\u7A0B\u4EE3\u7801\u548C\u8D44\u6E90\u3002
+</p>
 <ul>
-<li>\u60A8\u7684 Web \u4EE3\u7801\u76F4\u63A5\u4F5C\u4E3A Electron \u7684\u6E32\u67D3\u8FDB\u7A0B\u8FD0\u884C\u3002</li>
-<li><code>lupine.components</code> \u80FD\u591F\u81EA\u52A8\u68C0\u6D4B\u8FD0\u884C\u73AF\u5883\uFF0C\u9002\u914D\u684C\u9762\u7AEF UI\uFF08\u5982\u9690\u85CF\u4E0D\u5FC5\u8981\u7684\u79FB\u52A8\u7AEF Tab\uFF09\u3002</li>
+  <li>\u60A8\u7684 Web \u4EE3\u7801\u76F4\u63A5\u4F5C\u4E3A Electron \u7684\u6E32\u67D3\u8FDB\u7A0B\u8FD0\u884C\u3002</li>
+  <li><code>lupine.components</code> \u80FD\u591F\u81EA\u52A8\u68C0\u6D4B\u8FD0\u884C\u73AF\u5883\uFF0C\u9002\u914D\u684C\u9762\u7AEF UI\uFF08\u5982\u9690\u85CF\u4E0D\u5FC5\u8981\u7684\u79FB\u52A8\u7AEF Tab\uFF09\u3002</li>
 </ul>
-<h3 id="\u6784\u5EFA\u547D\u4EE4"><a class="header-anchor" href="#\u6784\u5EFA\u547D\u4EE4">#</a>\u6784\u5EFA\u547D\u4EE4</h3><p><code>package.json</code> \u63D0\u4F9B\u4E86\u9884\u7F6E\u7684\u6784\u5EFA\u811A\u672C\uFF0C\u7528\u4E8E\u7F16\u8BD1\u4E0D\u540C\u5E73\u53F0\u7684\u5B89\u88C5\u5305\uFF1A</p>
+<h3 id="\u6784\u5EFA\u547D\u4EE4"><a class="header-anchor" href="#\u6784\u5EFA\u547D\u4EE4">#</a>\u6784\u5EFA\u547D\u4EE4</h3>
+<p><code>package.json</code> \u63D0\u4F9B\u4E86\u9884\u7F6E\u7684\u6784\u5EFA\u811A\u672C\uFF0C\u7528\u4E8E\u7F16\u8BD1\u4E0D\u540C\u5E73\u53F0\u7684\u5B89\u88C5\u5305\uFF1A</p>
 <pre><code class="language-bash"># Windows
 npm run app1:build-win
 
@@ -4832,8 +4947,7 @@ npm run app1:build-linux
 # macOS
 npm run app1:build-mac
 </code></pre>
-<p>\u60A8\u53EF\u4EE5\u5728 <code>package.json</code> \u7684 <code>scripts</code> \u533A\u57DF\u627E\u5230\u5E76\u81EA\u5B9A\u4E49\u8FD9\u4E9B\u547D\u4EE4\u3002</p>
-`;var im=`<h1 id="page-router-\u9875\u9762\u8DEF\u7531"><a class="header-anchor" href="#page-router-\u9875\u9762\u8DEF\u7531">#</a>Page Router (\u9875\u9762\u8DEF\u7531)</h1><p><strong>Lupine.web</strong> \u4E2D\u7684 <code>PageRouter</code> \u662F\u4E00\u4E2A\u5F3A\u5927\u7684\u5BA2\u6237\u7AEF\u8DEF\u7531\u7CFB\u7EDF\uFF0C\u5176\u903B\u8F91\u8BBE\u8BA1\u4E0E\u540E\u7AEF\u7684 <code>ApiRouter</code> (\u4F4D\u4E8E <code>lupine.api</code> \u4E2D) \u4FDD\u6301 <strong>\u540C\u6784</strong>\u3002\u5B83\u652F\u6301\u5D4C\u5957\u8DEF\u7531\u3001\u4E2D\u95F4\u4EF6\u8FC7\u6EE4\u5668\u3001\u52A8\u6001\u53C2\u6570\u548C\u5E03\u5C40\u6846\u67B6 (Layout Frames)\u3002</p>
+<p>\u60A8\u53EF\u4EE5\u5728 <code>package.json</code> \u7684 <code>scripts</code> \u533A\u57DF\u627E\u5230\u5E76\u81EA\u5B9A\u4E49\u8FD9\u4E9B\u547D\u4EE4\u3002</p>`;var im=`<h1 id="page-router-\u9875\u9762\u8DEF\u7531"><a class="header-anchor" href="#page-router-\u9875\u9762\u8DEF\u7531">#</a>Page Router (\u9875\u9762\u8DEF\u7531)</h1><p><strong>Lupine.web</strong> \u4E2D\u7684 <code>PageRouter</code> \u662F\u4E00\u4E2A\u5F3A\u5927\u7684\u5BA2\u6237\u7AEF\u8DEF\u7531\u7CFB\u7EDF\uFF0C\u5176\u903B\u8F91\u8BBE\u8BA1\u4E0E\u540E\u7AEF\u7684 <code>ApiRouter</code> (\u4F4D\u4E8E <code>lupine.api</code> \u4E2D) \u4FDD\u6301 <strong>\u540C\u6784</strong>\u3002\u5B83\u652F\u6301\u5D4C\u5957\u8DEF\u7531\u3001\u4E2D\u95F4\u4EF6\u8FC7\u6EE4\u5668\u3001\u52A8\u6001\u53C2\u6570\u548C\u5E03\u5C40\u6846\u67B6 (Layout Frames)\u3002</p>
 <h2 id="1-\u4E0E\u5176\u4ED6\u6846\u67B6\u7684\u5BF9\u6BD4"><a class="header-anchor" href="#1-\u4E0E\u5176\u4ED6\u6846\u67B6\u7684\u5BF9\u6BD4">#</a>1. \u2696\uFE0F \u4E0E\u5176\u4ED6\u6846\u67B6\u7684\u5BF9\u6BD4</h2><p>\u4E0E\u901A\u7528\u7684\u8DEF\u7531\u5668\uFF08\u5982 <code>react-router</code> \u6216 <code>vue-router</code>\uFF09\u76F8\u6BD4\uFF1A</p>
 <ul>
 <li><strong>\u903B\u8F91\u4E00\u81F4\u6027</strong>\uFF1A\u5B83\u4E0E\u540E\u7AEF\u7684 <code>ApiRouter</code> \u5171\u4EAB\u5B8C\u5168\u76F8\u540C\u7684\u8DEF\u7531\u54F2\u5B66\u3002\u5982\u679C\u4F60\u77E5\u9053\u5982\u4F55\u7F16\u5199 Lupine \u540E\u7AEF API\uFF0C\u4F60\u5C31\u77E5\u9053\u5982\u4F55\u7F16\u5199\u524D\u7AEF\u8DEF\u7531\u3002</li>
