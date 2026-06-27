@@ -5,8 +5,8 @@ export const darkThemes: ThemeProps = {
   ...sharedThemes,
   '--theme-name': 'dark',
 
-  '--scrollbar-bg': '#1c1c1c',
-  '--scrollbar-thumb-bg': '#373636',
+  '--scrollbar-bg': '#373737',
+  '--scrollbar-thumb-bg': '#505050',
   '--scrollbar-active-thumb-bg': '#5b5b5b',
 
   '--primary-color': '#d8d8d8',
