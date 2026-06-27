@@ -1,6 +1,7 @@
 export * from './back-action-helper';
 export * from './base62';
 export * from './blob-utils';
+export * from './button-async-lock';
 export * from './calculate-text-width';
 export * from './canvas';
 export * from './date-utils';
