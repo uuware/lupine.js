@@ -213,32 +213,60 @@ export const AdminReleasePage = () => {
     if (updateIndex !== 0) {
       return;
     }
-    const releaseUpdateBtn = document.querySelector('.release-update-btn') as HTMLButtonElement;
-    releaseUpdateBtn.disabled = true;
-    const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/update', {
-      ...data,
-      fromList,
-      toList,
-      chkServer,
-      chkApi,
-      chkWeb,
-      // webSub, // will be deprecated
-      webSubs: webSubsChecked,
-      chkEnv,
-      chkBackup,
-    });
-    const dataResponse = await response.json;
-    console.log('release/update', dataResponse);
-    releaseUpdateBtn.disabled = false;
-    if (!dataResponse || dataResponse.status !== 'ok') {
-      NotificationMessage.sendMessage(
-        dataResponse.message ||
-          'Failed to update release (timeout, possibly backend is runing, please wait and click Check!)',
-        NotificationColor.Error
-      );
-      return;
+    
+    const toggleControls = (disabled: boolean) => {
+      const els = document.querySelectorAll('.admin-release-top input, .admin-release-top select, .admin-release-top button');
+      els.forEach((el: any) => { el.disabled = disabled; });
+    };
+
+    toggleControls(true);
+
+    try {
+      if (chkServer || chkApi || chkEnv) {
+        NotificationMessage.sendMessage('Updating Server/API/Env...', NotificationColor.Warning);
+        const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/update', {
+          ...data,
+          fromList,
+          toList,
+          chkServer,
+          chkApi,
+          chkWeb,
+          webSubs: [],
+          chkEnv,
+          chkBackup,
+        });
+        const dataResponse = await response.json;
+        if (!dataResponse || dataResponse.status !== 'ok') {
+          throw new Error(dataResponse.message || 'Failed to update Server/API/Env');
+        }
+      }
+
+      for (let i = 0; i < webSubsChecked.length; i++) {
+        const sub = webSubsChecked[i];
+        NotificationMessage.sendMessage(`Updating Web Sub (${i + 1}/${webSubsChecked.length}): ${sub}`, NotificationColor.Warning);
+        const response = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/release/update', {
+          ...data,
+          fromList,
+          toList,
+          chkServer: false,
+          chkApi: false,
+          chkWeb,
+          webSubs: [sub],
+          chkEnv: false,
+          chkBackup: false,
+        });
+        const dataResponse = await response.json;
+        if (!dataResponse || dataResponse.status !== 'ok') {
+          throw new Error(dataResponse.message || `Failed to update web sub: ${sub}`);
+        }
+      }
+
+      NotificationMessage.sendMessage('Release updated successfully', NotificationColor.Success);
+    } catch (error: any) {
+      NotificationMessage.sendMessage(error.message, NotificationColor.Error);
+    } finally {
+      toggleControls(false);
     }
-    NotificationMessage.sendMessage('Release updated successfully', NotificationColor.Success);
   };
 
   const onLogClick = async (logName: string) => {

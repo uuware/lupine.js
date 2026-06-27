@@ -19,6 +19,7 @@ import {
   CryptoUtils,
 } from 'lupine.api';
 import path from 'path';
+import zlib from 'zlib';
 import { needDevAdminSession } from './admin-auth';
 import { adminTokenHelper } from './admin-token-helper';
 
@@ -560,41 +561,55 @@ export class AdminRelease implements IApiBase {
       return { status: 'error', message: 'Client file not found: ' + sendFile };
     }
     apiStorage.set(releaseProgress, 'updateSendFile: ' + sendFile);
-    const fileContent = (await FsUtils.readFile(sendFile))!;
-    // const compressedContent = await new Promise<Buffer>((resolve, reject) => {
-    //     zlib.gzip(fileContent, (err, buffer) => {
-    //         if (err) {
-    //             reject(err);
-    //         } else {
-    //             resolve(buffer);
-    //         }
-    //     });
-    // })
+    const fileBuffer = await require('fs/promises').readFile(sendFile);
     const chunkSize = 1024 * 500;
-    const totalChunks = Math.ceil(fileContent.length / chunkSize);
+
+    let isCompressed = false;
+    let fileBufferToSend: any = fileBuffer;
+    let tempSendFile = '';
+
+    if (
+      fileBuffer.length > 1024 * 10 &&
+      (sendFile.endsWith('.js') || sendFile.endsWith('.css') || sendFile.endsWith('.html'))
+    ) {
+      fileBufferToSend = await new Promise<Buffer>((resolve, reject) => {
+        zlib.gzip(fileBuffer, (err, buffer) => {
+          if (err) reject(err);
+          else resolve(buffer);
+        });
+      });
+      tempSendFile = sendFile + '.tmp';
+      await require('fs/promises').writeFile(tempSendFile, fileBufferToSend);
+      isCompressed = true;
+    }
+
+    const totalChunks = Math.ceil(fileBufferToSend.length / chunkSize);
     let cnt = 0;
-    this.logger.info(`updateSendFile, sendFile: ${sendFile}, len: ${fileContent.length}`);
-    for (let i = 0; i < fileContent.length; i += chunkSize) {
-      const chunk = fileContent.slice(i, i + chunkSize);
-      if (!chunk) break;
+    this.logger.info(
+      `updateSendFile, sendFile: ${sendFile}, original len: ${fileBuffer.length}, send len: ${fileBufferToSend.length}`
+    );
+    for (let i = 0; i < fileBufferToSend.length; i += chunkSize) {
+      let chunk: any = fileBufferToSend.subarray(i, i + chunkSize);
+      if (!chunk || chunk.length === 0) break;
+
+      const headerStr =
+        JSON.stringify({ ...data, chkOption, index: cnt, totalChunks, size: fileBuffer.length, isCompressed }) + '\n\n';
+      const postBody = Buffer.concat([Buffer.from(headerStr), chunk]);
 
       const postData = {
         method: 'POST',
-        body: JSON.stringify({ ...data, chkOption, index: cnt, totalChunks, size: fileContent.length }) + '\n\n' + chunk,
+        body: postBody,
       };
+      const uncompressedProgress = Math.min(fileBufferToSend.length, i + chunkSize);
       this.logger.info(
-        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
-          fileContent.length
-        }), f: ${sendFile}`
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (compressed: ${isCompressed}), progress: ${uncompressedProgress} / ${fileBufferToSend.length}, f: ${sendFile}`
       );
       apiStorage.set(
         releaseProgress,
-        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (${i + chunk.length} / ${
-          fileContent.length
-        }), f: ${sendFile}`
+        `updateSendFile, index: ${cnt}, sending: ${chunk.length} (compressed: ${isCompressed}), progress: ${uncompressedProgress} / ${fileBufferToSend.length}, f: ${sendFile}`
       );
       i > 0 && (await new Promise((resolve) => setTimeout(resolve, 1000)));
-      const remoteData = await fetch(targetUrl + '/api/admin/release/byClientUpdate', postData);
+      const remoteData = await fetch(targetUrl + '/api/admin/release/byClientUpdate', postData as any);
       const resultText = await remoteData.text();
       this.logger.info(`updateSendFile, index: ${cnt}, resultText: ${resultText}`);
       let remoteResult: any;
@@ -604,9 +619,19 @@ export class AdminRelease implements IApiBase {
         remoteResult = { status: 'error', message: resultText };
       }
       if (!remoteResult || remoteResult.status !== 'ok') {
+        if (tempSendFile)
+          await require('fs/promises')
+            .unlink(tempSendFile)
+            .catch(() => {});
         return remoteResult;
       }
       cnt++;
+    }
+
+    if (tempSendFile) {
+      await require('fs/promises')
+        .unlink(tempSendFile)
+        .catch(() => {});
     }
 
     const remoteResult = { status: 'ok', message: 'updated' };
@@ -616,8 +641,8 @@ export class AdminRelease implements IApiBase {
   // called by clients
   async byClientUpdate(req: ServerRequest, res: ServerResponse) {
     const body = req.locals.body as Buffer;
-    let jsonData = {};
-    let fileContent = null;
+    let jsonData: any = {};
+    let fileContent: Buffer | null = null;
     try {
       const index = body.indexOf('\n\n');
       if (index !== -1) {
@@ -691,6 +716,24 @@ export class AdminRelease implements IApiBase {
       //   await FsUtils.appendFile(saveFile, fileContent || '');
       // }
       await FsUtils.writeUploadChunk(saveFile, fileContent || '', data.index, data.totalChunks);
+
+      if (data.isCompressed && data.index === data.totalChunks - 1) {
+        const tempCompressedFile = saveFile + '.gz.tmp';
+        await FsUtils.rename(saveFile, tempCompressedFile);
+
+        const compressedData = await require('fs/promises').readFile(tempCompressedFile);
+        const decompressed: any = await new Promise<Buffer>((resolve, reject) => {
+          zlib.gunzip(compressedData, (err, buffer) => {
+            if (err) reject(err);
+            else resolve(buffer);
+          });
+        });
+
+        await require('fs/promises').writeFile(saveFile, decompressed);
+        await require('fs/promises')
+          .unlink(tempCompressedFile)
+          .catch(() => {});
+      }
 
       const response = {
         status: 'ok',
