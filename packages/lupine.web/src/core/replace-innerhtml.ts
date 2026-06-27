@@ -53,11 +53,21 @@ export const replaceBetweenComments = async (startComment: Comment, newHtml: str
 
 export const callUnload = async (el: Element) => {
   const promises: Promise<void>[] = [];
-  el.querySelectorAll('[data-ref]').forEach((child: any) => {
-    if (child._lj && child._lj.onUnload) {
-      promises.push(child._lj.onUnload());
+  if (el) {
+    if ((el as any)._lj && (el as any)._lj.onUnload) {
+      promises.push((el as any)._lj.onUnload());
     }
-  });
+    el.querySelectorAll('[data-ref]').forEach((child: any) => {
+      if (child._lj && child._lj.onUnload) {
+        promises.push(child._lj.onUnload());
+      }
+    });
 
-  await Promise.all(promises);
+    await Promise.all(promises);
+  }
 };
+
+export const refreshPaeg = async (url?: string) => {
+    await callUnload(document.querySelector('.lupine-root') as Element);
+    window.location.href = url || window.location.href;
+}

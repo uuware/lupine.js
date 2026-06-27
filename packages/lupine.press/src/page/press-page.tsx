@@ -1,4 +1,4 @@
-import { bindGlobalStyle, isFrontEnd, PageProps } from 'lupine.components';
+import { bindGlobalStyle, isFrontEnd, PageProps, refreshPaeg } from 'lupine.components';
 import { PressLayout } from '../components';
 import { getPressData, getPressSubDir, setPressLangs } from '../services/cache';
 
@@ -53,7 +53,7 @@ export const PressPage = async (props: PageProps) => {
     // for https://uuware.github.io/lupine.js/en/articles/cv-generator -> https://uuware.github.io/lupine-template-cv-starter/
     // if the sub-dir changed, we need a redirect
     if (window.location.pathname[0] === '/' && !window.location.pathname.startsWith(subDir + '/')) {
-      window.location.href = window.location.href;
+      await refreshPaeg(window.location.href);
       return;
     }
   }

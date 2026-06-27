@@ -1,5 +1,5 @@
 import { VNode } from '../jsx';
-import { replaceInnerhtml } from './replace-innerhtml';
+import { replaceInnerhtml, replaceBetweenComments } from './replace-innerhtml';
 import { MounterProps } from '../models/mounter-props';
 
 export const bindRef = (type: any, newProps: any, el: Element | Node, mounters: MounterProps) => {
@@ -74,7 +74,11 @@ export const bindRef = (type: any, newProps: any, el: Element | Node, mounters: 
     if (typeof content === 'object' && content.type && content.props) {
       mounters.mountInnerComponent && await mounters.mountInnerComponent(el as Element, content);
     } else {
-      await replaceInnerhtml(el as Element, content as string);
+      if (el.nodeType === 8) {
+        await replaceBetweenComments(el as Comment, content as string);
+      } else {
+        await replaceInnerhtml(el as Element, content as string);
+      }
     }
   };
   newProps['ref'].mountOuterComponent = async (content: VNode<any>) => {

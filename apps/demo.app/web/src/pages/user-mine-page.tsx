@@ -1,4 +1,4 @@
-import { clearCookie, CssProps, getRenderPageProps, PageProps } from 'lupine.components';
+import { clearCookie, CssProps, getRenderPageProps, PageProps, refreshPaeg } from 'lupine.components';
 import { getCookieUser } from '../services/shared-data';
 import { userCookieName } from '../models';
 
@@ -27,7 +27,7 @@ export const UserMinePage = async (props: PageProps) => {
     clearCookie(userCookieName, '/');
     // call server to clear cookie
     await getRenderPageProps().renderPageFunctions.fetchData('/api/logout');
-    window.location.href = '/';
+    await refreshPaeg('/');
   };
   const userCookie = getCookieUser();
   return (

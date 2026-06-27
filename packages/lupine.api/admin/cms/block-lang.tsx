@@ -1,5 +1,5 @@
 import { PopupMenuWithButton, PopupMenuWithLabel, getSiteLangs, WebConfig } from 'lupine.components';
-import { CssProps } from 'lupine.web';
+import { callUnload, CssProps, refreshPaeg } from 'lupine.web';
 import { DesignNode, getDesignStore } from './design-store';
 
 const getCmsPageParts = async (url: string, langCodes: string[]) => {
@@ -55,7 +55,7 @@ export const BlockLang = async (props: { node: DesignNode }) => {
     const parts = await getCmsPageParts(window.location.pathname, langCodes);
     const nextParts = [selectedLang, parts.frameId, parts.contentId].filter(Boolean);
     const nextUrl = `/${nextParts.join('/')}${window.location.search || ''}${window.location.hash || ''}`;
-    window.location.href = nextUrl;
+    await refreshPaeg(nextUrl);
   };
 
   const commonProps = {
