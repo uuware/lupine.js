@@ -18,8 +18,11 @@ export type RangeProps = {
   tickStep?: number;
   vertical?: boolean;
   range?: boolean;
+  snapThresholdPercent?: number; // threshold in % to snap to tick, <=0 disables snapping (default 5%)
   onChange?: (val: number | [number, number]) => void;
   hook?: RangeHookProps;
+  trackColor?: string;
+  fillColor?: string;
 };
 
 // 1. Define Static CSS completely decoupled from Reactivity (isVertical)
@@ -35,7 +38,6 @@ const rangeCss: CssProps = {
     padding: 'var(--space-m, 8px) 0',
     width: '100%',
     height: 'auto',
-    minWidth: '100%',
     minHeight: '40px',
   },
   '&.vertical': {
@@ -69,7 +71,7 @@ const rangeCss: CssProps = {
 
   '.&-track': {
     position: 'relative',
-    backgroundColor: 'var(--secondary-bg-color, #eee)',
+    backgroundColor: 'var(--range-track-color, var(--scrollbar-bg, #eee))',
     borderRadius: '999px',
   },
   '&.horizontal .&-track': {
@@ -83,7 +85,7 @@ const rangeCss: CssProps = {
 
   '.&-fill': {
     position: 'absolute',
-    backgroundColor: 'var(--primary-accent-color, #0a74c9)',
+    backgroundColor: 'var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
     borderRadius: '999px',
   },
   '&.horizontal .&-fill': {
@@ -132,7 +134,7 @@ const rangeCss: CssProps = {
     width: '20px',
     height: '20px',
     backgroundColor: '#fff',
-    border: '2px solid var(--primary-accent-color, #0a74c9)',
+    border: '2px solid var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
     borderRadius: '50%',
     cursor: 'pointer',
     boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
@@ -149,7 +151,7 @@ const rangeCss: CssProps = {
     width: '20px',
     height: '20px',
     backgroundColor: '#fff',
-    border: '2px solid var(--primary-accent-color, #0a74c9)',
+    border: '2px solid var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
     borderRadius: '50%',
     cursor: 'pointer',
     boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
@@ -158,30 +160,24 @@ const rangeCss: CssProps = {
 
   '.&-ticks': {
     position: 'absolute',
-    display: 'flex',
-    justifyContent: 'space-between',
     pointerEvents: 'none',
     fontSize: '12px',
     color: 'var(--secondary-color, #818181)',
   },
   '&.horizontal .&-ticks': {
-    top: '50%',
+    top: 'calc(50% + 4px)',
     bottom: 'auto',
     left: 0,
     right: 0,
-    marginTop: '4px',
-    marginLeft: '4px',
-    flexDirection: 'row',
+    marginTop: 0,
     height: 'auto',
   },
   '&.vertical .&-ticks': {
     top: 0,
     bottom: 0,
-    left: '20%',
+    left: 'calc(50% + 4px)',
     right: 'auto',
-    marginLeft: '8px',
-    marginTop: 0,
-    flexDirection: 'column-reverse',
+    marginLeft: 0,
     height: '100%',
   },
 
@@ -219,6 +215,10 @@ export const Range = (props: RangeProps) => {
   const step = props.step ?? 1;
   const isRangeMode = !!props.range;
   const isVertical = !!props.vertical;
+
+  const customStyle: any = { ...props.style };
+  if (props.trackColor) customStyle['--range-track-color'] = props.trackColor;
+  if (props.fillColor) customStyle['--range-fill-color'] = props.fillColor;
 
   // Evaluate the immutable hash exact ONCE for all range implementations.
   const globalCssId = getGlobalStylesId(rangeCss);
@@ -276,8 +276,124 @@ export const Range = (props: RangeProps) => {
     }
   };
 
+  let snapThresholdPercent = props.snapThresholdPercent;
+  if (snapThresholdPercent === undefined) {
+    const tStep = props.tickStep || max - min;
+    const tStepPercent = (tStep / (max - min)) * 100;
+    snapThresholdPercent = Math.min(5, tStepPercent * 0.1);
+  }
+
+  let animRef = 0;
+  const animateToValue = (targetVal: number) => {
+    cancelAnimationFrame(animRef);
+
+    let isThumb2 = false;
+    let startVal = currentVal1;
+    if (isRangeMode) {
+      if (Math.abs(targetVal - currentVal2) < Math.abs(targetVal - currentVal1)) {
+        isThumb2 = true;
+        startVal = currentVal2;
+      }
+    }
+
+    const startTime = performance.now();
+    const duration = 200; // 200ms animation
+
+    const stepAnim = (time: number) => {
+      const elapsed = time - startTime;
+      let progress = elapsed / duration;
+      if (progress > 1) progress = 1;
+
+      // easeOutQuad
+      const eased = progress * (2 - progress);
+      const current = startVal + (targetVal - startVal) * eased;
+
+      if (isRangeMode) {
+        if (isThumb2) {
+          currentVal2 = current;
+          const inputMax = ref.$('.input-max') as HTMLInputElement;
+          if (inputMax) inputMax.value = currentVal2.toString();
+        } else {
+          currentVal1 = current;
+          const inputMin = ref.$('.input-min') as HTMLInputElement;
+          if (inputMin) inputMin.value = currentVal1.toString();
+        }
+      } else {
+        currentVal1 = current;
+        const inputSingle = ref.$('.input-single') as HTMLInputElement;
+        if (inputSingle) inputSingle.value = currentVal1.toString();
+      }
+
+      updateVisuals();
+
+      if (progress < 1) {
+        animRef = requestAnimationFrame(stepAnim);
+      } else {
+        handleChange();
+      }
+    };
+
+    animRef = requestAnimationFrame(stepAnim);
+  };
+
+  const handleContainerClick = (e: any) => {
+    if (props.disabled) return;
+    if (e.target && e.target.tagName === 'INPUT') return;
+
+    const wrapper = ref.$('.&-wrapper') as HTMLElement;
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+
+    let clientX = e.clientX;
+    let clientY = e.clientY;
+    if (e.type === 'touchstart') {
+      const touch = (e as unknown as TouchEvent).touches[0];
+      if (touch) {
+        clientX = touch.clientX;
+        clientY = touch.clientY;
+      }
+    }
+
+    let percent = 0;
+    if (isVertical) {
+      const y = clientY - rect.top;
+      percent = 1 - y / rect.height;
+    } else {
+      const x = clientX - rect.left;
+      percent = x / rect.width;
+    }
+    percent = Math.max(0, Math.min(1, percent));
+
+    let targetVal = min + (max - min) * percent;
+    targetVal = Math.round((targetVal - min) / step) * step + min;
+
+    if (snapThresholdPercent > 0 && (props.showTicks || props.showTickLabels)) {
+      const tStep = props.tickStep || max - min;
+      const nearestTick = Math.round((targetVal - min) / tStep) * tStep + min;
+      const threshold = (max - min) * (snapThresholdPercent / 100);
+      if (Math.abs(targetVal - nearestTick) <= threshold) {
+        targetVal = nearestTick;
+      }
+    }
+
+    targetVal = Math.max(min, Math.min(max, targetVal));
+    animateToValue(targetVal);
+  };
+
   const handleInput = (e: Event, isThumb2: boolean) => {
-    const val = parseFloat((e.target as HTMLInputElement).value);
+    let val = parseFloat((e.target as HTMLInputElement).value);
+
+    // Magnetic snapping
+    if (snapThresholdPercent > 0 && (props.showTicks || props.showTickLabels)) {
+      const tStep = props.tickStep || max - min;
+      const nearestTick = Math.round((val - min) / tStep) * tStep + min;
+      const threshold = (max - min) * (snapThresholdPercent / 100);
+      if (Math.abs(val - nearestTick) <= threshold) {
+        val = nearestTick;
+        (e.target as HTMLInputElement).value = val.toString();
+      }
+    }
+
     if (isRangeMode) {
       if (isThumb2) {
         currentVal2 = Math.max(val, currentVal1);
@@ -296,6 +412,7 @@ export const Range = (props: RangeProps) => {
       currentVal1 = val;
     }
     updateVisuals();
+    handleChange(); // Ensure parent receives continuous updates during drag
   };
 
   const handleChange = () => {
@@ -370,7 +487,9 @@ export const Range = (props: RangeProps) => {
         .join(' ')
         .trim()}
       ref={ref}
-      css={props.style}
+      css={customStyle}
+      onPointerDown={handleContainerClick}
+      onTouchStart={handleContainerClick}
     >
       <div class='&-wrapper'>
         <div class='&-track'>
@@ -415,18 +534,40 @@ export const Range = (props: RangeProps) => {
             disabled={props.disabled}
           />
         )}
-      </div>
 
-      {(props.showTicks || props.showTickLabels) && (
-        <div class='&-ticks'>
-          {ticks.map((t) => (
-            <div class='&-tick'>
-              {props.showTicks && <div class='&-tick-mark'></div>}
-              {props.showTickLabels && <span>{t}</span>}
-            </div>
-          ))}
-        </div>
-      )}
+        {(props.showTicks || props.showTickLabels) && (
+          <div class='&-ticks'>
+            {ticks.map((t) => {
+              const percent = ((t - min) / (max - min)) * 100;
+              const offsetPx = 10 - (percent / 100) * 20;
+              const style = isVertical
+                ? { position: 'absolute' as any, bottom: `calc(${percent}% + ${offsetPx}px)`, transform: 'translateY(50%)' }
+                : { position: 'absolute' as any, left: `calc(${percent}% + ${offsetPx}px)`, top: '0', transform: 'translateX(-50%)' };
+
+              return (
+                <div class='&-tick' style={style}>
+                  {props.showTicks && <div class='&-tick-mark'></div>}
+                  {props.showTickLabels && (
+                    <span
+                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+                      onPointerDown={(e: any) => {
+                        e.stopPropagation();
+                        animateToValue(t);
+                      }}
+                      onTouchStart={(e: any) => {
+                        e.stopPropagation();
+                        animateToValue(t);
+                      }}
+                    >
+                      {t}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
