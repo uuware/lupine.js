@@ -23,6 +23,7 @@ export type RangeProps = {
   hook?: RangeHookProps;
   trackColor?: string;
   fillColor?: string;
+  showButtons?: boolean;
 };
 
 // 1. Define Static CSS completely decoupled from Reactivity (isVertical)
@@ -63,10 +64,12 @@ const rangeCss: CssProps = {
   '&.horizontal .&-wrapper': {
     width: '100%',
     height: '20px',
+    flex: 1,
   },
   '&.vertical .&-wrapper': {
     width: '20px',
     height: '100%',
+    flex: 1,
   },
 
   '.&-track': {
@@ -207,6 +210,64 @@ const rangeCss: CssProps = {
     marginBottom: 0,
     marginRight: '4px',
   },
+
+  '.&-inner-container': {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+  },
+  '&.horizontal .&-inner-container': {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  '&.vertical .&-inner-container': {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+
+  '&.horizontal .&-buttons': {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '6px',
+    marginLeft: '10px',
+  },
+  '&.vertical .&-buttons': {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '6px',
+    marginTop: '10px',
+  },
+  '.&-btn': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    border: '2px solid var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
+    backgroundColor: 'var(--secondary-bg-color, #1c1c1c)',
+    color: 'var(--primary-color, #fff)',
+    fontSize: '16px',
+    fontFamily: 'monospace',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    padding: 0,
+    margin: 0,
+    userSelect: 'none',
+    transition: 'background-color 0.2s, transform 0.1s',
+    lineHeight: '1',
+    pointerEvents: 'auto',
+  },
+  '.&-btn:hover': {
+    backgroundColor: 'var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
+    color: '#fff',
+    transform: 'scale(1.1)',
+  },
+  '.&-btn:active': {
+    transform: 'scale(0.95)',
+  },
 };
 
 export const Range = (props: RangeProps) => {
@@ -246,6 +307,25 @@ export const Range = (props: RangeProps) => {
 
   let currentVal1 = val1;
   let currentVal2 = val2;
+
+  const adjustByStep = (direction: -1 | 1) => {
+    if (props.disabled) return;
+    if (isRangeMode) {
+      let newVal = currentVal1 + direction * step;
+      newVal = Math.max(min, Math.min(currentVal2, newVal));
+      currentVal1 = newVal;
+      const inputMin = ref.$('.input-min') as HTMLInputElement;
+      if (inputMin) inputMin.value = currentVal1.toString();
+    } else {
+      let newVal = currentVal1 + direction * step;
+      newVal = Math.max(min, Math.min(max, newVal));
+      currentVal1 = newVal;
+      const inputSingle = ref.$('.input-single') as HTMLInputElement;
+      if (inputSingle) inputSingle.value = currentVal1.toString();
+    }
+    updateVisuals();
+    handleChange();
+  };
 
   const updateVisuals = () => {
     const fill = ref.$('.&-fill') as HTMLElement;
@@ -491,16 +571,41 @@ export const Range = (props: RangeProps) => {
       onPointerDown={handleContainerClick}
       onTouchStart={handleContainerClick}
     >
-      <div class='&-wrapper'>
-        <div class='&-track'>
-          <div class='&-fill'></div>
-        </div>
+      <div class='&-inner-container'>
+        <div class='&-wrapper'>
+          <div class='&-track'>
+            <div class='&-fill'></div>
+          </div>
 
-        {isRangeMode ? (
-          <>
+          {isRangeMode ? (
+            <>
+              <input
+                type='range'
+                class='&-input input-min'
+                min={min}
+                max={max}
+                step={step}
+                value={val1}
+                onInput={(e) => handleInput(e, false)}
+                onChange={handleChange}
+                disabled={props.disabled}
+              />
+              <input
+                type='range'
+                class='&-input input-max'
+                min={min}
+                max={max}
+                step={step}
+                value={val2}
+                onInput={(e) => handleInput(e, true)}
+                onChange={handleChange}
+                disabled={props.disabled}
+              />
+            </>
+          ) : (
             <input
               type='range'
-              class='&-input input-min'
+              class='&-input input-single'
               min={min}
               max={max}
               step={step}
@@ -509,62 +614,76 @@ export const Range = (props: RangeProps) => {
               onChange={handleChange}
               disabled={props.disabled}
             />
-            <input
-              type='range'
-              class='&-input input-max'
-              min={min}
-              max={max}
-              step={step}
-              value={val2}
-              onInput={(e) => handleInput(e, true)}
-              onChange={handleChange}
-              disabled={props.disabled}
-            />
-          </>
-        ) : (
-          <input
-            type='range'
-            class='&-input input-single'
-            min={min}
-            max={max}
-            step={step}
-            value={val1}
-            onInput={(e) => handleInput(e, false)}
-            onChange={handleChange}
-            disabled={props.disabled}
-          />
-        )}
+          )}
 
-        {(props.showTicks || props.showTickLabels) && (
-          <div class='&-ticks'>
-            {ticks.map((t) => {
-              const percent = ((t - min) / (max - min)) * 100;
-              const offsetPx = 10 - (percent / 100) * 20;
-              const style = isVertical
-                ? { position: 'absolute' as any, bottom: `calc(${percent}% + ${offsetPx}px)`, transform: 'translateY(50%)' }
-                : { position: 'absolute' as any, left: `calc(${percent}% + ${offsetPx}px)`, top: '0', transform: 'translateX(-50%)' };
+          {(props.showTicks || props.showTickLabels) && (
+            <div class='&-ticks'>
+              {ticks.map((t) => {
+                const percent = ((t - min) / (max - min)) * 100;
+                const offsetPx = 10 - (percent / 100) * 20;
+                const style = isVertical
+                  ? { position: 'absolute' as any, bottom: `calc(${percent}% + ${offsetPx}px)`, transform: 'translateY(50%)' }
+                  : { position: 'absolute' as any, left: `calc(${percent}% + ${offsetPx}px)`, top: '0', transform: 'translateX(-50%)' };
 
-              return (
-                <div class='&-tick' style={style}>
-                  {props.showTicks && <div class='&-tick-mark'></div>}
-                  {props.showTickLabels && (
-                    <span
-                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-                      onPointerDown={(e: any) => {
-                        e.stopPropagation();
-                        animateToValue(t);
-                      }}
-                      onTouchStart={(e: any) => {
-                        e.stopPropagation();
-                        animateToValue(t);
-                      }}
-                    >
-                      {t}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+                return (
+                  <div class='&-tick' style={style}>
+                    {props.showTicks && <div class='&-tick-mark'></div>}
+                    {props.showTickLabels && (
+                      <span
+                        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+                        onPointerDown={(e: any) => {
+                          e.stopPropagation();
+                          animateToValue(t);
+                        }}
+                        onTouchStart={(e: any) => {
+                          e.stopPropagation();
+                          animateToValue(t);
+                        }}
+                      >
+                        {t}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {props.showButtons && (
+          <div class='&-buttons'>
+            <button
+              class='&-btn &-btn-minus'
+              onPointerDown={(e: any) => {
+                e.stopPropagation();
+                adjustByStep(-1);
+              }}
+              onTouchStart={(e: any) => {
+                e.stopPropagation();
+                adjustByStep(-1);
+              }}
+              onClick={(e: any) => {
+                e.stopPropagation();
+              }}
+            >
+              -
+            </button>
+            <button
+              class='&-btn &-btn-plus'
+              onPointerDown={(e: any) => {
+                e.stopPropagation();
+                adjustByStep(1);
+              }}
+              onTouchStart={(e: any) => {
+                e.stopPropagation();
+                adjustByStep(1);
+              }}
+              onClick={(e: any) => {
+                e.stopPropagation();
+              }}
+            >
+              +
+            </button>
           </div>
         )}
       </div>
