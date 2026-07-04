@@ -32,14 +32,15 @@ const LINE_FLAG = {
   endif: 3,
 };
 
-const ifRegExp = /^\/\/\s*#if\s*(.*)$/;
-const elseifRegExp = /^\/\/\s*#elseif\s*(.*)$/;
-const elseRegExp = /^\/\/\s*#else\s*(.*)$/;
-const endifRegExp = /^\/\/\s*#endif$/;
+const ifRegExp = /^\s*\/\/\s*#if\s*(.*)$/;
+const elseifRegExp = /^\s*\/\/\s*#elseif\s*(.*)$/;
+const elseRegExp = /^\s*\/\/\s*#else\s*(.*)$/;
+const endifRegExp = /^\s*\/\/\s*#endif$/;
 const ifdefRegExpMultiLine = new RegExp(`^${ifRegExp.source}`, 'gm');
 
-// if a variable is not defined, exception will be thrown
-// if a variable is '', 0, false, undefined, null, NaN, it will be considered as false
+// If a variable is '', 0, false, undefined, null, NaN, it will be considered as false.
+// If a variable is NOT defined in vars, it will be automatically injected and set to false.
+// This allows negative conditions (like #if !MOBILE) to evaluate to true when MOBILE is missing.
 /*
 var vars = {
     TEST1: '', // false
@@ -47,29 +48,42 @@ var vars = {
 }
 evalExpression(vars, 'TEST1'); // false
 evalExpression(vars, 'TEST2'); // true
-try {
-    evalExpression(vars, 'TEST3'); // exception
-} catch {}
-evalExpression(vars, "TEST2===`2` && TEST2==='2'"); // true, can't use ["] in the exception
+evalExpression(vars, 'TEST3'); // false (automatically injected as false)
+evalExpression(vars, '!TEST3'); // true
+evalExpression(vars, "TEST2===`2` && TEST2==='2'"); // true, can't use ["] in the expression
 evalExpression(vars, "TEST1 || TEST2"); // true
-
-TODO: define variables if it's not defined?
-function extractVariables(expression) {
-  // Match words that are not numbers or keywords
-  const variableRegex = /\b([a-zA-Z_][a-zA-Z0-9_]*)\b/g;
-  return [...new Set(expression.match(variableRegex) || [])];
-}
 */
+const JS_KEYWORDS = new Set(['true', 'false', 'null', 'undefined', 'typeof', 'instanceof', 'in', 'void', 'Math', 'JSON', 'Object', 'Number', 'String', 'Boolean', 'Array']);
+
 const evalExpression = (vars, expression) => {
-  const variables = Object.freeze({ ...vars });
-  const fn = new Function(...Object.keys(variables), 'return eval("' + expression + '")');
-  const result = !!fn(...Object.values(variables));
+  const variables = { ...vars };
+  
+  // Extract all potential variable names from the expression
+  const variableRegex = /[a-zA-Z_][a-zA-Z0-9_]*/g;
+  const words = expression.match(variableRegex) || [];
+  
+  words.forEach(word => {
+    // If it's not a JS keyword and not already defined in vars, set it to false
+    if (!JS_KEYWORDS.has(word) && !(word in variables)) {
+      variables[word] = false;
+    }
+  });
+
+  let result = false;
+  try {
+    const fn = new Function(...Object.keys(variables), 'return eval("' + expression + '")');
+    result = !!fn(...Object.values(variables));
+  } catch (e) {
+    // If there's still an error (e.g. syntax error), default to false
+    result = false;
+  }
   console.log(`Expression [${expression}], result: ${result}`);
   return result;
 };
 
 const processOneFile = async (vars, fpath) => {
   let text = await fs.readFile(fpath, 'utf8');
+  ifdefRegExpMultiLine.lastIndex = 0;
   if (!ifdefRegExpMultiLine.test(text)) {
     return null;
   }
@@ -171,3 +185,5 @@ module.exports = (
     },
   };
 };
+
+module.exports._test = { processOneFile, evalExpression };
