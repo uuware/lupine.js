@@ -1,5 +1,5 @@
 import { PopupMenuWithButton, PopupMenuWithLabel } from 'lupine.components';
-import { callUnload, CssProps, refreshPaeg } from 'lupine.web';
+import { callUnload, CssProps, refreshPage } from 'lupine.web';
 import { DesignNode, getDesignStore } from './design-store';
 
 type PopupListItem = {
@@ -67,7 +67,7 @@ export const BlockPopup = (props: { node: DesignNode }) => {
     if (!url) return;
 
     if (typeof window !== 'undefined') {
-      await refreshPaeg(url);
+      await refreshPage(url);
     }
   };
 

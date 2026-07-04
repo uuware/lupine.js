@@ -1,4 +1,4 @@
-import { RefProps, refreshPaeg } from 'lupine.web';
+import { RefProps, refreshPage } from 'lupine.web';
 
 export type RedirectProps = {
   title?: string;
@@ -11,7 +11,7 @@ export const Redirect = ({ title = 'redirect...', url, delaySeconds = 0 }: Redir
   const ref: RefProps = {
     onLoad: async (el: Element) => {
       setTimeout(async () => {
-        await refreshPaeg(url);
+        await refreshPage(url);
       }, delaySeconds * 1000);
     },
   };

@@ -6,7 +6,7 @@ import {
   NotificationColor,
   NotificationMessage,
   RefProps,
-  refreshPaeg,
+  refreshPage,
   SliderFrame,
   SliderFrameHookProps,
   ToggleSwitch,
@@ -144,7 +144,7 @@ export const MineSettingsPage = (props: { sliderFrameHook: SliderFrameHookProps;
                       handleClicked: async (index: number, close: () => void) => {
                         close();
                         if (index === 0) {
-                          await refreshPaeg('/');
+                          await refreshPage('/');
                         }
                       },
                     });

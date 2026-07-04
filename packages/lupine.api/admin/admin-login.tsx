@@ -6,7 +6,7 @@ import {
   NotificationMessage,
   setCookie,
   RefProps,
-  refreshPaeg,
+  refreshPage,
 } from 'lupine.components';
 import { adminCss } from './admin-css';
 import { adminFrameHelper } from './admin-frame-helper';
@@ -68,12 +68,12 @@ export const AdminLoginPage = async (props: PageProps) => {
       NotificationMessage.sendMessage((auth && auth.message) || 'Login failed', NotificationColor.Error);
     }
     if (auth.devLogin) {
-      await refreshPaeg('/admin_dev');
+      await refreshPage('/admin_dev');
     }
     const appAdminHookCheckLogin = adminFrameHelper.getAppAdminHookCheckLogin();
     if (appAdminHookCheckLogin) {
       if (await appAdminHookCheckLogin(auth)) {
-        await refreshPaeg('/admin_dev');
+        await refreshPage('/admin_dev');
       }
     }
   };
