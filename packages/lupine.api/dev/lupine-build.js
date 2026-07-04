@@ -156,6 +156,10 @@ const watchClientPlugin = (saved) => {
         // console.log(`Build meta data: `, res);
         console.log(`[dev-client:${saved.appName}] Build finished`);
         await clientProcessOnEnd(saved);
+
+        if (!saved.isDev && saved.isJsmap) {
+          console.warn(`!!!!!!!!!! [dev-client:${saved.appName}] Souce Map is generated !!!!!!!!!!`);
+        }
       });
     },
   };
@@ -179,7 +183,7 @@ const watchClient = async (saved, isDev, entryPoints, outbase) => {
     outbase,
     // entryNames: '[name]-[hash]',
     platform: 'browser',
-    sourcemap: isDev ? 'inline' : false, // inline
+    sourcemap: isDev ? 'inline' : (saved.isJsmap ? 'external' : false), // inline
     format: 'iife',
     bundle: true,
     treeShaking: true,
@@ -320,6 +324,7 @@ const start = async () => {
   const isDev = process.argv.find((i) => i === '--dev=1');
   const isMobile = process.argv.find((i) => i === '--mobile=1'); // when this changed, need to rebuild index.html
   const isObfuscate = !isDev && process.argv.find((i) => i === '--obfuscate=1');
+  const isJsmap = process.argv.find((i) => i === '--jsmap=1');
   // this is for esbuild conditional compile
   ifPluginVars.DEV = isDev ? '1' : '';
   ifPluginVars.MOBILE = isMobile ? '1' : '';
@@ -362,6 +367,7 @@ const start = async () => {
       isDev,
       isMobile,
       isObfuscate,
+      isJsmap,
       defaultThemeName: 'light',
       appName,
       appDir,
@@ -393,6 +399,10 @@ const start = async () => {
     };
 
     appCfg['webEntryPoints'].forEach((item, index) => {
+      const env = item.env || 'all';
+      if (env === 'web' && isMobile) return;
+      if (env === 'mobile' && !isMobile) return;
+
       const entryPoint = `${appDir}/${item.index}`;
       const indexHtml = item.html ? `${appDir}/${item.html}` : undefined;
       watchClient(

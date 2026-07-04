@@ -9,7 +9,8 @@
     {
       "index": "web/src/admin_dev/index.tsx",
       "html": "web/src/admin_dev/index.html",
-      "outdir": "/admin_dev"
+      "outdir": "/admin_dev",
+      "env": "web"
     }
   ],
   "apiEntryPoint": "api/src/index.ts",
