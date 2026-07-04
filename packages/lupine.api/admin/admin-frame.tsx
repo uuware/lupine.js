@@ -1,4 +1,4 @@
-import { bindGlobalStyle, CssProps, RefProps, clearCookie, TabsPageProps, getRenderPageProps, refreshPaeg } from 'lupine.components';
+import { bindGlobalStyle, CssProps, RefProps, clearCookie, TabsPageProps, getRenderPageProps, refreshPage } from 'lupine.components';
 import { MenuSidebar, ThemeSelector, TabsHookProps, Tabs } from 'lupine.components';
 import { adminCss } from './admin-css';
 import { adminFrameHelper } from './admin-frame-helper';
@@ -96,7 +96,7 @@ export const AdminFrame = (props: AdminFrameProps) => {
     clearCookie('_token_dev', '/');
     await adminFrameHelper.getAppAdminHookLogout()?.();
     await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/logout');
-    await refreshPaeg('/admin_dev');
+    await refreshPage('/admin_dev');
   };
 
   bindGlobalStyle('admin-frame-box', css);

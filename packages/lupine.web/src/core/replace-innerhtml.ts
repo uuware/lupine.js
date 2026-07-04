@@ -67,7 +67,7 @@ export const callUnload = async (el: Element) => {
   }
 };
 
-export const refreshPaeg = async (url?: string) => {
-    await callUnload(document.querySelector('.lupine-root') as Element);
-    window.location.href = url || window.location.href;
-}
+export const refreshPage = async (url?: string) => {
+  await callUnload(document.querySelector('.lupine-root') as Element);
+  window.location.href = url || window.location.href;
+};

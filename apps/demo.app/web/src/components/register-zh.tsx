@@ -7,7 +7,7 @@ import {
   NotificationMessage,
   HtmlLoad,
   WebConfig,
-  refreshPaeg,
+  refreshPage,
 } from 'lupine.components';
 import { Footer } from './footer';
 
@@ -106,7 +106,7 @@ export const RegisterPage = async (props: PageProps) => {
     if (data.status === 'ok') {
       NotificationMessage.sendMessage(data.message, NotificationColor.Success);
       setTimeout(async () => {
-        await refreshPaeg('/login');
+        await refreshPage('/login');
       }, 1000);
     } else {
       NotificationMessage.sendMessage(data.message, NotificationColor.Error);
