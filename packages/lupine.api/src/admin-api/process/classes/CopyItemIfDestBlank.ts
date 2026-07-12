@@ -3,42 +3,41 @@
  */
 
 import { ProcessBase } from '../process-base';
-import { FieldObject, VectorObject, EntityObject, ListObject, FieldType } from '../field-objects';
+import { FieldObject, VectorObject, FieldType } from '../field-objects';
 
 export class CopyItemIfDestBlank extends ProcessBase {
   itemfrom: FieldObject | null = null;
-  getItemfromInfo() { return { multi: false, type: FieldType.String }; }
+  getItemfromInfo() {
+    return { multi: false, type: FieldType.String };
+  }
   setItemfrom(itemfrom: FieldObject): void {
     this.itemfrom = itemfrom;
   }
 
   itemto: FieldObject | VectorObject | null = null;
-  getItemtoInfo() { return { multi: true, type: FieldType.String }; }
+  getItemtoInfo() {
+    return { multi: true, type: FieldType.String };
+  }
   setItemto(itemto: FieldObject | VectorObject): void {
     this.itemto = itemto;
   }
 
   override execute(): boolean | void {
+    this.chkNull('itemfrom');
+    this.chkNull('itemto');
 
-		this.chkNull('itemfrom');
-		this.chkNull('itemto');
+    if (this.itemto instanceof VectorObject) {
+      const cnt = this.itemto.itemSize();
+      for (let i = 0; i < cnt; i++) {
+        const item = this.itemto.getItem(i);
+        if (item && item.isBlank()) {
+          item.setValue(this.itemfrom!.getValue());
+        }
+      }
+    } else if (this.itemto && this.itemto.isBlank()) {
+      this.itemto.setValue(this.itemfrom!.getValue());
+    }
 
-		if(this.itemto instanceof VectorObject) {
-			cnt = this.itemto.itemSize();
-			for (let i = 0; i < cnt; i++) {
-				//importent! if no unset(...) then all used of be the same one!!!
-				
-				item = this.itemto.getItem(i);
-				if(item.isBlank()) {
-					item?.setValue(this.itemfrom?.getValue());
-				}
-			}
-		}
-		else {
-			if(this.itemto.isBlank()) {
-				this.itemto?.setValue(this.itemfrom?.getValue());
-			}
-		}
-	
+    return true;
   }
 }

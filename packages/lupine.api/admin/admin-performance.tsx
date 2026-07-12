@@ -8,7 +8,12 @@ export const AdminPerformancePage = () => {
   const onRefresh = async () => {
     const data = await fetchData();
     console.log(data);
-    dom.value = <pre>{JSON.stringify(data, null, 2)}</pre>;
+    dom.value = (
+      <div>
+        Process pid: {data?.results?.process?.pid} / ppid: {data?.results?.process?.ppid}
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      </div>
+    );
   };
 
   const ref: RefProps = {

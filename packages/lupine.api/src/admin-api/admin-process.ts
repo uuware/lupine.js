@@ -1,7 +1,11 @@
 import { ServerResponse } from 'http';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { IApiBase, Logger, apiCache, ServerRequest, ApiRouter, ApiHelper, JsonKeyValue } from 'lupine.api';
 import { getAllRegisteredClasses, getClassConstructor } from './process/class-registry';
 import { ProcessBase } from './process/process-base';
+import { ProcessContext } from './process/process-context';
+import { ClassDef, ItemDef, runProcess } from './process/run-process';
 import { exportCSV } from '../lib/utils/csv-util';
 
 const logger = new Logger('admin-process');
@@ -22,10 +26,54 @@ export class AdminProcess implements IApiBase {
     this.router.use('/add', this.save.bind(this)); // Alias add to save
     this.router.use('/save', this.save.bind(this));
     this.router.use('/get/:id', this.getRecord.bind(this));
+    this.router.use('/run/:id', this.run.bind(this));
     this.router.use('/delete/:id', this.delete.bind(this));
     this.router.use('/classes', this.getClasses.bind(this));
     this.router.use('/class-info', this.getClassInfo.bind(this));
     this.router.use('/export', this.export.bind(this));
+  }
+
+  private getRunDebugDir() {
+    const cwd = process.cwd();
+    const packageRoot = path.basename(cwd) === 'lupine.api' ? cwd : path.join(cwd, 'packages', 'lupine.api');
+    return path.join(packageRoot, 'dist', 'temp');
+  }
+
+  private async saveRunDebugDump(
+    processId: string,
+    input: Record<string, string>,
+    items: ItemDef[],
+    classes: ClassDef[],
+    output: Record<string, string>,
+    ok?: boolean,
+    error?: unknown
+  ) {
+    try {
+      const debugDir = this.getRunDebugDir();
+      await fs.mkdir(debugDir, { recursive: true });
+      const safeProcessId = processId.replace(/[^a-zA-Z0-9_\-#]/g, '_') || 'unknown';
+      const debugFile = path.join(debugDir, `${safeProcessId}.json`);
+      await fs.writeFile(
+        debugFile,
+        JSON.stringify(
+          {
+            processId,
+            savedAt: new Date().toISOString(),
+            ok,
+            input,
+            items,
+            classes,
+            output,
+            error: error ? (error as any)?.stack || (error as any)?.message || String(error) : undefined,
+          },
+          null,
+          2
+        ),
+        'utf-8'
+      );
+    } catch (e: any) {
+      logger.error(`Failed to save process run debug dump: ${e?.message || e}`);
+    }
   }
 
   private buildQuery(searchValue: string[], searchFields: string[]) {
@@ -104,7 +152,10 @@ export class AdminProcess implements IApiBase {
     const db = apiCache.getDb();
     const data = req.locals.json();
     if (!data || Array.isArray(data) || !data.processid) {
-      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload: expected { processid: string, ... }.' });
+      ApiHelper.sendJson(req, res, {
+        status: 'error',
+        message: 'Invalid payload: expected { processid: string, ... }.',
+      });
       return true;
     }
 
@@ -115,7 +166,10 @@ export class AdminProcess implements IApiBase {
     }
     id = String(id).trim().toLowerCase();
     if (!/^[a-z0-9_\-#]+$/.test(id)) {
-      ApiHelper.sendJson(req, res, { status: 'error', message: 'Process ID can only contain lowercase letters, numbers, and underscores.' });
+      ApiHelper.sendJson(req, res, {
+        status: 'error',
+        message: 'Process ID can only contain lowercase letters, numbers, and underscores.',
+      });
       return true;
     }
 
@@ -150,10 +204,10 @@ export class AdminProcess implements IApiBase {
     const newStamp = Date.now();
     const result = await db.insertObject('$__s_process', {
       processid: id,
-      name: data['name'] as string || '',
-      remark: data['remark'] as string || '',
-      package: data['package'] as string || 'default',
-      accesslevel: data['accesslevel'] as string || '0',
+      name: (data['name'] as string) || '',
+      remark: (data['remark'] as string) || '',
+      package: (data['package'] as string) || 'default',
+      accesslevel: (data['accesslevel'] as string) || '0',
       json: typeof data['json'] === 'string' ? data['json'] : JSON.stringify(data['json'] || {}),
       updatetime: newStamp,
     });
@@ -199,6 +253,56 @@ export class AdminProcess implements IApiBase {
       response.status = 'ok';
     }
     ApiHelper.sendJson(req, res, response);
+    return true;
+  }
+
+  async run(req: ServerRequest, res: ServerResponse) {
+    const db = apiCache.getDb();
+    const id = req.locals.urlParameters.get('id', '');
+    const data = req.locals.json();
+
+    if (!id) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Process ID is required.' });
+      return true;
+    }
+    if (!data || Array.isArray(data) || typeof data !== 'object') {
+      ApiHelper.sendJson(req, res, { status: 'error', message: 'Invalid payload: expected JSON object.' });
+      return true;
+    }
+
+    const result = await db.selectObject('$__s_process', ['processid', 'json'], { processid: id });
+    if (!result || result.length === 0) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: `Process id: ${id} does not exist.` });
+      return true;
+    }
+
+    let parsedJson: { items?: ItemDef[]; classes?: ClassDef[] } = {};
+    try {
+      parsedJson = JSON.parse(result[0]['json'] || '{}');
+    } catch (e) {
+      ApiHelper.sendJson(req, res, { status: 'error', message: `Invalid process json for id: ${id}.` });
+      return true;
+    }
+
+    const input = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, value == null ? '' : String(value)])
+    );
+    const ctx = new ProcessContext(input, id);
+
+    try {
+      const items = parsedJson.items || [];
+      const classes = parsedJson.classes || [];
+      const ok = await runProcess(ctx, items, classes);
+      if (!ok) {
+        ctx.output.error = 'true';
+      }
+      await this.saveRunDebugDump(id, input, items, classes, ctx.output, ok);
+      ApiHelper.sendJson(req, res, ctx.output);
+    } catch (e: any) {
+      await this.saveRunDebugDump(id, input, parsedJson.items || [], parsedJson.classes || [], ctx.output, false, e);
+      logger.error(e?.message || e);
+      ApiHelper.sendJson(req, res, { status: 'error', message: e?.message || 'Run process failed.' });
+    }
     return true;
   }
 
@@ -269,7 +373,10 @@ export class AdminProcess implements IApiBase {
     const idsParam = req.locals.query.get('ids') || '';
     let where = '';
     if (idsParam) {
-      const ids = idsParam.split(',').filter(Boolean).map((id: string) => id.trim());
+      const ids = idsParam
+        .split(',')
+        .filter(Boolean)
+        .map((id: string) => id.trim());
       if (ids.length > 0) {
         const safeIds = ids.map((id: string) => `'${id.replace(/'/g, "''")}'`).join(',');
         where = `processid IN (${safeIds})`;

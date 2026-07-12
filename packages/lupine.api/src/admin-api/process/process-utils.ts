@@ -46,38 +46,3 @@ export function clearMessages(): void {
     delete _messages[key];
   }
 }
-
-/**
- * Builds a WHERE clause filter for a FieldObject item.
- */
-export function getFilterSql(db: any, item: import('./field-objects').FieldObject, filter: string, customFid?: string): string {
-  const pid = item.getPhysicalId();
-  if (!pid) return filter;
-  
-  if (filter !== '') {
-    filter += ' AND ';
-  }
-  
-  let realfilter = item.getFilter();
-  if (realfilter === '') {
-    realfilter = '=';
-  }
-  
-  const val = String(item.getValue() || '');
-  const fid = customFid || (db.escapeId ? db.escapeId(pid) : db.escape(pid));
-  const esc = db.escape ? (v: string) => db.escape(v) : (v: string) => `'${v.replace(/'/g, "''")}'`;
-
-  if (realfilter === 'l') {
-    const s = val.replace(/_/g, '\\_');
-    filter += fid + ' LIKE ' + esc('%' + s);
-  } else if (realfilter === 'r') {
-    const s = val.replace(/_/g, '\\_');
-    filter += fid + ' LIKE ' + esc(s + '%');
-  } else if (realfilter === 'c') {
-    const s = val.replace(/_/g, '\\_');
-    filter += fid + ' LIKE ' + esc('%' + s + '%');
-  } else {
-    filter += fid + ' ' + realfilter + ' ' + esc(val);
-  }
-  return filter;
-}
