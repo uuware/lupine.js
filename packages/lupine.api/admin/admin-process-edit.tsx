@@ -5,12 +5,14 @@ import {
   NotificationColor,
   NotificationMessage,
   getRenderPageProps,
+  ActionSheet,
   ActionSheetInputPromise,
   bindGlobalStyle,
   getGlobalStylesId,
   VNode,
   ActionSheetSelectPromise,
   FloatWindow,
+  SearchInput,
 } from 'lupine.components';
 import { adminFrameHelper } from './admin-frame-helper';
 import { getAccessLabel, getAccessLevelOptions } from './admin-props';
@@ -25,6 +27,7 @@ export interface ItemDef {
     physicalId?: string;
     tableId?: string;
     filter?: string;
+    comment?: string;
   };
   children?: ItemDef[];
   _uid?: string; // unique UI identifier
@@ -306,6 +309,20 @@ export const AdminProcessEditPage = (processId: string) => {
 
   const genUid = () => Math.random().toString(36).substring(2, 9);
 
+  const getItemTypeFlag = (item: ItemDef) => {
+    if (item.flags.includes('L,')) return 'L,';
+    if (item.flags.includes('E,')) return 'E,';
+    return 'F,';
+  };
+
+  const getItemTypeSuffix = (item: ItemDef) => getItemTypeFlag(item).replace(',', '');
+
+  const setItemTypeFlag = (item: ItemDef, flag: string) => {
+    item.flags = flag + item.flags.replace(/F,|E,|L,/g, '');
+    renderItemsTree();
+    redrawConnections();
+  };
+
   // Deep clone array to find/move items easier
   const findItemRef = (uid: string): { parent: ItemDef[] | null; idx: number; item: ItemDef } | null => {
     for (let i = 0; i < state.items.length; i++) {
@@ -359,6 +376,16 @@ export const AdminProcessEditPage = (processId: string) => {
     );
   };
 
+  const redrawConnections = () => {
+    setTimeout(() => drawConnections(), 10);
+  };
+
+  const reRenderGraph = () => {
+    renderItemsTree();
+    renderClassesList();
+    redrawConnections();
+  };
+
   const reRenderAll = () => {
     renderHeader();
     renderItemProps();
@@ -366,7 +393,7 @@ export const AdminProcessEditPage = (processId: string) => {
     renderItemsTree();
     renderClassesList();
     renderToolbars();
-    setTimeout(() => drawConnections(), 10);
+    redrawConnections();
   };
 
   const loadData = async () => {
@@ -396,6 +423,17 @@ export const AdminProcessEditPage = (processId: string) => {
       }
     }
     reRenderAll();
+  };
+
+  const confirmReloadData = async () => {
+    const idx = await ActionSheetSelectPromise({
+      title: `Reload process "${state.processId || '(New Process)'}"?\n\nUnsaved changes will be lost.`,
+      options: ['Reload'],
+      cancelButtonText: 'Cancel',
+    });
+    if (idx === 0) {
+      await loadData();
+    }
   };
 
   const showSaveDialog = () => {
@@ -530,7 +568,9 @@ export const AdminProcessEditPage = (processId: string) => {
             class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Access Level:</label>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+            Access Level:
+          </label>
           <select
             value={accesslevel}
             onChange={(e: any) => (accesslevel = e.target.value)}
@@ -538,7 +578,9 @@ export const AdminProcessEditPage = (processId: string) => {
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           >
             {getAccessLevelOptions(accesslevel).map((al) => (
-              <option value={al.value} selected={al.selected}>{al.label}</option>
+              <option value={al.value} selected={al.selected}>
+                {al.label}
+              </option>
             ))}
           </select>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
@@ -562,9 +604,7 @@ export const AdminProcessEditPage = (processId: string) => {
       const ref = findItemRef(state.selectedItemUid);
       if (ref) {
         const item = ref.item;
-        const isField = item.flags.includes('F,');
-        const isEntity = item.flags.includes('E,');
-        const isList = item.flags.includes('L,');
+        const itemTypeFlag = getItemTypeFlag(item);
 
         content = (
           <div
@@ -601,7 +641,7 @@ export const AdminProcessEditPage = (processId: string) => {
                       else if (Array.isArray(f.value)) f.value = f.value.map((v) => (v === oldName ? item.name : v));
                     })
                   );
-                  reRenderAll();
+                  reRenderGraph();
                 }}
               />
             </div>
@@ -612,7 +652,6 @@ export const AdminProcessEditPage = (processId: string) => {
                 value={item.defaultValue}
                 onChange={(e: any) => {
                   item.defaultValue = e.target.value;
-                  reRenderAll();
                 }}
               />
             </div>
@@ -620,38 +659,50 @@ export const AdminProcessEditPage = (processId: string) => {
               <div class='&-form-label'>Comment:</div>
               <input
                 class='&-form-input'
-                value={item.ext?.filter || ''}
+                value={item.ext?.comment || ''}
                 onChange={(e: any) => {
-                  item.ext = { ...item.ext, filter: e.target.value };
-                  reRenderAll();
+                  item.ext = { ...item.ext, comment: e.target.value };
                 }}
               />
             </div>
             <div class='&-form-row'>
-              <label class='&-form-check'>
-                <input
-                  type='checkbox'
-                  checked={isField}
-                  onChange={(e: any) => toggleFlag(item, 'F,', e.target.checked)}
-                />{' '}
-                Field
-              </label>
-              <label class='&-form-check'>
-                <input
-                  type='checkbox'
-                  checked={isEntity}
-                  onChange={(e: any) => toggleFlag(item, 'E,', e.target.checked)}
-                />{' '}
-                Entity
-              </label>
-              <label class='&-form-check'>
-                <input
-                  type='checkbox'
-                  checked={isList}
-                  onChange={(e: any) => toggleFlag(item, 'L,', e.target.checked)}
-                />{' '}
-                List
-              </label>
+              <div class='&-form-label'>Type:</div>
+              <select
+                class='&-form-input'
+                value={itemTypeFlag}
+                onChange={(e: any) => setItemTypeFlag(item, e.target.value)}
+              >
+                <option value='F,' selected={itemTypeFlag === 'F,'}>
+                  Field
+                </option>
+                <option value='E,' selected={itemTypeFlag === 'E,'}>
+                  Entity
+                </option>
+                <option value='L,' selected={itemTypeFlag === 'L,'}>
+                  List
+                </option>
+              </select>
+            </div>
+            <div class='&-form-row'>
+              <div class='&-form-label'>Filter:</div>
+              <select
+                class='&-form-input'
+                value={item.ext?.filter || ''}
+                onChange={(e: any) => {
+                  item.ext = { ...item.ext, filter: e.target.value };
+                }}
+              >
+                <option value=''></option>
+                <option value='='>=</option>
+                <option value='>'>{'>'}</option>
+                <option value='>='>{'>='}</option>
+                <option value='<'>{'<'}</option>
+                <option value='<='>{'<='}</option>
+                <option value='<>'>{'<>'}</option>
+                <option value='l'>%~</option>
+                <option value='r'>~%</option>
+                <option value='c'>%~%</option>
+              </select>
             </div>
             <div class='&-form-row'>
               <div class='&-form-label'>Table id:</div>
@@ -660,7 +711,6 @@ export const AdminProcessEditPage = (processId: string) => {
                 value={item.ext?.tableId || ''}
                 onChange={(e: any) => {
                   item.ext = { ...item.ext, tableId: e.target.value };
-                  reRenderAll();
                 }}
               />
             </div>
@@ -672,13 +722,6 @@ export const AdminProcessEditPage = (processId: string) => {
       }
     }
     itemPropsDom.value = content;
-  };
-
-  const toggleFlag = (item: ItemDef, flag: string, checked: boolean) => {
-    let f = item.flags.replace(flag, '');
-    if (checked) f += flag;
-    item.flags = f;
-    reRenderAll();
   };
 
   // --- Left Pane: Class Properties ---
@@ -715,7 +758,6 @@ export const AdminProcessEditPage = (processId: string) => {
                 value={cls.runType || 'Check'}
                 onChange={(e: any) => {
                   cls.runType = e.target.value;
-                  reRenderAll();
                 }}
               >
                 <option value='Check'>Check</option>
@@ -730,7 +772,6 @@ export const AdminProcessEditPage = (processId: string) => {
                 value={cls.group || ''}
                 onChange={(e: any) => {
                   cls.group = e.target.value;
-                  reRenderAll();
                 }}
               />
             </div>
@@ -741,7 +782,6 @@ export const AdminProcessEditPage = (processId: string) => {
                 value={cls.comment || ''}
                 onChange={(e: any) => {
                   cls.comment = e.target.value;
-                  reRenderAll();
                 }}
               />
             </div>
@@ -761,7 +801,7 @@ export const AdminProcessEditPage = (processId: string) => {
       return items.map((item) => {
         const isSelected = state.selectedItemUid === item._uid;
         const paddingLeft = `${level * 16}px`;
-        const icon = item.children && item.children.length > 0 ? '[-]' : level === 0 ? '[+]' : '';
+        const icon = item.children && item.children.length > 0 ? '[+]' : level === 0 ? '' : '';
 
         return (
           <div>
@@ -776,9 +816,8 @@ export const AdminProcessEditPage = (processId: string) => {
               style={{ paddingLeft }}
             >
               <div class='&-node-title'>
-                {icon} {item.name || '(unnamed)'}
+                {icon} {item.name || '(unnamed)'} ({getItemTypeSuffix(item)})
               </div>
-              {item.flags && <div class='&-node-sub'>{item.flags}</div>}
               <div class='&-port-right' id={`port-right-${item._uid}`}></div>
             </div>
             {item.children && renderNodes(item.children, level + 1)}
@@ -787,7 +826,11 @@ export const AdminProcessEditPage = (processId: string) => {
       });
     };
 
-    itemsTreeDom.value = <div ref={{ referToCssId: gCssId }} class='&-items-top'>{renderNodes(state.items)}</div>;
+    itemsTreeDom.value = (
+      <div ref={{ referToCssId: gCssId }} class='&-items-top'>
+        {renderNodes(state.items)}
+      </div>
+    );
   };
 
   // --- Right Pane: Classes List ---
@@ -809,11 +852,7 @@ export const AdminProcessEditPage = (processId: string) => {
               }}
               style={{ borderColor: 'green' }}
             >
-              <div
-                class='&-node-title'
-              >
-                {cls.name}
-              </div>
+              <div class='&-node-title'>{cls.name}</div>
               <div style={{ backgroundColor: '#fff', color: '#000' }}>
                 {cls.fields.map((field, idx) => {
                   const isSelectedField = isSelectedClass && state.selectedClassFieldIdx === idx;
@@ -999,17 +1038,78 @@ export const AdminProcessEditPage = (processId: string) => {
     reRenderAll();
   };
 
+  const selectClassName = async (classNames: string[]): Promise<string | undefined> => {
+    return new Promise(async (resolve) => {
+      const classListDom = new HtmlVar('');
+      let closeSheet: ((reason?: 'cancel' | 'confirm' | 'select') => void) | null = null;
+      let resolved = false;
+
+      const finish = (className?: string) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(className);
+        }
+      };
+
+      const renderClassList = (search = '') => {
+        const keyword = search.trim().toLowerCase();
+        const filteredClassNames = keyword
+          ? classNames.filter((className) => className.toLowerCase().includes(keyword))
+          : classNames;
+
+        classListDom.value = (
+          <div>
+            {filteredClassNames.length > 0 ? (
+              filteredClassNames.map((className) => (
+                <div
+                  class='act-sheet-item'
+                  onClick={() => {
+                    finish(className);
+                    closeSheet?.('select');
+                  }}
+                >
+                  {className}
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: '20px', color: 'var(--secondary-color)', textAlign: 'center' }}>
+                No classes found.
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      renderClassList();
+
+      closeSheet = await ActionSheet.show({
+        title: 'Select Class',
+        children: (
+          <div>
+            <div style={{ padding: '8px', borderTop: '1px solid var(--primary-border-color)' }}>
+              <SearchInput
+                placeholder='Search...'
+                onSearch={renderClassList}
+                onChange={renderClassList}
+                onClear={() => renderClassList('')}
+              />
+            </div>
+            {classListDom.node}
+          </div>
+        ),
+        contentMaxHeight: '80vh',
+        cancelButtonText: 'Cancel',
+        closeEvent: () => finish(undefined),
+      });
+    });
+  };
+
   const onAddClass = async () => {
     const classData = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/process/classes');
     const classNames = classData.json.results || [];
 
-    const idx = await ActionSheetSelectPromise({
-      title: 'Select Class',
-      options: classNames,
-      cancelButtonText: 'Cancel',
-    });
-    if (idx >= 0) {
-      const className = classNames[idx];
+    const className = await selectClassName(classNames);
+    if (className) {
       const infoData = await getRenderPageProps().renderPageFunctions.fetchData('/api/admin/process/class-info', {
         name: className,
       });
@@ -1151,7 +1251,7 @@ export const AdminProcessEditPage = (processId: string) => {
     <div ref={ref} class={gCssId}>
       <div class='&-header'>
         {headerDom.node}
-        <button class='button-base button-outline' onClick={loadData}>
+        <button class='button-base button-outline' onClick={confirmReloadData}>
           Reload
         </button>
         <button class='button-base' onClick={showSaveDialog}>

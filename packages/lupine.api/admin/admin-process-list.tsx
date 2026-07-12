@@ -5,7 +5,7 @@ import {
   NotificationColor,
   NotificationMessage,
   getRenderPageProps,
-  ActionSheetSelect,
+  ActionSheet,
   getDefaultPageLimit,
   PagingLink,
   PopupMenu,
@@ -39,9 +39,11 @@ const fetchProcessDelete = async (id: string) => {
 
 const ContentOneRow = (props: {
   item: any;
+  onSelectedId?: (id: string, name: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string) => void;
 }) => {
+  const isSelectMode = !!props.onSelectedId;
   const ref: RefProps = {};
 
   const onEditLocal = async (ev: any) => {
@@ -57,30 +59,41 @@ const ContentOneRow = (props: {
       <>
         <td>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input type='checkbox' class='admin-check-box' value={item.processid} />
-            <span style={{ fontWeight: 'bold' }}>{item.processid}</span>
+            {!isSelectMode && <input type='checkbox' class='admin-check-box' value={item.processid} />}
+            {props.onSelectedId ? (
+              <div
+                class='a-process-sel-link cursor-pointer underline'
+                onClick={() => props.onSelectedId!(item.processid, item.name)}
+              >
+                {item.processid}
+              </div>
+            ) : (
+              <span style={{ fontWeight: 'bold' }}>{item.processid}</span>
+            )}
           </div>
         </td>
-        <td>
+        <td class='a-process-lst-row-name'>
           <span style={{ fontWeight: 'bold' }}>{item.name || '-'}</span>
         </td>
         <td>
           <span class='a-process-lst-gray'>{item.package || '-'}</span>
         </td>
         <td>{item.accesslevel}</td>
-        <td>{item.remark || '-'}</td>
-        <td>
-          {/* item.updatetime is timestamp integer */}
-          <span class='a-process-lst-gray'>
-            {item.updatetime ? new Date(item.updatetime).toLocaleString() : '-'}
-          </span>
-        </td>
-        <td class='a-process-lst-row-ctl'>
-          <div class='ctl-box'>
-            <i class='ifc-icon ma-pencil-outline mr-m' onClick={onEditLocal} title='Edit'></i>
-            <i class='ifc-icon ma-close color-red' onClick={onRemoveLocal} title='Delete'></i>
-          </div>
-        </td>
+        {!isSelectMode && <td>{item.remark || '-'}</td>}
+        {!isSelectMode && (
+          <td>
+            {/* item.updatetime is timestamp integer */}
+            <span class='a-process-lst-gray'>{item.updatetime ? new Date(item.updatetime).toLocaleString() : '-'}</span>
+          </td>
+        )}
+        {!isSelectMode && (
+          <td class='a-process-lst-row-ctl'>
+            <div class='ctl-box'>
+              <i class='ifc-icon ma-pencil-outline mr-m' onClick={onEditLocal} title='Edit'></i>
+              <i class='ifc-icon ma-close color-red' onClick={onRemoveLocal} title='Delete'></i>
+            </div>
+          </td>
+        )}
       </>
     );
   };
@@ -92,12 +105,18 @@ const ContentOneRow = (props: {
 };
 
 export interface AdminProcessListPageProps {
+  isMultiple?: boolean;
+  selectedIds?: string[];
+  handleSelectedIds?: (ids: string[]) => void;
   css?: CssProps;
 }
 
 export const AdminProcessPage = () => <AdminProcessListPage />;
 
 export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
+  const isSelectMode = !!props.handleSelectedIds;
+  const itemNameMap: Record<string, string> = {};
+
   let searchValue: string = '';
   let sortKey = 'updatetime';
   const refUpdate = adminFrameHelper.getTabsHook();
@@ -112,7 +131,7 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
     const idx = await ActionSheetSelectPromise({
       title: `Are you sure you want to delete process ${id}?`,
       options: ['Confirm'],
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
     });
     if (idx === 0) {
       const result = await fetchProcessDelete(id);
@@ -134,6 +153,47 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
       return;
     }
     refUpdate?.newPage && (await refUpdate.newPage('Process: ' + id, AdminProcessEditPage(id)));
+  };
+
+  const onSelectedId = (id: string, name: string) => {
+    itemNameMap[id] = name;
+    if (props.isMultiple) {
+      if (props.selectedIds && !props.selectedIds.includes(id)) {
+        props.selectedIds.push(id);
+        selectedDom.value = makeSelectedList();
+      }
+    } else {
+      props.handleSelectedIds && props.handleSelectedIds([id]);
+    }
+  };
+
+  const onSelectedMultiIds = () => {
+    const ids = (props.selectedIds || []).filter((id) => !!id);
+    props.handleSelectedIds && props.handleSelectedIds(ids);
+  };
+
+  const onUnSelectedId = (id: string) => {
+    if (props.selectedIds) {
+      props.selectedIds.splice(props.selectedIds.indexOf(id), 1);
+      selectedDom.value = makeSelectedList();
+    }
+  };
+
+  const makeSelectedList = () => {
+    return (
+      <div class='row-box pb-m a-process-sel-box'>
+        Selected:
+        {props.selectedIds?.filter(Boolean).map((id) => (
+          <span class='a-process-sel-tag'>
+            {id + ': ' + (itemNameMap[id] || id)}
+            <i class='ifc-icon ma-close' onClick={() => onUnSelectedId(id)}></i>
+          </span>
+        ))}
+        <button class='button-base button-s ml-m' onClick={onSelectedMultiIds}>
+          Confirm
+        </button>
+      </div>
+    );
   };
 
   const onSearch = async (search?: string) => {
@@ -167,6 +227,8 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
     }
     pageIndex = result.pageIndex;
 
+    result.results.forEach((u) => (itemNameMap[u.processid] = u.name));
+
     return (
       <div>
         <PagingLink
@@ -186,15 +248,16 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
             <th>Name</th>
             <th>Package</th>
             <th>Access Level</th>
-            <th>Remark</th>
-            <th>Update Time</th>
-            <th>Action</th>
+            {!isSelectMode && <th>Remark</th>}
+            {!isSelectMode && <th>Update Time</th>}
+            {!isSelectMode && <th>Action</th>}
           </tr>
           {result.results.map((item) => (
             <ContentOneRow
               item={item}
-              onDelete={onDeleteLocal}
-              onEdit={onEditLocal}
+              onSelectedId={isSelectMode ? onSelectedId : undefined}
+              onDelete={isSelectMode ? undefined : onDeleteLocal}
+              onEdit={isSelectMode ? undefined : onEditLocal}
             />
           ))}
         </table>
@@ -214,6 +277,7 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
   };
 
   const listDom = new HtmlVar('');
+  const selectedDom = new HtmlVar(makeSelectedList());
 
   const css: CssProps = {
     display: 'flex',
@@ -221,6 +285,9 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
     padding: '0 8px',
     '&.admin-lst-hide-more .admin-control-box, &.admin-lst-hide-more .admin-check-box': {
       display: 'none',
+    },
+    '.a-process-lst-row-name': {
+      textAlign: 'left',
     },
     '.a-process-lst-row-ctl': {
       cursor: 'pointer',
@@ -255,17 +322,69 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
       color: 'var(--secondary-color)',
       fontSize: '12px',
     },
+    '.a-process-sel-box': {
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 2,
+      flexWrap: 'wrap',
+      gap: '8px',
+    },
+    '.a-process-sel-tag': {
+      padding: '2px 8px',
+      borderRadius: '4px',
+      backgroundColor: 'var(--secondary-bg-color)',
+      position: 'relative',
+      fontSize: '12px',
+    },
+    '.a-process-sel-tag i': {
+      position: 'absolute',
+      right: '-5px',
+      top: '-4px',
+      color: 'red',
+      cursor: 'pointer',
+      width: '16px',
+      height: '16px',
+    },
+    '.a-process-test-box': {
+      maxWidth: '900px',
+    },
+    '.a-process-test-box textarea': {
+      minHeight: '180px',
+      fontFamily: 'monospace',
+      resize: 'vertical',
+    },
+    '.a-process-test-result': {
+      minHeight: '180px',
+      padding: '8px',
+      border: 'var(--primary-border)',
+      backgroundColor: 'var(--secondary-bg-color)',
+      overflow: 'auto',
+      whiteSpace: 'pre-wrap',
+    },
     ...props.css,
   };
 
-  const onMore = () => {
+  const onExport = () => {
     ref.current?.classList.toggle('admin-lst-hide-more');
-  }
+  };
+
+  const onTestProcess = async () => {
+    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameHelper.getMaxTabsCount()) {
+      alert('You are opening too many tabs');
+      return;
+    }
+    if (refUpdate?.findAndActivate && refUpdate.findAndActivate('Process Test')) {
+      return;
+    }
+    refUpdate?.newPage && (await refUpdate.newPage('Process Test', AdminProcessTestPage()));
+  };
 
   const onExportSelected = () => {
     const checkboxes = ref.current?.querySelectorAll('.list .admin-check-box') as NodeListOf<HTMLInputElement>;
     if (!checkboxes) return;
-    const ids = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    const ids = Array.from(checkboxes)
+      .filter((cb) => cb.checked)
+      .map((cb) => cb.value);
     if (ids.length === 0) {
       NotificationMessage.sendMessage('Please select items to export.', NotificationColor.Warning);
       return;
@@ -283,7 +402,7 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
   return (
     <div ref={ref} css={css} class='admin-lst-hide-more'>
       <div class='admin-sub-title' style={{ marginBottom: '16px' }}>
-        Process Management
+        {isSelectMode ? 'Select Process' : 'Process Management'}
       </div>
       <div class='row-box pb-m' style={{ gap: '16px', alignItems: 'center' }}>
         <SearchInput placeholder='Search...' onSearch={onSearch} onClear={onSearch} />
@@ -302,19 +421,194 @@ export const AdminProcessListPage = (props: AdminProcessListPageProps) => {
             }}
           ></PopupMenu>
         </div>
-        <button onClick={onNewProcess} class='button-base'>
-          New Process
-        </button>
-        <button onClick={onMore} class='button-base'>
-          More...
-        </button>
+        {!isSelectMode && (
+          <button onClick={onNewProcess} class='button-base'>
+            New Process
+          </button>
+        )}
+        {!isSelectMode && (
+          <PopupMenu
+            list={['Export', 'Test']}
+            defaultValue={'More...'}
+            noUpdateLabel={true}
+            handleSelected={(text: string) => {
+              if (text === 'Export') {
+                onExport();
+              } else if (text === 'Test') {
+                onTestProcess();
+              }
+            }}
+          ></PopupMenu>
+        )}
       </div>
       <div class='row-box pb-m admin-control-box'>
-        <button onClick={onExportSelected} class='button-base'>
-          Export Selected
-        </button>
+        {!isSelectMode && (
+          <button onClick={onExportSelected} class='button-base'>
+            Export Selected
+          </button>
+        )}
       </div>
+      {props.isMultiple && selectedDom.node}
       <div class='list'>{listDom.node}</div>
     </div>
   );
+};
+
+export const AdminProcessTestPage = (defaultProcessId = '') => {
+  const ref: RefProps = {};
+  const resultDom = new HtmlVar('');
+  const refUpdate = adminFrameHelper.getTabsHook();
+  const defaultBody = '{\n  "processmode": "3"\n}';
+
+  const css: CssProps = {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '0 8px',
+    '.a-process-test-box': {
+      maxWidth: '900px',
+    },
+    '.a-process-test-row': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginBottom: '12px',
+    },
+    '.a-process-test-label': {
+      width: '120px',
+      fontWeight: 'bold',
+    },
+    '.a-process-test-body': {
+      minHeight: '180px',
+      fontFamily: 'monospace',
+      resize: 'vertical',
+    },
+    '.a-process-test-result': {
+      minHeight: '180px',
+      padding: '8px',
+      border: 'var(--primary-border)',
+      backgroundColor: 'var(--secondary-bg-color)',
+      overflow: 'auto',
+      whiteSpace: 'pre-wrap',
+    },
+  };
+
+  const onSelectProcess = async () => {
+    const currentId = (ref.$('.a-process-test-id')?.value || '').trim();
+    await AdminSelectProcess({
+      isMultiple: false,
+      selectedIds: currentId ? [currentId] : [],
+      handleSelectedIds: (ids: string[]) => {
+        ref.$('.a-process-test-id').value = ids[0] || '';
+      },
+    });
+  };
+
+  const onEditProcess = async () => {
+    const processId = (ref.$('.a-process-test-id')?.value || '').trim();
+    if (!processId) {
+      NotificationMessage.sendMessage('Please input process id.', NotificationColor.Warning);
+      return;
+    }
+    if (refUpdate?.getCount && refUpdate.getCount() > adminFrameHelper.getMaxTabsCount()) {
+      alert('You are opening too many tabs');
+      return;
+    }
+    if (refUpdate?.findAndActivate && refUpdate.findAndActivate('Process: ' + processId)) {
+      return;
+    }
+    refUpdate?.newPage && (await refUpdate.newPage('Process: ' + processId, AdminProcessEditPage(processId)));
+  };
+
+  const onRunProcess = async () => {
+    const processId = (ref.$('.a-process-test-id')?.value || '').trim();
+    const bodyText = (ref.$('.a-process-test-body')?.value || '').trim();
+
+    if (!processId) {
+      NotificationMessage.sendMessage('Please input process id.', NotificationColor.Warning);
+      return;
+    }
+
+    let body: Record<string, any> = {};
+    if (bodyText) {
+      try {
+        const parsed = JSON.parse(bodyText);
+        if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+          NotificationMessage.sendMessage('Post body must be a JSON object.', NotificationColor.Warning);
+          return;
+        }
+        body = parsed;
+      } catch (e: any) {
+        NotificationMessage.sendMessage('Invalid JSON: ' + (e?.message || e), NotificationColor.Error);
+        return;
+      }
+    }
+
+    resultDom.value = <pre class='a-process-test-result'>Running...</pre>;
+    const response = await getRenderPageProps().renderPageFunctions.fetchData(
+      `/api/admin/process/run/${encodeURIComponent(processId)}`,
+      body
+    );
+    const result = response?.json ?? { text: response?.text ?? '' };
+    resultDom.value = <pre class='a-process-test-result'>{JSON.stringify(result, null, 2)}</pre>;
+  };
+
+  return (
+    <div ref={ref} css={css}>
+      <div class='admin-sub-title' style={{ marginBottom: '16px' }}>
+        Process Test
+      </div>
+      <div class='a-process-test-box'>
+        <div class='a-process-test-row'>
+          <label class='a-process-test-label'>Process ID:</label>
+          <input class='input-base flex-1 a-process-test-id' type='text' value={defaultProcessId} />
+          <button class='button-base' onClick={onSelectProcess}>
+            Select
+          </button>
+          <button class='button-base' onClick={onEditProcess}>
+            Edit
+          </button>
+        </div>
+        <div class='mb-m'>
+          <label class='a-process-test-label'>Post Body JSON:</label>
+          <textarea class='input-base w-100p a-process-test-body'>{defaultBody}</textarea>
+        </div>
+        <div class='row-box pb-m'>
+          <button class='button-base' onClick={onRunProcess}>
+            Run
+          </button>
+        </div>
+        <div class='mb-m'>Result:</div>
+        {resultDom.node || <pre class='a-process-test-result'></pre>}
+      </div>
+    </div>
+  );
+};
+
+export interface AdminSelectProcessProps {
+  isMultiple?: boolean;
+  selectedIds?: string[];
+  handleSelectedIds: (ids: string[]) => void;
+}
+
+export const AdminSelectProcess = async (props: AdminSelectProcessProps) => {
+  const handleSelectedIds = async (ids: string[]) => {
+    closeFn();
+    props.handleSelectedIds(ids);
+  };
+  const content = (
+    <AdminProcessListPage
+      isMultiple={props.isMultiple}
+      selectedIds={props.selectedIds}
+      handleSelectedIds={handleSelectedIds}
+      css={{ padding: '0 8px 8px 8px' }}
+    />
+  );
+
+  const closeFn = await ActionSheet.show({
+    title: 'Select Process',
+    children: content,
+    cancelButtonText: 'Cancel',
+    contentMaxHeight: '90%',
+    contentMaxWidth: '90%',
+  });
 };

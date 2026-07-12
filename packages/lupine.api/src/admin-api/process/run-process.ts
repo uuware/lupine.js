@@ -9,13 +9,7 @@
  *   3. finishItems() — collect results into context.output for form rendering
  */
 
-import {
-  FieldObject,
-  VectorObject,
-  EntityObject,
-  ListObject,
-  createFieldObject,
-} from './field-objects';
+import { FieldObject, VectorObject, EntityObject, ListObject, createFieldObject } from './field-objects';
 import { createClass } from './class-registry';
 import { ProcessContext } from './process-context';
 
@@ -38,6 +32,7 @@ export interface ItemDef {
     physicalId?: string;
     tableId?: string;
     filter?: string;
+    sessionscope?: string;
   };
   /** Child fields (for entity/list) */
   children?: ItemDef[];
@@ -45,7 +40,7 @@ export interface ItemDef {
 
 /** Definition of a field binding within a class */
 export interface ClassFieldDef {
-  /** Setter method name, e.g. 'setFields', 'setOutField' */
+  /** Field binding name from the editor, e.g. 'fields', or actual setter method, e.g. 'setFields' */
   setter: string;
   /** Connected variable(s):
    *   - string: single field name like 'fieldA', or fixed value '=xxx', or list child '*fieldB'
@@ -68,15 +63,125 @@ export interface ClassDef {
   listName?: string;
   /** Sub-classes to run per list record */
   listClasses?: ClassDef[];
+  /** Run type: PHP uses 1=Check, 2=Logic, 3=View; editor uses names */
+  runType?: string | number;
+  /** Legacy/compiled alias for runType */
+  Mode?: string | number;
 }
 
 // ---------------------------------------------------------------------------
 // initItems — create and populate field objects from item definitions
 // ---------------------------------------------------------------------------
 
+function ensureItemExt(item: ItemDef): NonNullable<ItemDef['ext']> {
+  if (!item.ext) item.ext = {};
+  return item.ext;
+}
+
+function setItemTypeFlag(item: ItemDef, flag: 'F,' | 'E,' | 'L,'): void {
+  item.flags = flag + (item.flags || '').replace(/F,|E,|L,/g, '');
+}
+
+function findItem(items: ItemDef[], name: string): ItemDef | null {
+  for (const item of items) {
+    if (item.name === name) return item;
+    if (item.children) {
+      const found = findItem(item.children, name);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function normalizeItemDefaults(items: ItemDef[]): void {
+  for (const item of items) {
+    item.flags = item.flags || '';
+    if (item.children && item.children.length > 0) {
+      if (!item.flags.includes('E,') && !item.flags.includes('L,')) {
+        setItemTypeFlag(item, 'E,');
+      }
+      normalizeItemDefaults(item.children);
+    } else if (!item.flags.includes('F,') && !item.flags.includes('E,') && !item.flags.includes('L,')) {
+      setItemTypeFlag(item, 'F,');
+    }
+
+    if (!item.children || item.children.length === 0) {
+      const ext = ensureItemExt(item);
+      if (ext.physicalId == null) ext.physicalId = item.name;
+    }
+  }
+}
+
+function getClassFieldInfo(cls: any, fieldDef: ClassFieldDef): Record<string, unknown> | null {
+  const setterName = resolveSetterName(cls, fieldDef.setter);
+  const names: string[] = [];
+  if (fieldDef.setter) {
+    names.push('get' + fieldDef.setter.charAt(0).toUpperCase() + fieldDef.setter.slice(1) + 'Info');
+  }
+  if (setterName.startsWith('set') && setterName.length > 3) {
+    names.push('get' + setterName.substring(3) + 'Info');
+  }
+
+  for (const name of names) {
+    if (typeof cls[name] === 'function') {
+      return cls[name]();
+    }
+  }
+  return null;
+}
+
+function getDirectItemRef(value: string | string[]): string | null {
+  if (Array.isArray(value) || value === '') return null;
+  const prefix = value[0];
+  if (prefix === '=' || prefix === '@' || prefix === '$' || prefix === '*') return null;
+  return value;
+}
+
+function normalizeItemsForClassBindings(items: ItemDef[], classes: ClassDef[]): void {
+  normalizeItemDefaults(items);
+
+  for (const classDef of classes) {
+    const cls = createClass(classDef.name);
+    const bindings = classDef.fields
+      .map((fieldDef) => {
+        const ref = getDirectItemRef(fieldDef.value);
+        const item = ref ? findItem(items, ref) : null;
+        const info = getClassFieldInfo(cls, fieldDef);
+        return { fieldDef, item, info };
+      })
+      .filter((binding) => binding.item && binding.info);
+
+    for (const binding of bindings) {
+      if (binding.info!.list) setItemTypeFlag(binding.item!, 'L,');
+      else if (binding.info!.entity) setItemTypeFlag(binding.item!, 'E,');
+    }
+
+    const keyItem = bindings.find((binding) => binding.fieldDef.setter.toLowerCase() === 'keyentity')?.item;
+    if (
+      classDef.name === 'SelectRecord' ||
+      classDef.name === 'SelectOneRecord' ||
+      classDef.name === 'SelectAllRecord'
+    ) {
+      const listItem = bindings.find((binding) => binding.fieldDef.setter.toLowerCase() === 'listobject')?.item;
+      if (keyItem?.ext?.tableId && listItem && !listItem.ext?.tableId) {
+        ensureItemExt(listItem).tableId = keyItem.ext.tableId;
+      }
+    } else if (classDef.name === 'LoadEntity') {
+      const entityItem = bindings.find((binding) => binding.fieldDef.setter.toLowerCase() === 'entity')?.item;
+      if (keyItem?.ext?.tableId && entityItem && !entityItem.ext?.tableId) {
+        ensureItemExt(entityItem).tableId = keyItem.ext.tableId;
+      }
+    }
+
+    if (classDef.listClasses) {
+      normalizeItemsForClassBindings(items, classDef.listClasses);
+    }
+  }
+}
+
 /**
  * Initialize all field/entity/list objects and populate with input values.
- * Equivalent to PHP initItem() — simplified (no session scope).
+ * Equivalent to PHP initItem() — simplified (session persistence is not implemented).
  */
 export function initItems(ctx: ProcessContext, items: ItemDef[]): void {
   for (const item of items) {
@@ -103,6 +208,7 @@ export function initItems(ctx: ProcessContext, items: ItemDef[]): void {
     const obj = ctx.vars[item.name];
     obj.setFieldId(item.name);
     if (item.ext?.filter) obj.setFilter(item.ext.filter);
+    if (item.ext?.sessionscope) obj.setSessionScope(item.ext.sessionscope);
 
     // Set value from input or default
     if (item.name in ctx.input) {
@@ -122,10 +228,14 @@ export function initItems(ctx: ProcessContext, items: ItemDef[]): void {
 
         if (child.ext?.physicalId) childField.setPhysicalId(child.ext.physicalId);
         if (child.ext?.filter) childField.setFilter(child.ext.filter);
+        if (child.ext?.sessionscope) childField.setSessionScope(child.ext.sessionscope);
 
-        // Set value from input or default
+        // Set value from input or default. Entity children are emitted as parent/child,
+        // but the test UI and older compiled bindings may still use bare child names.
         if (childKey in ctx.input) {
           childField.setShowValue(ctx.input[childKey]);
+        } else if (child.name in ctx.input) {
+          childField.setShowValue(ctx.input[child.name]);
         } else {
           childField.setValue(child.defaultValue as any);
         }
@@ -133,7 +243,48 @@ export function initItems(ctx: ProcessContext, items: ItemDef[]): void {
         ctx.vars[childKey] = childField;
         parentObj.addItem(childField);
       }
+
+      if (obj instanceof ListObject) {
+        setPostToList(ctx, obj);
+      }
     }
+  }
+}
+
+function setPostToList(ctx: ProcessContext, list: ListObject): void {
+  list.clearRecords();
+  const listId = list.getFieldId();
+  const templateItems = list.getItems();
+  const postedFieldIds = new Set<string>();
+
+  for (const item of templateItems) {
+    const id = item.getFieldId();
+    if (Object.prototype.hasOwnProperty.call(ctx.input, listId + '/' + id + '#0')) {
+      postedFieldIds.add(id);
+    }
+  }
+
+  for (let index = 0; ; index++) {
+    const entity = new EntityObject();
+    let stop = true;
+
+    for (const item of templateItems) {
+      const field = item.clone();
+      const id = field.getFieldId();
+      if (postedFieldIds.has(id)) {
+        const inputKey = listId + '/' + id + '#' + index;
+        if (Object.prototype.hasOwnProperty.call(ctx.input, inputKey)) {
+          field.setShowValue(ctx.input[inputKey]);
+          stop = false;
+        }
+      }
+      entity.addItem(field);
+    }
+
+    if (stop) {
+      return;
+    }
+    list.addRecord(entity);
   }
 }
 
@@ -201,20 +352,29 @@ export function finishItems(ctx: ProcessContext, items: ItemDef[]): void {
 // bindClassFields — bind variables to a class instance
 // ---------------------------------------------------------------------------
 
+function resolveSetterName(cls: any, setter: string): string {
+  if (typeof cls[setter] === 'function') {
+    return setter;
+  }
+
+  if (setter) {
+    const methodName = 'set' + setter.charAt(0).toUpperCase() + setter.slice(1);
+    if (typeof cls[methodName] === 'function') {
+      return methodName;
+    }
+  }
+
+  throw new Error(`Class ${cls.constructor.name} has no method "${setter}"`);
+}
+
 function bindClassFields(
   cls: any,
   fieldDefs: ClassFieldDef[],
   vars: Record<string, FieldObject>,
-  listEntity?: EntityObject,
+  listEntity?: EntityObject
 ): void {
   for (const fDef of fieldDefs) {
-    const setterName = fDef.setter;
-
-    if (typeof cls[setterName] !== 'function') {
-      throw new Error(
-        `Class ${cls.constructor.name} has no method "${setterName}"`,
-      );
-    }
+    const setterName = resolveSetterName(cls, fDef.setter);
 
     if (Array.isArray(fDef.value)) {
       // Multi: create VectorObject with all referenced fields
@@ -246,7 +406,7 @@ function bindClassFields(
 function resolveFieldRef(
   ref: string,
   vars: Record<string, FieldObject>,
-  listEntity?: EntityObject,
+  listEntity?: EntityObject
 ): FieldObject | null {
   if (!ref) return null;
 
@@ -281,10 +441,22 @@ function resolveFieldRef(
 
   // Direct variable reference
   const field = vars[ref];
-  if (!field) {
-    throw new Error(`Variable "${ref}" not found in process vars`);
+  if (field) {
+    return field;
   }
-  return field;
+
+  // Entity children are stored as parent/child in vars. Older process JSON and the
+  // editor can still bind a child as just "child", so accept an unambiguous suffix.
+  const suffix = '/' + ref;
+  const matchedKeys = Object.keys(vars).filter((key) => key.endsWith(suffix));
+  if (matchedKeys.length === 1) {
+    return vars[matchedKeys[0]];
+  }
+  if (matchedKeys.length > 1) {
+    throw new Error(`Variable "${ref}" is ambiguous in process vars: ${matchedKeys.join(', ')}`);
+  }
+
+  throw new Error(`Variable "${ref}" not found in process vars`);
 }
 
 // ---------------------------------------------------------------------------
@@ -308,14 +480,53 @@ function checkCondition(cls: any): boolean {
   // Comparison-based conditions
   switch (filter) {
     case '':
-    case '=':  return fieldVal == condVal;
-    case '<>': return fieldVal != condVal;
-    case '>':  return fieldVal > condVal;
-    case '>=': return fieldVal >= condVal;
-    case '<':  return fieldVal < condVal;
-    case '<=': return fieldVal <= condVal;
-    default:   return false;
+    case '=':
+      return fieldVal == condVal;
+    case '<>':
+      return fieldVal != condVal;
+    case '>':
+      return fieldVal > condVal;
+    case '>=':
+      return fieldVal >= condVal;
+    case '<':
+      return fieldVal < condVal;
+    case '<=':
+      return fieldVal <= condVal;
+    default:
+      return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// shouldRunClass — evaluate PHP process run modes
+// ---------------------------------------------------------------------------
+
+function getProcessMode(ctx: ProcessContext): string {
+  const mode = ctx.input.processmode ?? ctx.input.PROCESSMODE ?? ctx.input.mode ?? '3';
+  return normalizeRunType(mode);
+}
+
+function normalizeRunType(runType: string | number | undefined): string {
+  const value = String(runType ?? '').trim();
+  switch (value.toLowerCase()) {
+    case '1':
+    case 'check':
+      return '1';
+    case '2':
+    case 'logic':
+      return '2';
+    case '3':
+    case 'view':
+      return '3';
+    default:
+      return value;
+  }
+}
+
+function shouldRunClass(ctx: ProcessContext, classDef: ClassDef): boolean {
+  const mode = getProcessMode(ctx);
+  const classMode = normalizeRunType(classDef.runType ?? classDef.Mode ?? '2');
+  return mode === classMode || (mode === '3' && classMode === '2');
 }
 
 // ---------------------------------------------------------------------------
@@ -326,7 +537,7 @@ async function executeClassChain(
   ctx: ProcessContext,
   classDefs: ClassDef[],
   vars: Record<string, FieldObject>,
-  listEntity?: EntityObject,
+  listEntity?: EntityObject
 ): Promise<boolean> {
   let grpLast = '';
   let result = true;
@@ -337,9 +548,13 @@ async function executeClassChain(
       break;
     }
 
+    if (!shouldRunClass(ctx, cDef)) {
+      continue;
+    }
+
     // Create class instance
     const cls = createClass(cDef.name);
-    cls._setProcessId(cDef.name);
+    cls._setProcessId(ctx.processId);
     cls._setContext(ctx);
 
     // Bind fields
@@ -371,12 +586,9 @@ async function executeClassChain(
  * @param classes      Class definitions (compiled from editor)
  * @returns            true if all classes succeeded, false if any returned false
  */
-export async function runProcess(
-  ctx: ProcessContext,
-  items: ItemDef[],
-  classes: ClassDef[],
-): Promise<boolean> {
+export async function runProcess(ctx: ProcessContext, items: ItemDef[], classes: ClassDef[]): Promise<boolean> {
   // 1. Initialize all items
+  normalizeItemsForClassBindings(items, classes);
   initItems(ctx, items);
 
   // 2. Execute class chain
@@ -387,6 +599,10 @@ export async function runProcess(
     // If error and next group is different, break
     if (!result && cDef.group !== grpLast) {
       break;
+    }
+
+    if (!shouldRunClass(ctx, cDef)) {
+      continue;
     }
 
     // List-bound class: loop over each record in the list
@@ -408,7 +624,7 @@ export async function runProcess(
 
     // Normal class
     const cls = createClass(cDef.name);
-    cls._setProcessId(cDef.name);
+    cls._setProcessId(ctx.processId);
     cls._setContext(ctx);
 
     // Bind fields

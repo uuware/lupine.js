@@ -21,11 +21,15 @@ export class ProcessContext {
   /** Process variables — the FieldObject instances, keyed by field name */
   vars: Record<string, FieldObject> = {};
 
+  /** Process id — route/compiler identity, not part of posted input */
+  processId = '';
+
   /** Error flag — set to true if any class returns false */
   hasError = false;
 
-  constructor(input?: Record<string, string>) {
+  constructor(input?: Record<string, string>, processId = '') {
     this.input = input ?? {};
+    this.processId = processId;
   }
 
   /**

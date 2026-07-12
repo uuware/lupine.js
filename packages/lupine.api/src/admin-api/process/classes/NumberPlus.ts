@@ -7,41 +7,40 @@ import { FieldObject, VectorObject, EntityObject, ListObject, FieldType } from '
 
 export class NumberPlus extends ProcessBase {
   fields: FieldObject | VectorObject | null = null;
-  getFieldsInfo() { return { multi: true, type: FieldType.String }; }
+  getFieldsInfo() {
+    return { multi: true, type: FieldType.String };
+  }
   setFields(fields: FieldObject | VectorObject): void {
     this.fields = fields;
   }
 
   outfield: FieldObject | VectorObject | null = null;
-  getOutfieldInfo() { return { multi: true, type: FieldType.String }; }
+  getOutfieldInfo() {
+    return { multi: true, type: FieldType.String };
+  }
   setOutfield(outfield: FieldObject | VectorObject): void {
     this.outfield = outfield;
   }
 
   override execute(): boolean | void {
+    if (!this.chkNull('fields')) {
+      return false;
+    }
+    if (!this.chkNull('outfield')) {
+      return false;
+    }
 
-		if(!this.chkNull('fields')) {
-			return false;
-		}
-		if(!this.chkNull('outfield')) {
-			return false;
-		}
+    let out = 0;
+    if (this.fields instanceof VectorObject) {
+      const cnt = this.fields.itemSize();
+      for (let i = 0; i < cnt; i++) {
+        const item = this.fields.getItem(i);
+        out += Number(item?.getValue() || 0);
+      }
+    } else {
+      out += Number(this.fields?.getValue() || 0);
+    }
 
-		let out = 0;
-		if(this.fields instanceof VectorObject) {
-			cnt = this.fields.itemSize();
-			for (let i = 0; i < cnt; i++) {
-				//importent! if no unset(...) then all used of be the same one!!!
-				
-				item = this.fields.getItem(i);
-				out += item?.getValue();
-			}
-		}
-		else {
-			out += this.fields?.getValue();
-		}
-
-		this._setFieldValue('outfield', out);
-	
+    this._setFieldValue('outfield', out);
   }
 }

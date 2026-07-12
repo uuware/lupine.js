@@ -3,27 +3,28 @@
  */
 
 import { ProcessBase } from '../process-base';
-import { FieldObject, VectorObject, EntityObject, ListObject, FieldType } from '../field-objects';
+import { EntityObject, FieldType } from '../field-objects';
 
 export class CleanEntity extends ProcessBase {
   entity: EntityObject | null = null;
-  getEntityInfo() { return { entity: true, type: FieldType.String }; }
+  getEntityInfo() {
+    return { entity: true, type: FieldType.String };
+  }
   setEntity(entity: EntityObject): void {
     this.entity = entity;
   }
 
   override execute(): boolean | void {
+    this.chkNull('entity', 'EntityObject');
 
-		this.chkNull('entity', 'EntityObject');
+    const cnt = this.entity!.itemSize();
+    for (let i = 0; i < cnt; i++) {
+      const item = this.entity!.getItem(i);
+      if (item) {
+        item.setValue('');
+      }
+    }
 
-		// _traceArray('enter, entity:', this.entity);
-
-		cnt = this.entity.itemSize();
-		for (let i = 0; i < cnt; i++) {
-			this.entity.getItem(i).setValue( '' );
-		}
-
-		// _traceArray('end, entity:', this.entity);
-	
+    return true;
   }
 }
