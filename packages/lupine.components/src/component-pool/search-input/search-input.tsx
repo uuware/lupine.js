@@ -7,6 +7,7 @@ export interface SearchInputHookProps {
 export interface InputWithClearProps {
   placeholder?: string;
   onSearch: (value: string) => void;
+  onChange?: (value: string) => void;
   onClear?: () => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -109,6 +110,7 @@ export const SearchInput = (props: InputWithClearProps) => {
             onSearch();
           }
         }}
+        onInput={(e) => props.onChange?.((e.target as HTMLInputElement).value)}
         onBlur={() => props.onBlur?.()}
         onFocus={() => props.onFocus?.()}
       />

@@ -42,7 +42,6 @@ const createMenuItem = (
   expanded,
 });
 
-
 // Single menu item card component
 const MenuItemCard = (props: {
   item: MenuItem;
@@ -59,7 +58,12 @@ const MenuItemCard = (props: {
   const { item } = props;
 
   return (
-    <div class='menu-item-card' style={{ marginLeft: `${item.level * 40}px` }} data-index={props.itemIndex}>
+    <div
+      class='menu-item-card'
+      style={{ marginLeft: `${item.level * 40}px` }}
+      data-index={props.itemIndex}
+      data-item-id={item.id}
+    >
       <div class='menu-item-header'>
         <div
           class='menu-item-drag'
@@ -78,11 +82,9 @@ const MenuItemCard = (props: {
           <span class='menu-item-title'>{item.text || '(untitled)'}</span>
           <div class='menu-item-badges'>
             <span class={`menu-item-access-badge access-${item.access}`}>{getAccessLabel(item.access)}</span>
-            {item.link && (
-              <span class='menu-item-link-badge' title={item.link}>
-                {item.link}
-              </span>
-            )}
+            <span class='menu-item-link-badge' title={item.link} style={{ display: item.link ? '' : 'none' }}>
+              {item.link}
+            </span>
           </div>
         </div>
         <div class='menu-item-header-actions'>
@@ -135,7 +137,9 @@ const MenuItemCard = (props: {
                 onChange={(e: any) => props.onUpdate('access', e.target.value)}
               >
                 {getAccessLevelOptions(item.access).map((al) => (
-                  <option value={al.value} selected={al.selected}>{al.label}</option>
+                  <option value={al.value} selected={al.selected}>
+                    {al.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -170,7 +174,7 @@ export const AdminMenuEditPage = (menuId: string) => {
       '.hdr-value': {
         fontSize: '14px',
         fontWeight: 'bold',
-      }
+      },
     };
     titleDom.value = (
       <div css={css}>
@@ -195,6 +199,38 @@ export const AdminMenuEditPage = (menuId: string) => {
   };
 
   // ── Helpers ──
+  const updateItemSummaryDom = (item: MenuItem, field: string) => {
+    const card = ref.$(`.menu-item-card[data-item-id="${item.id}"]`) as HTMLDivElement;
+    if (!card) return;
+
+    if (field === 'text') {
+      const titleDom = card.querySelector('.menu-item-title') as HTMLSpanElement;
+      if (titleDom) titleDom.textContent = item.text || '(untitled)';
+      return;
+    }
+
+    if (field === 'link') {
+      const linkDom = card.querySelector('.menu-item-link-badge') as HTMLSpanElement;
+      if (linkDom) {
+        linkDom.textContent = item.link;
+        linkDom.title = item.link;
+        linkDom.style.display = item.link ? '' : 'none';
+      }
+      return;
+    }
+
+    if (field === 'access') {
+      const accessDom = card.querySelector('.menu-item-access-badge') as HTMLSpanElement;
+      if (accessDom) {
+        accessDom.textContent = getAccessLabel(item.access);
+        Array.from(accessDom.classList).forEach((className) => {
+          if (className.startsWith('access-')) accessDom.classList.remove(className);
+        });
+        accessDom.classList.add(`access-${item.access}`);
+      }
+    }
+  };
+
   const renderItems = () => {
     itemsDom.value = (
       <div class='menu-items-list'>
@@ -209,7 +245,7 @@ export const AdminMenuEditPage = (menuId: string) => {
             }}
             onUpdate={(field, value) => {
               (item as any)[field] = value;
-              renderItems();
+              updateItemSummaryDom(item, field);
             }}
             onDelete={() => doDelete(index)}
             onMoveUp={() => doMoveUp(index)}
@@ -376,7 +412,10 @@ export const AdminMenuEditPage = (menuId: string) => {
 
           const regex = /^[a-z0-9_\-#]+$/;
           if (!id || !regex.test(id)) {
-            NotificationMessage.sendMessage('Menu ID can only contain lowercase letters, numbers, and underscores.', NotificationColor.Warning);
+            NotificationMessage.sendMessage(
+              'Menu ID can only contain lowercase letters, numbers, and underscores.',
+              NotificationColor.Warning
+            );
             return;
           }
 
@@ -420,7 +459,7 @@ export const AdminMenuEditPage = (menuId: string) => {
               const idx = await ActionSheetSelectPromise({
                 title: `Menu ID "${id}" already exists.\n\nDo you want to overwrite it?`,
                 options: ['Overwrite'],
-                cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel',
               });
               if (idx === 0) {
                 executeSave(true);
@@ -429,7 +468,7 @@ export const AdminMenuEditPage = (menuId: string) => {
               const idx = await ActionSheetSelectPromise({
                 title: `${json.message}\n\nDo you want to overwrite anyway?`,
                 options: ['Force Overwrite'],
-                cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel',
               });
               if (idx === 0) {
                 executeSave(true);
@@ -447,51 +486,59 @@ export const AdminMenuEditPage = (menuId: string) => {
       },
       children: (
         <div style={{ padding: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Menu ID:</label>
-          <input 
-            type="text" 
-            value={id} 
-            onInput={(e: any) => id = e.target.value}
-            class="input-base"
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+            Menu ID:
+          </label>
+          <input
+            type='text'
+            value={id}
+            onInput={(e: any) => (id = e.target.value)}
+            class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Name:</label>
-          <input 
-            type="text" 
-            value={name} 
-            onInput={(e: any) => name = e.target.value}
-            class="input-base"
+          <input
+            type='text'
+            value={name}
+            onInput={(e: any) => (name = e.target.value)}
+            class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Package:</label>
-          <input 
-            type="text" 
-            value={pkg} 
-            onInput={(e: any) => pkg = e.target.value}
-            class="input-base"
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+            Package:
+          </label>
+          <input
+            type='text'
+            value={pkg}
+            onInput={(e: any) => (pkg = e.target.value)}
+            class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Access Level:</label>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+            Access Level:
+          </label>
           <select
             value={accesslevel}
-            onChange={(e: any) => accesslevel = e.target.value}
-            class="input-base"
+            onChange={(e: any) => (accesslevel = e.target.value)}
+            class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           >
             {getAccessLevelOptions(accesslevel).map((al) => (
-              <option value={al.value} selected={al.selected}>{al.label}</option>
+              <option value={al.value} selected={al.selected}>
+                {al.label}
+              </option>
             ))}
           </select>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Remark:</label>
-          <input 
-            type="text" 
-            value={remark} 
-            onInput={(e: any) => remark = e.target.value}
-            class="input-base"
+          <input
+            type='text'
+            value={remark}
+            onInput={(e: any) => (remark = e.target.value)}
+            class='input-base'
             style={{ width: '100%', marginBottom: '16px', padding: '8px' }}
           />
         </div>
-      )
+      ),
     });
   };
 
@@ -504,7 +551,7 @@ export const AdminMenuEditPage = (menuId: string) => {
     const idx = await ActionSheetSelectPromise({
       title: `Are you sure you want to delete menu "${savedMenuId}"?`,
       options: ['Delete'],
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
     });
     if (idx === 0) {
       await getRenderPageProps().renderPageFunctions.fetchData(`/api/admin/menu/delete/${savedMenuId}`);
@@ -527,7 +574,7 @@ export const AdminMenuEditPage = (menuId: string) => {
     const idx = await ActionSheetSelectPromise({
       title: 'Clear all menu items? This cannot be undone.',
       options: ['Clear All'],
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
     });
     if (idx !== 0) return;
     items = [];

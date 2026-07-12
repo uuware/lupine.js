@@ -1,4 +1,4 @@
-import { CssProps, RefProps } from 'lupine.components';
+import { CssProps, RefProps } from 'lupine.web';
 
 export type SelectAngleComponentHookProps = {
   setAngle?: (angle: number) => void;
@@ -21,7 +21,6 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
       position: 'relative',
       backgroundColor: 'var(--primary-bg-color)',
       cursor: 'pointer',
-      touchAction: 'none',
     },
     '&needle': {
       width: '2px',
@@ -80,9 +79,9 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
   const updateAngle = (ev: PointerEvent) => {
     const dx = ev.clientX - cx;
     const dy = ev.clientY - cy;
-    // atan2 返回弧度，顺时针0°为右侧
+    // atan2 return radians, 0° at right, clockwise
     let deg = Math.atan2(dy, dx) * (180 / Math.PI);
-    deg = (deg + 450) % 360; // 让上方为0°
+    deg = (deg + 450) % 360; // top is 0°
     updateAngleSub(deg);
   };
   const updateAngleSub = (deg: number) => {
@@ -99,7 +98,7 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
     cx = rect.left + rect.width / 2;
     cy = rect.top + rect.height / 2;
 
-    (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId);
+    (ev.target as HTMLElement).setPointerCapture(ev.pointerId);
     updateAngle(ev);
     mv = true;
   };
@@ -107,11 +106,17 @@ export const SelectAngleComponent = (props: SelectAngleComponentProps) => {
     if (!mv) {
       return;
     }
+    if (ev.buttons === 0) {
+      mv = false;
+      return;
+    }
     updateAngle(ev);
   };
   const pointerup = (ev: PointerEvent) => {
-    (ev.currentTarget as HTMLElement).releasePointerCapture(ev.pointerId);
     mv = false;
+    try {
+      (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
+    } catch (e) {}
   };
   const ref: RefProps = {};
   return (
