@@ -1,5 +1,5 @@
-import { RefProps, Spinner02, SpinnerSize } from 'lupine.components';
-import { CssProps, callUnload, mountInnerComponent } from 'lupine.components';
+import { RefProps, CssProps, callUnload, mountInnerComponent } from 'lupine.web';
+import { Spinner02, SpinnerSize } from './spinner';
 
 export type LoadingSpinHookProps = {
   show?: () => void;
@@ -7,6 +7,7 @@ export type LoadingSpinHookProps = {
 };
 export type LoadingSpinProps = {
   hook?: LoadingSpinHookProps;
+  text?: string;
 };
 export const LoadingSpinComponent = (props: LoadingSpinProps) => {
   const css: CssProps = {
@@ -20,7 +21,19 @@ export const LoadingSpinComponent = (props: LoadingSpinProps) => {
     zIndex: 'var(--layer-guide)',
     '.loading-gif': {
       display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '12px',
       margin: 'auto',
+    },
+    '.loading-gif-text': {
+      color: '#fff',
+      fontSize: '15px',
+      fontWeight: '500',
+      lineHeight: '22px',
+      padding: '0 24px',
+      textAlign: 'center',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.35)',
     },
   };
   if (props.hook) {
@@ -39,13 +52,14 @@ export const LoadingSpinComponent = (props: LoadingSpinProps) => {
     <div ref={ref} css={css} class='loading-gif-box'>
       <div class='loading-gif'>
         <Spinner02 size={SpinnerSize.Large} />
+        {props.text && <div class='loading-gif-text'>{props.text}</div>}
       </div>
     </div>
   );
 };
 
 export class LoadingSpin {
-  static async show(): Promise<() => void> {
+  static async show(text?: string): Promise<() => void> {
     const handleClose = async () => {
       await callUnload(base);
       base.remove();
@@ -53,7 +67,7 @@ export class LoadingSpin {
 
     const base = document.createElement('div');
     document.body.appendChild(base);
-    await mountInnerComponent(base, <LoadingSpinComponent />);
+    await mountInnerComponent(base, <LoadingSpinComponent text={text} />);
     return handleClose;
   }
 }
