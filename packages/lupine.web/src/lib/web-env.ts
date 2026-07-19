@@ -9,7 +9,7 @@ function webEnv(key: string, defaultValue: boolean): boolean;
 function webEnv(key: string, defaultValue: object): object;
 function webEnv(key: string, defaultValue: any): any {
   // for SSR, the webEnv should be initialized. But for the FE, it should be initialized by the webEnv script tag
-  if (!_webEnvInitialized) {
+  if (!_webEnvInitialized && typeof document !== 'undefined') {
     const json = document.querySelector('#web-env')?.textContent;
     if (json) {
       _webEnvInitialized = true;
@@ -17,29 +17,42 @@ function webEnv(key: string, defaultValue: any): any {
     }
   }
 
-  !_webEnvInitialized && console.warn('webEnv has not been initialized yet!');
-  if (typeof _webEnv[key] === 'undefined') {
+  let envStore: { [key: string]: string } | undefined;
+  const gThis = globalThis as any;
+  if (gThis.__SSR_ALS_PROPS__) {
+    const store = gThis.__SSR_ALS_PROPS__.getStore();
+    if (store && store.webEnv) {
+      envStore = store.webEnv;
+    }
+  }
+  const currentEnv = envStore || _webEnv;
+
+  if (!envStore && !_webEnvInitialized) {
+    console.warn('webEnv has not been initialized yet!');
+  }
+
+  if (typeof currentEnv[key] === 'undefined') {
     return defaultValue;
   }
 
   if (typeof defaultValue === 'number') {
-    return Number.parseInt(_webEnv[key]!);
+    return Number.parseInt(currentEnv[key]!);
   }
   if (typeof defaultValue === 'boolean') {
-    return _webEnv[key]!.toLocaleLowerCase() === 'true' || _webEnv[key] === '1';
+    return currentEnv[key]!.toLocaleLowerCase() === 'true' || currentEnv[key] === '1';
   }
   if (typeof defaultValue === 'object') {
-    if (typeof _webEnv[key] === 'object') {
-      return _webEnv[key];
+    if (typeof currentEnv[key] === 'object') {
+      return currentEnv[key];
     }
     try {
-      return JSON.parse(_webEnv[key]!);
+      return JSON.parse(currentEnv[key]!);
     } catch (error) {
       console.error(`webEnv JSON.parse error: `, error);
     }
     return defaultValue;
   }
-  return _webEnv[key] || defaultValue;
+  return currentEnv[key] || defaultValue;
 }
 // this is only called from the server side for SSR
 function initWebEnv(webEnv: { [key: string]: string }) {

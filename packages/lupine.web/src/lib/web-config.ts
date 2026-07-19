@@ -31,6 +31,15 @@ export class WebConfig {
       }
     }
 
+    const gThis = globalThis as any;
+    if (gThis.__SSR_ALS_PROPS__) {
+      const store = gThis.__SSR_ALS_PROPS__.getStore();
+      if (store && store.webSetting) {
+        this.cfg = store.webSetting;
+        return;
+      }
+    }
+
     if (!this.webConfigApi) {
       console.error('WebConfig webConfigApi is not set');
       return;
