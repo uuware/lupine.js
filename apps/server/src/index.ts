@@ -11,8 +11,6 @@ import {
 import { ServerEnvKeys } from './server-env-keys';
 
 const initAndStartServer = async () => {
-  setAccessControlAllowHost(['localhost', '127.0.0.1']);
-
   const envFile = process.argv.find((i) => i.startsWith('--env='))?.substring(6) || '.env';
   // it can use "#!import file_name" to import another env file
   await loadEnv(envFile);
@@ -21,15 +19,20 @@ const initAndStartServer = async () => {
   const serverRootPath = path.resolve(process.env[ServerEnvKeys.SERVER_ROOT_PATH]!);
   const apps = (process.env[ServerEnvKeys.APPS] || '').split(',');
   const webRootMap: HostToPathProps[] = [];
+  const accessControlAllowHosts = new Set(['localhost', '127.0.0.1']);
 
   const domainCerts: Record<string, { key: string; cert: string }> = {};
   for (const app of apps) {
-    const appHosts = process.env[`${ServerEnvKeys.DOMAINS}:${app}`] || '';
+    const appHosts = (process.env[`${ServerEnvKeys.DOMAINS}:${app}`] || '')
+      .split(',')
+      .map((host) => host.trim().toLowerCase())
+      .filter(Boolean);
+    appHosts.forEach((host) => accessControlAllowHosts.add(host));
     const dbFilename =
       process.env[`${ServerEnvKeys.DB_FILENAME}:${app}`] || process.env[`${ServerEnvKeys.DB_FILENAME}`] || 'sqlite3.db';
     webRootMap.push({
       appName: app,
-      hosts: appHosts ? appHosts.split(',') : [],
+      hosts: appHosts,
       // web, data, api folders should be created in building process
       webPath: path.join(serverRootPath, app + '_web'),
       dataPath: path.join(serverRootPath, app + '_data'),
@@ -38,19 +41,19 @@ const initAndStartServer = async () => {
       dbConfig: { ...dbConfig, filename: dbFilename },
     });
 
-    const appDomains = appHosts.split(',');
-    for (const domain of appDomains) {
+    for (const domain of appHosts) {
       domainCerts[domain] = {
         key: process.env[`${ServerEnvKeys.SSL_KEY_PATH}:${app}`] || '',
         cert: process.env[`${ServerEnvKeys.SSL_CRT_PATH}:${app}`] || '',
       };
     }
   }
+  setAccessControlAllowHost([...accessControlAllowHosts]);
 
   const bindIp = process.env[ServerEnvKeys.BIND_IP] || '::';
   // 0 to disable http/https server
-  const httpPort = Number.parseInt(process.env[ServerEnvKeys.HTTP_PORT] || '8080');
-  const httpsPort = Number.parseInt(process.env[ServerEnvKeys.HTTPS_PORT] || '8443');
+  const httpPort = Number.parseInt(process.env[ServerEnvKeys.HTTP_PORT] || '0');
+  const httpsPort = Number.parseInt(process.env[ServerEnvKeys.HTTPS_PORT] || '0');
   const sslKeyPath = process.env[ServerEnvKeys.SSL_KEY_PATH] || '';
   const sslCrtPath = process.env[ServerEnvKeys.SSL_CRT_PATH] || '';
 

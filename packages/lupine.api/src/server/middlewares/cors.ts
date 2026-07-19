@@ -12,7 +12,7 @@ export const setAccessControlAllowHost = (allowHosts: string[]) => {
 export const corsMiddleware = async (req: ServerRequest, res: ServerResponse, next: () => Promise<void>): Promise<void> => {
   const host = req.locals.host;
   
-  if (accessControlAllowHosts.includes(host)) {
+  if (accessControlAllowHosts.includes(host) || accessControlAllowHosts.includes('*')) {
     const originHeader = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : null;
     
     if (originHeader) {
