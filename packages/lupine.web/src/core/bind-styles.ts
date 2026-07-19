@@ -3,7 +3,7 @@ import { uniqueIdGenerator } from '../lib/unique-id';
 import { getCurrentTheme, themeCookieName } from './bind-theme';
 import { camelToHyphens } from './camel-to-hyphens';
 // import { bindPageResetEvent } from './page-reset-events';
-import { bindPageLoadedEvent } from './page-loaded-event';
+import { bindDomLoadedEvent } from './page-loaded-event';
 
 const wrapCss = (className: string, cssText: string, mediaQuery?: string) => {
   // if (!className) {
@@ -235,7 +235,7 @@ const generateThemeStyles = () => {
 
 if (typeof document !== 'undefined') {
   // Update theme in Browser when no SSR
-  bindPageLoadedEvent(() => {
+  bindDomLoadedEvent(() => {
     const uniqueStyleId = themeCookieName;
     let cssDom = document.getElementById(`sty-${uniqueStyleId}`);
     if (!cssDom) {

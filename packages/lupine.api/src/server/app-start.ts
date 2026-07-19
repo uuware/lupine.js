@@ -106,7 +106,7 @@ class AppStart {
     }
     // Emitted whenever a no-error-handler Promise is rejected
     process.on('unhandledRejection', (reason: string, promise) => {
-      console.error(`${process.pid} - Process on unhandledRejection, promise: `, promise, ', reason: ', reason);
+      console.error(`${process.pid} - Process on unhandledRejection, reason: `, reason);
     });
 
     // do something when app is closing
