@@ -6,7 +6,6 @@ import { getWebEnv } from '../lib';
 import { ServerRequest } from '../models/locals-props';
 import { ToClientDelivery } from './to-client-delivery';
 import { IToClientDelivery } from '../models/to-client-delivery-props';
-import { JsonObject } from '../models/json-object';
 import { getTemplateCache, apiCache } from './api-cache';
 import { getAppCache, AppCacheGlobal, AppCacheKeys } from '../models/app-cache-props';
 import { apiStorage } from './api-shared-storage';
@@ -178,6 +177,13 @@ export const serverSideRenderPage = async (
     if (!loadPromise) {
       loadPromise = (async () => {
         try {
+          const store = asyncLocalStorage.getStore();
+          const appWebEnv = getWebEnv(appName);
+          const webSetting = await apiStorage.getWebAll();
+          if (store) {
+            store.webEnv = appWebEnv;
+            store.webSetting = webSetting;
+          }
           const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
           let _lupineJs;
           try {
@@ -202,7 +208,7 @@ export const serverSideRenderPage = async (
 
           return {
             content: contentWithEnv,
-            webEnv: getWebEnv(appName),
+            webEnv: appWebEnv,
             ...indices,
             _lupineJs: _lupineJs,
           } as CachedHtmlProps;
