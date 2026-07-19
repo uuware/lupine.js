@@ -190,7 +190,11 @@ export const serverSideRenderPage = async (
             }
             _lupineJs = gThis._lupineJs() as _LupineJs;
           } catch (e: any) {
-            logger.error(e.message);
+            if (e.stack) {
+              logger.error(e.stack);
+            } else {
+              logger.error(e.message);
+            }
           }
 
           const contentWithEnv = content.toString();

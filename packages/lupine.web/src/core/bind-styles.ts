@@ -177,7 +177,7 @@ export const getGlobalStylesId = (style: CssProps): string => {
 
 import { appData, getRequestContext } from './use-request-context';
 
-// this is app common styles, for all sessions
+// this is app common styles, for all sessions, can be called out of component function
 export const bindAppGlobalStyle = (
   topUniqueClassName: string,
   style: CssProps,
@@ -198,7 +198,7 @@ export const bindAppGlobalStyle = (
   }
 };
 
-// this is for per session
+// this is for per session, so this should be called from a component function
 export const bindGlobalStyle = (
   topUniqueClassName: string,
   style: CssProps,
