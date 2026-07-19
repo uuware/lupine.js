@@ -31,7 +31,7 @@ export class HostToPath {
       }
     }
     for (let key in this.props) {
-      if (this.props[key].webPath && this.props[key].hosts.length === 0) {
+      if (this.props[key].webPath && (this.props[key].hosts.length === 0 || this.props[key].hosts.includes('*'))) {
         logger.debug(`Not found ${host} from any domains and use default app: ${this.props[key].appName}`);
         return this.props[key];
       }

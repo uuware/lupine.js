@@ -170,6 +170,8 @@ export class WebServer {
         // Fallback or exact
         if (ctx) {
           cb(null, ctx);
+        } else if (this.secureContexts['*']) {
+          cb(null, this.secureContexts['*']);
         } else {
           // Fallback to default (options.key/cert)
           cb(null, undefined);
