@@ -3,7 +3,7 @@ import { getCurrentTheme, updateTheme } from './bind-theme';
 import { mountInnerComponent } from './mount-component';
 import { renderComponentAsync } from './render-component';
 // import { callPageResetEvent } from './page-reset-events';
-import { callPageLoadedEvent } from './page-loaded-event';
+import { callDomLoadedEvent } from './page-loaded-event';
 
 import { IRequestContextProps, IToClientDelivery } from '../models';
 import { getMetaDataObject, getMetaDataTags, getPageTitle } from './bind-meta';
@@ -40,7 +40,7 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
   // initWebSetting(toClientDelivery.getWebSetting());
 
   // callPageResetEvent();
-  callPageLoadedEvent();
+  callDomLoadedEvent();
 
   const jsxNodes = await renderTargetPage(props, false);
   if (!jsxNodes || !jsxNodes.props) {
@@ -124,7 +124,7 @@ export const initializePage = async (newUrl?: string) => {
 
   setRenderPageProps(props);
   // can only call callPageLoadedEvent once after page refreshed
-  !currentPageInitialized && callPageLoadedEvent();
+  !currentPageInitialized && callDomLoadedEvent();
 
   const jsxNodes = await renderTargetPage(props, currentPageInitialized);
   if (jsxNodes === null) return;
