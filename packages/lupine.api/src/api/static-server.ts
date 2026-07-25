@@ -1,13 +1,19 @@
 // const request = require('request');
 import * as fs from 'fs';
 import * as path from 'path';
-import { ServerResponse } from 'http';
+import { IncomingHttpHeaders, ServerResponse } from 'http';
 import { Logger } from '../lib';
 import { ServerRequest } from '../models/locals-props';
 import { handler200, handler500 } from '../shared/handle-status';
 import { serverSideRenderPage } from './server-render';
 import { apiCache } from './api-cache';
 import { defaultSSOptions, serveStaticFileStream } from './static-server-helper';
+
+const getHeaderValue = (headers: IncomingHttpHeaders, name: string) => {
+  const value = headers[name];
+  if (Array.isArray(value)) return value.join(', ');
+  return value?.trim() || '';
+};
 
 export class StaticServer {
   logger = new Logger('StaticServer');
@@ -17,7 +23,14 @@ export class StaticServer {
   }
 
   async processRequest(req: ServerRequest, res: ServerResponse, rootUrl?: string) {
-    this.logger.info(`StaticServer, url: ${req.locals.url}, host: ${req.locals.host}, rootUrl: ${rootUrl}`);
+    const remoteAddress = req.socket.remoteAddress || '';
+    const xRealIp = getHeaderValue(req.headers, 'x-real-ip');
+    const xForwardedFor = getHeaderValue(req.headers, 'x-forwarded-for');
+    const userAgent = getHeaderValue(req.headers, 'user-agent');
+    const xForwardedForStr = xForwardedFor && xForwardedFor !== xRealIp ? `, xForwardedFor: ${xForwardedFor}` : '';
+    this.logger.info(
+      `StaticServer, host: ${req.locals.host}, remoteAddress: ${remoteAddress}, xRealIp: ${xRealIp}${xForwardedForStr}, userAgent: ${userAgent}, url: ${req.locals.url}`
+    );
 
     const hostPath = apiCache.getAsyncStore().hostPath;
     const urlSplit = (rootUrl || req.locals.urlWithoutQuery).split('?');
