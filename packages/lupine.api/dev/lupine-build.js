@@ -331,7 +331,8 @@ const start = async () => {
 
   // All apps should be defined in .env file like this:
   // APPS=domain1.com,domain2.com
-  const apps = (process.env['APPS'] || '').split(',');
+  const appsArg = process.argv.find((i) => i.startsWith('--apps='))?.substring(7);
+  const apps = (appsArg || process.env['APPS'] || '').split(',');
 
   const httpPort = process.env['HTTP_PORT'];
   const globalExternals = new Set();
