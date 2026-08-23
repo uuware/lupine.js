@@ -84,10 +84,5 @@ export const bindRef = (type: any, newProps: any, el: Element | Node, mounters: 
   newProps['ref'].mountOuterComponent = async (content: VNode<any>) => {
     mounters.mountOuterComponent && await mounters.mountOuterComponent(el as Element, content);
   };
-
-  if (!newProps['ref'].refresh) {
-    newProps['ref'].refresh = async () => {
-      console.warn('refresh() not available: This ref is not attached to a functional component root.');
-    };
-  }
 };
+
