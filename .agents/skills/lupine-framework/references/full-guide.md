@@ -1,0 +1,1004 @@
+# AI Context for Lupine.js
+
+**[CRITICAL SAFEGUARDS FOR CODE MODIFICATION]**
+When performing multi-line code refactoring or replacement operations (`replace_file_content` / `multi_replace_file_content`), massive block-level overwrites and arbitrary code restructuring are **STRICTLY PROHIBITED**!
+
+- Before making any modifications, you MUST invoke `view_file` or `grep_search` to verify the exact, up-to-date file structure and line numbers.
+- The `StartLine` and `EndLine` range MUST be restricted strictly to the absolute minimum lines you intend to modify or delete.
+- If you are merely inserting new code (e.g., adding a button or appending logic), target ONLY the immediately preceding line or bracket as your anchor. You are strictly forbidden from wrapping innocent, unmodified surrounding code into the `Replacement` payload. Violating this red line causes severe production accidents!
+
+**SYSTEM ROLE**: You are an expert developer in `lupine.js`, a custom TypeScript full-stack framework.
+
+**🛑 CRITICAL WARNINGS 🛑**
+
+1.  **`useState` EXISTS but rerenders the whole component**: Use it for simple/small components. For complex or large components, prefer `HtmlVar` for surgical, partial updates. **WARNING**: Because `useState` causes the entire parent component to re-render, any uncontrolled inner components/DOM elements that haven't explicitly saved their transient state will be abruptly reset to their default props. If you encounter bugs where interactive components (like toggles, inputs, animations) unexpectedly revert to their original state and lose data upon clicking or typing elsewhere, always check if a `useState` trigger in the parent is causing an unintended full reload.
+2.  **NO VIRTUAL DOM STATE by default**: Without `useState`, changing a variable DOES NOT re-render the component. You must manually update `HtmlVar.value`.
+3.  **NO CONTROLLED INPUTS**: Do not bind `value={state}`. Read values from DOM on submit.
+
+---
+
+## 1. Core Philosophy & Reactivity
+
+- **`useState` — React-style local state (small/simple components)**:
+
+  - Import: `import { useState } from 'lupine.components';`
+  - Syntax: `const [value, setValue] = useState(initial);` — calling `setValue(...)` rerenders the **entire** component.
+  - ✅ **Use when**: The component is small, state drives most of the UI, and the React-style patterns feel natural.
+  - ⚠️ **Avoid when**: The component is large/complex, or only a tiny portion of the UI needs to change (e.g. a progress counter, a list inside a page) — repeated full rerenders are wasteful.
+  - **`ref.onLoad` + useState**: `onLoad` is called **only on initial mount** (not on rerenders). It's the right place for async data fetch that populates state.
+  - **Async component functions**: Component functions **can be `async`** — the framework detects the returned Promise and `await`s it. This lets you `await fetch()` directly inside a component body. However, **all `useState()` calls MUST appear before the first `await`**. The internal `_currentStore` pointer is cleared immediately after the synchronous portion of the component executes (before any `await`), so calling `useState()` after an `await` will throw `"useState must be called inside a component function"`.
+
+    ```tsx
+    // ✅ Correct: useState before await
+    const MyComp = async (props) => {
+      const [data, setData] = useState(null); // hooks first
+      const result = await fetchData();        // await after hooks
+      return <div>{result.title}</div>;
+    };
+
+    // ❌ Wrong: useState after await — will crash
+    const MyComp = async (props) => {
+      const result = await fetchData();        // await first
+      const [data, setData] = useState(null); // 💥 _currentStore is null
+      return <div>{result.title}</div>;
+    };
+    ```
+
+- **`HtmlVar` — Surgical partial updates (large/complex components)**:
+
+  - Use `HtmlVar` to wrap dynamic sections (lists, conditional renderings, async content).
+  - **Pattern**: `const dom = new HtmlVar(initialContent);` → JSX `{dom.node}` → `dom.value = updatedContent`.
+  - ✅ **Use when**: Only a small part of a large component changes (e.g. list inside a page, progress text), or state is updated by external hooks (`props.hook.onProgress`), or high-frequency updates (file upload progress).
+  - The rest of the component DOM is never touched — highly efficient.
+
+- **Direct DOM Access**:
+  - Use `RefProps` to get reference to the component root.
+  - Use `ref.$(selector)` to find the first element, `ref.$all(selector)` to find all elements (inputs, containers).
+  - **Value Retrieval**: `const val = ref.$('input.my-class').value`.
+
+## 2. Key Interfaces
+
+### `RefProps` (Lifecycle & DOM)
+
+```typescript
+const ref: RefProps = {
+  // Mounted: Initialize data, timers, events
+  onLoad: async (el: Element) => {
+    await loadData();
+    // ref.$('.sub-element').addEventListener(...)
+  },
+  // Unmounting: Cleanup
+  onUnload: async (el: Element) => {
+    // Cleanup (timers, sockets)
+  },
+};
+// Usage
+<div ref={ref}>...</div>;
+```
+
+### `CssProps` (Styling)
+
+Supports nesting and media queries. **Prefer this over inline styles.** Define your styles in a `CssProps` object and bind them to the component's root JSX using the `css={css}` property. Use the `&` ampersand pattern (explained below) to guarantee unique class scoping.
+
+## 3. Styles & Themes ("The Look")
+
+### Global Variables (Theming) & Dark Mode Compatibility
+
+**NEVER hardcode colors** (e.g., `#000`, `#fff`, `#f0f0f0`). Always use CSS variables to support Dark/Light modes. If you must use a fallback, wrap it: `var(--primary-bg-color, #fff)`.
+
+**Defining Variables for Modes in CSS-in-JS**:
+Since Lupine.js uses a CSS-in-JS styling approach, when you need to define or override CSS variables specifically for light and dark modes within a component, use the `[data-theme="light" i]` and `[data-theme="dark" i]` selectors. **CRITICAL**: Because `CssProps` scopes styles by default, you MUST separate these mode styles into their own object and bind them using `bindGlobalStyle` with `noTopClassName = true` (the 4th argument).
+
+```typescript
+// 1. Separate theme variables into their own CSS object
+const cssTheme: CssProps = {
+  '[data-theme="light" i]': {
+    '--my-comp-bg-color': '#e6e6e6',
+  },
+  '[data-theme="dark" i]': {
+    '--my-comp-bg-color': 'var(--primary-accent-color)',
+  },
+};
+// 2. Bind globally. Param 4 (noTopClassName) MUST be true to prevent injecting a namespace prefix.
+bindGlobalStyle('my-comp-theme', cssTheme, false, true);
+
+// 3. Use the variable in your standard component styles
+const css: CssProps = {
+  '.&-element': {
+    backgroundColor: 'var(--my-comp-bg-color)',
+  },
+};
+// Bind your component styles normally
+bindGlobalStyle('my-comp-main', css);
+```
+
+#### 🎨 Color Variable Semantics (CRITICAL FOR DARK MODE)
+
+1.  **Backgrounds (`--primary-bg-color` vs `--secondary-bg-color`)**:
+    - `--primary-bg-color`: The lowest-level background (White in light mode, **Deep Black** in dark mode).
+    - `--secondary-bg-color`: An elevated background (Light gray in light mode, **Lighter Black/Gray** in dark mode).
+    - _⚠️ Dark Mode Trap_: If you place a floating panel/card on the main body, **do NOT** use `--primary-bg-color` for the panel. It will blend into the body's deep black and become invisible. Use `--secondary-bg-color` for elevated panels to ensure visual separation.
+2.  **Text Colors (`--primary-color` vs `--secondary-color`)**:
+    - `--primary-color`: The primary **TEXT** color. (Dark grey/black in light mode, **White** in dark mode).
+    - _⚠️ Dark Mode Trap_: **Never** use `--primary-color` as the background color for a blue "Primary Action Button". It will turn white in dark mode.
+    - Always explicitly declare `color: 'var(--primary-color, inherit)'` on cards/containers so child text properly flips white in dark mode.
+3.  **Action / Brand Colors (`--primary-accent-color`)**:
+    - `--primary-accent-color`: The vibrant brand color (e.g., Lupine Blue). Use this for the **backgrounds of primary buttons**, active tabs, slider fills, and highlights.
+    - When using this as a background, set the text color to `var(--primary-bg-color)` so it stays high-contrast (white) in both themes.
+4.  **Borders (`--primary-border` / `--secondary-border-color`)**:
+    - Replace all hardcoded `#eee`, `#ccc`, `#999` borders with these to ensure they darken appropriately in dark mode.
+5.  **Status Colors**:
+    - `--success-color`, `--warning-color`, `--error-color`, `--success-bg-color` (Use replacing hardcoded green/reds).
+6.  **Spacing**: `var(--space-m)` (8px), `var(--space-l)` (16px).
+
+### Standard Utility Classes
+
+- **Flexbox**: `.row-box` (flex row, align-center), `.col` (flex: 1).
+- **Margins/Padding**: `m-auto`, `p-m`, `mt-s`, `pb-l` (s=small, m=medium, l=large).
+- **Text**: `.text-center`, `.ellipsis`.
+
+### The Component CSS & Ampersand (`&`) Pattern (must go with RefProps)
+
+Lupine.js handles component-scoped CSS safely to avoid class collisions. The modern and **preferred** way to style components is to attach a `css={css}` prop to the root element and use the **Ampersand (`&`) Pattern**.
+
+When Lupine renders the component, it generates a unique ID (e.g., `l1234`) and replaces the `&` with this ID everywhere it's used.
+
+```typescript
+export const MyComponent = () => {
+  const ref: RefProps = {
+    onLoad: async () => {
+      // 3. Querying namespaced elements
+      const btn = ref.$('.&-btn');
+      btn.innerHTML = 'Ready';
+    },
+  };
+
+  const css: CssProps = {
+    // Top-level rules apply to the root component container itself
+    width: '100%',
+    padding: '1rem',
+
+    // 1. Defining namespaced sub-classes in CSS:
+    '.&-title': { fontWeight: 'bold' },
+    '.&-btn': {
+      // Nesting pseudo-classes and combination modifiers (no space after &)
+      '&:hover': { background: '#f0f0f0' },
+      '&.active': { color: 'var(--primary-accent-color)' },
+    },
+  };
+
+  return (
+    // Setting css={css} safely bounds this style scope
+    <aside css={css} ref={ref}>
+      {/* 2. Applying namespaced classes in JSX */}
+      <div class='&-title'>Hello</div>
+      <button class='&-btn active'>Click Me</button>
+    </aside>
+  );
+};
+```
+
+**Key Takeaways for `&` and `RefProps`**:
+
+1.  **In `CssProps` Binding**: The top-level keys in `CssProps` (like `display: 'flex'`) apply **directly** to the root element (the one attached to `ref={ref}`). **Do not** wrap your root styles in an artificial `.&-container`.
+    - `'&.active'` applies to the root element when it has the `.active` native class.
+    - `'.&-item'` applies to _descendant_ elements that have `class="&-item"`.
+2.  **In JSX `class` attributes**: Add `class="&-item"`. You can still mix native classes: `class="row-box &-item"`.
+3.  **In DOM Queries**:
+    - **🚨 NEVER use `document.querySelector('.&-item')` or `element.querySelector('.&-item')`**. Standard browser APIs DO NOT understand the `&` symbol and will fail to find the element.
+    - Use **`ref.$('.&-item')`** (WITH leading dot) to get the first matching element. The underlying logic replaces `&` with the generated CSS ID, so this correctly translates to querying `.l1234 .l1234-item` which safely finds descendants within the current component's isolated namespace.
+    - Use **`ref.$all('.&-item')`** to get a `NodeList` of all matching descendants within the component.
+
+## 4. CSS Placement Strategies & Sharing Scopes
+
+Lupine.js handles CSS scoping by generating unique IDs and replacing the `&` symbol in class names. Depending on where your components live, you have three strategies for sharing this CSS scope.
+
+### 4.1 Sharing CSS inside a method (Component Level)
+
+**Best for**: Complex components or pages where you define a single `const css: CssProps` and share it across sub-components rendered in the same function.
+
+When you assign `css={css}` to the root element, a unique ID is generated (e.g., `l01`).
+
+1. **Automatic Inheritance**: The top node's CSS ID will be automatically inherited by all descendant nodes in most cases. You **do not** need to pass it manually. 
+2. **HtmlVar Support**: Detached DOMs rendered via `HtmlVar` now automatically inherit the CSS ID of the element they are mounted into!
+3. **Explicit Linking (`referToCssId`)**: The **ONLY** time the inheritance chain is broken is when a sub-component defines its OWN `css` property (which creates a new CSS scope). If you want descendants of that sub-component to still use the top parent's CSS ID instead of the new one, you must explicitly pass `referToCssId`.
+
+```tsx
+import { domUniqueId, HtmlVar, RefProps, CssProps } from 'lupine.components';
+
+export const TestCssShareInside = () => {
+  const cssInner: CssProps = {
+    // Top-level rules apply to the root component
+    display: 'flex',
+    '.&-content': { color: 'red' },
+    '.&-sub-title': { fontWeight: 'bold' },
+    '.&-list-item': { color: 'blue' }
+  };
+
+  const ref: RefProps = { id: domUniqueId() };
+
+  // Example of a detached DOM using HtmlVar. 
+  // It automatically inherits the CSS ID when mounted inside the component!
+  const listDom = new HtmlVar('');
+  const renderList = () => {
+    listDom.value = (
+      <div class='&-list'>
+        <div class='&-list-item'>HtmlVar List Item</div>
+      </div>
+    );
+  };
+
+  const SubContent1 = () => {
+    const ref2: RefProps = { onLoad: async () => {} };
+    // This sub-component only has a ref, so it naturally inherits the parent's css ID!
+    return <div ref={ref2} class='&-sub-top'>Sub component without css.</div>;
+  };
+
+  const SubContent2 = (props: { children: VNode<any> }) => {
+    // ⚠️ This sub-component has its own `css`, which would break inheritance!
+    const css2: CssProps = { color: 'blue' };
+    const ref2: RefProps = {
+      // So we MUST explicitly link it using referToCssId if we still want parent's css id.
+      referToCssId: ref.id,
+      onLoad: async () => renderList()
+    };
+    
+    return (
+      <div ref={ref2} css={css2} class='&-sub-top'>
+        <div class='&-sub-title'>Sub component with its own css.</div>
+        {listDom.node}
+        {props.children}
+      </div>
+    );
+  };
+
+  return (
+    // 1. Assign css to the top node.
+    <div ref={ref} css={cssInner}>
+      {/* 2. Normal elements automatically inherit the CSS ID */}
+      <div class='&-content'>Content</div>
+      
+      {/* 3. SubContent1 automatically inherits */}
+      <SubContent1 />
+
+      {/* 4. SubContent2 explicitly overrides inheritance internally */}
+      <SubContent2>
+        <div class='&-sub'>Passed as parameter</div>
+      </SubContent2>
+    </div>
+  );
+};
+```
+
+### 4.2 Sharing CSS between components (Module Level)
+
+**Best for**: Reusable UI components (Buttons, Modals, List Items) that are rendered multiple times across the application, or when sharing a common style block between a few specific components.
+
+If you render 100 items using `css={}`, it injects 100 identical `<style>` blocks. To avoid this bloat, use `bindGlobalStyle` to inject the `<style>` block exactly once into the `<head>`, and share its ID using `referToCssId`.
+
+**How to share:**
+1. Define the CSS outside or inside of the component method.
+2. Inside the component, get the ID and bind it globally using `bindGlobalStyle()`.
+3. Assign `referToCssId` to the root element's `ref`, **and** add the `globalCssId` to the tag's `class` attribute.
+```tsx
+// 1. Define shared CSS
+const cssShared: CssProps = {
+  display: 'flex',
+  '.&-content': { color: 'red' },
+};
+
+export const TestGlobalCss = () => {
+  // 2. Get the unique ID and bind it globally (only happens once)
+  // By default, noTopClassName is false, meaning the globalCssId will be prefixed to top level selectors (e.g., '.g00 .g00-content').
+  const globalCssId = getGlobalStylesId(cssShared);
+  bindGlobalStyle(globalCssId, cssShared);
+
+  return (
+    // 3. Assign referToCssId AND manually add the globalCssId as a class name!
+    // Since bindGlobalStyle added `.g00` to the selectors, we MUST add `g00` to the top tag.
+    <div ref={{ referToCssId: globalCssId }} class={globalCssId}>
+      {/* & is automatically replaced by globalCssId */}
+      <div class='&-content'>Share CSS cross components</div>
+    </div>
+  );
+};
+```
+
+### 4.3 The `noTopClassName` Parameter
+
+When using `bindGlobalStyle` or `bindAppGlobalStyle`, the `noTopClassName` parameter (4th argument) dictates how top-level CSS selectors are compiled.
+
+- **`noTopClassName = false` (Default)**: 
+  `bindGlobalStyle(globalCssId, cssShared)` will prepend the ID to all top-level selectors.
+  If `cssShared` is `{ '.selector-1': {} }` and `globalCssId` is `g00`, it compiles to:
+  `'.g00 .selector-1' { ... }`
+  This is why you **must** add `class={globalCssId}` to the top tag. In this mode, `cssShared` can also contain styles applied directly to the top tag (e.g., `display: 'flex'`).
+
+- **`noTopClassName = true`**: 
+  `bindGlobalStyle(globalCssId, cssShared, false, true)` will NOT prepend the ID.
+  It compiles to:
+  `'.selector-1' { ... }`
+  In this mode, you **cannot** define top-level styles directly on the root component without a selector, and you **do not** need to add `globalCssId` to the top tag's class name.
+
+> [!WARNING]
+> Because `bindGlobalStyle` injects your `<style>` tags into the `<head>` globally, your `CssProps` definition **MUST** be entirely static. Do not put variables (like `size` or `color`) directly inside the `CssProps` object structure.
+
+### 4.4 Sharing CSS at application level (Global Scope)
+
+**Best for**: True global styles like general utility classes, typography, or theme-wide resets.
+
+In this case, you define an application-level CSS block and add it to the header when the app initializes. 
+
+- You **cannot** use the `&` ampersand to represent a dynamic unique ID prefix (like `&-content`). However, you **can** still use `&` in nested structures to refer to the parent selector (e.g., `&.title` compiles to `.app-header.title`), though explicitly using absolute selectors is generally recommended for clarity.
+- You do not need to pass `referToCssId`. You just use the standard global class names in your JSX.
+
+```tsx
+// 1. Define the shared CSS with absolute selectors
+export const appSharedCss = {
+  '.app-header': {
+    fontSize: '14px',
+    // Using & here refers to the parent selector (.app-header), 
+    // resulting in .app-header.title
+    '&.title': { fontSize: '24px' },
+  },
+  '.app-warning-color': { color: 'red' },
+};
+
+// 2. Add this in your app's initialization (e.g., index.tsx)
+// The 4th parameter (noTopClassName = true) is critical here!
+bindAppGlobalStyle('app-shared-css', appSharedCss, false, true);
+
+// 3. Use it anywhere
+export const AnyComponent = () => (
+  // Use the absolute class names directly
+  <div class="app-header title">Hello</div>
+);
+```
+
+### 4.5 Using `&` on Top-Level Tags
+
+When there is a special need to use an `&-` class prefix on a top-level tag, use the `&.&-box` syntax. The standalone `&` selector is replaced by the CSS ID automatically generated for this top-level tag.
+For instance, `"&.&-box"` compiles to `"l01.l01-box"`.
+
+```typescript
+export const Component1 = () => {
+  const css: CssProps = {
+    color: 'red',
+    '&.&-box': { fontWeight: 'bold' },
+    '&.&-box .&-item': { backgroundColor: 'blue' },
+  };
+  const gCssId = getGlobalStylesId(css);
+  bindGlobalStyle(gCssId, css);
+
+  const ref: RefProps = {
+    referToCssId: gCssId,
+  };
+  
+  return (
+    <div ref={ref} class={[gCssId, '&-box'].join(' ')}>
+      <div class='&-item'>item</div>
+    </div>
+  );
+};
+```
+
+## 5. Common Patterns ("The Lupine Way")
+
+### List / Search (No Re-render)
+
+**Pattern**: Create a render function (`makeList`) and assign its result to `HtmlVar`.
+
+```typescript
+const MyPage = () => {
+  // 1. Logic Variables (Not State)
+  let pageIndex = 0;
+
+  // 2. Dynamic Container
+  const listDom = new HtmlVar(<div>Loading...</div>);
+
+  // 3. Render Function
+  const makeList = async () => {
+    const data = await fetchData(pageIndex);
+    return (
+      <div>
+        {data.map((item) => (
+          <Item item={item} />
+        ))}
+      </div>
+    );
+  };
+
+  // 4. Events
+  const onSearch = async () => {
+    // Read directly from DOM
+    const query = ref.$('input.&-search').value;
+    // Update logic var
+    pageIndex = 0;
+    // Update UI manually
+    listDom.value = await makeList();
+  };
+
+  const ref: RefProps = {
+    onLoad: async () => {
+      listDom.value = await makeList();
+    },
+  };
+
+  return (
+    <div ref={ref}>
+      <input class='&-search' />
+      <button onClick={onSearch}>Go</button>
+      {/* Embed Dynamic Content */}
+      {listDom.node}
+    </div>
+  );
+};
+```
+
+### Page Navigation (`initializePage` vs `<a>`)
+
+In the Lupine.js system, all standard `<a>` HTML tags are automatically intercepted. If the link points to an internal route, Lupine safely binds it to `_lupineJs.initializePage(href)` behind the scenes to perform a seamless single-page application (SPA) transition without a full browser reload.
+
+When performing imperative or programmatic routing via JavaScript (e.g. clicking a `<button>` or a `div`), **DO NOT** use `window.location.href = '/path'`, as this forces a harsh full-page reload.
+
+Instead, import and use `initializePage`:
+
+```typescript
+import { initializePage } from 'lupine.web';
+
+const navigate = () => {
+  // CORRECT: Seamless SPA transition
+  initializePage('/play/diff01/1');
+
+  // ERROR / ANTI-PATTERN: Forces full browser reload unless explicitly desired
+  // window.location.href = '/play/diff01/1';
+};
+```
+
+### Mobile Navigation (`SliderFrame`)
+
+Lupine uses a "Slide-over" model for navigation (Drill-down). To achieve infinite nesting (where a child page can open a grandchild page), **each component level MUST define its own new `sliderHook` and its own `<SliderFrame hook={childSliderHook} />` placeholder**.
+
+> ⚠️ **CRITICAL RULE**: Never use `props.parentSliderFrameHook.load(...)` inside a child component to push a grandchild component! Doing so will overwrite/replace the current child view inside the parent's frame, destroying the back stack and making it impossible to return to the child view. A child view MUST instantiate its own `childSliderHook` and mount `<SliderFrame hook={childSliderHook} />`.
+
+```typescript
+import { SliderFrame, SliderFrameHookProps, HeaderWithBackFrame } from 'lupine.components';
+
+// 1. Parent Component (Level 1, e.g. Home Page)
+const Parent = () => {
+  // Define hook for Level 2
+  const sliderHook: SliderFrameHookProps = {};
+
+  const openDetail = (id: number) => {
+    // Push Level 2 view onto stack
+    sliderHook.load!(<DetailComponent id={id} parentSliderFrameHook={sliderHook} />);
+  };
+
+  return (
+    <div>
+      {/* Placeholder for Level 2 */}
+      <SliderFrame hook={sliderHook} />
+
+      <div onClick={() => openDetail(1)}>Click Me</div>
+    </div>
+  );
+};
+
+// 2. Child Component (Level 2, e.g. Option Page)
+const DetailComponent = (props: { id: number; parentSliderFrameHook: SliderFrameHookProps }) => {
+  // ⭐️ MUST define a NEW, INDEPENDENT hook for Level 3:
+  const childSliderHook: SliderFrameHookProps = {};
+
+  const openDeeper = () => {
+    // ⭐️ MUST use the childSliderHook (NOT props.parentSliderFrameHook) to push Level 3:
+    childSliderHook.load!(<DetailComponent id={props.id + 1} parentSliderFrameHook={childSliderHook} />);
+  };
+
+  return (
+    <HeaderWithBackFrame title='Detail Page' onBack={(e) => props.parentSliderFrameHook.close!(e)}>
+      {/* ⭐️ MUST mount a new SliderFrame placeholder for Level 3: */}
+      <SliderFrame hook={childSliderHook} />
+
+      <div onClick={openDeeper}>Go Deeper</div>
+    </HeaderWithBackFrame>
+  );
+};
+```
+
+### Component Hooks (Imperative Control)
+
+Instead of React's `useImperativeHandle` or lifting state up, Lupine components often use a `hook` pattern for parent-to-child communication and exposing methods.
+
+1. **Parent** creates an empty object: `const myHook: MyComponentHookProps = {};`
+2. **Parent** passes it to the child: `<MyComponent hook={myHook} />`
+3. **Child** populates it during render:
+   ```typescript
+   if (props.hook) {
+     props.hook.getValue = () => value;
+     props.hook.setValue = (val) => {
+       updateDOM(val);
+     };
+   }
+   ```
+4. **Parent** calls it later on demand: `console.log(myHook.getValue());`
+
+**⚠️ CRITICAL HOOK TIMING**: Do not call hook methods in the parent's top-level execution scope before returning the child component. The child component populates or resets the hook _during_ its own render phase. If you call `myHook.setValue()` and then return `<MyComponent hook={myHook} />`, your changes will be ignored or the hook object will be overwritten. You **MUST** wait until the component is mounted to use the hook, typically via a parent `RefProps.onLoad`:
+
+```typescript
+const Parent = () => {
+  const myHook: MyComponentHookProps = {};
+
+  const ref: RefProps = {
+    onLoad: async () => {
+      // Safe: Child has rendered and populated the hook
+      myHook.setValue('Hello');
+    },
+  };
+
+  return (
+    <div ref={ref}>
+      <MyComponent hook={myHook} />
+    </div>
+  );
+};
+```
+
+## 5. Architecture Cheat Sheet
+
+- **`lupine.api` (Backend)**:
+  - `req.locals.json()` to get body.
+  - `apiCache.getDb().selectObject('$__table', ...)`
+  - `ApiHelper.sendJson(req, res, { status: 'ok' })`
+- **`lupine.web` (Frontend)**:
+  - `NotificationMessage.sendMessage('Msg', NotificationColor.Success)`
+  - `getRenderPageProps().renderPageFunctions.fetchData('/api/...')`
+  - Retrieve dynamic URL parameters explicitly via `props.urlParameters['paramName']`.
+  - **Environment vs Database Config**:
+    - `webEnv('API_BASE_URL', '')`: Use this mapping to synchronously read statically injected environment variables defined in `.env` (like `WEB.xxx`).
+    - `await WebConfig.get('siteLogo')`: Use this for dynamic configurations. It works asynchronously by fetching data from the backend server first, then caches it for subsequent calls.
+  - **Path Parameter Syntax**:
+    - Mandatory parameters use `:` (e.g., `pageRouter.use('/page/:id', PlayPage)`).
+    - Fixed parameters use `/fixed-parameter/` (e.g., `pageRouter.use('/page/:id/detail/', PlayPage)`), `detail` is a fixed parameter.
+    - Optional parameters use `?` (e.g., `/page/:userId/?option1/?option2`). Once an optional parameter is declared, all subsequent route sections become optional (It's not a query string).
+
+## 6. Lupine.cms App Integration Guide
+
+This section describes Lupine.cms from the app user's point of view: how a frontend app routes public/SSR requests into CMS rendering, how CMS URLs are resolved, how language fallback works, how coded pages/components override CMS content, and where registration code must live.
+
+### 6.1 Required frontend entry point
+
+A CMS-enabled frontend app must register `CmsRenderPage` as the catch-all page handler in its public app entry, for example in `apps/cms/web/src/index.tsx`:
+
+```tsx
+pageRouter.use('*', CmsRenderPage);
+```
+
+This is the key integration point. During frontend rendering or SSR, any page request that reaches this catch-all route is delegated to `CmsRenderPage`. Without this route, CMS page JSON will not be used for public page requests.
+
+Typical public entry responsibilities:
+
+- initialize app/global styles and theme
+- register any public coded CMS frame/content pages with `cmsRegisterPage()`
+- configure `pageRouter`
+- end with `pageRouter.use('*', CmsRenderPage)` so unresolved public routes are served by CMS
+
+### 6.2 CMS URL structure: `/lang/frame/content`
+
+CMS public URLs are interpreted as three logical levels:
+
+```text
+/lang/frame/content
+```
+
+Meanings:
+
+- `lang`: optional language code
+- `frame`: optional frame page ID
+- `content`: optional content page ID
+
+If the first URL segment matches a configured site language, it is treated as `lang`. Otherwise the URL is treated as not having a language prefix.
+
+Examples:
+
+```text
+/en/home/article-1   -> lang=en, frame=home, content=article-1
+/home/article-1      -> lang is resolved automatically, frame=home, content=article-1
+/en/home             -> lang=en, frame=home, content defaults from config
+/home                -> lang auto, frame=home, content defaults from config
+/                    -> lang auto, frame and content default from config
+```
+
+### 6.3 Language resolution and default language
+
+If `lang` is omitted from the URL, CMS resolves language in this order:
+
+1. explicit `lang` parameter passed to the render/embed API, if any
+2. language in the URL prefix, if any
+3. browser language
+4. the default language configured in `siteLangs`
+
+The available languages are configured in the web settings UI using the `siteLangs` setting declared in `packages/lupine.api/admin/admin-setting-web.tsx`:
+
+```typescript
+{ label: 'Languages', type: 'text', name: 'siteLangs', tip: 'Languages separated by commas. Format: code:title,code:title. First is default language. Example: en:English,cn:Chinese,ja:Japanese' }
+```
+
+The first item in `siteLangs` is the default language. If the browser language is not in `siteLangs`, CMS falls back to this first language.
+
+Agent rules:
+
+- Do not assume browser language is always accepted. Always compare it against configured `siteLangs`.
+- Keep the first `siteLangs` entry stable because it is the fallback default for public rendering and data fallback.
+- When testing multilingual pages, test both explicit language URLs and language omitted URLs.
+
+### 6.4 Default frame and content IDs
+
+When `frame` or `content` is missing from the URL, CMS uses web configuration defaults from `render-page.tsx`:
+
+```typescript
+const frameId = (hasLangPrefix ? urlParts[1] : urlParts[0]) || await WebConfig.get('cmsPageDefault', '');
+const contentId = (hasLangPrefix ? urlParts[2] : urlParts[1]) || await WebConfig.get('cmsContentDefault', '');
+```
+
+Therefore:
+
+- missing frame ID falls back to `cmsPageDefault`
+- missing content ID falls back to `cmsContentDefault`
+
+Agent rules:
+
+- If `/` renders incorrectly, inspect `cmsPageDefault` and `cmsContentDefault` first.
+- If `/en` renders incorrectly, remember it may still be using default frame/content IDs.
+- Do not hardcode default page IDs in rendering logic; use `WebConfig` settings.
+
+### 6.5 CMS page data lookup and language fallback
+
+When CMS loads persisted page JSON from the backend, it uses language-qualified IDs first:
+
+1. try `lang:id`
+2. if missing, try `defaultLang:id`
+3. if still missing, try plain `id`
+
+This applies to frame/content page data loaded from CMS storage.
+
+Practical result:
+
+- Save `en:home` to create an English-specific home page.
+- Save `cn:home` to create a Chinese-specific home page.
+- Save `home` as a language-neutral fallback.
+- If `ja:home` does not exist, CMS can fall back to default language and then plain `home`.
+
+Agent rules:
+
+- When investigating "wrong language page displayed", check all three possible records: `lang:id`, `defaultLang:id`, and `id`.
+- When creating multilingual content, use `lang:id` consistently in the designer save dialog.
+- Keep fallback pages plain or default-language records intentionally; do not create accidental stale fallbacks.
+
+### 6.6 Coded frame/content pages with `cmsRegisterPage()`
+
+A frontend app can override or provide a frame/content page with code:
+
+```tsx
+const SampleFrame = async (props: PageProps) => {
+  return <div>Frame from code</div>;
+};
+
+cmsRegisterPage('pagex', SampleFrame);
+```
+
+When CMS resolves a frame/content ID, registered pages are checked before persisted CMS JSON. This means a coded registration for `pagex` takes priority over a database page with the same ID.
+
+Use this when:
+
+- a frame should be implemented in code for full control
+- content is dynamic and not suited to page-designer JSON
+- you want a coded fallback/override for a CMS ID
+
+Agent rules:
+
+- Registered page keys are public render contracts. Changing them can break URLs and saved CMS references.
+- Keep `cmsRegisterPage()` calls in the public frontend entry when they are needed for public `CmsRenderPage` routing.
+- If a CMS page ID is not loading from database, check whether the same ID was registered with `cmsRegisterPage()` and is taking priority.
+
+### 6.7 Saving pages and using `My Components`
+
+In the design UI, pages can be saved with language-qualified IDs such as:
+
+```text
+en:home
+cn:home
+home
+```
+
+If the save dialog has `component` checked, the saved content is also treated as a reusable saved component. It becomes available under `My Components` in the designer and can be dragged into other pages.
+
+Important distinction:
+
+- A normal saved page/content is resolved by URL and ID.
+- A checked component save is additionally discoverable as a reusable design component.
+- Saved components are persisted CMS data, unlike registered code components which are runtime registrations.
+
+Agent rules:
+
+- Use saved components for reusable page-designer JSON fragments.
+- Use registered code components for reusable coded JSX/TSX components.
+- Do not confuse `My Components` with `Registered Components`.
+
+### 6.8 Coded designer components with `cmsRegisterComponent()`
+
+The designer can also expose coded components as draggable design items:
+
+```tsx
+const SampleContent = async (props: PageProps) => {
+  return (
+    <div class='sample-content-box'>
+      This is a sample registered components.
+    </div>
+  );
+};
+
+cmsRegisterComponent('contentx', SampleContent, 'Sample Content');
+```
+
+These appear in the designer under `Registered Components`. Dragging one into a page stores a `block-registered-component` node with only a component key/label. At render time, CMS looks up the real function from the registered component map and renders it.
+
+Critical placement rule:
+
+- Register designer components in the admin/dashboard entry, such as `apps/cms/web/src/admin_dev/index.tsx`.
+- Do not register designer-only components only in the public frontend entry, such as `apps/cms/web/src/index.tsx`, because the design page does not go through that public route. If registration only happens there, the admin designer will not see the component.
+
+Agent rules:
+
+- Use `cmsRegisterComponent()` in the admin dashboard bundle for components that must appear in the design sidebar.
+- Use `cmsRegisterPage()` in the public frontend bundle for pages/frames/content that must be resolved during public CMS rendering.
+- If a registered component is visible in public render but missing in the design sidebar, check whether it was registered in the admin dashboard entry.
+- If a saved page contains `block-registered-component` but render says component not found, check whether the same component key was registered in the currently running bundle/process.
+
+### 6.9 Embedding CMS content inside coded components
+
+Use `CmsEmbedContent` when coded components need to render CMS-managed content by ID. It accepts an `id` and optional `lang`, and follows the same language priority/fallback logic as CMS public rendering.
+
+Use cases:
+
+- coded page shells that embed CMS-managed regions
+- coded landing pages with editable CMS sections
+- admin/demo pages that need to preview CMS content by ID
+
+Agent rules:
+
+- Prefer `CmsEmbedContent` for embedding CMS content inside coded components.
+- Pass `lang` explicitly only when the component must force a language. Otherwise let URL/browser/default language resolution work.
+- Remember backend data fallback still follows `lang:id -> defaultLang:id -> id`.
+
+### 6.10 User-facing CMS troubleshooting checklist
+
+When CMS routing/rendering does not behave as expected, check in this order:
+
+1. Does the public app entry call `pageRouter.use('*', CmsRenderPage)`?
+2. Is the URL parsed as `/lang/frame/content` or `/frame/content`?
+3. Is the `lang` segment present in `siteLangs`?
+4. Are `cmsPageDefault` and `cmsContentDefault` configured when frame/content are omitted?
+5. Does a coded `cmsRegisterPage(id, ...)` override the database page?
+6. Do the expected records exist as `lang:id`, `defaultLang:id`, or plain `id`?
+7. Was the page saved with the intended language-qualified ID?
+8. If using `My Components`, was the saved item checked as component?
+9. If using `Registered Components`, was `cmsRegisterComponent()` called in the admin/dashboard entry?
+10. If rendering a registered component, is the same key registered in the current runtime bundle?
+
+## 7. Coding Standards & Gotchas
+
+- **`useState` vs `HtmlVar`**: `useState` exists (`import { useState } from 'lupine.components'`) and is elegant for small components. But it rerenders the **entire** component — for large/complex components or high-frequency updates, prefer `HtmlVar` for surgical partial updates. `useEffect`, `useReducer`, `useCallback`, `useContext` **do NOT exist**.
+- **❌ `className`**: Use standard HTML `class`.
+- **⚠️ `style={{}}`**: **Allowed** for simple or dynamic inline styles (e.g., `style={{ border: '1px solid red' }}`), but **prefer `css={CssProps}`** for structural/theme styling.
+- **✅ Native Events**: `onClick`, `onChange`, `onInput`, `onMouseMove` etc. are standard HTML events and **ARE ALLOWED**. Use them for triggering logic or callbacks (e.g., `onInput={(e) => updateOtherThing(e.target.value)}`).
+- **✅ Uncontrolled Inputs**: While you _can_ use `onInput` to track state, the default efficient pattern is often to read `ref.$('input').value` only when the user clicks "Save" or "Search".
+
+## 8. System Icons & Customization
+
+Lupine.components uses a set of built-in system icons (like `ma-close` and `mg-arrow_back_ios_new_outlined` found in components like `MobileHeaderWithBack`).
+
+These icons rely on an icon font generated by [icons-font-customization](https://github.com/uuware/icons-font-customization). If you want to add or modify the standard icon font itself, refer to that repository.
+
+### Overriding System Icons without Generating a Font
+
+If you do not want to generate or modify the full icon font, you can easily override specific system icons directly via CSS using pure SVG strings or imported SVG files.
+
+**1. Define your SVG Data URL:**
+You can import an `.svg` file (if your bundler supports it) or define a raw Data URI string.
+
+```typescript
+// Option A: Using bundler import
+import githubIcon from 'github.svg';
+
+// Option B: Raw Data URI string
+const closeSvgData = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E`;
+
+export const DemoIcons = {
+  github: githubIcon,
+  'ma-close': closeSvgData,
+};
+```
+
+**2. Override the specific `.ifc-icon` via CSS Masking:**
+Use the `-webkit-mask-image` and `maskImage` property wrapped in `url()` to apply the SVG data to the icon class. This ensures it inherits colors (`currentColor`) properly.
+
+```typescript
+const css: CssProps = {
+  // Target the specific system icon class you wish to override
+  '.ifc-icon.ma-close': {
+    '-webkit-mask-image': `url("${DemoIcons['ma-close']}")`,
+    maskImage: `url("${DemoIcons['ma-close']}")`,
+    // If needed, specify mask sizing properties:
+    // maskRepeat: 'no-repeat',
+    // maskPosition: 'center',
+    // maskSize: 'contain',
+  },
+};
+```
+
+## 9. Cross-Platform App Bootstrapping Guidance
+
+When creating a new Cross-Platform App using `lupine.js`, follow this standard procedure for scaffolding the entry point, navigation, and icons:
+
+1. **Custom Navigation Icons (`app-icons.ts`)**:
+   Instead of using the default icon font, you should export SVG Data URIs for your app's specific icons from `app-icons.ts`. Use a `reduce` function to generate the appropriate `CssProps` with `-webkit-mask-image: url("' + svg + '")'` and `maskImage: 'url("' + svg + '")'` to override the `.ifc-icon.[icon-name]` classes. Avoid using backticks (\"\`\") when injecting SVG variables inside the maskImage URL to prevent escaping issues.
+
+2. **Base Styles (`base-css.ts`)**:
+   Create a `styles/base-css.ts` file that imports the dynamic icon styles (from `app-icons.ts`), and defines any placeholder wrappers (e.g., `.user-page-placeholder` having `width: '100%', height: '100%'`). Use `bindGlobalStyle('comm-css', baseCss, false, true)` in the index file to register these.
+
+3. **Global UI Frame (`app-responsive-frame.tsx`)**:
+   Use `ResponsiveFrame` along with `SliderFrame` (for drill-down navigation via `SliderFrameHookProps`) to define the app's skeleton.
+
+   - Define your top/bottom navigation menus based on your icons.
+   - Return `ResponsiveFrame` passing in the `mainContent`, menus, and ensure you provide all required properties like `mobileSideMenuContent: <></>` (even if empty) to satisfy TypeScript interfaces.
+
+4. **Page Router Configuration (`index.tsx`)**:
+   Create a `PageRouter`. Bind the `AppResponsiveFrame` using `pageRouter.setFramePage({ component: AppResponsiveFrame, placeholderClassname: 'user-page-placeholder' })`. Then associate the routes (`pageRouter.use('*', HomePage)`) and finalize with `bindRouter(pageRouter)`.
+
+5. **Local Storage Patterns**:
+   For pure frontend utility apps (compatible with browsers, Capacitor, and Electron), wrap `localStorage.getItem()` and `localStorage.setItem()` inside dedicated Service singletons (e.g., `LocalNotesService`). Always parse/serialize consistently and assign standard unique IDs (like `Date.now()`) for newly inserted records. Combine this with the `onLoad` pattern inside `RefProps` to fetch data immediately when components render, injecting it directly into an `HtmlVar` wrapping the list.
+
+## 10. Standard Mobile App Layout & Interactions
+
+When asked to "create a list page" or "initialize a standard mobile framework", rigorously apply this exact structural pattern based on the cross-platform starter app.
+
+### A. The Global Root (`index.tsx` & `AppResponsiveFrame`)
+
+- Use `bindTheme` to load global color tokens.
+- Set the global frame with `pageRouter.setFramePage({ component: AppResponsiveFrame, placeholderClassname: 'user-page-placeholder' })`.
+- **`AppResponsiveFrame`** handles the macro layout:
+  - It renders `<ResponsiveFrame>` wrapping `<main class='user-page-placeholder'></main>`.
+  - It contains the global left `mobileSideMenuContent` (typically abstracted into a `<SideMenuContent />` component).
+
+### B. The Home / List Page (`HomePage`)
+
+A standard mobile list page must employ:
+
+1. **The Top Header (`MobileHeaderCenter`)**:
+
+   - Wrap the top bar in `<MobileHeaderCenter>`.
+   - Use `<MobileHeaderTitleIcon title='App Name' left={...} right={...} />`.
+   - The _left_ slot usually contains an empty spacer `<MobileHeaderEmptyIcon />`.
+   - The _right_ slot contains actions (e.g., Search icon, `<MobileTopSysIcon />` to open the Side Menu).
+
+2. **The Scrollable Content Area**:
+
+   - Beneath the header, create a flex-grow scrollable div: `<div class='flex-1 overflow-y-auto padding-m'>`.
+   - Mount an `HtmlVar` instance here (`{dom.node}`) to dynamically bind the list data arrays fetched typically via `RefProps.onLoad`.
+
+3. **Floating Action Button (FAB)**:
+   - Overlay a primary action button at `bottom: 24px`, `right: 24px` using `.fab-button` styled with `var(--primary-accent-color)`.
+
+### C. Advanced Touch Interactions (`createDragUtil` in Lists)
+
+For interactive lists, `createDragUtil()` from `lupine.components` handles complex gesture physics.
+
+- **Swipe-to-Reveal (Horizontal)**:
+
+  - Render an absolute positioned `.actions-layer` (opacity: 0 initially) underneath the `.list-card`.
+  - When the card's `onTouchStart`/`onMouseDown` is triggered, attach `dragUtil` handlers.
+  - In `dragUtil.setOnMoveCallback`, translate the card `transform: translateX(...)` up to a negative boundary (e.g., -100px) and toggle the action layer's opacity to 1.
+  - Implement a global `resetSwipeMenus` function attached to `onMouseDown={handleBgTouch}` at the page root to ensure an exclusive accordion-like menu state (only one open at a time).
+
+- **Drag-to-Reorder (Vertical)**:
+  - Define a distinct `.drag-handle` slot inside the card (e.g., `bs-list` icon).
+  - In `dragUtil.setOnMoveCallback`, when dragging this handle, apply `scale(1.02)` and elevated `boxShadow` to the grabbed card. Compare its `relativeY` pointer position against sibling card `offsetTop`s to execute live `insertBefore / insertAfter` DOM swaps.
+  - Conclude by saving the new DOM sibling ordering in `dragUtil.setOnMoveEndCallback`.
+
+### D. Sub-Page Routing & Drill-Downs (`SliderFrame`)
+
+- Slide-over interactions are mandatory for Search panels, Creation modals, and Details views.
+- The `HomePage` must define a top-level `<SliderFrame hook={sliderFrameHook} />` inside its scroll area.
+- Opening a child acts instantly via: `sliderFrameHook.load!(<MyChildPage sliderFrameHook={sliderFrameHook} />)`.
+- **Inside the Child Component**:
+  - Must be wrapped with `<HeaderWithBackFrame title='Subpage' onBack={(e) => props.sliderFrameHook.close!(e)}>` to provide the standard top-left back chevron.
+- **Nested SliderFrames**:
+  - When opening a sliding frame _from within_ another sliding frame (e.g., opening a Settings About page from the Settings root page), you **MUST** define a new local hook `const innerSliderHook: SliderFrameHookProps = {};` and mount a _new_ `<SliderFrame hook={innerSliderHook} />` inside the parent slider component.
+  - Using the parent's hook will replace the parent's content instead of sliding a new frame over it.
+  - Wrap multiple children in `<></>` or a `<div>` if they are direct children to satisfy single `VNode` rendering constraints.
+
+### E. Dialogs & Action Sheets (Replacing Native Alerts)
+
+**DO NOT USE browser native `alert()`, `confirm()`, or `prompt()`**. Instead, use the native `ActionSheet` promises from `lupine.components` for a modern, mobile-friendly overlay experience:
+
+1. **Option Selection (`ActionSheetSelectPromise`)** (Replaces `confirm()` or complex choices):
+
+   ```typescript
+   import { ActionSheetSelectPromise } from 'lupine.components';
+
+   const index = await ActionSheetSelectPromise({
+     title: 'Delete this saved game?', // Optional
+     options: ['Delete', 'Edit'],
+     cancelButtonText: 'Cancel',
+   });
+
+   if (index === 0) {
+     /* User clicked Delete (Index of options array) */
+   }
+   if (index === -1) {
+     /* User clicked Cancel or tapped background */
+   }
+   ```
+
+2. **Simple Messages (`ActionSheetMessagePromise`)** (Replaces `alert()`):
+
+   ```typescript
+   import { ActionSheetMessagePromise } from 'lupine.components';
+
+   await ActionSheetMessagePromise({
+     title: 'Success', // Optional
+     message: 'Your profile has been saved.',
+     closeButtonText: 'OK', // Optional, defaults to a close behavior
+   });
+   ```
+
+3. **User Input (`ActionSheetInputPromise`)** (Replaces `prompt()`):
+
+   ```typescript
+   import { ActionSheetInputPromise } from 'lupine.components';
+
+   const value = await ActionSheetInputPromise({
+     title: 'Enter your name',
+     // placeholder: 'Player 1', // Optional
+     confirmButtonText: 'Submit', // Optional
+     cancelButtonText: 'Cancel', // Optional
+   });
+
+   if (value !== null) {
+     /* User submitted a string */
+   }
+   ```
+
+4. **Other Available Prompts (Investigate their API via `lupine.components` when needed)**:
+   - `ActionSheetMultiSelectPromise`: For multiple checkbox selections.
+   - `ActionSheetTimePicker`: For selecting a time.
+   - `ActionSheetDatePicker`: For selecting a date.
+
+### F. Hardware Back Button Handling (`data-back-action`)
+
+When building mobile interfaces, users expect the physical hardware "Back" button (or swipe-from-edge gesture) to gracefully dismiss overlays, dialogs, sliders, or menus—similar to pressing the `ESC` key on a desktop.
+
+**The Rule**: Whenever you implement a cancel button, a close icon (`X`), or a back chevron (`<`) in a mobile overlay or frame, you **MUST** attach the `data-back-action` attribute using the `backActionHelper`.
+
+```typescript
+import { backActionHelper } from 'lupine.components';
+
+export const MyCloseButton = ({ onClose }) => {
+  return (
+    <i
+      class='ifc-icon ma-close'
+      // Generate a unique ID for the back stack
+      data-back-action={backActionHelper.genBackActionId()}
+      onClick={onClose}
+    ></i>
+  );
+};
+```
+
+**How it works**:
+
+- When the hardware back button is pressed, the underlying system automatically queries the DOM for all elements with `[data-back-action^="bb-"]`.
+- It finds the most recently created component (the top-most overlay) and automatically triggers a `.click()` event on it.
+- **Dynamic Mounting vs Static**:
+  - For components that are injected and removed dynamically (like `<ActionSheet />` or `<FloatWindow />`), simply attaching the property to the React/JSX node is sufficient.
+  - For static components that always remain in the DOM but toggle visibility (like an off-canvas sidebar), you must dynamically add/remove the attribute in Javascript (`el.setAttribute` / `el.removeAttribute`) to prevent the back button from intercepting events when the menu is actually closed.
