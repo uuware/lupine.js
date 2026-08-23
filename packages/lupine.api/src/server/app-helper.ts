@@ -7,7 +7,7 @@ import { appStorage } from './app-shared-storage';
 class AppHelper {
   logger: Logger = new Logger('app-helper');
 
-  constructor() {}
+  constructor() { }
 
   async loadApi(config: ApiConfigProps) {
     // const apps: Set<string> = new Set();
@@ -19,9 +19,12 @@ class AppHelper {
     //   config.webHostMap[key].apiPath = path.join(config.serverRoot, config.webHostMap[key].appName + '_api');
     // }
 
+    // when server is starting, getAppCache().get(msgObject.appName, ...) is called
+    for (let appConfig of config.webHostMap) {
+      appCache.set(appConfig.appName, AppCacheKeys.API_CONFIG, appConfig);
+    }
     for (let appConfig of config.webHostMap) {
       await this.callInitApi(appConfig);
-      appCache.set(appConfig.appName, AppCacheKeys.API_CONFIG, appConfig);
     }
   }
 
@@ -48,6 +51,9 @@ class AppHelper {
 
   async refreshApi(appConfig: HostToPathProps) {
     // TODO: call unloadApi?
+    if (!appConfig) {
+      return;
+    }
     const apiPath = path.join(process.cwd(), 'dist/server_root', appConfig.appName + '_api/index.js');
     for (const path in require.cache) {
       if (path.endsWith('.js') && path.indexOf(apiPath) >= 0) {
