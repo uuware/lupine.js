@@ -81,6 +81,7 @@ export class DbMysql extends Db {
     super(option);
 
     const mysql = getMysqlModule();
+    const mysqlConfig = option.mysqlConfig;
     this.pool = mysql.createPool({
       host: option.host || '127.0.0.1',
       user: option.user || 'root',
@@ -89,13 +90,13 @@ export class DbMysql extends Db {
       port: option.port || 3306,
       connectionLimit: option.poolMax || 5,
       connectTimeout: option.connectionTimeout || 10000,
-      waitForConnections: true,
-      queueLimit: 0,
-      enableKeepAlive: true,
-      keepAliveInitialDelay: 10000,
-      supportBigNumbers: true,
-      bigNumberStrings: true,
-      dateStrings: true,
+      waitForConnections: mysqlConfig?.waitForConnections !== undefined ? mysqlConfig.waitForConnections : true,
+      queueLimit: mysqlConfig?.queueLimit !== undefined ? mysqlConfig.queueLimit : 0,
+      enableKeepAlive: mysqlConfig?.enableKeepAlive !== undefined ? mysqlConfig.enableKeepAlive : true,
+      keepAliveInitialDelay: mysqlConfig?.keepAliveInitialDelay !== undefined ? mysqlConfig.keepAliveInitialDelay : 10000,
+      supportBigNumbers: mysqlConfig?.supportBigNumbers !== undefined ? mysqlConfig.supportBigNumbers : true,
+      bigNumberStrings: mysqlConfig?.bigNumberStrings !== undefined ? mysqlConfig.bigNumberStrings : false,
+      dateStrings: mysqlConfig?.dateStrings !== undefined ? mysqlConfig.dateStrings : true,
     });
 
     if (logger.isDebug()) {
