@@ -166,6 +166,8 @@ import { Set01Blank } from './classes/Set01Blank';
 registerClass('Set01Blank', Set01Blank as any);
 import { FormatDate } from './classes/FormatDate';
 registerClass('FormatDate', FormatDate as any);
+import { SetDate } from './classes/SetDate';
+registerClass('SetDate', SetDate as any);
 import { SetGlobalsValue } from './classes/SetGlobalsValue';
 registerClass('SetGlobalsValue', SetGlobalsValue as any);
 import { SetListIndex } from './classes/SetListIndex';

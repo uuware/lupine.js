@@ -121,7 +121,7 @@ export class AdminProcess implements IApiBase {
       query += ` WHERE ${conditions.join(' and ')}`;
     }
 
-    const countRec = await db.select(`SELECT count(*) as count FROM (${query})`, params);
+    const countRec = await db.select(`SELECT count(*) as count FROM (${query}) AS _t`, params);
     const count = countRec[0].count;
 
     let pageMax = Math.floor(count / pageLimit);

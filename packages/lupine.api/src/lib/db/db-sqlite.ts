@@ -1,14 +1,31 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { Logger } from '../logger';
 import { Db } from './db';
 import { DbConfig } from '../../models/db-config';
 
 const logger = new Logger('db-sqlite');
+
+let betterSqlite3Module: any;
+function getBetterSqlite3Module() {
+  if (!betterSqlite3Module) {
+    try {
+      betterSqlite3Module = require('better-sqlite3');
+    } catch (e: any) {
+      throw new Error(
+        'The "better-sqlite3" package is required for SQLite database support. Please install it using "npm install better-sqlite3".'
+      );
+    }
+  }
+  return betterSqlite3Module;
+}
+
 export class DbSqlite extends Db {
   db!: Database.Database;
 
   constructor(option: DbConfig) {
     super(option);
+
+    const DatabaseConstructor = getBetterSqlite3Module();
 
     let nativeBinding;
     try {
@@ -19,7 +36,7 @@ export class DbSqlite extends Db {
     } catch (e) {
       nativeBinding = 'node_modules/better-sqlite3/build/Release/better_sqlite3.node'; // fallback to production default
     }
-    this.db = new Database(option.filename!, {
+    this.db = new DatabaseConstructor(option.filename!, {
       nativeBinding,
     });
     this.db.pragma('journal_mode = WAL');
@@ -29,12 +46,31 @@ export class DbSqlite extends Db {
     }
   }
 
-  close() {
-    this.db.close();
+  public close(): void {
+    if (this.db) {
+      this.db.close();
+    }
   }
 
-  connect() {
+  public connect(): Promise<void> {
     return Promise.resolve();
+  }
+
+  public async transaction<T>(callback: (trx: Db) => Promise<T>): Promise<T> {
+    await this.execute('BEGIN TRANSACTION');
+    try {
+      const result = await callback(this);
+      await this.execute('COMMIT');
+      return result;
+    } catch (error) {
+      try {
+        await this.execute('ROLLBACK');
+      } catch (rollbackErr: any) {
+        console.error('SQLite transaction rollback failed:', rollbackErr);
+        logger.error('SQLite transaction rollback failed:', rollbackErr && rollbackErr.message);
+      }
+      throw error;
+    }
   }
 
   // INSERT...RETURNING is also supported in MariaDB from 10.5.0
@@ -55,6 +91,10 @@ export class DbSqlite extends Db {
             rows = [
               {
                 ...rows,
+                changes: rows.changes !== undefined ? rows.changes : 0,
+                affectedRows: rows.changes !== undefined ? rows.changes : 0,
+                lastInsertRowid: rows.lastInsertRowid !== undefined ? rows.lastInsertRowid : undefined,
+                insertId: rows.lastInsertRowid !== undefined ? rows.lastInsertRowid : undefined,
                 id: rows.changes > 0 ? rows.lastInsertRowid : undefined,
               },
             ];
@@ -73,37 +113,33 @@ export class DbSqlite extends Db {
   }
 
   public async truncateTable(tableName: string): Promise<any> {
-    // sqlite doesn't have DROP command
-    return this.execute(`DELETE FROM ${tableName}`);
+    const realTable = this.replacePrefix(tableName);
+    return this.execute(`DELETE FROM ${this.escapeId(realTable)}`);
   }
 
-  // public async createTable(table: string, fields: string[]) {
-  //   // table = this.replacePrefix(table);
-  //   const query = 'CREATE TABLE ' + table + ' (' + fields.join(',') + ')';
-  //   return await this.query(query);
-  // }
-
-  public async getTableCount(tableName: string) {
-    const result = await this.select(`SELECT COUNT(*) as c FROM ${tableName}`);
-    return result[0].c;
+  public async getTableCount(tableName: string): Promise<number> {
+    const realTable = this.replacePrefix(tableName);
+    const result = await this.select(`SELECT COUNT(*) as c FROM ${this.escapeId(realTable)}`);
+    return result && result[0] ? Number(result[0].c) : 0;
   }
 
-  public async getAllTables(addCount = false) {
-    const query = `SELECT * FROM sqlite_master WHERE type ='table';`;
+  public async getAllTables(addCount = false): Promise<any> {
+    const query = `SELECT tbl_name as name, tbl_name, type FROM sqlite_master WHERE type ='table' AND tbl_name NOT LIKE 'sqlite_%';`;
     const result = await this.select(query);
     if (result) {
       if (addCount) {
-        for (let i in result) {
-          result[i].count = await this.getTableCount(result[i].tbl_name);
+        for (let i = 0; i < result.length; i++) {
+          result[i].count = await this.getTableCount(result[i].name || result[i].tbl_name);
         }
       }
       return result;
     }
-    return false;
+    return [];
   }
 
   public async getTableInfo(table: string): Promise<any> {
-    const query = `PRAGMA table_info(${table});`;
+    const realTable = this.replacePrefix(table);
+    const query = `PRAGMA table_info(${this.escapeId(realTable)});`;
     const result = await this.select(query);
     return result;
   }

@@ -98,7 +98,7 @@ const watchServer = async (isDev, npmCmd, httpPort, serverRootPath, extraExterna
     bundle: true,
     treeShaking: true,
     metafile: true,
-    external: ['better-sqlite3', 'nodemailer', 'pdfkit', 'sharp', ...extraExternals],
+    external: ['better-sqlite3', 'mysql2', 'mysql2/promise', 'mssql', 'oracledb', 'nodemailer', 'pdfkit', 'sharp', ...extraExternals],
     loader: { '.svg': 'text', '.glsl': 'text', '.png': 'file', '.gif': 'file', '.html': 'text' },
     minify: !isDev,
     plugins: [watchServerPlugin(isDev, npmCmd, httpPort)],
