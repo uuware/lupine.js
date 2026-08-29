@@ -1,4 +1,4 @@
-import { Dirent } from 'fs';
+import { Dirent, Stats } from 'fs';
 import * as fs from 'fs/promises';
 import path from 'path';
 
@@ -116,6 +116,32 @@ export class FsUtils {
       return { size: stats.size, mtime: stats.mtime.getTime(), isFile: stats.isFile(), isDir: stats.isDirectory() };
     } catch {
       return undefined;
+    }
+  };
+
+  static fileStat = async (filePath: string): Promise<Stats | undefined> => {
+    try {
+      const stats = await fs.stat(filePath);
+      return stats;
+    } catch {
+      return undefined;
+    }
+  };
+
+  static readByteRange = async (filePath: string, start: number, length: number): Promise<Buffer> => {
+    if (length <= 0) return Buffer.alloc(0);
+    let fileHandle: fs.FileHandle | undefined;
+    try {
+      fileHandle = await fs.open(filePath, 'r');
+      const buffer = Buffer.alloc(length);
+      const { bytesRead } = await fileHandle.read(buffer, 0, length, start);
+      return buffer.subarray(0, bytesRead);
+    } catch {
+      return Buffer.alloc(0);
+    } finally {
+      if (fileHandle) {
+        await fileHandle.close().catch(() => {});
+      }
     }
   };
 
