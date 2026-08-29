@@ -73,15 +73,15 @@ export class ApiModule implements IApiModule {
     // await this.initConfig(appConfig);
     apiCache.clearTemplateCache();
 
-    if (!appConfig.dbConfig.type && appConfig.dbType) {
-      appConfig.dbConfig.type = appConfig.dbType;
-    }
-
     if (appConfig.dbConfig.type === 'sqlite' || !appConfig.dbConfig.type) {
-      if (appConfig.dbConfig.filename && path.isAbsolute(appConfig.dbConfig.filename)) {
-        // Keep absolute path as is
+      if (!appConfig.dbConfig.sqliteConfig) {
+        appConfig.dbConfig.sqliteConfig = {};
+      }
+      const filename = appConfig.dbConfig.sqliteConfig.filename || 'sqlite3.db';
+      if (filename !== ':memory:' && !path.isAbsolute(filename)) {
+        appConfig.dbConfig.sqliteConfig.filename = path.join(appConfig.dataPath, filename);
       } else {
-        appConfig.dbConfig.filename = path.join(appConfig.dataPath, appConfig.dbConfig.filename || 'sqlite3.db');
+        appConfig.dbConfig.sqliteConfig.filename = filename;
       }
     }
     

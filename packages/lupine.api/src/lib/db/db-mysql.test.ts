@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { DbMysql } from './db-mysql';
 import { DbHelper } from './db-helper';
-import { getDefaultDbConfig } from '../../models/db-config';
+import { getDefaultDbConfig } from './db-helper';
 
 test('Test DbMysql encapsulation with MySQL database', async (t) => {
   let db: DbMysql;

@@ -9,7 +9,6 @@ const createMockProp = (appName: string, hosts: string[], webPath: string = '/we
   webPath,
   dataPath: '/data',
   apiPath: '/api',
-  dbType: 'sqlite',
   dbConfig: {} as any,
 });
 

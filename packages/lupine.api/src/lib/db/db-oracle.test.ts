@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { DbOracle, DbOracleTransaction } from './db-oracle';
 import { DbHelper } from './db-helper';
-import { getDefaultDbConfig } from '../../models/db-config';
+import { getDefaultDbConfig } from './db-helper';
 
 test('Test DbOracle Driver and Dialect Encapsulation', async (t) => {
   const oracleConfig = {

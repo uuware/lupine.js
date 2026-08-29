@@ -54,5 +54,5 @@ HTTPS_KEY_PATH:{APP-NAME}=dev/example.com+4-key.pem
 HTTPS_CRT_PATH:{APP-NAME}=dev/example.com+4.pem
 
 DB_TYPE=sqlite
-DB_FILENAME=sqlite3.db
+SQLITE_FILENAME=sqlite3.db
 DB_TYPE:{APP-NAME}=sqlite

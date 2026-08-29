@@ -53,11 +53,11 @@ export class DbMysqlTransaction extends Db {
       }
 
       if (logger.isDebug()) {
-        console.log('trx query:', sql, ', params:', params, ', result:', rows && rows.length);
+        logger.debug('trx query:', sql, ', result count:', rows?.length || 0);
       }
       return rows;
     } catch (err: any) {
-      console.error('trx query error:', sql, ', params:', params, ', error:', err);
+      logger.error('MySQL transaction query failed:', err?.message || String(err));
       throw err;
     }
   }
@@ -88,19 +88,27 @@ export class DbMysql extends Db {
       password: option.password || '',
       database: option.database || '',
       port: option.port || 3306,
-      connectionLimit: option.poolMax || 5,
-      connectTimeout: option.connectionTimeout || 10000,
-      waitForConnections: mysqlConfig?.waitForConnections !== undefined ? mysqlConfig.waitForConnections : true,
-      queueLimit: mysqlConfig?.queueLimit !== undefined ? mysqlConfig.queueLimit : 0,
-      enableKeepAlive: mysqlConfig?.enableKeepAlive !== undefined ? mysqlConfig.enableKeepAlive : true,
-      keepAliveInitialDelay: mysqlConfig?.keepAliveInitialDelay !== undefined ? mysqlConfig.keepAliveInitialDelay : 10000,
-      supportBigNumbers: mysqlConfig?.supportBigNumbers !== undefined ? mysqlConfig.supportBigNumbers : true,
-      bigNumberStrings: mysqlConfig?.bigNumberStrings !== undefined ? mysqlConfig.bigNumberStrings : false,
-      dateStrings: mysqlConfig?.dateStrings !== undefined ? mysqlConfig.dateStrings : true,
+      connectionLimit: option.poolMax ?? 5,
+      connectTimeout: option.connectionTimeout ?? 10000,
+      waitForConnections: mysqlConfig?.waitForConnections ?? true,
+      queueLimit: mysqlConfig?.queueLimit ?? 0,
+      maxIdle: mysqlConfig?.maxIdle,
+      idleTimeout: mysqlConfig?.idleTimeout,
+      resetOnRelease: mysqlConfig?.resetOnRelease,
+      enableKeepAlive: mysqlConfig?.enableKeepAlive ?? true,
+      keepAliveInitialDelay: mysqlConfig?.keepAliveInitialDelay ?? 10000,
+      supportBigNumbers: mysqlConfig?.supportBigNumbers ?? true,
+      bigNumberStrings: mysqlConfig?.bigNumberStrings ?? false,
+      dateStrings: mysqlConfig?.dateStrings ?? true,
+      decimalNumbers: mysqlConfig?.decimalNumbers,
+      namedPlaceholders: mysqlConfig?.namedPlaceholders,
+      timezone: mysqlConfig?.timezone,
+      charset: mysqlConfig?.charset,
+      ssl: mysqlConfig?.ssl,
     });
 
     if (logger.isDebug()) {
-      this.testConnection();
+      void this.testConnection().catch((error) => logger.debug('MySQL debug connection test failed:', error?.message || String(error)));
     }
   }
 
@@ -111,21 +119,22 @@ export class DbMysql extends Db {
   }
 
   public async connect(): Promise<void> {
+    let connection: PoolConnection | undefined;
     try {
-      const connection = await this.pool.getConnection();
-      connection.release();
-      return Promise.resolve();
+      connection = await this.pool.getConnection();
     } catch (error: any) {
       logger.error('Failed to connect to MySQL:', error);
-      return Promise.reject(error);
+      throw error;
+    } finally {
+      connection?.release();
     }
   }
 
   public async transaction<T>(callback: (trx: Db) => Promise<T>): Promise<T> {
     const connection = await this.pool.getConnection();
-    await connection.beginTransaction();
-    const trxDb = new DbMysqlTransaction(this.option, connection);
     try {
+      await connection.beginTransaction();
+      const trxDb = new DbMysqlTransaction(this.option, connection);
       const result = await callback(trxDb);
       await connection.commit();
       return result;
@@ -133,8 +142,7 @@ export class DbMysql extends Db {
       try {
         await connection.rollback();
       } catch (rollbackErr: any) {
-        console.error('MySQL transaction rollback failed:', rollbackErr);
-        logger.error('MySQL transaction rollback failed:', rollbackErr && rollbackErr.message);
+        logger.error('MySQL transaction rollback failed:', rollbackErr?.message || String(rollbackErr));
       }
       throw error;
     } finally {
@@ -168,11 +176,11 @@ export class DbMysql extends Db {
       }
 
       if (logger.isDebug()) {
-        console.log('query:', sql, ', params:', params, ', result:', rows && rows.length);
+        logger.debug('query:', sql, ', result count:', rows?.length || 0);
       }
       return rows;
     } catch (err: any) {
-      console.error('query:', sql, ', params:', params, ', error:', err);
+      logger.error('MySQL query failed:', err?.message || String(err));
       throw err;
     }
   }

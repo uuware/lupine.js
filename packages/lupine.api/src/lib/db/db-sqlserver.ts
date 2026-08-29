@@ -34,13 +34,17 @@ export class DbSqlServerTransaction extends Db {
       let transformedSql = sql;
       if (params !== undefined) {
         if (Array.isArray(params)) {
-          let paramIdx = 0;
-          transformedSql = sql.replace(/\?/g, () => {
-            const paramName = `p${paramIdx}`;
-            request.input(paramName, params[paramIdx]);
-            paramIdx++;
-            return `@${paramName}`;
+          let placeholderCount = 0;
+          transformedSql = this.replaceQuestionMarkPlaceholders(sql, (index) => {
+            placeholderCount++;
+            request.input(`p${index}`, params[index]);
+            return `@p${index}`;
           });
+          if (placeholderCount !== params.length) {
+            throw new Error(
+              `SQL Server bind count mismatch: SQL has ${placeholderCount} placeholders but ${params.length} values were provided`
+            );
+          }
         } else if (typeof params === 'object') {
           for (const key of Object.keys(params)) {
             request.input(key, params[key]);
@@ -68,11 +72,11 @@ export class DbSqlServerTransaction extends Db {
       }
 
       if (logger.isDebug()) {
-        console.log('trx query:', transformedSql, ', params:', params, ', result:', rows && rows.length);
+        logger.debug('trx query:', transformedSql, ', result count:', rows?.length || 0);
       }
       return rows;
     } catch (err: any) {
-      console.error('trx query error:', sql, ', params:', params, ', error:', err);
+      logger.error('SQL Server transaction query failed:', err?.message || String(err));
       throw err;
     }
   }
@@ -97,8 +101,12 @@ export class DbSqlServer extends Db {
   }
 
   public async close(): Promise<void> {
-    if (this.pool && this.pool.connected) {
-      await this.pool.close();
+    if (this.pool) {
+      const pool = this.pool;
+      this.pool = undefined;
+      if (pool.connected || pool.connecting) {
+        await pool.close();
+      }
     }
   }
 
@@ -108,23 +116,28 @@ export class DbSqlServer extends Db {
     }
     try {
       const sqlModule = getMssqlModule();
+      const sqlserverConfig = this.option.sqlserverConfig;
       if (!this.pool) {
-        const config = {
+        const config: any = {
           server: this.option.host || '127.0.0.1',
           port: this.option.port || 1433,
           user: this.option.user || 'sa',
           password: this.option.password || '',
           database: this.option.database || 'master',
+          domain: sqlserverConfig?.domain,
+          connectionTimeout: this.option.connectionTimeout ?? 15000,
+          requestTimeout: sqlserverConfig?.requestTimeout,
           options: {
-            encrypt: (this.option as any).ssl ?? false,
-            trustServerCertificate: true,
-            enableArithAbort: true,
-            connectTimeout: this.option.connectionTimeout || 15000,
+            encrypt: sqlserverConfig?.encrypt ?? this.option.ssl ?? false,
+            trustServerCertificate: sqlserverConfig?.trustServerCertificate ?? true,
+            enableArithAbort: sqlserverConfig?.enableArithAbort ?? true,
+            instanceName: sqlserverConfig?.instanceName,
+            appName: sqlserverConfig?.appName,
           },
           pool: {
-            min: this.option.poolMin || 1,
-            max: this.option.poolMax || 5,
-            idleTimeoutMillis: 30000,
+            min: this.option.poolMin ?? 1,
+            max: this.option.poolMax ?? 5,
+            idleTimeoutMillis: sqlserverConfig?.idleTimeoutMillis ?? 30000,
           },
         };
         this.pool = new sqlModule.ConnectionPool(config);
@@ -142,19 +155,21 @@ export class DbSqlServer extends Db {
     await this.connect();
     const sqlModule = getMssqlModule();
     const transaction = new sqlModule.Transaction(this.pool);
-    await transaction.begin();
-    const trxDb = new DbSqlServerTransaction(this.option, transaction);
-
+    let started = false;
     try {
+      await transaction.begin();
+      started = true;
+      const trxDb = new DbSqlServerTransaction(this.option, transaction);
       const result = await callback(trxDb);
       await transaction.commit();
       return result;
     } catch (error: any) {
-      try {
-        await transaction.rollback();
-      } catch (rollbackErr: any) {
-        console.error('SQL Server transaction rollback failed:', rollbackErr);
-        logger.error('SQL Server transaction rollback failed:', rollbackErr && rollbackErr.message);
+      if (started) {
+        try {
+          await transaction.rollback();
+        } catch (rollbackErr: any) {
+          logger.error('SQL Server transaction rollback failed:', rollbackErr?.message || String(rollbackErr));
+        }
       }
       throw error;
     }
@@ -168,13 +183,17 @@ export class DbSqlServer extends Db {
       let transformedSql = sql;
       if (params !== undefined) {
         if (Array.isArray(params)) {
-          let paramIdx = 0;
-          transformedSql = sql.replace(/\?/g, () => {
-            const paramName = `p${paramIdx}`;
-            request.input(paramName, params[paramIdx]);
-            paramIdx++;
-            return `@${paramName}`;
+          let placeholderCount = 0;
+          transformedSql = this.replaceQuestionMarkPlaceholders(sql, (index) => {
+            placeholderCount++;
+            request.input(`p${index}`, params[index]);
+            return `@p${index}`;
           });
+          if (placeholderCount !== params.length) {
+            throw new Error(
+              `SQL Server bind count mismatch: SQL has ${placeholderCount} placeholders but ${params.length} values were provided`
+            );
+          }
         } else if (typeof params === 'object') {
           for (const key of Object.keys(params)) {
             request.input(key, params[key]);
@@ -202,11 +221,11 @@ export class DbSqlServer extends Db {
       }
 
       if (logger.isDebug()) {
-        console.log('query:', transformedSql, ', params:', params, ', result:', rows && rows.length);
+        logger.debug('query:', transformedSql, ', result count:', rows?.length || 0);
       }
       return rows;
     } catch (err: any) {
-      console.error('query:', sql, ', params:', params, ', error:', err);
+      logger.error('SQL Server query failed:', err?.message || String(err));
       throw err;
     }
   }

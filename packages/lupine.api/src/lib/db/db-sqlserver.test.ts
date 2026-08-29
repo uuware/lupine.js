@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { DbSqlServer, DbSqlServerTransaction } from './db-sqlserver';
 import { DbHelper } from './db-helper';
-import { getDefaultDbConfig } from '../../models/db-config';
+import { getDefaultDbConfig } from './db-helper';
 
 test('Test DbSqlServer Driver and Dialect Encapsulation', async (t) => {
   const sqlServerConfig = {

@@ -10,7 +10,7 @@ export type DbFieldValue = { [key: string]: DbFieldValueType };
 export type DbFieldExpression = { [key: string]: string | number | boolean | null | undefined | DbFieldExpressionProps };
 
 export const isDbFieldExpression = (value: any): value is DbFieldExpressionProps => {
-  return value && typeof value === 'object' && ('expression' in value || 'exprssion' in value);
+  return Boolean(value && typeof value === 'object' && ('expression' in value || 'exprssion' in value));
 };
 export const isDbFieldExprssion = isDbFieldExpression; // backward compatibility
 
@@ -22,14 +22,18 @@ export class Db {
   option: DbConfig;
 
   constructor(option: DbConfig) {
+    if (!option || !option.type) {
+      throw new Error('Invalid database configuration: type is required');
+    }
+
     if (logger.isDebug()) {
       logger.debug(
-        `init Db, type: ${option.type}, host: ${option.host}:${option.port}, user: ${option.user}, database: ${option.database}, filename: ${option.filename}`
+        `init Db, type: ${option.type}, host: ${option.host}:${option.port}, user: ${option.user}, database: ${option.database}`
       );
     }
 
     this.option = option;
-    this.type = option.type;
+    this.type = option.type.trim().toLowerCase();
     this.tablePrefix = option.tablePrefix || 'tbl_';
   }
 
@@ -128,16 +132,13 @@ export class Db {
   // Use `COALESCE(...)` directly in your SQL without engine-specific functions like IFNULL, ISNULL, or NVL.
 
   public escapeId(field: string): string {
-    if (
-      !field ||
-      field === '*' ||
-      field.includes('(') ||
-      field.includes(')') ||
-      field.includes(' ') ||
-      field.startsWith('`') ||
-      field.startsWith('[') ||
-      field.startsWith('"')
-    ) {
+    if (!field || field === '*') {
+      return field;
+    }
+    if (field.includes('(') || field.includes(')') || /\s/.test(field)) {
+      return field;
+    }
+    if (field.startsWith('`') || field.startsWith('[') || field.startsWith('"')) {
       return field;
     }
     if (field.includes('.')) {
@@ -147,16 +148,63 @@ export class Db {
         .join('.');
     }
     if (this.type === 'sqlserver' || this.type === 'mssql') {
-      return `[${field}]`;
+      return `[${field.replace(/]/g, ']]')}]`;
     }
     if (this.type === 'oracle') {
-      return `"${field}"`;
+      return `"${field.replace(/"/g, '""')}"`;
     }
-    return `\`${field}\``;
+    return `\`${field.replace(/`/g, '``')}\``;
   }
 
   public async transaction<T>(callback: (trx: Db) => Promise<T>): Promise<T> {
     throw new Error('Method not implemented');
+  }
+
+  /**
+   * Rewrites positional `?` placeholders without touching quoted SQL literals or
+   * SQL Server bracketed identifiers. Driver-specific bind syntax is supplied
+   * by the replacer.
+   */
+  protected replaceQuestionMarkPlaceholders(sql: string, replacer: (index: number) => string): string {
+    let result = '';
+    let index = 0;
+    let quote = '';
+
+    for (let i = 0; i < sql.length; i++) {
+      const char = sql[i];
+
+      if (quote) {
+        result += char;
+        if (char === quote) {
+          if (sql[i + 1] === quote) {
+            result += sql[++i];
+          } else {
+            quote = '';
+          }
+        } else if (char === '\\' && i + 1 < sql.length) {
+          result += sql[++i];
+        }
+        continue;
+      }
+
+      if (char === "'" || char === '"' || char === '`') {
+        quote = char;
+        result += char;
+        continue;
+      }
+      if (char === '[') {
+        quote = ']';
+        result += char;
+        continue;
+      }
+      if (char === '?') {
+        result += replacer(index++);
+      } else {
+        result += char;
+      }
+    }
+
+    return result;
   }
 
   protected nativeQuery(sql: string, params?: any, isSelect?: boolean): Promise<any> {

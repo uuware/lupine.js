@@ -131,7 +131,7 @@ export class AdminDb implements IApiBase {
       }
 
       const offset = pageIndex * pageLimit;
-      response.result = await db.selectObject(tableName, undefined, undefined, undefined, pageLimit, offset);
+      response.result = await db.selectObject(tableName, undefined, undefined, undefined, pageLimit, offset) as any;
       response.status = 'ok';
       (response as any).itemsCount = itemsCount;
       (response as any).pageIndex = pageIndex;
@@ -233,7 +233,7 @@ export class AdminDb implements IApiBase {
     const db = apiCache.getDb();
     const appData = apiCache.getAppData();
     const installDir = appData.dataPath + '/resources';
-    const dbType = appData.dbType;
+    const dbType = appData.dbConfig?.type || 'sqlite';
     const sqlFile = `${installDir}/install.${dbType}.sql`;
     const sql = await FsUtils.readFile(sqlFile);
     if (!sql) {

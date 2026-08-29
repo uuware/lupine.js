@@ -4,7 +4,7 @@ import {
   CryptoUtils,
   HostToPathProps,
   appStart,
-  getDefaultDbConfig,
+  getAppDbConfig,
   loadEnv,
   setAccessControlAllowHost,
 } from 'lupine.api/server';
@@ -15,7 +15,6 @@ const initAndStartServer = async () => {
   // it can use "#!import file_name" to import another env file
   await loadEnv(envFile);
 
-  const dbConfig = { ...getDefaultDbConfig() };
   const serverRootPath = path.resolve(process.env[ServerEnvKeys.SERVER_ROOT_PATH]!);
   const apps = (process.env[ServerEnvKeys.APPS] || '').split(',');
   const webRootMap: HostToPathProps[] = [];
@@ -28,16 +27,8 @@ const initAndStartServer = async () => {
       .map((host) => host.trim().toLowerCase())
       .filter(Boolean);
     appHosts.forEach((host) => accessControlAllowHosts.add(host));
-    const dbFilename =
-      process.env[`${ServerEnvKeys.DB_FILENAME}:${app}`] || process.env[`${ServerEnvKeys.DB_FILENAME}`] || 'sqlite3.db';
 
-    const DB_TYPE = process.env[`${ServerEnvKeys.DB_TYPE}:${app}`] || process.env[`${ServerEnvKeys.DB_TYPE}`] || 'sqlite';
-    const DB_HOST = process.env[`${ServerEnvKeys.DB_HOST}:${app}`] || process.env[`${ServerEnvKeys.DB_HOST}`] || '';
-    const DB_PORT = process.env[`${ServerEnvKeys.DB_PORT}:${app}`] || process.env[`${ServerEnvKeys.DB_PORT}`] || '0';
-    const DB_USER = process.env[`${ServerEnvKeys.DB_USER}:${app}`] || process.env[`${ServerEnvKeys.DB_USER}`] || '';
-    const DB_DATABASE = process.env[`${ServerEnvKeys.DB_DATABASE}:${app}`] || process.env[`${ServerEnvKeys.DB_DATABASE}`] || '';
-    const DB_PASSWORD = process.env[`${ServerEnvKeys.DB_PASSWORD}:${app}`] || process.env[`${ServerEnvKeys.DB_PASSWORD}`] || '';
-    const DB_TABLE_PREFIX = process.env[`${ServerEnvKeys.DB_TABLE_PREFIX}:${app}`] || process.env[`${ServerEnvKeys.DB_TABLE_PREFIX}`] || '';
+    const appDbConfig = getAppDbConfig(app);
 
     webRootMap.push({
       appName: app,
@@ -46,18 +37,7 @@ const initAndStartServer = async () => {
       webPath: path.join(serverRootPath, app + '_web'),
       dataPath: path.join(serverRootPath, app + '_data'),
       apiPath: path.join(serverRootPath, app + '_api'),
-      dbType: DB_TYPE,
-      dbConfig: {
-        ...dbConfig,
-        type: DB_TYPE,
-        filename: dbFilename,
-        host: DB_HOST,
-        port: Number(DB_PORT) || 0,
-        user: DB_USER,
-        database: DB_DATABASE,
-        password: DB_PASSWORD,
-        tablePrefix: DB_TABLE_PREFIX,
-      },
+      dbConfig: appDbConfig,
     });
 
     for (const domain of appHosts) {

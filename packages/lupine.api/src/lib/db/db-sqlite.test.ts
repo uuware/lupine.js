@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { DbSqlite } from './db-sqlite';
-import { getDefaultDbConfig } from '../../models/db-config';
+import { getDefaultDbConfig } from './db-helper';
 
 test('Test DbSqlite encapsulation with Real InMemory Sqlite (No Mocks)', async (t) => {
   let db: DbSqlite;
@@ -11,7 +11,9 @@ test('Test DbSqlite encapsulation with Real InMemory Sqlite (No Mocks)', async (
     db = new DbSqlite({
       ...getDefaultDbConfig(),
       type: 'sqlite',
-      filename: ':memory:',
+      sqliteConfig: {
+        filename: ':memory:',
+      },
       tablePrefix: 'tbl_',
     });
 

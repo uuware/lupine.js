@@ -7,6 +7,5 @@ export type HostToPathProps = {
   dataPath: string;
   apiPath: string;
   appName: string;
-  dbType: string;
   dbConfig: DbConfig;
 };

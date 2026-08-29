@@ -36,10 +36,38 @@ export class DbSqlite extends Db {
     } catch (e) {
       nativeBinding = 'node_modules/better-sqlite3/build/Release/better_sqlite3.node'; // fallback to production default
     }
-    this.db = new DatabaseConstructor(option.filename!, {
+    const sqliteConfig = option.sqliteConfig;
+    const filename = sqliteConfig?.filename || 'sqlite3.db';
+    const readonly = sqliteConfig?.readonly ?? false;
+    const timeout = sqliteConfig?.timeout ?? 5000;
+    const busyTimeout = sqliteConfig?.busyTimeout;
+    if (!Number.isFinite(timeout) || timeout < 0 || (busyTimeout !== undefined && (!Number.isFinite(busyTimeout) || busyTimeout < 0))) {
+      throw new Error('Invalid SQLite configuration: timeout values must be non-negative numbers');
+    }
+
+    const sqliteOptions: any = {
       nativeBinding,
-    });
-    this.db.pragma('journal_mode = WAL');
+      readonly,
+      fileMustExist: sqliteConfig?.fileMustExist ?? false,
+      timeout,
+      verbose: sqliteConfig?.verbose ? (message: unknown) => logger.debug(String(message)) : undefined,
+    };
+    this.db = new DatabaseConstructor(filename, sqliteOptions);
+
+    if (!readonly) {
+      const journalMode = (sqliteConfig?.journalMode || 'WAL').toUpperCase();
+      if (!['DELETE', 'TRUNCATE', 'PERSIST', 'MEMORY', 'WAL', 'OFF'].includes(journalMode)) {
+        this.db.close();
+        throw new Error(`Invalid SQLite journal mode: ${journalMode}`);
+      }
+      this.db.pragma(`journal_mode = ${journalMode}`);
+    }
+    if (busyTimeout !== undefined) {
+      this.db.pragma(`busy_timeout = ${Math.trunc(busyTimeout)}`);
+    }
+    if (sqliteConfig?.foreignKeys !== undefined) {
+      this.db.pragma(`foreign_keys = ${sqliteConfig.foreignKeys ? 'ON' : 'OFF'}`);
+    }
 
     if (logger.isDebug()) {
       this.testConnection();
@@ -47,7 +75,7 @@ export class DbSqlite extends Db {
   }
 
   public close(): void {
-    if (this.db) {
+    if (this.db?.open) {
       this.db.close();
     }
   }
@@ -66,47 +94,41 @@ export class DbSqlite extends Db {
       try {
         await this.execute('ROLLBACK');
       } catch (rollbackErr: any) {
-        console.error('SQLite transaction rollback failed:', rollbackErr);
-        logger.error('SQLite transaction rollback failed:', rollbackErr && rollbackErr.message);
+        logger.error('SQLite transaction rollback failed:', rollbackErr?.message || String(rollbackErr));
       }
       throw error;
     }
   }
 
-  // INSERT...RETURNING is also supported in MariaDB from 10.5.0
   public nativeQuery(sql: string, params?: any, isSelect?: boolean): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
+        const statement = this.db.prepare(sql);
         let rows: any;
         if (isSelect) {
-          rows = params ? this.db.prepare(sql).all(params) : this.db.prepare(sql).all();
+          rows = params !== undefined ? statement.all(params) : statement.all();
         } else {
-          const preSql = sql.trim().substring(0, 6).toLowerCase();
-          if (preSql.startsWith('insert') || preSql.startsWith('update') || preSql.startsWith('delete')) {
-            sql = sql + ' returning *';
-          }
-          rows = params ? this.db.prepare(sql).run(params) : this.db.prepare(sql).run();
-          if (rows && typeof rows.length === 'undefined') {
-            // sqlite3 returns id as a record
-            rows = [
-              {
-                ...rows,
-                changes: rows.changes !== undefined ? rows.changes : 0,
-                affectedRows: rows.changes !== undefined ? rows.changes : 0,
-                lastInsertRowid: rows.lastInsertRowid !== undefined ? rows.lastInsertRowid : undefined,
-                insertId: rows.lastInsertRowid !== undefined ? rows.lastInsertRowid : undefined,
-                id: rows.changes > 0 ? rows.lastInsertRowid : undefined,
-              },
-            ];
-          }
+          const runResult = params !== undefined ? statement.run(params) : statement.run();
+          const isInsert = /^\s*(?:WITH\b[\s\S]*?\b)?INSERT\b/i.test(sql);
+          const insertId = isInsert && runResult.changes > 0 ? runResult.lastInsertRowid : undefined;
+          rows = [
+            {
+              ...runResult,
+              changes: runResult.changes ?? 0,
+              affectedRows: runResult.changes ?? 0,
+              lastInsertRowid: insertId,
+              insertId,
+              id: insertId,
+            },
+          ];
         }
 
         if (logger.isDebug()) {
-          console.log('query:', sql, ', params:', params, ', result:', rows && rows.length);
+          logger.debug('query:', sql, ', result count:', Array.isArray(rows) ? rows.length : 0);
         }
         resolve(rows);
-      } catch (err) {
-        console.error('query:', sql, ', params:', params, ', error:', err);
+      } catch (err: any) {
+        logger.error('SQLite query failed:', err?.message || String(err));
         reject(err);
       }
     });

@@ -37,8 +37,14 @@ export class DbOracleTransaction extends Db {
 
       if (params !== undefined) {
         if (Array.isArray(params)) {
-          let paramIdx = 1;
-          transformedSql = sql.replace(/\?/g, () => `:${paramIdx++}`);
+          let bindCount = 0;
+          transformedSql = this.replaceQuestionMarkPlaceholders(sql, (index) => {
+            bindCount = index + 1;
+            return `:${index + 1}`;
+          });
+          if (bindCount !== params.length) {
+            throw new Error(`Oracle bind count mismatch: SQL has ${bindCount} placeholders but ${params.length} values were provided`);
+          }
           binds = params;
         } else if (typeof params === 'object') {
           binds = params;
@@ -67,11 +73,11 @@ export class DbOracleTransaction extends Db {
       }
 
       if (logger.isDebug()) {
-        console.log('trx query:', transformedSql, ', params:', params, ', result:', rows && rows.length);
+        logger.debug('trx query:', transformedSql, ', result count:', rows?.length || 0);
       }
       return rows;
     } catch (err: any) {
-      console.error('trx query error:', sql, ', params:', params, ', error:', err);
+      logger.error('Oracle transaction query failed:', err?.message || String(err));
       throw err;
     }
   }
@@ -101,7 +107,9 @@ export class DbOracle extends Db {
 
   public async close(): Promise<void> {
     if (this.pool) {
-      await this.pool.close(10);
+      const pool = this.pool;
+      this.pool = undefined;
+      await pool.close(10);
     }
   }
 
@@ -111,17 +119,32 @@ export class DbOracle extends Db {
     }
     try {
       const oracledb = getOracledbModule();
-      const connectString = this.option.host
+      const oracleConfig = this.option.oracleConfig;
+      const connectString = oracleConfig?.connectString || (this.option.host
         ? `${this.option.host}:${this.option.port || 1521}/${this.option.database || 'XE'}`
-        : this.option.database || 'localhost/XE';
+        : this.option.database || 'localhost/XE');
+      const schema = oracleConfig?.schema?.trim();
+      if (schema && !/^[A-Za-z][A-Za-z0-9_$#]*$/.test(schema)) {
+        throw new Error(`Invalid Oracle schema identifier: ${schema}`);
+      }
 
       this.pool = await oracledb.createPool({
         user: this.option.user || 'system',
         password: this.option.password || '',
         connectString,
-        poolMin: this.option.poolMin || 1,
-        poolMax: this.option.poolMax || 5,
-        poolTimeout: 30,
+        poolMin: this.option.poolMin ?? 1,
+        poolMax: this.option.poolMax ?? 5,
+        poolTimeout: oracleConfig?.poolTimeout ?? 30,
+        queueTimeout: oracleConfig?.queueTimeout ?? this.option.connectionTimeout,
+        poolIncrement: oracleConfig?.poolIncrement,
+        poolPingInterval: oracleConfig?.poolPingInterval,
+        stmtCacheSize: oracleConfig?.stmtCacheSize,
+        privilege: oracleConfig?.privilege,
+        sessionCallback: schema
+          ? async (connection: any) => {
+            await connection.execute(`ALTER SESSION SET CURRENT_SCHEMA = ${schema}`);
+          }
+          : undefined,
       });
 
       if (logger.isDebug()) {
@@ -146,8 +169,7 @@ export class DbOracle extends Db {
       try {
         await connection.rollback();
       } catch (rollbackErr: any) {
-        console.error('Oracle transaction rollback failed:', rollbackErr);
-        logger.error('Oracle transaction rollback failed:', rollbackErr && rollbackErr.message);
+        logger.error('Oracle transaction rollback failed:', rollbackErr?.message || String(rollbackErr));
       }
       throw error;
     } finally {
@@ -166,8 +188,14 @@ export class DbOracle extends Db {
 
       if (params !== undefined) {
         if (Array.isArray(params)) {
-          let paramIdx = 1;
-          transformedSql = sql.replace(/\?/g, () => `:${paramIdx++}`);
+          let bindCount = 0;
+          transformedSql = this.replaceQuestionMarkPlaceholders(sql, (index) => {
+            bindCount = index + 1;
+            return `:${index + 1}`;
+          });
+          if (bindCount !== params.length) {
+            throw new Error(`Oracle bind count mismatch: SQL has ${bindCount} placeholders but ${params.length} values were provided`);
+          }
           binds = params;
         } else if (typeof params === 'object') {
           binds = params;
@@ -176,7 +204,7 @@ export class DbOracle extends Db {
 
       const result = await connection.execute(transformedSql, binds, {
         outFormat: oracledb.OUT_FORMAT_OBJECT,
-        autoCommit: isSelect ? false : true,
+        autoCommit: !isSelect,
       });
 
       let rows: any;
@@ -196,14 +224,18 @@ export class DbOracle extends Db {
       }
 
       if (logger.isDebug()) {
-        console.log('query:', transformedSql, ', params:', params, ', result:', rows && rows.length);
+        logger.debug('query:', transformedSql, ', result count:', rows?.length || 0);
       }
       return rows;
     } catch (err: any) {
-      console.error('query:', sql, ', params:', params, ', error:', err);
+      logger.error('Oracle query failed:', err?.message || String(err));
       throw err;
     } finally {
-      await connection.close();
+      try {
+        await connection.close();
+      } catch (closeErr: any) {
+        logger.error('Oracle connection close failed:', closeErr?.message || String(closeErr));
+      }
     }
   }
 
