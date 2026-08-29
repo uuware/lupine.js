@@ -328,6 +328,25 @@ const start = async () => {
   // this is for esbuild conditional compile
   ifPluginVars.DEV = isDev ? '1' : '';
   ifPluginVars.MOBILE = isMobile ? '1' : '';
+  process.argv
+    .filter((i) => i.startsWith('--if-defs='))
+    .forEach((arg) => {
+      arg
+        .substring(10)
+        .split(',')
+        .forEach((item) => {
+          if (!item) return;
+          const eqIdx = item.indexOf('=');
+          if (eqIdx >= 0) {
+            const key = item.substring(0, eqIdx).trim();
+            const val = item.substring(eqIdx + 1).trim();
+            if (key) ifPluginVars[key] = val;
+          } else {
+            const key = item.trim();
+            if (key) ifPluginVars[key] = '1';
+          }
+        });
+    });
 
   // All apps should be defined in .env file like this:
   // APPS=domain1.com,domain2.com
