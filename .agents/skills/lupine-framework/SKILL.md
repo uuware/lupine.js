@@ -51,4 +51,5 @@ When handling specific tasks, consult the corresponding topic guides:
 | **Styling & Themes** | `CssProps` usage, `&` namespace pattern, dark mode color semantics, scoped CSS sharing | [styling-and-themes.md](./references/styling-and-themes.md) |
 | **Navigation & Routing** | SPA navigation with `initializePage`, path parameter syntax, environment variables | [navigation-and-routing.md](./references/navigation-and-routing.md) |
 | **Mobile Interactions** | `SliderFrame` slide-over navigation, `ActionSheet` dialog promises, hardware back button | [mobile-interactions.md](./references/mobile-interactions.md) |
+| **Icon Conventions** | Font icons vs embedded SVG masks, `ifc-icon` markup pattern across `lupine.api` packages & apps | [icon-handling.md](./references/icon-handling.md) |
 | **Full Reference Manual** | Complete original `AI_CONTEXT.md` reference manual and detailed architecture | [full-guide.md](./references/full-guide.md) |
