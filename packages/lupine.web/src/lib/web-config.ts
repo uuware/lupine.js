@@ -44,8 +44,7 @@ export class WebConfig {
       console.error('WebConfig webConfigApi is not set');
       return;
     }
-    const url = getRenderPageProps().renderPageFunctions.baseUrl(this.webConfigApi);
-    const data = await getRenderPageProps().renderPageFunctions.fetchData(url);
+    const data = await getRenderPageProps().renderPageFunctions.fetchData(this.webConfigApi);
     if (data && data.json && data.json.status === 'ok') {
       this.cfg = data.json.result;
     } else {
