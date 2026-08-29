@@ -212,10 +212,15 @@ export const AdminDataPage = () => {
             Upload &amp; Import
           </button>
         </div>
-        <label class='&-checkbox-row' style={{ marginTop: '8px' }}>
-          <input type='checkbox' id='data-import-overwrite' />
-          <span>Overwrite existing records on conflict (Delete &amp; Re-insert)</span>
-        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+          <label class='&-checkbox-row'>
+            <input type='checkbox' id='data-import-overwrite' />
+            <span>Overwrite existing records on conflict (Delete &amp; Re-insert)</span>
+          </label>
+          <div style={{ fontSize: '12px', color: 'var(--error-color, #e74c3c)', paddingLeft: '26px' }}>
+            ⚠️ Warning: Records in related tables referencing this table's PRIMARY KEY will also be deleted (OREIGN KEY ... ON DELETE CASCADE)!
+          </div>
+        </div>
         <div class='&-result'>{importResultDom.node}</div>
       </div>
 
