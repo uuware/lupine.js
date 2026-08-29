@@ -39,16 +39,26 @@ const isStringTrue = (value: string | undefined, defaultValue: boolean) => {
   value = (value || '').trim().toLocaleLowerCase();
   return value === 'true' || value === '1';
 };
+export const enum LogEnvKeys {
+  LOG_FOLDER = 'LOG_FOLDER',
+  LOG_FILENAME = 'LOG_FILENAME',
+  LOG_MAX_SIZE = 'LOG_MAX_SIZE',
+  LOG_MAX_COUNT = 'LOG_MAX_COUNT',
+  LOG_OUT_TO_FILE = 'LOG_OUT_TO_FILE',
+  LOG_OUT_TO_CONSOLE = 'LOG_OUT_TO_CONSOLE',
+  LOG_LEVEL = 'LOG_LEVEL',
+}
+
 export const getDefaultLogConfig = (): LogConfig => {
   // process.env may not be initialized at script starting
   return {
-    folder: process.env['LOG_FOLDER'] || './log/',
-    filename: process.env['LOG_FILENAME'] || 'log-%index%.log', // %index% will be replaced with 0, 1, ..., maxCount-1, default is 0
-    maxSize: getSizeFromString(process.env['LOG_MAX_SIZE'], 1024 * 1024 * 1),
-    maxCount: Number(process.env['LOG_MAX_COUNT'] || '5'),
-    outToFile: isStringTrue(process.env['LOG_OUT_TO_FILE'], true),
-    outToConsole: isStringTrue(process.env['LOG_OUT_TO_CONSOLE'], true),
-    level: (process.env['LOG_LEVEL'] || 'info').trim().toLocaleLowerCase() as LogLevels,
+    folder: process.env[LogEnvKeys.LOG_FOLDER] || './log/',
+    filename: process.env[LogEnvKeys.LOG_FILENAME] || 'log-%index%.log', // %index% will be replaced with 0, 1, ..., maxCount-1, default is 0
+    maxSize: getSizeFromString(process.env[LogEnvKeys.LOG_MAX_SIZE], 1024 * 1024 * 1),
+    maxCount: Number(process.env[LogEnvKeys.LOG_MAX_COUNT] || '5'),
+    outToFile: isStringTrue(process.env[LogEnvKeys.LOG_OUT_TO_FILE], true),
+    outToConsole: isStringTrue(process.env[LogEnvKeys.LOG_OUT_TO_CONSOLE], true),
+    level: (process.env[LogEnvKeys.LOG_LEVEL] || 'info').trim().toLocaleLowerCase() as LogLevels,
   };
 };
 
