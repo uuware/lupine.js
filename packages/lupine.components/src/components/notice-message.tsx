@@ -1,4 +1,5 @@
 import { CssProps, bindGlobalStyle } from 'lupine.web';
+import { isSafeAreaSupported } from '../lib/support-safe-area';
 /**
 How to use:
   Notification.sendMessage(message);
@@ -56,6 +57,8 @@ export class NotificationMessage {
       padding: '0 10px',
       zIndex: 'var(--layer-notice)',
       pointerEvents: 'none',
+      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
+      'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
       '>div': {
         pointerEvents: 'auto',
         color: 'var(--notice-color-with-bg)',

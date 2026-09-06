@@ -11,6 +11,7 @@ export type ActionSheetColorPickerProps = {
   /** Show the 16 preset color swatches. Default: true */
   showPresets?: boolean;
   zIndex?: string;
+  colorList?: string[];
 };
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -55,6 +56,7 @@ export const ActionSheetColorPicker = async ({
   cancelButtonText = 'Cancel',
   showPresets = true,
   zIndex,
+  colorList = PRESET_COLORS,
 }: ActionSheetColorPickerProps): Promise<string | undefined> => {
   let [r, g, b] = hexToRgb(value);
 
@@ -238,7 +240,7 @@ export const ActionSheetColorPicker = async ({
         </div>
         {showPresets && (
           <div class='presets'>
-            {PRESET_COLORS.map((hex) => (
+            {colorList.map((hex) => (
               <div
                 class='preset-dot'
                 style={{ backgroundColor: hex }}
