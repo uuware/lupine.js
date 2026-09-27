@@ -3,6 +3,7 @@ import { bindGlobalStyle, getGlobalStylesId, CssProps, RefProps } from 'lupine.w
 export type RangeHookProps = {
   setValue: (val: number | [number, number]) => void;
   getValue: () => number | [number, number];
+  setDisabled?: (disabled: boolean) => void;
 };
 
 export type RangeProps = {
@@ -24,6 +25,7 @@ export type RangeProps = {
   trackColor?: string;
   fillColor?: string;
   showButtons?: boolean;
+  thumbSize?: number | string;
 };
 
 // 1. Define Static CSS completely decoupled from Reactivity (isVertical)
@@ -63,11 +65,11 @@ const rangeCss: CssProps = {
   },
   '&.horizontal .&-wrapper': {
     width: '100%',
-    height: '20px',
+    height: 'var(--range-thumb-size, 20px)',
     flex: 1,
   },
   '&.vertical .&-wrapper': {
-    width: '20px',
+    width: 'var(--range-thumb-size, 20px)',
     height: '100%',
     flex: 1,
   },
@@ -123,7 +125,7 @@ const rangeCss: CssProps = {
     transform: 'none',
   },
   '&.vertical .&-input': {
-    height: '20px',
+    height: 'var(--range-thumb-size, 20px)',
     top: '100%',
     left: 0,
     transformOrigin: '0 0',
@@ -134,8 +136,8 @@ const rangeCss: CssProps = {
     appearance: 'none',
     WebkitAppearance: 'none',
     pointerEvents: 'auto',
-    width: '20px',
-    height: '20px',
+    width: 'var(--range-thumb-size, 20px)',
+    height: 'var(--range-thumb-size, 20px)',
     backgroundColor: '#fff',
     border: '2px solid var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
     borderRadius: '50%',
@@ -151,8 +153,8 @@ const rangeCss: CssProps = {
   },
   '.&-input::-moz-range-thumb': {
     pointerEvents: 'auto',
-    width: '20px',
-    height: '20px',
+    width: 'var(--range-thumb-size, 20px)',
+    height: 'var(--range-thumb-size, 20px)',
     backgroundColor: '#fff',
     border: '2px solid var(--range-fill-color, var(--primary-accent-color, #0a74c9))',
     borderRadius: '50%',
@@ -280,6 +282,9 @@ export const Range = (props: RangeProps) => {
   const customStyle: any = { ...props.style };
   if (props.trackColor) customStyle['--range-track-color'] = props.trackColor;
   if (props.fillColor) customStyle['--range-fill-color'] = props.fillColor;
+  if (props.thumbSize) {
+    customStyle['--range-thumb-size'] = typeof props.thumbSize === 'number' ? `${props.thumbSize}px` : props.thumbSize;
+  }
 
   // Evaluate the immutable hash exact ONCE for all range implementations.
   const globalCssId = getGlobalStylesId(rangeCss);
@@ -307,9 +312,10 @@ export const Range = (props: RangeProps) => {
 
   let currentVal1 = val1;
   let currentVal2 = val2;
+  let isDisabled = !!props.disabled;
 
   const adjustByStep = (direction: -1 | 1) => {
-    if (props.disabled) return;
+    if (isDisabled) return;
     if (isRangeMode) {
       let newVal = currentVal1 + direction * step;
       newVal = Math.max(min, Math.min(currentVal2, newVal));
@@ -417,7 +423,7 @@ export const Range = (props: RangeProps) => {
   };
 
   const handleContainerClick = (e: any) => {
-    if (props.disabled) return;
+    if (isDisabled) return;
     if (e.target && e.target.tagName === 'INPUT') return;
 
     const wrapper = ref.$('.&-wrapper') as HTMLElement;
@@ -461,6 +467,7 @@ export const Range = (props: RangeProps) => {
   };
 
   const handleInput = (e: Event, isThumb2: boolean) => {
+    if (isDisabled) return;
     let val = parseFloat((e.target as HTMLInputElement).value);
 
     // Magnetic snapping
@@ -496,6 +503,7 @@ export const Range = (props: RangeProps) => {
   };
 
   const handleChange = () => {
+    if (isDisabled) return;
     if (props.onChange) {
       if (isRangeMode) {
         props.onChange([currentVal1, currentVal2]);
@@ -522,6 +530,21 @@ export const Range = (props: RangeProps) => {
       updateVisuals();
     };
     props.hook.getValue = () => (isRangeMode ? [currentVal1, currentVal2] : currentVal1);
+    props.hook.setDisabled = (disabled: boolean) => {
+      isDisabled = disabled;
+      const container = (ref.current as HTMLElement) || (ref.$?.('.&-container') as HTMLElement);
+      if (container) {
+        if (disabled) {
+          container.classList.add('disabled');
+        } else {
+          container.classList.remove('disabled');
+        }
+      }
+      const inputs = ref.$all?.('.&-input') as NodeListOf<HTMLInputElement>;
+      inputs?.forEach?.((input) => {
+        input.disabled = disabled;
+      });
+    };
   }
 
   const ref: RefProps & { onUnload?: (el: Element) => Promise<void> | void } = {
@@ -563,7 +586,7 @@ export const Range = (props: RangeProps) => {
 
   return (
     <div
-      class={[globalCssId, '&-container', props.class, props.disabled ? 'disabled' : '', isVertical ? 'vertical' : 'horizontal']
+      class={[globalCssId, '&-container', props.class, isDisabled ? 'disabled' : '', isVertical ? 'vertical' : 'horizontal']
         .join(' ')
         .trim()}
       ref={ref}
@@ -588,7 +611,7 @@ export const Range = (props: RangeProps) => {
                 value={val1}
                 onInput={(e) => handleInput(e, false)}
                 onChange={handleChange}
-                disabled={props.disabled}
+                disabled={isDisabled}
               />
               <input
                 type='range'
@@ -599,7 +622,7 @@ export const Range = (props: RangeProps) => {
                 value={val2}
                 onInput={(e) => handleInput(e, true)}
                 onChange={handleChange}
-                disabled={props.disabled}
+                disabled={isDisabled}
               />
             </>
           ) : (
@@ -612,7 +635,7 @@ export const Range = (props: RangeProps) => {
               value={val1}
               onInput={(e) => handleInput(e, false)}
               onChange={handleChange}
-              disabled={props.disabled}
+              disabled={isDisabled}
             />
           )}
 

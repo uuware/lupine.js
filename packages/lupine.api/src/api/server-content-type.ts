@@ -1,4 +1,4 @@
-export const serverContentType: { [key: string]: string } = {
+export const defaultServerContentType: { [key: string]: string } = {
   txt: 'text/plain',
   htm: 'text/html',
   html: 'text/html',
@@ -6,6 +6,7 @@ export const serverContentType: { [key: string]: string } = {
   xml: 'text/xml',
   css: 'text/css',
   js: 'text/javascript',
+  mjs: 'text/javascript',
   wasm: 'application/wasm',
   json: 'application/json',
   csv: 'text/csv',
@@ -80,3 +81,4 @@ export const serverContentType: { [key: string]: string } = {
   sh: 'application/x-sh',
   bat: 'application/x-msdownload',
 };
+

@@ -5,7 +5,20 @@ import { ServerResponse } from 'http';
 import { Logger } from '../lib';
 import { ServerRequest } from '../models/locals-props';
 import { handler200, handler404 } from '../shared/handle-status';
-import { serverContentType } from './server-content-type';
+import { defaultServerContentType } from './server-content-type';
+
+export const serverContentType: Record<string, string> = { ...defaultServerContentType };
+
+export const bindServerContentType = (customContentType?: Record<string, string>) => {
+  if (customContentType) {
+    Object.assign(serverContentType, customContentType);
+    if (defaultSSOptions.serverContentType) {
+      Object.assign(defaultSSOptions.serverContentType, customContentType);
+    } else {
+      defaultSSOptions.serverContentType = { ...customContentType };
+    }
+  }
+};
 
 export interface StaticServerOptions {
   // Can be a global max-age (in seconds), or a map of extensions to max-age.
@@ -13,6 +26,8 @@ export interface StaticServerOptions {
   etag?: boolean;
   lastModified?: boolean;
   setHeaders?: (res: ServerResponse, path: string, stat: fs.Stats) => void;
+  serverContentType?: Record<string, string>;
+  skipSsrPaths?: string[] | string;
 }
 
 export const defaultSSOptions: StaticServerOptions = {
@@ -21,6 +36,7 @@ export const defaultSSOptions: StaticServerOptions = {
     htm: 0,
     json: 0,
     js: 31536000, // 365 days (1 year)
+    mjs: 31536000, // 365 days (1 year)
     css: 31536000, // 365 days (1 year)
     woff: 31536000, // 365 days (1 year)
     woff2: 31536000, // 365 days (1 year)
@@ -30,6 +46,7 @@ export const defaultSSOptions: StaticServerOptions = {
   },
   etag: true,
   lastModified: true,
+  skipSsrPaths: [],
 };
 export const bindStaticServerOptions = (options?: Partial<StaticServerOptions>) => {
   if (options?.maxAge) {
@@ -51,6 +68,47 @@ export const bindStaticServerOptions = (options?: Partial<StaticServerOptions>) 
   if (options?.setHeaders) {
     defaultSSOptions.setHeaders = options.setHeaders;
   }
+  if (options?.serverContentType) {
+    defaultSSOptions.serverContentType = {
+      ...(defaultSSOptions.serverContentType || {}),
+      ...options.serverContentType,
+    };
+    Object.assign(serverContentType, options.serverContentType);
+  }
+  if (options?.skipSsrPaths !== undefined) {
+    const newPaths = Array.isArray(options.skipSsrPaths) ? options.skipSsrPaths : [options.skipSsrPaths];
+    const existing = Array.isArray(defaultSSOptions.skipSsrPaths)
+      ? defaultSSOptions.skipSsrPaths
+      : defaultSSOptions.skipSsrPaths
+      ? [defaultSSOptions.skipSsrPaths]
+      : [];
+    defaultSSOptions.skipSsrPaths = Array.from(new Set([...existing, ...newPaths]));
+  }
+};
+
+export const bindSkipSsrPaths = (paths: string | string[]) => {
+  bindStaticServerOptions({ skipSsrPaths: paths });
+};
+
+/**
+ * Checks whether a requested URL matches any of the registered skip-SSR path prefixes.
+ */
+export const isSkipSsrUrl = (url: string, skipPaths?: string[] | string): boolean => {
+  if (!skipPaths) return false;
+  const list = Array.isArray(skipPaths) ? skipPaths : [skipPaths];
+  if (list.length === 0) return false;
+
+  return list.some((item) => {
+    if (!item) return false;
+    const prefix = item.startsWith('/') ? item : '/' + item;
+    // 1. Exact match (e.g. /favicon.ico)
+    if (url === prefix) return true;
+    // 2. Directory prefix match (e.g. /assets/ or /assets matching /assets/...)
+    if (prefix.endsWith('/')) {
+      return url.startsWith(prefix);
+    }
+    return url.startsWith(prefix + '/');
+  });
 };
 
 /**
@@ -70,6 +128,9 @@ export async function serveStaticFileStream(
   // Deep merge maxAge when both are objects, so partial overrides are additive
   if (typeof defaultSSOptions.maxAge === 'object' && typeof options?.maxAge === 'object') {
     opts.maxAge = { ...defaultSSOptions.maxAge, ...options.maxAge };
+  }
+  if (defaultSSOptions.serverContentType && options?.serverContentType) {
+    opts.serverContentType = { ...defaultSSOptions.serverContentType, ...options.serverContentType };
   }
   try {
     const stat = await fs.promises.stat(realPath);
@@ -94,7 +155,8 @@ export async function serveStaticFileStream(
     // 3. Determine Content-Type and Cache-Control
     let ext = path.extname(realPath);
     ext = ext ? ext.slice(1).toLowerCase() : 'unknown';
-    const cType = contentType || serverContentType[ext] || 'application/octet-stream';
+    const customContentType = opts.serverContentType || defaultSSOptions.serverContentType;
+    const cType = contentType || customContentType?.[ext] || serverContentType[ext] || defaultServerContentType[ext] || 'application/octet-stream';
 
     // Evaluate smart max-age
     let computedMaxAge = 31536000;
@@ -111,7 +173,16 @@ export async function serveStaticFileStream(
       cacheControl = 'public, max-age=' + computedMaxAge;
     }
 
-    res.setHeader('Content-Type', cType + '; charset=UTF-8');
+    const isText =
+      cType.startsWith('text/') ||
+      cType === 'application/json' ||
+      cType === 'application/javascript' ||
+      cType === 'application/xhtml+xml' ||
+      cType === 'application/xml' ||
+      cType === 'application/x-yaml';
+
+    const headerContentType = isText && !cType.includes('charset') ? `${cType}; charset=UTF-8` : cType;
+    res.setHeader('Content-Type', headerContentType);
     res.setHeader('Cache-Control', cacheControl);
     if (opts.etag) res.setHeader('ETag', etag);
     if (opts.lastModified) res.setHeader('Last-Modified', lastModified);

@@ -9,7 +9,7 @@ import {
   IApiModule,
   IAppCache,
   IAppSharedStorage,
-  RenderPageFunctionsType,
+  RenderPageFunctionsProps,
   setAppCache,
 } from '../models';
 import { apiStorage } from './api-shared-storage';
@@ -17,13 +17,13 @@ import { baseUrl, fetchData } from './service/fetch-data';
 import { assignToServerDevServiceProxy } from './dev-service-proxy';
 import { assignFromServerControlProxy } from './server-control-proxy';
 
-const defaultRenderPageFunctions: Partial<RenderPageFunctionsType> = {
+const defaultRenderPageFunctions: Partial<RenderPageFunctionsProps> = {
   baseUrl,
   fetchData,
 };
 export class ApiModule implements IApiModule {
   rootApi: IApiBase;
-  constructor(api: IApiBase, renderPageFunctions: Partial<RenderPageFunctionsType> = defaultRenderPageFunctions) {
+  constructor(api: IApiBase, renderPageFunctions: Partial<RenderPageFunctionsProps> = defaultRenderPageFunctions) {
     this.rootApi = api;
     bindRenderPageFunctions(renderPageFunctions);
   }

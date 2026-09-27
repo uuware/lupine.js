@@ -40,15 +40,16 @@ const getRequestContext = () => {
 
 const logger = new Logger('server-render');
 
-export type PageResultType = {
+export type PageResultProps = {
   content: string;
   title: string;
   metaData: string;
   themeName: string;
   globalCss: string;
+  statusCode?: number;
 };
 type _LupineJs = {
-  generatePage: (props: any, toClientDelivery: IToClientDelivery) => Promise<PageResultType>;
+  generatePage: (props: any, toClientDelivery: IToClientDelivery) => Promise<PageResultProps>;
 };
 
 export const isServerSideRenderUrl = (urlWithoutQuery: string) => {
@@ -107,7 +108,7 @@ export const outputHtmlToResponse = (
   req: ServerRequest,
   res: ServerResponse,
   currentCache: any,
-  page: PageResultType,
+  page: PageResultProps,
   webSetting: any
 ) => {
   const enableGzip = getEnableResponseGzip();
@@ -116,13 +117,14 @@ export const outputHtmlToResponse = (
 
   let outputStream: { write: (str: string | Buffer) => void; end: () => void } = res;
 
+  const statusCode = page.statusCode || 200;
   if (shouldGzip) {
-    res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' });
+    res.writeHead(statusCode, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' });
     const z = zlib.createGzip();
     z.pipe(res);
     outputStream = z;
   } else {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.writeHead(statusCode, { 'Content-Type': 'text/html' });
   }
 
   outputStream.write(currentCache.content.substring(0, currentCache.titleIndex).replace('<!--META-THEME-->', page.themeName));

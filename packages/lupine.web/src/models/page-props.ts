@@ -1,8 +1,8 @@
 import { VNode } from '../jsx';
-import { IPageRouter } from './page-router-props';
+import { IPageRouter, PageRouteResultProps } from './page-router-props';
 import { IToClientDelivery, JsonObject } from '.';
 
-export type RenderPageFunctionsType = {
+export type RenderPageFunctionsProps = {
   fetchData: (
     url: string,
     postBody?: string | JsonObject,
@@ -19,22 +19,23 @@ export interface PageProps {
   // urlSections: string[];
   query: { [key: string]: string };
   urlParameters: { [key: string]: string };
-  renderPageFunctions: RenderPageFunctionsType;
+  renderPageFunctions: RenderPageFunctionsProps;
 }
 
-export type PageResultType = {
+export type PageResultProps = {
   content: string;
   title: string;
   metaData: string;
   themeName: string;
   globalCss: string;
+  statusCode?: number;
 };
 
 export type _LupineJs = {
   // generatePage and initializePage are set in initialize.ts to avoid circular reference
-  generatePage: (props: any, toClientDelivery: IToClientDelivery) => Promise<PageResultType>;
+  generatePage: (props: any, toClientDelivery: IToClientDelivery) => Promise<PageResultProps>;
   initializePage: (newUrl?: string) => Promise<void>;
-  renderPageFunctions: RenderPageFunctionsType;
-  router: IPageRouter | ((props: PageProps) => Promise<VNode<any>>);
+  renderPageFunctions: RenderPageFunctionsProps;
+  router: IPageRouter | ((props: PageProps) => Promise<PageRouteResultProps>);
   renderPageProps: PageProps;
 };

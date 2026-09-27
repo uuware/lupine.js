@@ -67,16 +67,18 @@ describe('Server Side Component Engine (SSR) - generatePage', () => {
 
     _lupineJs.router = async (props: PageProps) => {
       // simulate nested rendering
-      return mockVNode(
-        'div', 
-        { id: 'server-root', css: 'body { margin: 0 }', _html: [] }, 
-        [mockVNode('span', { class: 'inner', _html: [] }, ['Hello SSR'])]
-      );
+      return {
+        vnode: mockVNode(
+          'div', 
+          { id: 'server-root', css: 'body { margin: 0 }', _html: [] }, 
+          [mockVNode('span', { class: 'inner', _html: [] }, ['Hello SSR'])]
+        )
+      };
     };
 
     const pageResult = await _lupineJs.generatePage(dummyProps, mockClientDelivery);
 
-    assert.ok(pageResult, 'Should return a valid PageResultType object');
+    assert.ok(pageResult, 'Should return a valid PageResultProps object');
     assert.equal(pageResult.title, 'SSR Title', 'Title should be retrieved from hydrated context');
     assert.equal(pageResult.themeName, 'light', 'Theme should fallback to light when cookies are entirely empty');
     
@@ -94,12 +96,13 @@ describe('Server Side Component Engine (SSR) - generatePage', () => {
       renderPageFunctions: {} as any
     };
 
-    _lupineJs.router = async () => null as any;
+    _lupineJs.router = async () => ({ routeNotFound: true, vnode: null });
 
     const pageResult = await _lupineJs.generatePage(dummyProps, mockClientDelivery);
 
     assert.ok(pageResult);
     assert.ok(pageResult.content.includes('Unexpected url: /404'), 'Should render fallback error cleanly to raw HTML segment');
     assert.equal(pageResult.title, '', 'Title should reset for empty shells');
+    assert.equal(pageResult.statusCode, 404, 'Status code should be 404 for unresolved route');
   });
 });

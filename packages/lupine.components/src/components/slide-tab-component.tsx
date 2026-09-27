@@ -1,130 +1,209 @@
 import { CssProps, RefProps, VNode, bindGlobalStyle } from 'lupine.components';
 
-export interface SlideTabProps {
-  pages: { title: string; content: VNode<any> }[];
+export interface SlideTabHookProps {
+  moveTo?: (index: number) => void;
+  getIndex?: () => number;
 }
+
+export interface SlideTabPage {
+  id?: string;
+  title: string;
+  content: VNode<any> | any;
+}
+
+export interface SlideTabProps {
+  pages: SlideTabPage[];
+  hook?: SlideTabHookProps;
+  initialIndex?: number;
+  onChange?: (index: number, page: SlideTabPage) => void;
+  navClass?: string;
+  class?: string;
+}
+
 export const SlideTabComponent = (props: SlideTabProps) => {
   const css: CssProps = {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
-    fontSize: '12px',
-    borderRadius: '6px',
-    padding: '0px 8px 4px 8px',
-    // marginBottom: '8px',
+    width: '100%',
     height: '100%',
-    '.slide-tab-c-list': {
-      flex: 1,
-      borderRadius: '6px',
-      display: 'flex',
-      overflowX: 'auto',
-      width: '100%',
-      scrollSnapType: 'x mandatory',
-      gap: '8px',
-      paddingBottom: '10px',
-      scrollBehavior: 'smooth',
-      WebkitOverflowScrolling: 'touch',
-    },
-    '.slide-tab-c-slide': {
-      width: '100%',
-      overflow: 'hidden',
-      position: 'relative',
-      minWidth: '100%',
-      flexShrink: 0,
-      scrollSnapAlign: 'start',
-      height: '100%',
-      overflowY: 'auto',
-    },
+    overflow: 'hidden',
+    position: 'relative',
+    boxSizing: 'border-box',
 
     '.slide-tab-c-nav': {
       display: 'flex',
       flexDirection: 'row',
-      justifyContent: 'center',
-      backgroundColor: 'var(--primary-bg-color)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1,
+      alignItems: 'center',
+      backgroundColor: 'var(--card-bg, #ffffff)',
+      borderBottom: '0.5px solid var(--card-border, rgba(60, 60, 67, 0.15))',
+      padding: '10px 16px 8px 16px',
+      overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      flexShrink: 0,
+      zIndex: 10,
+      scrollbarWidth: 'none',
+      '&::-webkit-scrollbar': { display: 'none' },
     },
     '.slide-tab-c-nav-wrap': {
       display: 'flex',
       flexDirection: 'row',
-      justifyContent: 'center',
-      padding: '2px 4px',
-      borderRadius: '4px',
-      backgroundColor: 'var(--secondary-bg-color)',
+      alignItems: 'center',
+      gap: '8px',
+      flexShrink: 0,
+      paddingRight: '16px',
     },
     '.slide-tab-c-nav-item': {
       cursor: 'pointer',
-      padding: '4px 8px',
-      borderRadius: '4px',
-      marginRight: '8px',
+      padding: '7px 16px',
+      borderRadius: '20px',
+      fontSize: '13px',
+      fontWeight: 600,
+      color: 'var(--text-secondary, #8e8e93)',
+      backgroundColor: 'var(--bg-container, #f2f2f7)',
+      whiteSpace: 'nowrap',
+      transition: 'all 0.18s ease',
+      WebkitTapHighlightColor: 'transparent',
+      flexShrink: 0,
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      '&:active': {
+        transform: 'scale(0.96)',
+        opacity: 0.85,
+      },
     },
     '.slide-tab-c-nav-item.active': {
-      backgroundColor: 'var(--primary-accent-color)',
-      color: 'white',
+      backgroundColor: 'var(--primary-accent-color, #0284c7)',
+      color: '#ffffff',
+      boxShadow: '0 2px 8px rgba(2, 132, 199, 0.35)',
+    },
+
+    '.slide-tab-c-list': {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'row',
+      overflowX: 'auto',
+      overflowY: 'hidden',
+      width: '100%',
+      height: '100%',
+      scrollSnapType: 'x mandatory',
+      scrollBehavior: 'smooth',
+      WebkitOverflowScrolling: 'touch',
+      boxSizing: 'border-box',
+      scrollbarWidth: 'none',
+      '&::-webkit-scrollbar': { display: 'none' },
+    },
+    '.slide-tab-c-slide': {
+      width: '100%',
+      minWidth: '100%',
+      maxWidth: '100%',
+      flexShrink: 0,
+      height: '100%',
+      overflowY: 'auto',
+      position: 'relative',
+      scrollSnapAlign: 'start',
+      scrollSnapStop: 'always',
+      WebkitOverflowScrolling: 'touch',
+      boxSizing: 'border-box',
+      scrollbarWidth: 'none',
+      '&::-webkit-scrollbar': { display: 'none' },
     },
   };
   bindGlobalStyle('slide-tab-c-box', css);
 
   const ref: RefProps = {};
-  let slideIndex = 0;
+  let slideIndex = props.initialIndex || 0;
   let manualScroll = false;
-  let scrollEndTimer: NodeJS.Timeout | null = null;
+  let scrollEndTimer: any = null;
+
+  const resetSlides = (index: number) => {
+    const dots = ref.$all?.('.slide-tab-c-nav-item');
+    if (dots) {
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle('active', i === index);
+      }
+      dots[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    if (props.onChange && props.pages[index]) {
+      props.onChange(index, props.pages[index]);
+    }
+  };
+
+  const drawerScrollStop = () => {
+    const drawer = ref.$?.('.slide-tab-c-list') as HTMLElement | undefined;
+    if (!drawer) return;
+    const width = drawer.clientWidth;
+    if (width <= 0) return;
+    const currentScrollIndex = Math.round(drawer.scrollLeft / width);
+    if (currentScrollIndex !== slideIndex && currentScrollIndex >= 0 && currentScrollIndex < props.pages.length) {
+      slideIndex = currentScrollIndex;
+      resetSlides(slideIndex);
+    }
+  };
+
   const drawerScroll = () => {
-    if (manualScroll) {
-      return;
+    if (manualScroll) return;
+    if (scrollEndTimer) clearTimeout(scrollEndTimer);
+    scrollEndTimer = setTimeout(() => {
+      drawerScrollStop();
+    }, 60);
+  };
+
+  const moveSlide = (targetIndex: number) => {
+    const drawer = ref.$?.('.slide-tab-c-list') as HTMLElement | undefined;
+    if (!drawer) return;
+    const width = drawer.clientWidth;
+    if (width <= 0) return;
+
+    manualScroll = true;
+    slideIndex = targetIndex;
+    resetSlides(slideIndex);
+
+    drawer.scrollTo({
+      left: targetIndex * width,
+      behavior: 'smooth',
+    });
+
+    setTimeout(() => {
+      manualScroll = false;
+    }, 350);
+  };
+
+  if (props.hook) {
+    props.hook.moveTo = moveSlide;
+    props.hook.getIndex = () => slideIndex;
+  }
+
+  ref.onLoad = async () => {
+    const drawer = ref.$?.('.slide-tab-c-list') as HTMLElement | undefined;
+    if (drawer) {
+      drawer.addEventListener('scrollend', drawerScrollStop);
+    }
+    if (slideIndex > 0) {
+      setTimeout(() => {
+        moveSlide(slideIndex);
+      }, 50);
+    }
+  };
+
+  ref.onUnload = async () => {
+    const drawer = ref.$?.('.slide-tab-c-list') as HTMLElement | undefined;
+    if (drawer) {
+      drawer.removeEventListener('scrollend', drawerScrollStop);
     }
     if (scrollEndTimer) {
       clearTimeout(scrollEndTimer);
     }
-    scrollEndTimer = setTimeout(() => {
-      drawerScrollStop();
-    }, 100);
-  };
-  const resetSlides = (index: number) => {
-    const dots = ref.$all('.slide-tab-c-nav-item');
-    for (let i = 0; i < dots.length; i++) {
-      dots[i].classList.toggle('active', i === index);
-    }
-  };
-  const drawerScrollStop = () => {
-    const drawer = ref.$('.slide-tab-c-list');
-    const width = drawer.clientWidth;
-    const currentScrollIndex = Math.round(drawer.scrollLeft / width);
-    slideIndex = currentScrollIndex;
-    resetSlides(slideIndex);
-  };
-  const moveSlide = (slideIndex: number) => {
-    const drawer = ref.$('.slide-tab-c-list');
-    const children = ref.$all('.slide-tab-c-slide');
-    if (!drawer || !children || children.length === 0) {
-      return;
-    }
-    const target = children[slideIndex];
-    if (!target) {
-      return;
-    }
-    const offsetLeft = target.offsetLeft;
-    manualScroll = true;
-    drawer.scrollTo({
-      left: offsetLeft,
-      behavior: 'smooth',
-    });
-
-    resetSlides(slideIndex);
-    setTimeout(() => {
-      manualScroll = false;
-    }, 300);
   };
 
   return (
-    <section class='slide-tab-c-box' ref={ref}>
-      <div class='slide-tab-c-nav'>
-        <div class='slide-tab-c-nav-wrap'>
+    <section class={`slide-tab-c-box ${props.class || ''}`} ref={ref}>
+      <div class={`slide-tab-c-nav no-scrollbar-container ${props.navClass || ''}`}>
+        <div class="slide-tab-c-nav-wrap">
           {props.pages.map((page, index) => (
             <div
-              class={`slide-tab-c-nav-item ${index === 0 ? 'active' : ''}`}
-              onClick={(event) => {
+              class={`slide-tab-c-nav-item ${index === slideIndex ? 'active' : ''}`}
+              onClick={(event: any) => {
                 event.preventDefault();
                 moveSlide(index);
               }}
@@ -134,9 +213,9 @@ export const SlideTabComponent = (props: SlideTabProps) => {
           ))}
         </div>
       </div>
-      <div class='slide-tab-c-list no-scrollbar-container' onScroll={drawerScroll}>
+      <div class="slide-tab-c-list no-scrollbar-container" onScroll={drawerScroll}>
         {props.pages.map((page) => (
-          <div class='slide-tab-c-slide no-scrollbar-container'>{page.content}</div>
+          <div class="slide-tab-c-slide no-scrollbar-container">{page.content}</div>
         ))}
       </div>
     </section>

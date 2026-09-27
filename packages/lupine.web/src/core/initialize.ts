@@ -8,15 +8,16 @@ import { callDomLoadedEvent } from './page-loaded-event';
 import { IRequestContextProps, IToClientDelivery } from '../models';
 import { getMetaDataObject, getMetaDataTags, getPageTitle } from './bind-meta';
 import { initWebEnv } from '../lib/web-env';
-import { PageProps, PageResultType } from '../models/page-props';
+import { PageProps, PageResultProps } from '../models/page-props';
+import { PageRouteResultProps } from '../models/page-router-props';
 import { setRenderPageProps } from './export-lupine';
 import { isFrontEnd } from '../lib/is-frontend';
 import { WebConfig } from '../lib/web-config';
 import { bindRequestContext } from './use-request-context';
-import { CssProps } from '../jsx';
+import { CssProps, VNode } from '../jsx';
 import { _lupineJs } from './lupine-instance';
 
-const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
+const renderTargetPage = async (props: PageProps, renderPartPage: boolean): Promise<PageRouteResultProps> => {
   if (typeof _lupineJs.router !== 'function') {
     return _lupineJs.router.handleRoute(props.url, props, renderPartPage);
   }
@@ -24,7 +25,7 @@ const renderTargetPage = async (props: PageProps, renderPartPage: boolean) => {
 };
 
 // this is called by server side for SSR (server-side-rendering)
-const generatePage = async (props: PageProps, toClientDelivery: IToClientDelivery): Promise<PageResultType> => {
+const generatePage = async (props: PageProps, toClientDelivery: IToClientDelivery): Promise<PageResultProps> => {
   const gThis = globalThis as any;
   if (!gThis.__SSR_ALS_PROPS__) {
     throw new Error('__SSR_ALS_PROPS__ is not defined');
@@ -42,17 +43,19 @@ const generatePage = async (props: PageProps, toClientDelivery: IToClientDeliver
   // callPageResetEvent();
   callDomLoadedEvent();
 
-  const jsxNodes = await renderTargetPage(props, false);
-  if (!jsxNodes || !jsxNodes.props) {
+  const routeResult = await renderTargetPage(props, false);
+  if (routeResult.routeNotFound || !routeResult.vnode || !routeResult.vnode.props) {
     return {
       content: `Unexpected url: ${props.url}`,
       title: '',
       metaData: '',
       globalCss: '',
       themeName: getCurrentTheme().themeName,
+      statusCode: 404,
     };
   }
 
+  const jsxNodes = routeResult.vnode;
   await renderComponentAsync(jsxNodes.type, jsxNodes.props);
   const currentTheme = getCurrentTheme();
   const cssText = generateAllGlobalStyles();
@@ -126,15 +129,19 @@ export const initializePage = async (newUrl?: string) => {
   // can only call callPageLoadedEvent once after page refreshed
   !currentPageInitialized && callDomLoadedEvent();
 
-  const jsxNodes = await renderTargetPage(props, currentPageInitialized);
-  if (jsxNodes === null) return;
-  if (!jsxNodes || !jsxNodes.props) {
+  const routeResult = await renderTargetPage(props, currentPageInitialized);
+  if (routeResult.frameMounted) {
+    updateTheme(getCurrentTheme().themeName);
+    document.title = getPageTitle();
+    return;
+  }
+  if (routeResult.routeNotFound || !routeResult.vnode || !routeResult.vnode.props) {
     document.querySelector('.lupine-root')!.innerHTML = `Error happened or unexpected url: ${url}`;
     return;
   }
 
   // generateAllGlobalStyles will be updated directly in Browser
-  await mountInnerComponent('.lupine-root', jsxNodes);
+  await mountInnerComponent('.lupine-root', routeResult.vnode);
   updateTheme(getCurrentTheme().themeName);
 
   // title

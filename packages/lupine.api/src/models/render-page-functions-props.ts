@@ -1,6 +1,6 @@
 import { JsonObject } from './json-object';
 
-export type RenderPageFunctionsType = {
+export type RenderPageFunctionsProps = {
   fetchData: (
     url: string,
     postBody?: string | JsonObject,

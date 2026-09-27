@@ -20,5 +20,5 @@ export type AppStartProps = {
   appEnvFile: string;
   apiConfig: ApiConfigProps;
   serverConfig: ServerConfigProps;
-  // renderPageFunctions: RenderPageFunctionsType;
+  // renderPageFunctions: RenderPageFunctionsProps;
 };

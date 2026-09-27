@@ -3,7 +3,7 @@ import { isFrontEnd } from '../lib/is-frontend';
 import { PageProps } from '../models/page-props';
 import { mountInnerComponent } from './mount-component';
 import { ComponentStateStore, evaluateComponentWithStore } from './use-state';
-import { IPageRouter, PageRouterCallback, PageRouterData, FramePageProps } from '../models/page-router-props';
+import { IPageRouter, PageRouterCallback, PageRouterData, FramePageProps, PageRouteResultProps } from '../models/page-router-props';
 
 export class PageRouter implements IPageRouter {
   private routerData: PageRouterData[] = [];
@@ -81,7 +81,7 @@ export class PageRouter implements IPageRouter {
     return null;
   }
 
-  async findRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<VNode<any> | null> {
+  async findRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<PageRouteResultProps> {
     for (let i = 0, routerList; (routerList = this.routerData[i]); i++) {
       if (routerList.path === '*' || url === routerList.path || url.startsWith(routerList.path + '/')) {
         const parameters: { [key: string]: string } = {};
@@ -119,47 +119,60 @@ export class PageRouter implements IPageRouter {
                 routerList.path === '*' || (url === '/' && routerList.path === '/')
                   ? url
                   : url.substring(routerList.path.length);
-              // TODO: sub-level?
-              const vNode = await router.handleRoute(nextPath, props, renderPartPage);
-              if (vNode) {
-                return vNode;
+              const subResult = await router.handleRoute(nextPath, props, renderPartPage);
+              if (subResult && (subResult.frameMounted || subResult.vnode)) {
+                return subResult;
               }
             } else {
               const dom = await this.callHandle(router, url, props);
               if (dom) {
-                return dom;
+                return { vnode: dom };
               }
             }
           }
           // stop process for this path if no page is found
-          return null;
+          return { routeNotFound: true, vnode: null };
         }
       }
     }
-    return null;
+    return { routeNotFound: true, vnode: null };
   }
 
-  async handleRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<VNode<any> | null> {
+  async handleRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<PageRouteResultProps> {
     if (url.startsWith(this.subDir)) {
       url = url.substring(this.subDir.length);
     }
-    let vNode = null;
+    let routeResult: PageRouteResultProps | null = null;
     if (this.filter) {
-      vNode = await this.callHandle(this.filter, url, props);
-    }
-    if (!vNode) {
-      vNode = await this.findRoute(url, props, renderPartPage);
-    }
-
-    if (vNode && this.framePage) {
-      const selector = '.' + this.framePage.placeholderClassname;
-      if (renderPartPage && isFrontEnd() && document.querySelector(selector)) {
-        await mountInnerComponent(selector, vNode);
-        return null;
-      } else {
-        return this.framePage.component(this.framePage.placeholderClassname, vNode);
+      const filterNode = await this.callHandle(this.filter, url, props);
+      if (filterNode) {
+        routeResult = { vnode: filterNode };
       }
     }
-    return vNode;
+    if (!routeResult) {
+      routeResult = await this.findRoute(url, props, renderPartPage);
+    }
+
+    if (routeResult.frameMounted || routeResult.routeNotFound) {
+      return routeResult;
+    }
+
+    const matchedVNode = routeResult.vnode;
+    if (!matchedVNode) {
+      return { routeNotFound: true, vnode: null };
+    }
+
+    if (this.framePage) {
+      const selector = '.' + this.framePage.placeholderClassname;
+      if (renderPartPage && isFrontEnd() && document.querySelector(selector)) {
+        await mountInnerComponent(selector, matchedVNode);
+        // only in this case, it doesn't need to update '.lupine-root' in initializePage
+        return { frameMounted: true };
+      } else {
+        const fullVNode = await this.framePage.component(this.framePage.placeholderClassname, matchedVNode);
+        return { vnode: fullVNode };
+      }
+    }
+    return { vnode: matchedVNode };
   }
 }

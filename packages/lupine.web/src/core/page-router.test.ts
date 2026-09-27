@@ -26,15 +26,16 @@ describe('PageRouter Engine', () => {
     router.use('/b', pageB);
 
     const matchA = await router.handleRoute('/a', createDummyProps('/a'), false);
-    assert.ok(matchA);
-    assert.equal(matchA.props.id, 'A');
+    assert.ok(matchA.vnode);
+    assert.equal(matchA.vnode.props.id, 'A');
 
     const matchB = await router.handleRoute('/b', createDummyProps('/b'), false);
-    assert.ok(matchB);
-    assert.equal(matchB.props.id, 'B');
+    assert.ok(matchB.vnode);
+    assert.equal(matchB.vnode.props.id, 'B');
 
     const matchC = await router.handleRoute('/c', createDummyProps('/c'), false);
-    assert.equal(matchC, null, 'Should return null for unmatched route');
+    assert.equal(matchC.routeNotFound, true, 'Should mark routeNotFound for unmatched route');
+    assert.equal(matchC.vnode, null);
   });
 
   it('should accurately parse mandatory and optional dynamic parameters', async () => {
@@ -61,7 +62,8 @@ describe('PageRouter Engine', () => {
 
     const props3 = createDummyProps('/users');
     const result = await router.handleRoute('/users', props3, false);
-    assert.equal(result, null);
+    assert.equal(result.routeNotFound, true);
+    assert.equal(result.vnode, null);
   });
 
   it('should intercept execution via setFilter middleware', async () => {
@@ -81,14 +83,14 @@ describe('PageRouter Engine', () => {
 
     const result1 = await router.handleRoute('/blocked', createDummyProps('/blocked'), false);
     assert.ok(filterHit);
-    assert.ok(result1);
-    assert.equal(result1.props.id, 'blocked');
+    assert.ok(result1.vnode);
+    assert.equal(result1.vnode.props.id, 'blocked');
 
     filterHit = false;
     const result2 = await router.handleRoute('/allowed', createDummyProps('/allowed'), false);
     assert.ok(filterHit);
-    assert.ok(result2);
-    assert.equal(result2.props.id, 'ok');
+    assert.ok(result2.vnode);
+    assert.equal(result2.vnode.props.id, 'ok');
   });
 
   it('should wrap outputs correctly using setFramePage', async () => {
@@ -108,10 +110,10 @@ describe('PageRouter Engine', () => {
 
     const result = await router.handleRoute('/', createDummyProps('/'), false);
     
-    assert.ok(result);
-    assert.equal(result.type, 'div');
-    assert.equal(result.props.class, 'frame');
-    assert.equal(result.props.children[0].props.id, 'inner');
+    assert.ok(result.vnode);
+    assert.equal(result.vnode.type, 'div');
+    assert.equal(result.vnode.props.class, 'frame');
+    assert.equal(result.vnode.props.children[0].props.id, 'inner');
   });
 
   it('should traverse recursively into nested sub-routers', async () => {
@@ -122,10 +124,49 @@ describe('PageRouter Engine', () => {
     rootRouter.use('/user', subRouter);
 
     const match = await rootRouter.handleRoute('/user/profile', createDummyProps('/user/profile'), false);
-    assert.ok(match);
-    assert.equal(match.props.id, 'sub-profile');
+    assert.ok(match.vnode);
+    assert.equal(match.vnode.props.id, 'sub-profile');
 
     const miss = await rootRouter.handleRoute('/user/settings', createDummyProps('/user/settings'), false);
-    assert.equal(miss, null);
+    assert.equal(miss.routeNotFound, true);
+    assert.equal(miss.vnode, null);
+  });
+
+  it('should set frameMounted when rendering partial page in frontend', async () => {
+    const router = new PageRouter();
+    const TopFrame = async (placeholderClassname: string, vnode: VNode<any>) => {
+      return mockVNode('div', { class: 'frame' }, [vnode]);
+    };
+
+    router.setFramePage({
+      component: TopFrame,
+      placeholderClassname: 'internal-placeholder'
+    });
+
+    const handler = async (props: PageProps) => mockVNode('div', { id: 'inner' });
+    router.use('/page', handler);
+
+    const originalWindow = (globalThis as any).window;
+    const originalDocument = (globalThis as any).document;
+    try {
+      const mockEl: any = {
+        innerHTML: '',
+        nodeType: 1,
+        querySelectorAll: () => [],
+        getElementsByTagName: () => [],
+      };
+      (globalThis as any).window = {};
+      (globalThis as any).document = {
+        querySelector: (selector: string) => (selector === '.internal-placeholder' ? mockEl : null),
+        querySelectorAll: () => [],
+        getElementsByTagName: () => [],
+      };
+
+      const result = await router.handleRoute('/page', createDummyProps('/page'), true);
+      assert.ok(result.frameMounted, 'Should set frameMounted to true when partial container exists');
+    } finally {
+      (globalThis as any).window = originalWindow;
+      (globalThis as any).document = originalDocument;
+    }
   });
 });

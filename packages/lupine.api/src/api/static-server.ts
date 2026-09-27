@@ -4,10 +4,10 @@ import * as path from 'path';
 import { IncomingHttpHeaders, ServerResponse } from 'http';
 import { Logger } from '../lib';
 import { ServerRequest } from '../models/locals-props';
-import { handler200, handler500 } from '../shared/handle-status';
+import { handler403, handler404, handler500 } from '../shared/handle-status';
 import { serverSideRenderPage } from './server-render';
 import { apiCache } from './api-cache';
-import { defaultSSOptions, serveStaticFileStream } from './static-server-helper';
+import { defaultSSOptions, isSkipSsrUrl, serveStaticFileStream } from './static-server-helper';
 
 const getHeaderValue = (headers: IncomingHttpHeaders, name: string) => {
   const value = headers[name];
@@ -17,6 +17,10 @@ const getHeaderValue = (headers: IncomingHttpHeaders, name: string) => {
 
 export class StaticServer {
   logger = new Logger('StaticServer');
+
+  private isSkipSsr(requestPath: string): boolean {
+    return isSkipSsrUrl(requestPath, defaultSSOptions.skipSsrPaths);
+  }
 
   private async sendFile(req: ServerRequest, res: ServerResponse, realPath: string, requestPath: string, contentType?: string) {
     return serveStaticFileStream(req, res, realPath, requestPath, defaultSSOptions, contentType, this.logger);
@@ -87,7 +91,7 @@ export class StaticServer {
       const realPath = await resolveSafePath(hostPath.webPath, urlSplit[0]);
       if (!realPath) {
         this.logger.warn(`ACCESS DENIED or Malformed URI: ${urlSplit[0]}`);
-        handler200(res, `ACCESS DENIED: ${urlSplit[0]}`);
+        handler403(res, `ACCESS DENIED: ${urlSplit[0]}`);
         return true;
       }
 
@@ -95,13 +99,11 @@ export class StaticServer {
 
       let finalPath = '';
       if ((await fs.promises.lstat(realPath)).isDirectory()) {
-        if (await isFileSafe(path.join(realPath, 'index.js'))) {
-          // because it's directory, it means index.html, and if it has index.js, it will trigger SSR
-          return triggerSSR();
+        if (this.isSkipSsr(urlSplit[0])) {
+          this.logger.warn(`Directory not found (SSR skipped): ${urlSplit[0]}`);
+          handler404(res, `File not found: ${urlSplit[0]}`);
+          return true;
         }
-        // if index.js doesn't exist, but user explicitly wants it to go to SSR when it is a directory:
-        // (If you ever want to serve index.html statically, uncomment the next line and remove triggerSSR)
-        // finalPath = path.join(realPath, 'index.html');
         return triggerSSR();
       } else {
         // it's a file, and if it's index.html and the same directory has index.js, it will trigger SSR
@@ -117,12 +119,17 @@ export class StaticServer {
         await this.sendFile(req, res, finalPath, urlSplit[0]);
       } catch (err: any) {
         this.logger.warn(`File not found: ${urlSplit[0]}`);
-        handler200(res, `File not found: ${urlSplit[0]}`);
+        handler404(res, `File not found: ${urlSplit[0]}`);
       }
       return true;
     } catch (err: any) {
       // file doesn't exist
       if (err.code === 'ENOENT') {
+        if (this.isSkipSsr(urlSplit[0])) {
+          this.logger.warn(`File not found (SSR skipped): ${urlSplit[0]}`);
+          handler404(res, `File not found: ${urlSplit[0]}`);
+          return true;
+        }
         serverSideRenderPage(hostPath.appName, hostPath.webPath, urlSplit[0], urlSplit[1], req, res);
       } else {
         this.logger.error(`Error for: ${urlSplit[0]}`, err);

@@ -15,8 +15,17 @@ export type FramePageProps = {
   placeholderClassname: string;
 };
 
+export type PageRouteResultProps = {
+  // Matched VNode to render or mount
+  vnode?: VNode<any> | null;
+  // Indicates if the component has already been mounted locally into the framePage placeholder
+  frameMounted?: boolean;
+  // Indicates if no route matched (404)
+  routeNotFound?: boolean;
+};
+
 export interface IPageRouter {
-  handleRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<VNode<any> | null>;
+  handleRoute(url: string, props: PageProps, renderPartPage: boolean): Promise<PageRouteResultProps>;
   setFilter?(filter: PageRouterCallback): void;
   setSubDir?(subDir: string): void;
   setFramePage?(framePage: FramePageProps): void;

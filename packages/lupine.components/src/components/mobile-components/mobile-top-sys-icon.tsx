@@ -1,8 +1,13 @@
-// import { NotificationColor, NotificationMessage, updateTheme, PopupMenuWithIcon, CssProps } from 'lupine.components';
+// import { NotificationColor, NotificationMessage, updateTheme, PopupMenuWithIcon, CssProps } from "lupine.components";
 import { CssProps } from 'lupine.components';
 import { MobileSideMenuHelper } from './mobile-side-menu';
 
-export const MobileTopSysIcon = () => {
+export interface MobileTopSysIconProps {
+  icon?: string;
+}
+
+export const MobileTopSysIcon = (props: MobileTopSysIconProps = {}) => {
+  const icon = props?.icon || 'bs-list';
   const css: CssProps = {
     cursor: 'pointer',
     display: 'flex',
@@ -20,7 +25,7 @@ export const MobileTopSysIcon = () => {
   };
   return (
     <div css={css} onClick={() => MobileSideMenuHelper.show()} class='mobile-top-sys-icon'>
-      <i class='ifc-icon bs-list'></i>
+      <i class={`ifc-icon ${icon}`}></i>
     </div>
   );
 };

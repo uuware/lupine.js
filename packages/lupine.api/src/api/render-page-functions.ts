@@ -1,6 +1,6 @@
-import { RenderPageFunctionsType, JsonObject } from '../models';
+import { RenderPageFunctionsProps, JsonObject } from '../models';
 
-let renderPageFunctions: RenderPageFunctionsType = {
+let renderPageFunctions: RenderPageFunctionsProps = {
   fetchData: async (
     url: string,
     postBody?: string | JsonObject,
@@ -16,7 +16,7 @@ let renderPageFunctions: RenderPageFunctionsType = {
 
 export const getRenderPageFunctions = () => renderPageFunctions;
 
-export const bindRenderPageFunctions = (calls: Partial<RenderPageFunctionsType>) => {
+export const bindRenderPageFunctions = (calls: Partial<RenderPageFunctionsProps>) => {
   for (let k in calls) {
     if (calls[k]) {
       renderPageFunctions[k] = calls[k]!;
