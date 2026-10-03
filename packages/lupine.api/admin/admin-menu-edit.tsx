@@ -720,7 +720,7 @@ export const AdminMenuEditPage = (menuId: string) => {
       textAlign: 'center',
       color: 'var(--secondary-color)',
       fontSize: '14px',
-      border: '2px dashed var(--border-color, #ddd)',
+      border: '2px dashed var(--secondary-border-color, #ddd)',
       borderRadius: '8px',
     },
 

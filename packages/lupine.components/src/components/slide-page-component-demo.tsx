@@ -322,7 +322,7 @@ export const slidePageDemo: DemoStory<SlidePageProps> = {
           style={{
             padding: '12px 16px',
             borderRadius: '8px',
-            background: 'var(--bg-container, #f2f2f7)',
+            background: 'var(--secondary-bg-color, #f2f2f7)',
             fontSize: '13px',
             color: 'var(--text-secondary, #64748b)',
             lineHeight: '1.5',

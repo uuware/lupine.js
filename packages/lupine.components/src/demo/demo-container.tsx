@@ -28,7 +28,7 @@ export const DemoContainer = (props: DemoContainerProps) => {
       minHeight: '50px',
       maxHeight: '40%',
       overflowY: 'auto',
-      borderTop: '1px solid var(--border-color, #ccc)',
+      borderTop: '1px solid var(--secondary-border-color, #ccc)',
       padding: 'var(--space-m, 8px)',
     },
   };
