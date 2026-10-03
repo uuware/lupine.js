@@ -16,7 +16,7 @@ import { MediaQueryMaxWidth, VNode, stopPropagation } from 'lupine.components';
 import { SliderHelper, SliderHelperCloseProps } from './slider-helper';
 
 export type SliderFrameHookProps = {
-  load?: (children: VNode<any>) => void;
+  load?: (children: VNode<any>, addBottomSafearea?: boolean) => void;
   close?: (event: Event) => void;
   isOpened?: () => boolean;
 };
@@ -34,13 +34,13 @@ export const SliderFrame = (props: SliderFrameProps) => {
   let opened = false;
 
   if (props.hook) {
-    props.hook.load = (children) => {
+    props.hook.load = (children, addBottomSafearea) => {
       opened = true;
       SliderHelper.show({
         direction: props.direction || 'right',
         children,
         maxWidth: props.maxWidth,
-        addBottomSafearea: props.addBottomSafearea ?? false,
+        addBottomSafearea: typeof addBottomSafearea === 'boolean' ? addBottomSafearea : (props.addBottomSafearea ?? false),
         closeEvent: () => {
           opened = false;
           closeSlider = undefined;
