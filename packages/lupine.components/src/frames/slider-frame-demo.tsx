@@ -24,12 +24,17 @@ export const sliderFrameDemo: DemoStory<any> = {
   text: 'Slider Frame Demo',
   args: {
     direction: 'right',
+    addBottomSafearea: false,
   },
   argTypes: {
     direction: {
       control: 'select',
       options: ['right', 'bottom'],
       description: 'Direction the slider enters from',
+    },
+    addBottomSafearea: {
+      control: 'boolean',
+      description: 'Add safe area padding at bottom',
     },
   },
   render: (args) => {
@@ -54,6 +59,7 @@ export const sliderFrameDemo: DemoStory<any> = {
               let close: SliderHelperCloseProps;
               close = await SliderHelper.show({
                 direction: args.direction,
+                addBottomSafearea: args.addBottomSafearea,
                 children: (
                   <HeaderWithBackFrame title='Slider Helper Inner Page' onBack={() => close()}>
                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -71,7 +77,12 @@ export const sliderFrameDemo: DemoStory<any> = {
         </div>
 
         {/* The SliderFrame is placed here but initially hidden */}
-        <SliderFrame hook={sliderHook} direction={args.direction} defaultContent='' />
+        <SliderFrame
+          hook={sliderHook}
+          direction={args.direction}
+          addBottomSafearea={args.addBottomSafearea}
+          defaultContent=''
+        />
       </div>
     );
   },

@@ -38,7 +38,6 @@ export const ResponsiveFrame = (props: ResponsiveFrameProps) => {
     margin: '0 auto',
     overflowX: 'hidden',
     ...(!props.noSafeAreaTop ? {
-      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
       'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
     } : {}),
     '.frame-top-menu': {

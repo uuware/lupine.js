@@ -16,6 +16,7 @@ export type SliderHelperShowProps = {
   className?: string;
   contentClassName?: string;
   mountTarget?: HTMLElement;
+  addBottomSafearea?: boolean;
 };
 
 export class SliderHelper {
@@ -29,6 +30,7 @@ export class SliderHelper {
     className = '',
     contentClassName = '',
     mountTarget,
+    addBottomSafearea = false,
   }: SliderHelperShowProps): Promise<SliderHelperCloseProps> {
     const base = document.createElement('div');
     const isHorizontal = direction === 'left' || direction === 'right';
@@ -157,8 +159,12 @@ export class SliderHelper {
         transform: startTransform,
         transition: 'transform 0.4s ease-in-out',
         // trick: to put two padding-top properties
-        'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '0',
         'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '0',
+        ...(addBottomSafearea
+          ? {
+              'padding-bottom': isSafeAreaSupported() ? 'env(safe-area-inset-bottom)' : '0',
+            }
+          : {}),
         ...contentCss,
         '&::-webkit-scrollbar': {
           display: 'none',

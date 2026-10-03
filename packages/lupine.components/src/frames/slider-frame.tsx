@@ -27,6 +27,7 @@ export type SliderFrameProps = {
   hook?: SliderFrameHookProps;
   afterClose?: () => void | Promise<void>;
   maxWidth?: string;
+  addBottomSafearea?: boolean;
 };
 export const SliderFrame = (props: SliderFrameProps) => {
   let closeSlider: SliderHelperCloseProps | undefined;
@@ -39,6 +40,7 @@ export const SliderFrame = (props: SliderFrameProps) => {
         direction: props.direction || 'right',
         children,
         maxWidth: props.maxWidth,
+        addBottomSafearea: props.addBottomSafearea ?? false,
         closeEvent: () => {
           opened = false;
           closeSlider = undefined;

@@ -244,7 +244,6 @@ export const MobileSideMenu = (props: { children: VNode<any>; autoExtend?: boole
       overflowY: 'auto',
       transform: 'translateX(-100%)',
       boxShadow: 'var(--cover-box-shadow)',
-      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '0',
       'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '0',
     },
     [MediaQueryRange.TabletAbove]: {

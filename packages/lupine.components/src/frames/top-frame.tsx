@@ -28,7 +28,6 @@ export const TopFrame = async ({
       // trick: to put two padding-top properties
       ...(!noSafeAreaTop
         ? {
-          'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
           'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
         }
         : {}),

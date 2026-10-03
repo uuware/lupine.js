@@ -57,7 +57,6 @@ export class NotificationMessage {
       padding: '0 10px',
       zIndex: 'var(--layer-notice)',
       pointerEvents: 'none',
-      'padding-top ': isSafeAreaSupported() ? 'constant(safe-area-inset-top)' : '',
       'padding-top': isSafeAreaSupported() ? 'env(safe-area-inset-top)' : '',
       '>div': {
         pointerEvents: 'auto',
