@@ -18,6 +18,7 @@ export * from './dynamical-load';
 export * from './find-parent-tag';
 export * from './format-bytes';
 export * from './lite-dom';
+export * from './local-storage-wrapper'
 export * from './message-hub';
 export * from './observable';
 export * from './path-utils';
