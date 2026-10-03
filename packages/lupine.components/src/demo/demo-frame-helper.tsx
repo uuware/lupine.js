@@ -54,6 +54,7 @@ import { searchInputDemo } from '../component-pool/search-input';
 import { hEditorDemo } from '../component-pool/h-editor';
 import { pagingLinkDemo } from '../components/paging-link-demo';
 import { slideTabDemo } from '../components/slide-tab-component-demo';
+import { slidePageDemo } from '../components/slide-page-component-demo';
 import { qrcodeDemo } from '../component-pool/qrcode';
 import { iEditorDemo } from '../component-pool/i-editor';
 import { youtubePlayerDemo } from '../component-pool/youtube-player';
@@ -335,6 +336,12 @@ export class DemoFrameHelper {
           text: slideTabDemo.text,
           url: '',
           js: () => this.addPanel(slideTabDemo.text, <DemoPage story={slideTabDemo} />),
+        },
+        {
+          id: slidePageDemo.id,
+          text: slidePageDemo.text,
+          url: '',
+          js: () => this.addPanel(slidePageDemo.text, <DemoPage story={slidePageDemo} />),
         },
         {
           id: pagingLinkDemo.id,

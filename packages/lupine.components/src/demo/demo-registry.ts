@@ -52,6 +52,7 @@ import { searchInputDemo } from '../component-pool/search-input';
 import { pagingLinkDemo } from '../components/paging-link-demo';
 import { hEditorDemo } from '../component-pool/h-editor';
 import { slideTabDemo } from '../components/slide-tab-component-demo';
+import { slidePageDemo } from '../components/slide-page-component-demo';
 import { qrcodeDemo } from '../component-pool/qrcode';
 import { iEditorDemo } from '../component-pool/i-editor';
 import { youtubePlayerDemo } from '../component-pool/youtube-player';
@@ -125,6 +126,7 @@ export const demoRegistry: Record<string, DemoStory<any>> = {
   [pagingLinkDemo.id]: pagingLinkDemo,
   [hEditorDemo.id]: hEditorDemo,
   [slideTabDemo.id]: slideTabDemo,
+  [slidePageDemo.id]: slidePageDemo,
   [qrcodeDemo.id]: qrcodeDemo,
   [iEditorDemo.id]: iEditorDemo,
   [youtubePlayerDemo.id]: youtubePlayerDemo,

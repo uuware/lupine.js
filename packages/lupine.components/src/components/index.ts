@@ -36,6 +36,7 @@ export * from './redirect';
 export * from './resizable-splitter';
 export * from './select-angle-component';
 export * from './select-with-title';
+export * from './slide-page-component';
 export * from './slide-tab-component';
 export * from './spinner';
 export * from './stars-component';
