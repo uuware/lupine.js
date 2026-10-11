@@ -17,6 +17,7 @@ export const darkThemes: ThemeProps = {
   '--primary-opacity': '0.5', // used for dark theme
   '--primary-disabled-opacity': '0.7', // used for dark theme
   '--primary-accent-color': '#1a588a', // used for radio and checkbox's background color
+  '--primary-bg-gradient': 'linear-gradient(165deg, #171717 0%, #000000 60%, #000000 100%)',
 
   '--secondary-color': '#747474',
   '--secondary-bg-color': '#1c1c1c',
