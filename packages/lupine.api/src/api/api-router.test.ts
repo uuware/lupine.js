@@ -6,10 +6,10 @@ import { ServerResponse } from 'http';
 
 describe('ApiRouter Execution Engine', () => {
   const createMockReq = (method = 'GET'): ServerRequest =>
-    ({
-      method,
-      locals: {},
-    } as any);
+  ({
+    method,
+    locals: {},
+  } as any);
 
   const createMockRes = (): ServerResponse => {
     let _writableEnded = false;
@@ -29,7 +29,7 @@ describe('ApiRouter Execution Engine', () => {
       writeHead(status: number) {
         _status = status;
       },
-      setHeader() {},
+      setHeader() { },
       get writable() { return true; },
       write(chunk: any) {
         _data += chunk;
@@ -110,13 +110,13 @@ describe('ApiRouter Execution Engine', () => {
       if (path === '/blocked') {
         res.writeHead(403);
         res.end();
-        return true; 
+        return true;
       }
       return false; // Yield to standard resolution
     });
 
     router.get('/allowed', async () => {
-      return true; 
+      return true;
     });
 
     // Valid Request
@@ -149,7 +149,7 @@ describe('ApiRouter Execution Engine', () => {
 
     const res = createMockRes();
     await rootRouter.handleRequest('/v1/commit', createMockReq('POST'), res);
-    
+
     assert.ok(nestTriggered);
   });
 
@@ -168,7 +168,9 @@ describe('ApiRouter Execution Engine', () => {
     assert.equal((res as any)._getStatus(), 500);
     const body = (res as any)._getData();
     assert.ok(body.includes('status":"error"'));
-    assert.ok(body.includes('Database Error'));
+    // SECURITY: internal error details must NOT be leaked to the client
+    assert.ok(!body.includes('Database Error'), 'Internal error message should not leak to client');
+    assert.ok(body.includes('Internal Server Error'));
   });
 
   it('should format standardized 404 logic when paths resolve to empty constraints natively', async () => {

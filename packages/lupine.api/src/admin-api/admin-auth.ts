@@ -53,7 +53,7 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
     return true;
   }
 
-  // TODO: secure and httpOnly cookies
+  // secure, httpOnly, and sameSite=strict cookie attributes are now set in setCookie() calls below
   const cryptoKey = process.env[DEV_ADMIN_CRYPTO_KEY_NAME] as string;
   const data = req.locals.json();
   if (!data || Array.isArray(data) || !data.u || !data.p) {
@@ -127,7 +127,7 @@ export const devAdminAuth = async (req: ServerRequest, res: ServerResponse) => {
       path: '/',
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'strict',
     });
     ApiHelper.sendJson(req, res, response);
     return true;
@@ -158,7 +158,7 @@ export const devAdminLogout = async (req: ServerRequest, res: ServerResponse) =>
     path: '/',
     httpOnly: true,
     secure: true,
-    sameSite: 'lax',
+    sameSite: 'strict',
   });
   await adminApiHelper.getAppAdminHookLogout()?.(req, res);
   ApiHelper.sendJson(req, res, { status: 'ok', message: langHelper.getLang('shared:process_completed') });

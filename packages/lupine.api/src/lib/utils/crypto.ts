@@ -48,12 +48,66 @@ export class CryptoUtils {
     return buf2.toString('utf8');
   }
 
+  /**
+   * @deprecated MD5 is cryptographically broken for password storage and is NOT salted.
+   * This is retained ONLY for backward compatibility with existing stored password hashes
+   * (changing it would invalidate all existing user credentials).
+   * New code MUST use hashPassword() / verifyPassword() which use scrypt with a random salt.
+   */
   static hash(text: string) {
     return crypto.createHash('md5').update(text).digest('hex');
   }
 
   static sha256(text: string) {
     return crypto.createHash('sha256').update(text).digest('hex');
+  }
+
+  // ─── Salted password hashing (scrypt) ───
+  // Uses Node.js built-in crypto.scrypt — no external dependencies required.
+  // Output format: "scrypt$<saltHex>$<hashHex>"
+
+  static readonly SCRYPT_SALT_SIZE = 16;
+  static readonly SCRYPT_KEY_SIZE = 32;
+  static readonly SCRYPT_N = 16384; // CPU/memory cost factor
+  static readonly SCRYPT_R = 8; // block size
+  static readonly SCRYPT_P = 1; // parallelization
+
+  /**
+   * Hashes a password using scrypt with a random salt.
+   * Returns a string in the format: "scrypt$<saltHex>$<hashHex>"
+   */
+  static hashPassword(password: string): string {
+    const salt = crypto.randomBytes(this.SCRYPT_SALT_SIZE);
+    const hash = crypto.scryptSync(password, salt, this.SCRYPT_KEY_SIZE, {
+      N: this.SCRYPT_N,
+      r: this.SCRYPT_R,
+      p: this.SCRYPT_P,
+      maxmem: 64 * 1024 * 1024, // 64 MB max memory
+    });
+    return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
+  }
+
+  /**
+   * Verifies a password against a scrypt hash in the format: "scrypt$<saltHex>$<hashHex>"
+   * Uses timing-safe comparison to prevent timing attacks.
+   */
+  static verifyPassword(password: string, storedHash: string): boolean {
+    const parts = storedHash.split('$');
+    if (parts.length !== 3 || parts[0] !== 'scrypt') {
+      return false;
+    }
+    const salt = Buffer.from(parts[1], 'hex');
+    const expectedHash = Buffer.from(parts[2], 'hex');
+    const hash = crypto.scryptSync(password, salt, this.SCRYPT_KEY_SIZE, {
+      N: this.SCRYPT_N,
+      r: this.SCRYPT_R,
+      p: this.SCRYPT_P,
+      maxmem: 64 * 1024 * 1024,
+    });
+    if (hash.length !== expectedHash.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(hash, expectedHash);
   }
 
   static randomString(len: number) {

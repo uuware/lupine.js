@@ -8,6 +8,7 @@ import { handler403, handler404, handler500 } from '../shared/handle-status';
 import { serverSideRenderPage } from './server-render';
 import { apiCache } from './api-cache';
 import { defaultSSOptions, isSkipSsrUrl, serveStaticFileStream } from './static-server-helper';
+import { setSafeCorsHeaders } from '../lib/utils/cors-helper';
 
 const getHeaderValue = (headers: IncomingHttpHeaders, name: string) => {
   const value = headers[name];
@@ -115,7 +116,8 @@ export class StaticServer {
 
       // now we need to send finalPath file. If finalPath doesn't exist, it will cause error and jump to serverSideRenderPage
       try {
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        // Validate Origin against trusted hosts instead of wildcard '*'
+        setSafeCorsHeaders(req, res, false);
         await this.sendFile(req, res, finalPath, urlSplit[0]);
       } catch (err: any) {
         this.logger.warn(`File not found: ${urlSplit[0]}`);

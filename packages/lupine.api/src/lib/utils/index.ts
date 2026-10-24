@@ -1,4 +1,5 @@
 export * from './cookie-util';
+export * from './cors-helper';
 export * from './crypto';
 export * from './csv-util';
 export * from './date-utils';

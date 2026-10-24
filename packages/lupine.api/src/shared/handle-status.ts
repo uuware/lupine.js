@@ -65,7 +65,7 @@ export const generateHtml = (title: string, message: string) => {
     '<html>',
     '  <head>',
     '    <meta charset="utf-8">',
-    `    <title>${title}</title>`,
+    `    <title>${encodeHtml(title)}</title>`,
     '  </head>',
     '  <body>',
     `      <p>${encodeHtml(message)}</p>`,

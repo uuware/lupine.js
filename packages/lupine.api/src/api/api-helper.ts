@@ -3,6 +3,7 @@ import { ServerRequest } from '../models/locals-props';
 import { JsonObject } from '../models/json-object';
 import zlib from 'zlib';
 import { serveStaticFileStream } from './static-server-helper';
+import { setSafeCorsHeaders } from '../lib/utils/cors-helper';
 
 let ENABLE_RESPONSE_GZIP = false;
 export const setEnableResponseGzip = (enable: boolean) => {
@@ -72,6 +73,8 @@ export class ApiHelper {
   }
 
   static async sendFile(req: ServerRequest, res: ServerResponse, filepath: string, contentType?: string) {
+    // Validate Origin against trusted hosts instead of wildcard '*'
+    setSafeCorsHeaders(req, res, false);
     await serveStaticFileStream(
       req,
       res,
@@ -79,9 +82,6 @@ export class ApiHelper {
       filepath,
       {
         maxAge: 86400, // 1 day, then revalidate via ETag
-        setHeaders: (response, _path, _stat) => {
-          response.setHeader('Access-Control-Allow-Origin', '*');
-        },
       },
       contentType
     );
@@ -90,11 +90,10 @@ export class ApiHelper {
   }
 
   static async sendVideo(req: ServerRequest, res: ServerResponse, filepath: string) {
+    // Validate Origin against trusted hosts instead of wildcard '*'
+    setSafeCorsHeaders(req, res, false);
     await serveStaticFileStream(req, res, filepath, filepath, {
       maxAge: 86400, // 1 day, then revalidate via ETag
-      setHeaders: (response, _path, _stat) => {
-        response.setHeader('Access-Control-Allow-Origin', '*');
-      },
     });
 
     return true;

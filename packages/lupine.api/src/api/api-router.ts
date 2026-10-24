@@ -102,13 +102,14 @@ export class ApiRouter implements IApiRouter {
           })
         );
       } else {
-        logger.error(`Processed path: ${path}, error: ${e.message}`);
+        // Log full error details server-side only; do not leak internals to client
+        logger.error(`Processed path: ${path}, error: ${e.message}`, e);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.write(
           JSON.stringify({
             status: 'error',
             statusCode: 500,
-            message: `Processed path: ${path}, error: ${e.message}`,
+            message: 'Internal Server Error',
           })
         );
       }

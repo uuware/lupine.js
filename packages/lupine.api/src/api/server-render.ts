@@ -15,6 +15,21 @@ import { getRenderPageFunctions } from './render-page-functions';
 import { asyncLocalStorage } from './async-storage';
 import zlib from 'zlib';
 import { getEnableResponseGzip } from './api-helper';
+import { setSafeCorsHeaders } from '../lib/utils/cors-helper';
+
+/**
+ * Safely serialize a JSON value for embedding inside an HTML <script> tag.
+ * Prevents script-breaking sequences: </script>, <!--, and JS line separators
+ * that could allow an attacker to break out of the JSON context.
+ */
+const safeJsonForScript = (obj: any): string => {
+  return JSON.stringify(obj)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+};
 
 const getRequestContext = () => {
   try {
@@ -132,8 +147,8 @@ export const outputHtmlToResponse = (
   outputStream.write(currentCache.content.substring(currentCache.titleIndex + titleText.length, currentCache.metaIndexStart));
   outputStream.write(page.metaData);
   outputStream.write(page.globalCss);
-  outputStream.write('<script id="web-env" type="application/json">' + JSON.stringify(currentCache.webEnv) + '</script>');
-  outputStream.write('<script id="web-setting" type="application/json">' + JSON.stringify(webSetting) + '</script>');
+  outputStream.write('<script id="web-env" type="application/json">' + safeJsonForScript(currentCache.webEnv) + '</script>');
+  outputStream.write('<script id="web-setting" type="application/json">' + safeJsonForScript(webSetting) + '</script>');
   outputStream.write(
     currentCache.content.substring(
       currentCache.metaIndexEnd + metaTextEnd.length,
@@ -189,7 +204,7 @@ export const serverSideRenderPage = async (
           const content = await fs.promises.readFile(path.join(nearRoot, 'index.html'));
           let _lupineJs;
           try {
-            const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), { 
+            const gThis = await RuntimeRequire.loadModuleIsolated(path.join(nearRoot, 'index.js'), {
               _lupineJs: null,
               __SSR_ALS_PROPS__: asyncLocalStorage
             });
@@ -226,7 +241,7 @@ export const serverSideRenderPage = async (
       })();
       pendingSsrLoads.set(nearRoot, loadPromise);
     }
-    
+
     // Await either the fresh logic above, or lock onto existing synchronous Promise!
     try {
       const result = await loadPromise;
@@ -287,13 +302,9 @@ export const serverSideRenderPage = async (
     }
   }
 
-  const originHeader = req.headers.origin && req.headers.origin !== 'null' ? req.headers.origin : null;
-  if (originHeader) {
-    res.setHeader('Access-Control-Allow-Origin', originHeader);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
+  // Validate Origin against the trusted hosts configured for this app.
+  // Prevents credential-bearing CORS attacks from untrusted origins.
+  setSafeCorsHeaders(req, res, true);
 
   // Disable caching for SSR HTML pages
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
