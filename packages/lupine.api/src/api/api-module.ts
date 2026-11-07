@@ -73,7 +73,7 @@ export class ApiModule implements IApiModule {
     // await this.initConfig(appConfig);
     apiCache.clearTemplateCache();
 
-    if (appConfig.dbConfig.type === 'sqlite' || !appConfig.dbConfig.type) {
+    if (appConfig.dbConfig.type === 'sqlite') {
       if (!appConfig.dbConfig.sqliteConfig) {
         appConfig.dbConfig.sqliteConfig = {};
       }
@@ -84,8 +84,10 @@ export class ApiModule implements IApiModule {
         appConfig.dbConfig.sqliteConfig.filename = filename;
       }
     }
-    
-    await this.initDb(appConfig.dbConfig);
+
+    if (appConfig.dbConfig.type && appConfig.dbConfig.type !== 'none') {
+      await this.initDb(appConfig.dbConfig);
+    }
   }
 
   private async initDb(config: DbConfig) {
