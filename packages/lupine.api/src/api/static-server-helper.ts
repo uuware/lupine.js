@@ -193,32 +193,51 @@ export async function serveStaticFileStream(
     }
 
     // 4. Handle HTTP Range Requests (206) for Media Files
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    let isRange = false;
     let start = 0;
-    let end = size - 1;
+    let end = size > 0 ? size - 1 : 0;
     const rangeHeader = req.headers.range;
 
-    if (rangeHeader) {
-      const parts = rangeHeader.replace(/bytes=/, '').split('-');
-      const parsedStart = parseInt(parts[0], 10);
-      const parsedEnd = parts[1] ? parseInt(parts[1], 10) : end;
+    if (rangeHeader && typeof rangeHeader === 'string' && rangeHeader.startsWith('bytes=')) {
+      const match = rangeHeader.trim().match(/^bytes=\s*(?:(\d+)\s*-\s*(\d*)|-\s*(\d+))$/);
+      if (match) {
+        if (match[3] !== undefined) {
+          // Suffix range: bytes=-N
+          const suffixLength = parseInt(match[3], 10);
+          if (suffixLength === 0 || size === 0) {
+            res.setHeader('Content-Range', `bytes */${size}`);
+            res.statusCode = 416;
+            res.end();
+            return true;
+          }
+          start = Math.max(0, size - suffixLength);
+          end = size - 1;
+          isRange = true;
+        } else {
+          // Range: bytes=START-[END]
+          const parsedStart = parseInt(match[1], 10);
+          const hasEnd = match[2] !== '';
+          const parsedEnd = hasEnd ? parseInt(match[2], 10) : size - 1;
 
-      if (!isNaN(parsedStart)) {
-        start = parsedStart;
-      }
-      if (!isNaN(parsedEnd)) {
-        end = parsedEnd;
-      }
+          if (size === 0 || parsedStart >= size || (hasEnd && parsedEnd < parsedStart)) {
+            res.setHeader('Content-Range', `bytes */${size}`);
+            res.statusCode = 416;
+            res.end();
+            return true;
+          }
 
-      if (start > end || start >= size) {
-        res.setHeader('Content-Range', `bytes */${size}`);
-        res.statusCode = 416;
-        res.end();
-        return true;
+          start = parsedStart;
+          end = Math.min(parsedEnd, size - 1);
+          isRange = true;
+        }
       }
+    }
 
+    if (isRange) {
       const chunksize = end - start + 1;
       res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
-      res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Content-Length', chunksize);
       res.statusCode = 206;
     } else {
@@ -226,7 +245,7 @@ export async function serveStaticFileStream(
       res.statusCode = 200;
     }
 
-    const fileStream = fs.createReadStream(realPath, { start, end });
+    const fileStream = fs.createReadStream(realPath, isRange ? { start, end } : undefined);
     fileStream.on('error', (error) => {
       logger?.warn(`File stream read error: ${realPath}`);
       handler404(res);
