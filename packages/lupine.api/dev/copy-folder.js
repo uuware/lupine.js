@@ -20,7 +20,8 @@ exports.copyFolder = async (copyCache, src, dest, isDev, ignoreList = null) => {
       await exports.copyFolder(copyCache, path.join(src, childItemName), path.join(dest, childItemName), isDev, ignoreList);
     }
   } else if (stat.isFile()) {
-    let statDest = copyCache.get(src);
+    const cacheKey = `${src} -> ${dest}`;
+    let statDest = copyCache.get(cacheKey);
     let isDestMissing = false;
 
     if (!statDest) {
@@ -29,7 +30,7 @@ exports.copyFolder = async (copyCache, src, dest, isDev, ignoreList = null) => {
         if (stat.mtime.getTime() > dStat.mtime.getTime()) {
           isDestMissing = true;
         } else {
-          copyCache.set(src, stat);
+          copyCache.set(cacheKey, stat);
           statDest = stat;
         }
       } catch (err) {
@@ -49,7 +50,7 @@ exports.copyFolder = async (copyCache, src, dest, isDev, ignoreList = null) => {
         } else {
           await fs.copyFile(src, dest);
         }
-        copyCache.set(src, stat);
+        copyCache.set(cacheKey, stat);
         // utimes is not accurate
         // await fs.utimes(dest, stat.atime, stat.mtime);
         console.log(`copy from [${src}] to  [${dest}]`);
