@@ -54,6 +54,18 @@ Here is a sample command:
 mkcert example.com "*.example.com" localhost 127.0.0.1 ::1
 ```
 
+### Step 3: Upgrade to the Latest Version
+
+To upgrade an existing project and keep all Lupine framework packages (`lupine.web`, `lupine.api`, `lupine.components`, etc.) up-to-date with the latest features and bug fixes, run:
+
+```bash
+# Update Lupine package versions in your package.json
+npx create-lupine --update-version
+
+# Install the updated dependencies
+npm install
+```
+
 ## Learn more
 
 Read the [docs](https://uuware.github.io/lupine.js/), [中文](https://uuware.github.io/lupine.js/zh/)
