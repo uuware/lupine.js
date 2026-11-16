@@ -41,4 +41,31 @@ test('Native Multipart/Form-Data Parser', async (t) => {
     const req = { headers: { 'content-type': 'application/json' } } as unknown as IncomingMessage;
     await assert.rejects(parseFormData(req, Buffer.alloc(0)), /Content-Type is not multipart/);
   });
+
+  await t.test('Parses multipart payloads with LF (\\n) line endings and unquoted filenames', async () => {
+    const boundary = 'LFBoundary123';
+    // Payloads with LF only
+    const bodyString =
+      `--${boundary}\n` +
+      `Content-Disposition: form-data; name="title"\n\n` +
+      `LF Title Value\n` +
+      `--${boundary}\n` +
+      `Content-Disposition: form-data; name="doc"; filename=unquoted_document.pdf\n` +
+      `Content-Type: application/pdf\n\n` +
+      `%PDF-1.4 mock content\n` +
+      `--${boundary}--`;
+
+    const req = {
+      headers: {
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+      },
+    } as unknown as IncomingMessage;
+
+    const result = await parseFormData(req, Buffer.from(bodyString, 'utf8'));
+    assert.strictEqual(result.fields['title'], 'LF Title Value');
+    assert.ok(result.files['doc'], 'unquoted filename must be parsed as a file');
+    assert.strictEqual(result.files['doc'].filename, 'unquoted_document.pdf');
+    assert.strictEqual(result.files['doc'].mimeType, 'application/pdf');
+    assert.strictEqual(result.files['doc'].data.toString('utf8'), '%PDF-1.4 mock content');
+  });
 });

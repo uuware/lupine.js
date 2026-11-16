@@ -1,6 +1,6 @@
 {
   "name": "lupine.components",
-  "version": "1.1.62",
+  "version": "1.1.63",
   "license": "MIT",
   "author": "uuware.com",
   "homepage": "https://github.com/uuware/lupine.js",
@@ -35,7 +35,10 @@
   "scripts": {
     "note": "echo 'build is not needed as the typescript code is supposed to be referred directly from other projects'",
     "npm-publish": "npm publish --access public",
-    "build": "tsc"
+    "build": "tsc",
+    "test:build": "npx esbuild src/**/*.test.ts --outdir=dist-test --platform=node --bundle --format=cjs --jsx=automatic --jsx-import-source=lupine.web",
+    "test:run": "node --test dist-test/**/*.test.js",
+    "test": "npm run test:build && npm run test:run"
   },
   "dependencies": {
     "lupine.web": "^1.0.0"

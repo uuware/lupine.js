@@ -6,29 +6,34 @@ export const parseCookies = (str: string | undefined) => {
   if (str) {
     for (let m; (m = rx.exec(str)); ) {
       try {
-        obj[m[1]] = decodeURIComponent(m[2]);
+        obj[m[1]] = decodeURIComponent(m[2].trim());
       } catch (error) {
-        console.error('parseCookies error for: ' + m[2], error);
+        // Graceful fallback to raw value when percent-decoding fails
+        obj[m[1]] = m[2].trim();
       }
     }
   }
   return obj;
 };
 
-export const serializeCookie = (name: string, value: string, options: SetCookieProps) => {
-  const expires = new Date(new Date().getTime() + options.expireDays * 24 * 3600000);
+export const serializeCookie = (name: string, value: string, options?: Partial<SetCookieProps>) => {
+  let expiresStr = '';
+  if (options && typeof options.expireDays === 'number') {
+    const expires = new Date(Date.now() + options.expireDays * 24 * 3600000);
+    expiresStr = '; Expires=' + expires.toUTCString();
+  }
+  const path = options?.path ? options.path : '/';
   const cookiePair =
     name +
     '=' +
     encodeURIComponent(value) +
-    '; Expires=' +
-    expires.toUTCString() +
+    expiresStr +
     '; Path=' +
-    (options.path ? options.path : '/') +
-    (options.domain ? '; Domain=' + options.domain : '') +
-    (options.httpOnly ? '; HttpOnly' : '') +
-    (options.Partitioned ? '; Partitioned' : '') +
-    (options.sameSite ? '; SameSite=' + options.sameSite : '') +
-    (options.secure ? '; Secure' : '');
+    path +
+    (options?.domain ? '; Domain=' + options.domain : '') +
+    (options?.httpOnly ? '; HttpOnly' : '') +
+    (options?.Partitioned ? '; Partitioned' : '') +
+    (options?.sameSite ? '; SameSite=' + options.sameSite : '') +
+    (options?.secure ? '; Secure' : '');
   return cookiePair;
 };

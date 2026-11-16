@@ -22,31 +22,38 @@ export class ApiHelper {
     payload: string | Buffer,
     headers?: { [key: string]: string }
   ) {
+    const bufferPayload = Buffer.isBuffer(payload) ? payload : Buffer.from(payload, 'utf8');
     const enableGzip = getEnableResponseGzip();
     const acceptEncoding = typeof req.headers['accept-encoding'] === 'string' ? req.headers['accept-encoding'] : '';
-    const shouldGzip = enableGzip && acceptEncoding.includes('gzip') && payload.length > 512;
+    const shouldGzip = enableGzip && acceptEncoding.includes('gzip') && bufferPayload.length > 512;
 
     if (shouldGzip) {
-      zlib.gzip(payload, (err, buffer) => {
+      zlib.gzip(bufferPayload, (err, buffer) => {
         if (res.headersSent) return;
         if (err || !buffer) {
-          res.writeHead(statusCode, Object.assign({ 'Content-Type': contentType }, headers));
-          res.write(payload);
-          res.end();
+          res.writeHead(
+            statusCode,
+            Object.assign({ 'Content-Type': contentType, 'Content-Length': bufferPayload.length.toString() }, headers)
+          );
+          res.end(bufferPayload);
         } else {
           res.writeHead(
             statusCode,
-            Object.assign({ 'Content-Type': contentType, 'Content-Encoding': 'gzip' }, headers)
+            Object.assign(
+              { 'Content-Type': contentType, 'Content-Encoding': 'gzip', 'Content-Length': buffer.length.toString() },
+              headers
+            )
           );
-          res.write(buffer);
-          res.end();
+          res.end(buffer);
         }
       });
     } else {
       if (res.headersSent) return;
-      res.writeHead(statusCode, Object.assign({ 'Content-Type': contentType }, headers));
-      res.write(payload);
-      res.end();
+      res.writeHead(
+        statusCode,
+        Object.assign({ 'Content-Type': contentType, 'Content-Length': bufferPayload.length.toString() }, headers)
+      );
+      res.end(bufferPayload);
     }
   }
 

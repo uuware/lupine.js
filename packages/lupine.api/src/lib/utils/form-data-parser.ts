@@ -106,24 +106,44 @@ export const parseFormData = (
         const nextBoundaryIdx = bodyBuffer.indexOf(boundaryBuffer, boundaryIdx + boundaryBuffer.length);
         if (nextBoundaryIdx === -1) break; // Reached concluding boundary '--boundary--'
 
-        // Extract the part (excluding the newline right before the next boundary)
-        const partEndIdx = nextBoundaryIdx - 2;
-        const partBuffer = bodyBuffer.subarray(boundaryIdx + boundaryBuffer.length + 2, partEndIdx);
+        // Extract the part handling both CRLF and LF delimiters cleanly
+        let partStartIdx = boundaryIdx + boundaryBuffer.length;
+        if (bodyBuffer[partStartIdx] === 0x0d && bodyBuffer[partStartIdx + 1] === 0x0a) {
+          partStartIdx += 2;
+        } else if (bodyBuffer[partStartIdx] === 0x0a) {
+          partStartIdx += 1;
+        }
 
-        // Find where the double newline splits Headers vs Content
-        const headerEndIdx = partBuffer.indexOf(Buffer.from('\r\n\r\n'));
+        let partEndIdx = nextBoundaryIdx;
+        if (partEndIdx >= 2 && bodyBuffer[partEndIdx - 2] === 0x0d && bodyBuffer[partEndIdx - 1] === 0x0a) {
+          partEndIdx -= 2;
+        } else if (partEndIdx >= 1 && bodyBuffer[partEndIdx - 1] === 0x0a) {
+          partEndIdx -= 1;
+        }
+
+        const partBuffer = bodyBuffer.subarray(partStartIdx, partEndIdx);
+
+        // Find where the double newline splits Headers vs Content (\r\n\r\n or \n\n)
+        let headerEndIdx = partBuffer.indexOf(Buffer.from('\r\n\r\n'));
+        let headerDelimLen = 4;
+        if (headerEndIdx === -1) {
+          headerEndIdx = partBuffer.indexOf(Buffer.from('\n\n'));
+          headerDelimLen = 2;
+        }
+
         if (headerEndIdx !== -1) {
           const headerString = partBuffer.subarray(0, headerEndIdx).toString('utf8');
-          const dataBuffer = partBuffer.subarray(headerEndIdx + 4);
+          const dataBuffer = partBuffer.subarray(headerEndIdx + headerDelimLen);
 
           // Parse Headers
           const dispositionMatch = headerString.match(/Content-Disposition:.* name="([^"]+)"/i);
           if (dispositionMatch) {
             const name = dispositionMatch[1];
-            const filenameMatch = headerString.match(/filename="([^"]+)"/i);
+            // Support both filename="foo.png" and unquoted filename=foo.png
+            const filenameMatch = headerString.match(/filename\s*=\s*(?:"([^"]+)"|([^\s;]+))/i);
 
             if (filenameMatch) {
-              const rawFilename = filenameMatch[1];
+              const rawFilename = filenameMatch[1] || filenameMatch[2];
               const contentTypeMatch = headerString.match(/Content-Type: ([^\r\n]+)/i);
               const mimeType = (contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream').trim();
 

@@ -4,7 +4,7 @@ import { JsonObject } from './json-object';
 import { ISimpleStorage } from './simple-storage-props';
 import { ParsedFormData } from '../lib/utils/form-data-parser';
 export type SetCookieProps = {
-  expireDays: number;
+  expireDays?: number;
   path?: string;
   domain?: string;
   secure?: boolean;

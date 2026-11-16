@@ -177,3 +177,72 @@ test('Sandbox Execution Context Bounding', async () => {
     }
   });
 });
+
+test('SSR XSS Protection & Script Tag Escape', () => {
+  const indices = getHtmlTemplateIndices(sampleIndexHtmlContent);
+  const maliciousEnv = {
+    xssPayload: '</script><script>alert("hacked")</script>',
+    commentEscape: '<!--<script>',
+    lineSeparators: 'line1\u2028line2\u2029line3',
+  };
+
+  const currentCache: any = {
+    content: sampleIndexHtmlContent,
+    webEnv: maliciousEnv,
+    ...indices,
+  };
+
+  const page = {
+    themeName: 'light',
+    title: '<title>Safe Page</title>',
+    metaData: '',
+    globalCss: '',
+    content: '<div>Content</div>',
+  };
+
+  let chunks: string[] = [];
+  const mockRes = {
+    writeHead: () => {},
+    write: (d: string) => chunks.push(d),
+    end: () => {},
+  } as any;
+
+  outputHtmlToResponse({ headers: {} } as any, mockRes, currentCache, page, {});
+  const html = chunks.join('');
+
+  // Crucial: Raw </script> must NEVER be present inside the JSON script tag
+  assert.strictEqual(html.includes('</script><script>alert'), false, 'Raw </script> must be escaped');
+  assert.strictEqual(html.includes('\\u003c/script\\u003e'), true, 'Must escape < to \\u003c');
+  assert.strictEqual(html.includes('\\u003c!--'), true, 'Must escape <!-- to \\u003c!--');
+});
+
+test('Concurrent Request Context Isolation in AsyncLocalStorage', async () => {
+  const runs = Array.from({ length: 10 }, (_, i) => ({
+    id: `req-${i}`,
+    title: `Title ${i}`,
+  }));
+
+  await Promise.all(
+    runs.map(async (item) => {
+      const store: AsyncStorageProps = {
+        uuid: item.id,
+        appName: `app-${item.id}`,
+        hostPath: {} as any,
+        locals: { cookies: () => ({}) } as any,
+        lang: 'en',
+        req: {} as any,
+        requestContext: { pageTitle: item.title } as any,
+      };
+
+      await asyncLocalStorage.run(store, async () => {
+        // Yield execution to event loop to simulate async I/O interleaving
+        await new Promise((r) => setTimeout(r, Math.random() * 20));
+
+        const activeStore = asyncLocalStorage.getStore();
+        assert.ok(activeStore);
+        assert.strictEqual(activeStore.uuid, item.id);
+        assert.strictEqual((activeStore.requestContext as any)?.pageTitle, item.title);
+      });
+    })
+  );
+});

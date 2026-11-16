@@ -1,9 +1,9 @@
 import { RefProps, VNode } from 'lupine.web';
 
-export type HtmlVarValueProps = string | null | undefined | VNode<any> | (() => Promise<VNode<any>>);
+export type HtmlVarValueProps = string | null | undefined | VNode<any> | (() => Promise<string | VNode<any>>);
 export type HtmlVarResult = { value: HtmlVarValueProps; ref: RefProps; node: VNode<any> };
 export class HtmlVar implements HtmlVarResult {
-  private _value: string | VNode<any> | (() => Promise<VNode<any>>);
+  private _value: string | VNode<any> | (() => Promise<string | VNode<any>>);
   private _dirty = false;
   private _ref: RefProps;
   private resolve!: () => void;

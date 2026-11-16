@@ -136,9 +136,9 @@ describe('StaticServer & Skip SSR Paths', () => {
       } catch {}
     });
 
-    function requestFile(filePath: string, range?: string) {
+    function requestFile(filePath: string, range?: string, extraHeaders: Record<string, string> = {}) {
       return new Promise<{ statusCode: number; headers: http.IncomingHttpHeaders; body: string }>((resolve, reject) => {
-        const headers: Record<string, string> = {};
+        const headers: Record<string, string> = { ...extraHeaders };
         if (range !== undefined) headers.range = range;
 
         const req = http.get({ port, path: filePath, headers }, (res) => {
@@ -251,6 +251,79 @@ describe('StaticServer & Skip SSR Paths', () => {
       const res2 = await requestFile('/test-1000.bin', 'bytes=-');
       assert.equal(res2.statusCode, 200);
       assert.equal(res2.headers['content-length'], '1000');
+    });
+
+    it('should support If-None-Match with wildcard * and comma-separated ETags returning 304', async () => {
+      const initial = await requestFile('/test-1000.bin');
+      const etag = initial.headers.etag as string;
+      assert.ok(etag, 'ETag must be returned');
+
+      // Wildcard *
+      const resWildcard = await requestFile('/test-1000.bin', undefined, { 'if-none-match': '*' });
+      assert.equal(resWildcard.statusCode, 304);
+
+      // Matching ETag in comma list
+      const resList = await requestFile('/test-1000.bin', undefined, { 'if-none-match': `"other-tag", ${etag}` });
+      assert.equal(resList.statusCode, 304);
+
+      // Non-matching ETag
+      const resMiss = await requestFile('/test-1000.bin', undefined, { 'if-none-match': '"non-matching-tag"' });
+      assert.equal(resMiss.statusCode, 200);
+    });
+
+    it('should support If-Modified-Since timestamp comparison returning 304', async () => {
+      const initial = await requestFile('/test-1000.bin');
+      const lastModified = initial.headers['last-modified'] as string;
+      assert.ok(lastModified, 'Last-Modified must be returned');
+
+      // Exact date
+      const resExact = await requestFile('/test-1000.bin', undefined, { 'if-modified-since': lastModified });
+      assert.equal(resExact.statusCode, 304);
+
+      // Future date
+      const futureDate = new Date(Date.now() + 86400000).toUTCString();
+      const resFuture = await requestFile('/test-1000.bin', undefined, { 'if-modified-since': futureDate });
+      assert.equal(resFuture.statusCode, 304);
+
+      // Past date -> 200
+      const pastDate = new Date(Date.now() - 86400000 * 365).toUTCString();
+      const resPast = await requestFile('/test-1000.bin', undefined, { 'if-modified-since': pastDate });
+      assert.equal(resPast.statusCode, 200);
+    });
+
+    it('should handle If-Range: return 206 when matching ETag, fallback to 200 when mismatched', async () => {
+      const initial = await requestFile('/test-1000.bin');
+      const etag = initial.headers.etag as string;
+
+      // Matching ETag -> 206
+      const resMatch = await requestFile('/test-1000.bin', 'bytes=0-9', { 'if-range': etag });
+      assert.equal(resMatch.statusCode, 206);
+      assert.equal(resMatch.headers['content-range'], 'bytes 0-9/1000');
+      assert.equal(resMatch.body.length, 10);
+
+      // Mismatched ETag -> fallback to 200 with full content
+      const resMismatch = await requestFile('/test-1000.bin', 'bytes=0-9', { 'if-range': '"old-mismatched-etag"' });
+      assert.equal(resMismatch.statusCode, 200);
+      assert.equal(resMismatch.headers['content-length'], '1000');
+      assert.equal(resMismatch.body.length, 1000);
+    });
+
+    it('should safely abort stream when client socket closes early', async () => {
+      await new Promise<void>((resolve, reject) => {
+        const req = http.get({ port, path: '/test-1000.bin' }, (res) => {
+          // Read first chunk then immediately destroy socket to simulate client disconnect
+          res.on('data', () => {
+            req.destroy();
+            resolve();
+          });
+        });
+        req.on('error', () => {
+          // socket destroyed error is expected
+          resolve();
+        });
+      });
+      // Small wait to ensure no unhandled exceptions in server
+      await new Promise((r) => setTimeout(r, 50));
     });
   });
 });

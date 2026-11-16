@@ -27,7 +27,7 @@ export const parseJsonBody = (req: ServerRequest, logWriter: Logger): JsonObject
   return req.locals._json;
 };
 
-export const applySetCookie = (req: ServerRequest, res: ServerResponse, name: string, value: string, options: SetCookieProps): void => {
+export const applySetCookie = (req: ServerRequest, res: ServerResponse, name: string, value: string, options?: Partial<SetCookieProps>): void => {
   const cookies: string[] = [];
   const cookiesOld = res.getHeader('Set-Cookie');
   if (cookiesOld) {
@@ -43,7 +43,11 @@ export const applySetCookie = (req: ServerRequest, res: ServerResponse, name: st
   res.setHeader('Set-Cookie', cookies);
 
   const localCookies = req.locals.cookies();
-  localCookies.set(name, value);
+  if (options && typeof options.expireDays === 'number' && options.expireDays < 0) {
+    localCookies.set(name, undefined as any);
+  } else {
+    localCookies.set(name, value);
+  }
 };
 
 export const getCookiesStorage = (req: ServerRequest): SimpleStorage => {
@@ -210,9 +214,9 @@ export class WebListener {
         return req.locals._formData;
       },
       cookies: () => getCookiesStorage(req),
-      setCookie: (name: string, value: string, options: SetCookieProps) => applySetCookie(req, res, name, value, options),
-      clearCookie: (name: string) => {
-        res.setHeader('Set-Cookie', `${name}=; max-age=0`);
+      setCookie: (name: string, value: string, options?: Partial<SetCookieProps>) => applySetCookie(req, res, name, value, options),
+      clearCookie: (name: string, path = '/') => {
+        applySetCookie(req, res, name, '', { expireDays: -1, path });
       },
     };
 

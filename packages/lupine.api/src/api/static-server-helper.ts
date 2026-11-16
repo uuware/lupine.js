@@ -139,20 +139,9 @@ export async function serveStaticFileStream(
     const size = stat.size;
     const etag = `W/"${size.toString(16)}-${mtime.getTime().toString(16)}"`;
     const lastModified = mtime.toUTCString();
+    const mtimeSec = Math.floor(mtime.getTime() / 1000) * 1000;
 
-    // 2. Validate Conditional Requests (304 Not Modified)
-    if (opts.etag && req.headers['if-none-match'] === etag) {
-      res.writeHead(304);
-      res.end();
-      return true;
-    }
-    if (opts.lastModified && req.headers['if-modified-since'] === lastModified) {
-      res.writeHead(304);
-      res.end();
-      return true;
-    }
-
-    // 3. Determine Content-Type and Cache-Control
+    // 2. Determine Content-Type and Cache-Control
     let ext = path.extname(realPath);
     ext = ext ? ext.slice(1).toLowerCase() : 'unknown';
     const customContentType = opts.serverContentType || defaultSSOptions.serverContentType;
@@ -192,7 +181,35 @@ export async function serveStaticFileStream(
       opts.setHeaders(res, requestPath, stat);
     }
 
-    // 4. Handle HTTP Range Requests (206) for Media Files
+    // 3. Validate Conditional Requests (304 Not Modified) - RFC 9110 Section 13
+    const ifNoneMatch = typeof req.headers['if-none-match'] === 'string' ? req.headers['if-none-match'] : undefined;
+    const ifModifiedSince = typeof req.headers['if-modified-since'] === 'string' ? req.headers['if-modified-since'] : undefined;
+
+    let is304 = false;
+    if (opts.etag && ifNoneMatch) {
+      if (ifNoneMatch === '*') {
+        is304 = true;
+      } else {
+        const rawEtag = etag.replace(/^W\//, '');
+        const clientEtags = ifNoneMatch.split(',').map((t) => t.trim().replace(/^W\//, ''));
+        if (clientEtags.includes(rawEtag)) {
+          is304 = true;
+        }
+      }
+    } else if (opts.lastModified && ifModifiedSince) {
+      const imsTime = Date.parse(ifModifiedSince);
+      if (!isNaN(imsTime) && imsTime >= mtimeSec) {
+        is304 = true;
+      }
+    }
+
+    if (is304) {
+      res.writeHead(304);
+      res.end();
+      return true;
+    }
+
+    // 4. Handle HTTP Range Requests (206) for Media Files - RFC 9110 Section 14
     res.setHeader('Accept-Ranges', 'bytes');
 
     let isRange = false;
@@ -232,6 +249,24 @@ export async function serveStaticFileStream(
           end = Math.min(parsedEnd, size - 1);
           isRange = true;
         }
+
+        // Validate If-Range Header (RFC 9110 Section 13.1.5)
+        const ifRange = typeof req.headers['if-range'] === 'string' ? req.headers['if-range'].trim() : undefined;
+        if (ifRange && isRange) {
+          let matches = false;
+          if (ifRange.startsWith('"') || ifRange.startsWith('W/"')) {
+            matches = ifRange.replace(/^W\//, '') === etag.replace(/^W\//, '');
+          } else {
+            const ifRangeDate = Date.parse(ifRange);
+            if (!isNaN(ifRangeDate) && ifRangeDate === mtimeSec) {
+              matches = true;
+            }
+          }
+          // If-Range does NOT match: fallback to serving the entire representation with 200 OK
+          if (!matches) {
+            isRange = false;
+          }
+        }
       }
     }
 
@@ -250,6 +285,13 @@ export async function serveStaticFileStream(
       logger?.warn(`File stream read error: ${realPath}`);
       handler404(res);
       return true;
+    });
+
+    // Cleanup file descriptor immediately on client abort
+    res.on('close', () => {
+      if (!fileStream.destroyed) {
+        fileStream.destroy();
+      }
     });
 
     fileStream.pipe(res);
